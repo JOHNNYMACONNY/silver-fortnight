@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://glittering-paletas-456b41.netlify.app"],
+    "method": ["GET", "PUT", "POST", "DELETE", "HEAD"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type", "Authorization", "Content-Length", "User-Agent", "x-goog-resumable"]
+  }
+]
