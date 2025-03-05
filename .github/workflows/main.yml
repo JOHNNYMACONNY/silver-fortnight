@@ -1,0 +1,140 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install Dependencies
+      run: npm ci
+    
+    - name: Run Tests
+      run: npm test
+      env:
+        VITE_HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+
+    - name: Check AI Rate Limits
+      run: |
+        echo "Checking AI integration rate limits..."
+        npm run test:ai-limits
+      env:
+        VITE_HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+
+  analyze:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install Dependencies
+      run: npm ci
+    
+    - name: Run ESLint
+      run: npm run lint
+    
+    - name: Check Types
+      run: npm run type-check
+
+    - name: Analyze Bundle Size
+      run: npm run build
+      
+  deploy-staging:
+    needs: [test, analyze]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install Dependencies
+      run: npm ci
+    
+    - name: Build
+      run: npm run build
+      env:
+        VITE_HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+    
+    - name: Deploy to Staging
+      run: |
+        # Add staging deployment commands
+        echo "Deploying to staging..."
+      env:
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+    - name: Run AI Integration Tests
+      run: |
+        echo "Running integration tests against staging..."
+        npm run test:ai-integration
+      env:
+        VITE_HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+        
+  deploy-production:
+    needs: [test, analyze]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    environment: production
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install Dependencies
+      run: npm ci
+    
+    - name: Build
+      run: npm run build
+      env:
+        VITE_HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+    
+    - name: Deploy to Production
+      run: |
+        # Add production deployment commands
+        echo "Deploying to production..."
+      env:
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+    - name: Monitor Initial Production Health
+      run: |
+        echo "Monitoring production deployment..."
+        # Add health check and monitoring commands
+      env:
+        VITE_HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+        
+    - name: Verify AI Rate Limits in Production
+      run: |
+        echo "Verifying AI rate limits in production..."
+        npm run verify-ai-limits
+      env:
+        VITE_HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
