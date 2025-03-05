@@ -1,0 +1,187 @@
+/* Neo-Earth Background System */
+
+/* 1. Base Layer Styles */
+.bg-neo-earth {
+  @apply relative min-h-screen bg-earth-900 overflow-hidden;
+}
+
+/* Dynamic Gradient Base */
+.bg-neo-earth::before {
+  @apply absolute inset-0 z-0;
+  content: '';
+  background: linear-gradient(
+    45deg,
+    rgba(47, 59, 47, 1) 0%,    /* Deep olive */
+    rgba(139, 157, 131, 0.2) 25%,  /* Sage */
+    rgba(198, 125, 99, 0.3) 50%,   /* Clay */
+    rgba(214, 159, 76, 0.2) 75%,   /* Ochre */
+    rgba(47, 59, 47, 1) 100%   /* Deep olive */
+  );
+  background-size: 400% 400%;
+  animation: gradientFlow 30s ease infinite;
+}
+
+/* 2. Glass Panel Styles */
+.glass-panel {
+  @apply relative overflow-hidden rounded-lg border border-earth-700/30;
+  background: rgba(245, 242, 234, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Glass Panel Variations */
+.glass-panel-light {
+  @apply glass-panel bg-earth-800/80;
+}
+
+.glass-panel-dark {
+  @apply glass-panel bg-earth-900/80;
+}
+
+/* Glass Panel Hover Effects */
+.glass-panel-hover {
+  @apply transition-all duration-300;
+}
+
+.glass-panel-hover:hover {
+  @apply border-accent-clay/20 shadow-lg shadow-accent-clay/5;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/*
+  3. Animations
+*/
+@keyframes gradientFlow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes textureShift {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(5px, 5px) rotate(0.5deg);
+  }
+  50% {
+    transform: translate(-5px, -5px) rotate(-0.5deg);
+  }
+  75% {
+    transform: translate(-5px, 5px) rotate(0.25deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+@keyframes noiseShift {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(10px, 10px);
+  }
+  50% {
+    transform: translate(-10px, -10px);
+  }
+  75% {
+    transform: translate(-10px, 10px);
+  }
+}
+
+/*
+  4. Responsive Adjustments
+*/
+@media (max-width: 768px) {
+  .glass-panel {
+    @apply rounded-lg;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: more) {
+  .glass-panel {
+    @apply border-2;
+    background: rgba(245, 242, 234, 0.95);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Card System */
+.card {
+  @apply bg-earth-800 border border-earth-700 rounded-lg overflow-hidden;
+}
+
+.card-hover {
+  @apply transition-all duration-300;
+}
+
+.card-hover:hover {
+  @apply border-accent-clay/20 shadow-lg shadow-accent-clay/5;
+}
+
+/* Card Forms and Content */
+.card-form {
+  @apply divide-y divide-earth-700;
+}
+
+.card-content {
+  @apply p-6;
+}
+
+/* Card Variations */
+.card-error {
+  @apply border-accent-rust/50 text-accent-rust;
+}
+
+.card-unread {
+  @apply bg-accent-sage/10 border-accent-sage/30;
+}
+
+.card-unread:hover {
+  @apply bg-accent-sage/20;
+}
+
+.card-message-sent {
+  @apply bg-accent-sage/10 border-accent-sage/30;
+}
+
+.card-message-received {
+  @apply bg-earth-800 border-earth-700;
+}
+
+/* Card Section Utilities */
+.card-section {
+  @apply p-6 border-b border-earth-700 last:border-b-0;
+}
+
+.card-header {
+  @apply bg-earth-800 border-b border-earth-700 p-4;
+}
+
+.card-footer {
+  @apply bg-earth-800 border-t border-earth-700 p-4;
+}
+
+  /* Skill and Role Badges */
+@layer components {
+  .badge-offering {
+    @apply inline-flex items-center justify-center px-2 py-1 bg-badge-sage border border-badge-sage text-text-primary text-sm rounded-full;
+  }
+
+  .badge-needed {
+    @apply inline-flex items-center justify-center px-2 py-1 bg-badge-clay border border-badge-clay text-text-primary text-sm rounded-full;
+  }
+
+  .badge-role {
+    @apply inline-flex items-center justify-center px-2 py-1 bg-badge-sage border border-badge-sage text-text-primary text-sm rounded-full;
+  }
+}

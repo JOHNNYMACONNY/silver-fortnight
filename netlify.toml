@@ -1,0 +1,24 @@
+[[redirects]]
+  from = "/old-path/:path"
+  to = "/new-path/:path"
+  status = 301
+  force = true
+
+[build]
+  command = "npm install --production=false && (npm run verify-deployment || true) && npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+# Handle client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build.environment]
+  NODE_VERSION = "18.17.0"
+  NODE_ENV = "production"
+  FIREBASE_PRIVATE_KEY = "${FIREBASE_PRIVATE_KEY}"
+  FIREBASE_CLIENT_EMAIL = "${FIREBASE_CLIENT_EMAIL}"
+  FIREBASE_PROJECT_ID = "${FIREBASE_PROJECT_ID}"
+  HUGGINGFACE_API_KEY = "${HUGGINGFACE_API_KEY}"

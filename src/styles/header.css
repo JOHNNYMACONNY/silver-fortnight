@@ -1,0 +1,132 @@
+@layer utilities {
+  /* Header Animations */
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .animate-gradient-shift {
+    animation: gradient-shift 3s ease infinite;
+    background-size: 200% auto;
+  }
+}
+
+@layer components {
+  /* Header Layout */
+  .enhanced-header {
+    @apply sticky top-0 z-50 transition-all duration-300;
+  }
+
+  .enhanced-header.scrolled {
+    @apply shadow-lg;
+  }
+
+  /* Header Background */
+  .header-backdrop {
+    @apply absolute inset-0 bg-earth-900/90 backdrop-blur-lg 
+           transition-opacity duration-300;
+  }
+
+  .header-gradient {
+    @apply absolute inset-0 bg-gradient-to-r from-accent-clay/10 to-accent-ochre/10;
+  }
+
+  /* Navigation */
+  .header-nav {
+    @apply hidden lg:flex items-center flex-1;
+    max-width: calc(100% - 200px);
+  }
+
+  .nav-main-items {
+    @apply flex items-center space-x-4;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-2 px-2.5 py-1.5 text-sm rounded-md transition-colors duration-200 
+           text-earth-300 hover:text-white hover:bg-earth-700/30 whitespace-nowrap font-medium;
+  }
+
+  /* User Menu */
+  .user-menu {
+    @apply flex items-center ml-auto gap-3 relative z-50;
+  }
+
+  .user-menu-button {
+    @apply flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors duration-200
+           text-earth-300 hover:text-white hover:bg-earth-700/30 font-medium;
+  }
+
+  .user-menu-dropdown {
+    @apply absolute right-0 top-[calc(100%+0.25rem)] w-56 rounded-lg bg-earth-900/95 backdrop-blur-md
+           shadow-lg border border-earth-700/30 overflow-hidden transform transition-all duration-150
+           opacity-0 scale-95 pointer-events-none z-[100];
+    transform-origin: top right;
+  }
+
+  .user-menu-dropdown.open {
+    @apply opacity-100 scale-100 pointer-events-auto;
+  }
+
+  .user-menu-item {
+    @apply flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors duration-200
+           text-earth-300 hover:text-white hover:bg-earth-700/30 font-medium;
+  }
+
+  .user-menu-admin-toggle {
+    @apply flex items-center justify-between w-full px-4 py-2.5 text-sm transition-colors duration-200
+           text-earth-300 hover:text-white hover:bg-earth-700/30;
+  }
+
+  .user-menu-divider {
+    @apply border-t border-earth-700/30 my-1;
+  }
+
+  /* Mobile Elements */
+  .header-mobile-button {
+    @apply lg:hidden p-2 rounded-lg hover:bg-accent-clay/10 transition-colors duration-300;
+  }
+
+  .header-trade-button {
+    @apply hidden lg:flex btn-primary items-center justify-center gap-2 whitespace-nowrap text-sm font-medium;
+    padding: 0.5rem 1.25rem;
+    min-width: max-content;
+  }
+
+  .header-mobile-fab {
+    @apply fixed bottom-6 right-6 z-50 lg:hidden
+           rounded-full p-4 shadow-lg
+           bg-gradient-to-r from-accent-clay to-accent-ochre
+           hover:shadow-xl hover:scale-105
+           active:scale-95
+           transition-all duration-300;
+  }
+
+  /* Mobile Menu */
+  .mobile-menu-overlay {
+    @apply fixed inset-0 z-50 bg-earth-900/95 backdrop-blur-lg
+           transform transition-transform duration-300 ease-out;
+  }
+
+  .mobile-menu-content {
+    @apply h-full flex flex-col p-6;
+  }
+
+  .mobile-menu-nav {
+    @apply flex-1 flex flex-col space-y-4;
+  }
+
+  .mobile-menu-footer {
+    @apply mt-auto pt-6 border-t border-earth-700/30
+           flex flex-col space-y-4;
+  }
+
+  /* Logo */
+  .header-logo {
+    @apply flex items-center space-x-3;
+  }
+
+  .logo-text {
+    @apply text-xl sm:text-2xl font-display font-bold text-gradient-animate;
+  }
+}

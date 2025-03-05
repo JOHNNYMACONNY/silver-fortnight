@@ -1,0 +1,33 @@
+/* Banner System */
+.profile-banner {
+  height: 128px;
+  width: 100%;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #1F2937;
+  position: relative;
+}
+
+/* Banner Animations */
+@keyframes banner-gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Dialog styles */
+dialog {
+  padding: 0;
+  border: none;
+  background: transparent;
+  max-width: 64rem;
+  width: 100%;
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+}
