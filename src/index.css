@@ -1,0 +1,550 @@
+@import "tailwindcss";
+
+@theme {
+  /* Font families */
+  --font-family-sans: "Inter var", "Inter", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif";
+  --font-family-heading: "Outfit", "Inter var", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif";
+  --font-family-mono: "JetBrains Mono", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", "monospace";
+
+  /* Primary brand colors (TradeYa Orange) */
+  --color-primary-50: #fff7ed;
+  --color-primary-100: #ffedd5;
+  --color-primary-200: #fed7aa;
+  --color-primary-300: #fdba74;
+  --color-primary-400: #fb923c;
+  --color-primary-500: #f97316;
+  --color-primary-600: #ea580c;
+  --color-primary-700: #c2410c;
+  --color-primary-800: #9a3412;
+  --color-primary-900: #7c2d12;
+  --color-primary-950: #431407;
+
+  /* Secondary brand colors (TradeYa Blue) */
+  --color-secondary-50: #f0f9ff;
+  --color-secondary-100: #e0f2fe;
+  --color-secondary-200: #bae6fd;
+  --color-secondary-300: #7dd3fc;
+  --color-secondary-400: #38bdf8;
+  --color-secondary-500: #0ea5e9;
+  --color-secondary-600: #0284c7;
+  --color-secondary-700: #0369a1;
+  --color-secondary-800: #075985;
+  --color-secondary-900: #0c4a6e;
+  --color-secondary-950: #082f49;
+
+  /* Accent brand colors (TradeYa Purple) */
+  --color-accent-50: #f5f3ff;
+  --color-accent-100: #ede9fe;
+  --color-accent-200: #ddd6fe;
+  --color-accent-300: #c4b5fd;
+  --color-accent-400: #a78bfa;
+  --color-accent-500: #8b5cf6;
+  --color-accent-600: #7c3aed;
+  --color-accent-700: #6d28d9;
+  --color-accent-800: #5b21b6;
+  --color-accent-900: #4c1d95;
+  --color-accent-950: #2e1065;
+
+  /* Light mode semantic colors */
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(222.2 84% 4.9%);
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(222.2 84% 4.9%);
+  --color-primary-foreground: hsl(210 40% 98%);
+  --color-secondary: hsl(210 40% 96.1%);
+  --color-secondary-foreground: hsl(222.2 47.4% 11.2%);
+  --color-muted: hsl(210 40% 96.1%);
+  --color-muted-foreground: hsl(215.4 16.3% 46.9%);
+  --color-accent: hsl(210 40% 96.1%);
+  --color-accent-foreground: hsl(222.2 47.4% 11.2%);
+  --color-destructive: hsl(0 84.2% 60.2%);
+  --color-destructive-foreground: hsl(210 40% 98%);
+  --color-border: hsl(214.3 31.8% 91.4%);
+  --color-input: hsl(214.3 31.8% 91.4%);
+  --color-ring: hsl(215 20.2% 65.1%);
+  --radius: 0.5rem;
+
+  /* Enhanced Glassmorphism */
+  --color-glass-bg: rgba(255, 255, 255, 0.7);
+  --color-glass-border: rgba(255, 255, 255, 0.2);
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  
+  /* Enhanced Glass Variants */
+  --color-glass-bg-light: rgba(255, 255, 255, 0.8);
+  --color-glass-bg-medium: rgba(255, 255, 255, 0.6);
+  --color-glass-bg-strong: rgba(255, 255, 255, 0.5);
+
+  /* Navigation Glassmorphism */
+  --nav-background: rgba(255, 255, 255, 0.8);
+  --nav-background-dark: rgba(17, 24, 39, 0.8);
+  --nav-border: rgba(229,231,235,0.5); /* gray-200/50 */
+  --nav-border-dark: rgba(55,65,81,0.5); /* gray-700/50 */
+}
+
+@theme dark {
+  /* Dark mode semantic colors */
+  --color-background: hsl(222.2 84% 4.9%);
+  --color-foreground: hsl(210 40% 98%);
+  --color-card: hsl(222.2 84% 4.9%);
+  --color-card-foreground: hsl(210 40% 98%);
+  --color-primary: hsl(210 40% 98%);
+  --color-primary-foreground: hsl(222.2 47.4% 11.2%);
+  --color-secondary: hsl(217.2 32.6% 17.5%);
+  --color-secondary-foreground: hsl(210 40% 98%);
+  --color-muted: hsl(217.2 32.6% 17.5%);
+  --color-muted-foreground: hsl(215 20.2% 65.1%);
+  --color-accent: hsl(217.2 32.6% 17.5%);
+  --color-accent-foreground: hsl(210 40% 98%);
+  --color-destructive: hsl(0 62.8% 30.6%);
+  --color-destructive-foreground: hsl(210 40% 98%);
+  --color-border: hsl(217.2 32.6% 17.5%);
+  --color-input: hsl(217.2 32.6% 17.5%);
+  --color-ring: hsl(217.2 32.6% 17.5%);
+
+  /* Enhanced Glassmorphism */
+  --color-glass-bg: rgba(31, 41, 55, 0.6);
+  --color-glass-border: rgba(255, 255, 255, 0.18);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  
+  /* Enhanced Glass Variants */
+  --color-glass-bg-light: rgba(31, 41, 55, 0.4);
+  --color-glass-bg-medium: rgba(31, 41, 55, 0.7);
+  --color-glass-bg-strong: rgba(31, 41, 55, 0.8);
+
+  /* Navigation Glassmorphism */
+  --nav-background: rgba(17, 24, 39, 0.8);
+  --nav-background-dark: rgba(17, 24, 39, 0.8);
+  --nav-border: rgba(55,65,81,0.5); /* gray-700/50 */
+  --nav-border-dark: rgba(55,65,81,0.5); /* gray-700/50 */
+}
+
+:root {
+  /* Base typography */
+  font-family: var(--font-family-sans);
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Enhanced backdrop-filter support for glassmorphism */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.backdrop-blur-md {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.backdrop-blur-lg {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.backdrop-blur-xl {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.backdrop-blur-2xl {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.backdrop-blur-3xl {
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+}
+
+/* Fallback for browsers that don't support backdrop-filter */
+@supports not (backdrop-filter: blur(1px)) {
+  .backdrop-blur-sm,
+  .backdrop-blur-md,
+  .backdrop-blur-lg,
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl,
+  .backdrop-blur-3xl {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .dark .backdrop-blur-sm,
+  .dark .backdrop-blur-md,
+  .dark .backdrop-blur-lg,
+  .dark .backdrop-blur-xl,
+  .dark .backdrop-blur-2xl,
+  .dark .backdrop-blur-3xl {
+    background-color: rgba(15, 23, 42, 0.9);
+  }
+}
+
+/* Enhanced Card System - Phase 2 Enhancements */
+
+/* 3D Transform Support */
+.card-3d {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* Premium gradient backgrounds */
+.card-premium-bg {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
+}
+
+.dark .card-premium-bg {
+  background: linear-gradient(
+    135deg,
+    rgba(31, 41, 55, 0.9) 0%,
+    rgba(31, 41, 55, 0.8) 50%,
+    rgba(31, 41, 55, 0.9) 100%
+  );
+}
+
+/* Enhanced shadow system */
+.shadow-brand-orange {
+  box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.2), 0 4px 6px -2px rgba(249, 115, 22, 0.1);
+}
+
+.shadow-brand-blue {
+  box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.2), 0 4px 6px -2px rgba(14, 165, 233, 0.1);
+}
+
+.shadow-brand-purple {
+  box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.2), 0 4px 6px -2px rgba(139, 92, 246, 0.1);
+}
+
+/* Performance optimizations for 3D cards */
+.card-performance-optimized {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform-origin: center;
+}
+
+/* Accessibility - Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .card-3d {
+    transform: none !important;
+  }
+  
+  .card-performance-optimized {
+    will-change: auto;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .card-3d {
+    transform: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .backdrop-blur-sm,
+  .backdrop-blur-md,
+  .backdrop-blur-lg,
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl,
+  .backdrop-blur-3xl {
+    backdrop-filter: none;
+    background-color: var(--color-card);
+    border: 2px solid var(--color-border);
+  }
+}
+
+/* Navbar gradient border utility */
+.navbar-gradient-border {
+  border-bottom: 2px solid;
+  border-image: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.2) 25%, rgba(14, 165, 233, 0.15) 75%, transparent) 1;
+}
+
+/* Universal glassmorphic utility class for all glassmorphic modules (forms, cards, navbar, etc.) */
+.glassmorphic {
+  @apply backdrop-blur-xl border border-glass-border rounded-xl shadow-lg;
+}
+
+/* Phase 3.1: Container Query Support */
+@container {
+  .bento-grid {
+    container-type: inline-size;
+  }
+  
+  .bento-item {
+    container-type: inline-size;
+  }
+  
+  /* Container query responsive breakpoints */
+  @container (min-width: 40rem) {
+    .bento-item {
+      flex-direction: row;
+    }
+  }
+  
+  @container (min-width: 60rem) {
+    .bento-item {
+      font-size: 1.125rem;
+    }
+  }
+  
+  @container (min-width: 80rem) {
+    .bento-item {
+      padding: 1.5rem;
+    }
+  }
+}
+
+/* Phase 3.1: AutoFit Grid Support */
+.auto-fit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--min-item-width, 280px), 1fr));
+  gap: var(--grid-gap, 1rem);
+}
+
+/* Phase 3.1: Masonry Layout Support */
+.masonry-layout {
+  columns: 1;
+  column-gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .masonry-layout {
+    columns: 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .masonry-layout {
+    columns: 3;
+  }
+}
+
+@media (min-width: 1280px) {
+  .masonry-layout {
+    columns: 4;
+  }
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+}
+
+/* Mobile Animation Keyframes */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.05;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes touchFeedback {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes swipeLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes swipeRight {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Mobile-specific utility classes */
+@layer utilities {
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
+  .no-tap-highlight {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .touch-target-small {
+    min-height: 32px;
+    min-width: 32px;
+  }
+
+  .touch-target-standard {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .touch-target-large {
+    min-height: 56px;
+    min-width: 56px;
+  }
+
+  /* Enhanced mobile touch interactions */
+  .touch-feedback {
+    transition: transform 0.1s ease-out;
+  }
+
+  .touch-feedback:active {
+    transform: scale(0.95);
+  }
+
+  /* Mobile-optimized spacing */
+  .mobile-spacing-sm {
+    padding: 0.5rem;
+  }
+
+  .mobile-spacing-md {
+    padding: 0.75rem;
+  }
+
+  .mobile-spacing-lg {
+    padding: 1rem;
+  }
+
+  /* Mobile-optimized text sizes */
+  .mobile-text-xs {
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+
+  .mobile-text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  .mobile-text-base {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+
+  .mobile-text-lg {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+
+  /* Mobile-optimized containers */
+  .mobile-container {
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .mobile-safe-area {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Enhanced mobile device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .card-3d {
+    transform: none !important;
+  }
+
+  .hover-lift {
+    transform: none !important;
+  }
+
+  /* Reduce glassmorphism complexity on mobile */
+  .glassmorphic {
+    backdrop-filter: blur(8px) !important;
+  }
+
+  /* Optimize animations for mobile */
+  .animate-pulse,
+  .animate-spin,
+  .animate-bounce {
+    animation-duration: 1s !important;
+  }
+}
+
+/* Mobile-first responsive breakpoints */
+@media (max-width: 640px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+
+  .mobile-full-width {
+    width: 100% !important;
+  }
+
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+
+  .mobile-center {
+    text-align: center !important;
+  }
+
+  /* Mobile-specific form optimizations */
+  input, textarea, select {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tablet-hidden {
+    display: none !important;
+  }
+
+  .tablet-grid-2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Desktop optimizations */
+@media (min-width: 1025px) {
+  .desktop-hidden {
+    display: none !important;
+  }
+
+  .desktop-grid-3 {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .desktop-grid-4 {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}

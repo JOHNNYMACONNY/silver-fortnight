@@ -1,0 +1,260 @@
+{
+  "mcpServers": {
+    "github.com/upstash/context7-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
+      "disabled": false,
+      "autoApprove": [
+        "resolve-library-id",
+        "get-library-docs"
+      ],
+      "env": {
+        "GEMINI_API_KEY": "AIzaSyBoyYD_qUcvrBiwWk9hAn76NRbTM1t_Jv4"
+      },
+      "alwaysAllow": [
+        "resolve-library-id",
+        "get-library-docs"
+      ]
+    },
+    "github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "disabled": false,
+      "autoApprove": [
+        "sequentialthinking"
+      ],
+      "alwaysAllow": [
+        "sequentialthinking"
+      ]
+    },
+    "github.com/modelcontextprotocol/servers/tree/main/src/filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/johnroberts/Documents/TradeYa Exp",
+        "."
+      ],
+      "disabled": false,
+      "autoApprove": [
+        "read_file",
+        "list_directory"
+      ],
+      "alwaysAllow": [
+        "list_directory",
+        "write_file",
+        "list_files",
+        "search_files",
+        "read_multiple_files",
+        "create_file",
+        "attempt_completion",
+        "edit_file",
+        "rea",
+        "apply_diff",
+        "str_replace"
+      ]
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-brave-search"
+      ],
+      "disabled": false,
+      "autoApprove": [
+        "brave_web_search"
+      ],
+      "env": {
+        "BRAVE_API_KEY": "BSAwZ5R7QGiKOeR4CZO_ZCBXPFXt0Tg"
+      }
+    },
+    "github.com/modelcontextprotocol/servers/tree/main/src/brave-search": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-brave-search"
+      ],
+      "disabled": false,
+      "autoApprove": [
+        "brave_web_search"
+      ],
+      "env": {
+        "BRAVE_API_KEY": "BSAwZ5R7QGiKOeR4CZO_ZCBXPFXt0Tg"
+      }
+    },
+    "memory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "disabled": false,
+      "autoApprove": [
+        "create_entities"
+      ],
+      "alwaysAllow": [
+        "create_entities",
+        "create_relations",
+        "add_observations",
+        "delete_entities",
+        "delete_observations",
+        "delete_relations",
+        "read_graph",
+        "search_nodes",
+        "open_nodes"
+      ]
+    },
+    "github.com/AgentDeskAI/browser-tools-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@agentdeskai/browser-tools-mcp@latest"
+      ],
+      "disabled": false,
+      "autoApprove": [
+        "runAccessibilityAudit",
+        "wipeLogs",
+        "getSelectedElement",
+        "takeScreenshot",
+        "getNetworkLogs",
+        "getNetworkErrors",
+        "getConsoleErrors",
+        "getConsoleLogs",
+        "runPerformanceAudit",
+        "runSEOAudit",
+        "runNextJSAudit",
+        "runDebuggerMode",
+        "runAuditMode",
+        "runBestPracticesAudit"
+      ],
+      "alwaysAllow": [
+        "getConsoleErrors",
+        "getNetworkLogs"
+      ]
+    },
+    "github.com/zcaceres/fetch-mcp": {
+      "command": "node",
+      "args": [
+        "/Users/johnroberts/Documents/Cline/MCP/fetch-mcp/dist/index.js"
+      ],
+      "disabled": false,
+      "autoApprove": [
+        "fetch_html"
+      ]
+    },
+    "github.com/mendableai/firecrawl-mcp-server": {
+      "command": "npx",
+      "args": [
+        "firecrawl-mcp"
+      ],
+      "disabled": false,
+      "autoApprove": [
+        "search",
+        "scrape",
+        "firecrawl_scrape",
+        "firecrawl_map",
+        "firecrawl_crawl",
+        "firecrawl_check_crawl_status",
+        "firecrawl_search",
+        "firecrawl_extract",
+        "firecrawl_deep_research",
+        "firecrawl_generate_llmstxt"
+      ],
+      "env": {
+        "FIRECRAWL_API_KEY": "fc-a2e2cce830ec45729c82c58b953dbb39"
+      }
+    },
+    "github.com/modelcontextprotocol/servers/tree/main/src/puppeteer": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-puppeteer"
+      ],
+      "disabled": true,
+      "autoApprove": [
+        "puppeteer_navigate",
+        "puppeteer_screenshot",
+        "puppeteer_click",
+        "puppeteer_hover",
+        "puppeteer_fill",
+        "puppeteer_select",
+        "puppeteer_evaluate"
+      ],
+      "alwaysAllow": [
+        "puppeteer_navigate",
+        "puppeteer_screenshot",
+        "puppeteer_click",
+        "puppeteer_fill",
+        "puppeteer_select",
+        "puppeteer_hover",
+        "puppeteer_evaluate"
+      ]
+    },
+    "github.com/21st-dev/magic-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@21st-dev/magic@latest"
+      ],
+      "disabled": true,
+      "autoApprove": [
+        "ui",
+        "21st_magic_component_builder"
+      ],
+      "env": {
+        "TWENTY_FIRST_API_KEY": "3e6e7301818ecc47e5ec2e1b831ae86d0d15eb955ffbd4c867ef4e1f4e7d93b7"
+      },
+      "alwaysAllow": [
+        "21st_magic_component_builder",
+        "21st_magic_component_inspiration",
+        "logo_search",
+        "21st_magic_component_refiner"
+      ]
+    },
+    "github.com/stripe/agent-toolkit": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@stripe/mcp",
+        "--tools=all",
+        "--api-key=YOUR_STRIPE_API_KEY_HERE"
+      ],
+      "disabled": true,
+      "autoApprove": [
+        "list_customers"
+      ],
+      "alwaysAllow": [
+        "create_customer",
+        "list_customers",
+        "create_product",
+        "list_products",
+        "create_price",
+        "list_prices",
+        "create_payment_link",
+        "create_invoice",
+        "create_invoice_item",
+        "finalize_invoice",
+        "retrieve_balance",
+        "create_refund",
+        "list_payment_intents",
+        "list_subscriptions",
+        "cancel_subscription",
+        "update_subscription",
+        "list_coupons",
+        "create_coupon",
+        "update_dispute",
+        "list_disputes"
+      ]
+    }
+  }
+}"
+      ]
+    }
+  }
+}

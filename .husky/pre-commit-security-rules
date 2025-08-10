@@ -1,0 +1,138 @@
+#!/bin/sh
+
+# Firebase Security Rules Pre-commit Hook
+# This script validates Firebase security rules before they're committed
+
+# Color codes for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Files to check
+FIRESTORE_RULES="firestore.rules"
+STORAGE_RULES="storage.rules"
+SECURITY_TEST="src/__tests__/firebase-security.test.ts"
+
+# Check if any security rules files are staged for commit
+check_staged_files() {
+    git diff --cached --name-only | grep -E "firestore\.rules|storage\.rules|firebase-security\.test\.ts" > /dev/null
+    return $?
+}
+
+# Function to verify rule syntax
+verify_syntax() {
+    local file=$1
+    echo -e "${YELLOW}Verifying syntax for $file...${NC}"
+    
+    if [ "$file" = "$FIRESTORE_RULES" ]; then
+        if ! firebase firestore:rules:lint "$file" > /dev/null 2>&1; then
+            echo -e "${RED}❌ Syntax error in $file${NC}"
+            firebase firestore:rules:lint "$file"
+            return 1
+        fi
+    elif [ "$file" = "$STORAGE_RULES" ]; then
+        if ! firebase storage:rules:lint "$file" > /dev/null 2>&1; then
+            echo -e "${RED}❌ Syntax error in $file${NC}"
+            firebase storage:rules:lint "$file"
+            return 1
+        fi
+    fi
+    
+    echo -e "${GREEN}✓ Syntax check passed for $file${NC}"
+    return 0
+}
+
+# Function to run security tests
+run_security_tests() {
+    echo -e "${YELLOW}Running security tests...${NC}"
+    
+    # Run only the security rule tests
+    if ! npm run test:rules -- --silent; then
+        echo -e "${RED}❌ Security tests failed${NC}"
+        echo "Please fix the failing tests before committing"
+        return 1
+    fi
+    
+    echo -e "${GREEN}✓ Security tests passed${NC}"
+    return 0
+}
+
+# Function to check for common security issues
+check_security_issues() {
+    local file=$1
+    local issues_found=0
+    
+    echo -e "${YELLOW}Checking for security issues in $file...${NC}"
+    
+    # Check for overly permissive rules
+    if grep -E "allow (read|write|create|update|delete): if true" "$file" > /dev/null; then
+        echo -e "${RED}⚠️  Warning: Found overly permissive rules in $file${NC}"
+        issues_found=1
+    fi
+    
+    # Check for missing authentication checks
+    if ! grep -q "request.auth != null" "$file"; then
+        echo -e "${RED}⚠️  Warning: No authentication checks found in $file${NC}"
+        issues_found=1
+    fi
+    
+    # Check for resource access validations
+    if ! grep -q "resource.data" "$file"; then
+        echo -e "${YELLOW}⚠️  Warning: No resource data validation found in $file${NC}"
+        issues_found=1
+    fi
+    
+    return $issues_found
+}
+
+# Main execution
+main() {
+    echo "Running Firebase Security Rules pre-commit checks..."
+    
+    # Only proceed if security files are staged
+    if ! check_staged_files; then
+        exit 0
+    fi
+    
+    local exit_code=0
+    
+    # Verify Firestore rules
+    if git diff --cached --name-only | grep -q "$FIRESTORE_RULES"; then
+        if ! verify_syntax "$FIRESTORE_RULES"; then
+            exit_code=1
+        fi
+        if ! check_security_issues "$FIRESTORE_RULES"; then
+            echo -e "${YELLOW}⚠️  Security issues found in Firestore rules${NC}"
+        fi
+    fi
+    
+    # Verify Storage rules
+    if git diff --cached --name-only | grep -q "$STORAGE_RULES"; then
+        if ! verify_syntax "$STORAGE_RULES"; then
+            exit_code=1
+        fi
+        if ! check_security_issues "$STORAGE_RULES"; then
+            echo -e "${YELLOW}⚠️  Security issues found in Storage rules${NC}"
+        fi
+    fi
+    
+    # Run security tests if any security files changed
+    if [ $exit_code -eq 0 ]; then
+        if ! run_security_tests; then
+            exit_code=1
+        fi
+    fi
+    
+    if [ $exit_code -eq 0 ]; then
+        echo -e "\n${GREEN}✨ All security checks passed${NC}"
+    else
+        echo -e "\n${RED}❌ Security checks failed${NC}"
+        echo "Please fix the issues before committing"
+    fi
+    
+    exit $exit_code
+}
+
+# Run main function
+main

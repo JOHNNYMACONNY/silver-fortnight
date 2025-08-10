@@ -1,0 +1,127 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+/coverage-security
+/junit.xml
+/.nyc_output
+
+# production
+/build
+/dist
+/storybook-static
+
+# misc
+.DS_Store
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.development.local
+.env.test.local
+.env.production.local
+*.env*
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+debug.log
+logs/
+*.log
+
+# security sensitive
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+*.keystore
+*.jks
+*.password
+*.secret
+*secret*
+*password*
+*credential*
+*.token
+*token*
+.npmrc
+.yarnrc
+firebase-adminsdk.json
+google-services.json
+firebase-debug.log
+tradeya-45ede-5c7a82833054.json
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+.history/
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Package manager
+.npm
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+# Cache and local files
+.eslintcache
+.stylelintcache
+.cache/
+.temp/
+.local/
+.parcel-cache/
+
+# Local debugging and analysis files
+debug.log
+report.*.json
+*.heapsnapshot
+*.cpuprofile
+
+# Temporary files
+*.swp
+*.swo
+*~
+*.tmp
+*.bak
+*.backup
+
+# OS generated
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+._*
+
+# Security scans and reports
+security-report.json
+vulnerability-report.json
+pentest-report.pdf
+audit-report.json
+
+*storybook.log

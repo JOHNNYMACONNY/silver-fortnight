@@ -1,0 +1,11 @@
+export default function middleware(request, response) {
+  const headers = response.headers;
+  
+  // Set Content Security Policy header
+  headers.set(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseio.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https: https://res.cloudinary.com https://*.googleusercontent.com https://ui-avatars.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' wss://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com https://*.cloudfunctions.net https://api.cloudinary.com https://res.cloudinary.com; frame-src 'self' https://*.firebaseapp.com https://*.google.com;"
+  );
+  
+  return response;
+}

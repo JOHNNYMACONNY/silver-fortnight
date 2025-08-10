@@ -1,0 +1,82 @@
+# OWASP ZAP Scanning Rules Configuration
+# Format: <rule_id>	<level>	<status>
+# Levels: IGNORE, WARN, FAIL
+# Status: ENABLED, DISABLED
+
+# Authentication
+10000	FAIL	ENABLED	# Password Autocomplete
+10001	FAIL	ENABLED	# Secure Page Browser Cache
+10002	FAIL	ENABLED	# Private IP Disclosure
+10003	FAIL	ENABLED	# Session ID in URL
+10010	FAIL	ENABLED	# Cookie No HttpOnly Flag
+
+# Information Disclosure
+10012	FAIL	ENABLED	# Password Field with Autocomplete
+10015	FAIL	ENABLED	# Incomplete or No Cache-Control Header
+10016	FAIL	ENABLED	# Web Browser XSS Protection Not Enabled
+10017	FAIL	ENABLED	# Cross-Domain JavaScript Source File Inclusion
+10019	FAIL	ENABLED	# Content-Type Header Missing
+10020	FAIL	ENABLED	# X-Frame-Options Header Not Set
+10021	FAIL	ENABLED	# X-Content-Type-Options Header Missing
+10023	FAIL	ENABLED	# Information Disclosure - Debug Error Messages
+10024	FAIL	ENABLED	# Information Disclosure - Sensitive Information in URL
+10025	FAIL	ENABLED	# Information Disclosure - Sensitive Information in HTTP Referrer Header
+10026	FAIL	ENABLED	# HTTP Parameter Override
+10027	FAIL	ENABLED	# Information Disclosure - Suspicious Comments
+10028	FAIL	ENABLED	# Open Redirect
+10029	FAIL	ENABLED	# Cookie Poisoning
+10030	FAIL	ENABLED	# User Controllable Charset
+10031	FAIL	ENABLED	# User Controllable HTML Element Attribute (Potential XSS)
+10032	FAIL	ENABLED	# Viewstate without MAC Signature
+10033	FAIL	ENABLED	# Directory Browsing
+10034	FAIL	ENABLED	# Heartbleed OpenSSL Vulnerability
+10035	FAIL	ENABLED	# Strict-Transport-Security Header Not Set
+10036	FAIL	ENABLED	# Server Leaks Version Information via "Server" HTTP Response Header Field
+10037	FAIL	ENABLED	# Server Leaks Information via "X-Powered-By" HTTP Response Header Field
+10038	FAIL	ENABLED	# Content Security Policy (CSP) Header Not Set
+10039	FAIL	ENABLED	# X-Backend-Server Header Information Leak
+10040	FAIL	ENABLED	# Secure Pages Include Mixed Content
+10041	FAIL	ENABLED	# HTTP to HTTPS Insecure Transition in Form Post
+10042	FAIL	ENABLED	# HTTPS to HTTP Insecure Transition in Form Post
+10043	FAIL	ENABLED	# User Controllable JavaScript Event (XSS)
+10044	FAIL	ENABLED	# Big Redirect Detected (Potential Sensitive Information Leak)
+10045	FAIL	ENABLED	# Source Code Disclosure - /WEB-INF folder
+10046	FAIL	ENABLED	# Weak SSL/TLS Protocols
+10047	FAIL	ENABLED	# HTTPS Content Available via HTTP
+10048	FAIL	ENABLED	# Remote Code Execution - Shell Shock
+10049	FAIL	ENABLED	# Weak SSL/TLS Ciphers
+
+# Input Validation
+40012	FAIL	ENABLED	# Cross Site Scripting (Reflected)
+40014	FAIL	ENABLED	# Cross Site Scripting (Persistent)
+40015	FAIL	ENABLED	# LDAP Injection
+40016	FAIL	ENABLED	# Cross Site Scripting (Persistent) - Prime
+40017	FAIL	ENABLED	# Cross Site Scripting (Persistent) - Spider
+40018	FAIL	ENABLED	# SQL Injection
+40019	FAIL	ENABLED	# SQL Injection - MySQL
+40020	FAIL	ENABLED	# SQL Injection - Hypersonic SQL
+40021	FAIL	ENABLED	# SQL Injection - Oracle
+40022	FAIL	ENABLED	# SQL Injection - PostgreSQL
+40023	FAIL	ENABLED	# Possible Username Enumeration
+40024	FAIL	ENABLED	# SQL Injection - SQLite
+40025	FAIL	ENABLED	# Proxy Disclosure
+40026	FAIL	ENABLED	# Cross Site Scripting (DOM Based)
+40027	FAIL	ENABLED	# SQL Injection - MsSQL
+40028	FAIL	ENABLED	# ELMAH Information Leak
+40029	FAIL	ENABLED	# Trace.Axd Information Leak
+
+# Custom Rules
+90001	WARN	ENABLED	# Insecure JSX Practices
+90002	WARN	ENABLED	# React Vulnerability Patterns
+90003	WARN	ENABLED	# Insecure Authentication Patterns
+90004	WARN	ENABLED	# Sensitive Data Exposure
+90005	WARN	ENABLED	# Insecure Direct Object References
+90006	WARN	ENABLED	# Security Misconfiguration
+90007	WARN	ENABLED	# Missing Function Level Access Control
+90008	WARN	ENABLED	# Cross-Site Request Forgery (CSRF)
+90009	WARN	ENABLED	# Using Components with Known Vulnerabilities
+90010	WARN	ENABLED	# Unvalidated Redirects and Forwards
+
+# False Positive Suppressions
+# Add specific rules that trigger false positives in your application
+# 10020	IGNORE	ENABLED	# Example of suppressed rule

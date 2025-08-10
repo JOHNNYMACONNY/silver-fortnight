@@ -1,0 +1,164 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { User } from '../../../services/firestore-exports';
+import { Card, CardHeader, CardContent, CardTitle } from '../../ui/Card';
+import ProfileAvatarButton from '../../ui/ProfileAvatarButton';
+import { ReputationBadge } from '../../ui/ReputationBadge';
+import SkillBadge from '../../ui/SkillBadge';
+import ConnectionButton from '../connections/ConnectionButton';
+import { MapPin } from 'lucide-react';
+import { Badge } from '../../ui/Badge';
+import { cn } from '../../../utils/cn';
+
+interface UserCardProps {
+  user: User;
+  currentUserId?: string | null;
+  style?: React.CSSProperties;
+  parseSkills: (skills?: string | string[] | any) => { name: string; level?: string }[];
+  // Enhanced Card customization props for profiles
+  variant?: 'default' | 'glass' | 'elevated' | 'premium';
+  enhanced?: boolean; // Enable/disable enhanced effects
+  className?: string;
+}
+
+const UserCard: React.FC<UserCardProps> = ({ 
+  user, 
+  currentUserId, 
+  parseSkills,
+  variant = 'premium', // Changed to premium for standardization
+  enhanced = true, // Enable enhanced effects by default
+  className = ''
+}) => {
+  const navigate = useNavigate();
+  
+  // Use the same fallback logic as User Directory filtering
+  const getEffectiveDisplayName = (user: User): string => {
+    return user.displayName || (user as any).name || user.email || `User ${user.id.substring(0, 5)}`;
+  };
+
+  const effectiveDisplayName = getEffectiveDisplayName(user);
+  
+  // Add navigation handler
+  const handleCardClick = () => {
+    navigate(`/profile/${user.id}`);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      navigate(`/profile/${user.id}`);
+    }
+  };
+
+  return (
+    <div
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="button"
+      aria-label={`View user profile: ${effectiveDisplayName}`}
+      className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
+    >
+      <Card
+        variant="premium" // Use premium variant for standardization
+        tilt={enhanced}
+        depth="lg"
+        glow={enhanced ? "subtle" : "none"}
+        glowColor="blue" // Keep blue for user/connection theme
+        hover={true}
+        interactive={true}
+        onClick={handleCardClick}
+        className={cn("h-[380px] flex flex-col cursor-pointer overflow-hidden", className)}
+      >
+        {/* Standardized Header: Profile + Name + Reputation */}
+        <CardHeader className="pb-3 flex-shrink-0">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              {/* Clickable Profile Avatar */}
+              <ProfileAvatarButton
+                userId={user.id}
+                size={32}
+                className="flex-shrink-0"
+              />
+              
+              {/* User Name (truncated) */}
+              <CardTitle className="truncate text-base font-semibold">
+                {effectiveDisplayName}
+              </CardTitle>
+            </div>
+
+            {/* Reputation Badge in status position */}
+            {user.reputationScore && user.reputationScore > 0 && (
+              <div className="flex-shrink-0">
+                <ReputationBadge score={user.reputationScore} size="sm" />
+              </div>
+            )}
+          </div>
+        </CardHeader>
+
+        {/* Content Section */}
+        <CardContent className="flex-1 overflow-hidden px-4 pb-4">
+          {/* Bio section */}
+          {user.bio && (
+            <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
+              {user.bio}
+            </p>
+          )}
+
+          {/* Location section */}
+          {user.location && (
+            <div className="flex items-center text-sm text-muted-foreground mb-4">
+              <MapPin className="mr-1.5 h-4 w-4 text-muted-foreground" />
+              <span className="truncate">{user.location}</span>
+            </div>
+          )}
+
+          {/* Skills section - standardized to match TradeCard pattern */}
+          {user.skills && (
+            <div className="mb-4">
+              <div className="flex flex-wrap gap-1.5">
+                {(() => {
+                  try {
+                    const parsedSkills = parseSkills(user.skills);
+                    return (
+                      <>
+                        {parsedSkills.slice(0, 3).map((skill, index) => (
+                          <SkillBadge
+                            key={`${user.id}-${skill.name}-${index}`}
+                            skill={skill.name}
+                            level={skill.level as any}
+                          />
+                        ))}
+
+                        {parsedSkills.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{parsedSkills.length - 3} more
+                          </Badge>
+                        )}
+                      </>
+                    );
+                  } catch (error) {
+                    console.error('Error rendering skills:', error);
+                    return null;
+                  }
+                })()}
+              </div>
+            </div>
+          )}
+
+          {/* Connection Button - preserved functionality */}
+          {currentUserId && (
+            <div className="mt-auto pt-2" onClick={(e) => e.stopPropagation()}>
+              <ConnectionButton
+                userId={user.id}
+                userName={effectiveDisplayName}
+                userPhotoURL={user.photoURL}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default UserCard;

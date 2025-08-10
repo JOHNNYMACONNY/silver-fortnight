@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Test</title>
+    <style>
+        /* Simple test styles */
+        .test-dark { background: #1f2937; color: white; }
+        .test-light { background: white; color: black; }
+    </style>
+</head>
+<body class="test-light" id="body">
+    <div style="padding: 20px;">
+        <h1>Theme Switch Test</h1>
+        <p>Current theme: <span id="theme-display">light</span></p>
+        <p>HTML classes: <span id="html-classes"></span></p>
+        <button onclick="toggleTheme()" style="padding: 10px; margin: 10px 0;">Toggle Theme</button>
+        
+        <div id="test-box" class="test-light" style="padding: 20px; margin: 20px 0; border: 1px solid #ccc;">
+            This box should change color
+        </div>
+    </div>
+
+    <script>
+        let isDark = false;
+        
+        function updateDisplay() {
+            const htmlClasses = document.documentElement.className;
+            document.getElementById('html-classes').textContent = htmlClasses || 'none';
+            document.getElementById('theme-display').textContent = isDark ? 'dark' : 'light';
+        }
+        
+        function toggleTheme() {
+            isDark = !isDark;
+            const html = document.documentElement;
+            const body = document.getElementById('body');
+            const box = document.getElementById('test-box');
+            
+            if (isDark) {
+                html.classList.add('dark');
+                body.className = 'test-dark';
+                box.className = 'test-dark';
+            } else {
+                html.classList.remove('dark');
+                body.className = 'test-light';
+                box.className = 'test-light';
+            }
+            
+            updateDisplay();
+        }
+        
+        updateDisplay();
+    </script>
+</body>
+</html>

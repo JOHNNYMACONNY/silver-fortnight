@@ -1,0 +1,143 @@
+{
+  "id": "execution-1749705908711",
+  "planId": "rollback-2.0-1749705379234",
+  "startTime": "2025-06-12T05:25:08.711Z",
+  "status": "PAUSED",
+  "currentStep": 5,
+  "totalSteps": 5,
+  "progress": 100,
+  "triggeredBy": "manual",
+  "reason": "SIGTERM received",
+  "metrics": {
+    "documentsReverted": 0,
+    "collectionsAffected": [],
+    "timeElapsed": 0,
+    "validationsPassed": 10,
+    "validationsFailed": 0,
+    "errorCount": 0,
+    "performanceImpact": 0
+  },
+  "alerts": [],
+  "stepResults": [
+    {
+      "step": 1,
+      "name": "Emergency Stop",
+      "status": "COMPLETED",
+      "validationResults": [
+        {
+          "name": "All processes stopped",
+          "passed": true,
+          "details": "Validation passed",
+          "timestamp": "2025-06-12T05:25:08.712Z"
+        },
+        {
+          "name": "No active transactions",
+          "passed": true,
+          "details": "Validation passed",
+          "timestamp": "2025-06-12T05:25:08.712Z"
+        }
+      ],
+      "startTime": "2025-06-12T05:25:08.712Z",
+      "result": {
+        "success": true
+      },
+      "endTime": "2025-06-12T05:25:08.712Z"
+    },
+    {
+      "step": 2,
+      "name": "Health Assessment",
+      "status": "COMPLETED",
+      "validationResults": [
+        {
+          "name": "Health metrics collected",
+          "passed": true,
+          "details": "Validation passed",
+          "timestamp": "2025-06-12T05:25:08.713Z"
+        },
+        {
+          "name": "Impact assessed",
+          "passed": true,
+          "details": "Validation passed",
+          "timestamp": "2025-06-12T05:25:08.713Z"
+        }
+      ],
+      "startTime": "2025-06-12T05:25:08.713Z",
+      "result": {
+        "success": true
+      },
+      "endTime": "2025-06-12T05:25:08.713Z"
+    },
+    {
+      "step": 3,
+      "name": "Data Reversion",
+      "status": "COMPLETED",
+      "validationResults": [
+        {
+          "name": "Data reverted",
+          "passed": true,
+          "details": "Validation passed",
+          "timestamp": "2025-06-12T05:25:08.714Z"
+        },
+        {
+          "name": "Integrity verified",
+          "passed": true,
+          "details": "Validation passed",
+          "timestamp": "2025-06-12T05:25:08.714Z"
+        }
+      ],
+      "startTime": "2025-06-12T05:25:08.714Z",
+      "result": {
+        "success": true
+      },
+      "endTime": "2025-06-12T05:25:08.714Z"
+    },
+    {
+      "step": 4,
+      "name": "System Verification",
+      "status": "COMPLETED",
+      "validationResults": [
+        {
+          "name": "All systems operational",
+          "passed": true,
+          "details": "Validation passed",
+          "timestamp": "2025-06-12T05:25:08.715Z"
+        },
+        {
+          "name": "Performance baseline met",
+          "passed": true,
+          "details": "Validation passed",
+          "timestamp": "2025-06-12T05:25:08.715Z"
+        }
+      ],
+      "startTime": "2025-06-12T05:25:08.715Z",
+      "result": {
+        "success": true
+      },
+      "endTime": "2025-06-12T05:25:08.715Z"
+    },
+    {
+      "step": 5,
+      "name": "Monitoring Reset",
+      "status": "COMPLETED",
+      "validationResults": [
+        {
+          "name": "Monitoring active",
+          "passed": true,
+          "details": "Validation passed",
+          "timestamp": "2025-06-12T05:25:08.717Z"
+        },
+        {
+          "name": "Alerts configured",
+          "passed": true,
+          "details": "Validation passed",
+          "timestamp": "2025-06-12T05:25:08.717Z"
+        }
+      ],
+      "startTime": "2025-06-12T05:25:08.717Z",
+      "result": {
+        "success": true
+      },
+      "endTime": "2025-06-12T05:25:08.717Z"
+    }
+  ]
+}

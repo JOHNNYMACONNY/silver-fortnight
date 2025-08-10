@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailwind Test</title>
+    <style>
+        /* Fallback styles for testing */
+        .fallback-red { background-color: red !important; }
+        .fallback-blue { background-color: blue !important; }
+        .fallback-green { background-color: green !important; }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <h1 style="color: black;">🔍 TAILWIND DEBUG PAGE</h1>
+        
+        <!-- Test 1: Basic Colors -->
+        <div class="bg-red-500 text-white p-4 m-2 fallback-red">
+            TEST 1: This should be RED with white text
+        </div>
+        
+        <div class="bg-blue-500 text-white p-4 m-2 fallback-blue">
+            TEST 2: This should be BLUE with white text
+        </div>
+        
+        <div class="bg-green-500 text-white p-4 m-2 fallback-green">
+            TEST 3: This should be GREEN with white text
+        </div>
+        
+        <!-- Test 2: Custom Colors -->
+        <div class="bg-custom-debug-blue text-white p-4 m-2" style="background-color: #1234FF;">
+            TEST 4: Custom color (should be custom blue)
+        </div>
+        
+        <!-- Test 3: Typography -->
+        <div class="text-xl font-bold p-4 m-2" style="font-size: 1.25rem; font-weight: bold;">
+            TEST 5: Large bold text
+        </div>
+        
+        <!-- Test 4: Spacing -->
+        <div class="p-8 m-4 border-2 border-black" style="padding: 2rem; margin: 1rem; border: 2px solid black;">
+            TEST 6: Padding and margin
+        </div>
+    </div>
+    
+    <script>
+        // Check if Tailwind classes are being applied
+        window.addEventListener('load', function() {
+            const test1 = document.querySelector('.bg-red-500');
+            const computed = window.getComputedStyle(test1);
+            
+            console.log('🔍 TAILWIND DEBUG INFO:');
+            console.log('Background color of test1:', computed.backgroundColor);
+            console.log('Padding of test1:', computed.padding);
+            console.log('Margin of test1:', computed.margin);
+            
+            // Check if Tailwind utilities are working
+            if (computed.backgroundColor === 'rgb(239, 68, 68)' || computed.backgroundColor === 'red') {
+                console.log('✅ Tailwind colors are working!');
+            } else {
+                console.log('❌ Tailwind colors are NOT working. Background is:', computed.backgroundColor);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+---
+title: "TradeYa Enhanced Challenge System Architecture"
+config:
+  theme: default
+  themeVariables:
+    primaryColor: "#1976d2"
+    primaryTextColor: "#000"
+    primaryBorderColor: "#1976d2"
+    lineColor: "#666"
+---
+graph TB
+    %% 🎯 User Layer with Enhanced Icons
+    U["🎮 User Interface Layer<br/>📱 Multi-platform Dashboard"]
+    U --> D["⚡ Daily Sparks<br/>🌅 Quick Morning Boosts"]
+    U --> SP["📈 Skill Progression<br/>🎯 Structured Learning Paths"]
+    U --> TT["⏱️ Time Trials<br/>🏃‍♂️ Speed Challenges"]
+    U --> MB["🎁 Mystery Box<br/>🎲 Surprise Skills"]
+    U --> COL["👥 Collaborative Challenges<br/>🤝 Team Projects"]
+    U --> GAM["🏆 Gamified Challenges<br/>🏖️ Achievement Focus"]
+
+    %% 🎯 Challenge Types with Detailed Descriptions
+    subgraph "🎯 Challenge Categories"
+        D --> DS["⚡ 15-min Quick Tasks<br/>💡 Creative micro-challenges"]
+        SP --> SPC["🔗 Sequential Learning Chains<br/>📚 Progressive skill building"]
+        TT --> TTC["🏃‍♂️ Speedrun Challenges<br/>⏰ Time-pressured excellence"]
+        MB --> MBC["🎲 Surprise Skill Challenges<br/>🌟 Unexpected discoveries"]
+        COL --> COLC["👥 Team-based Projects<br/>🚀 Collaborative innovation"]
+        GAM --> GAMC["🏖️ XP & Achievement Focus<br/>🏅 Competitive progression"]
+    end
+
+    %% 🧠 AI Intelligence Layer with Advanced Features
+    subgraph "🧠 AI Intelligence Hub"
+        AI["🤖 OpenRouter AI Engine<br/>⚡ GPT-4 & Claude Integration"]
+        AI --> PG["🎨 Personalized Generation<br/>🎯 Context-aware content"]
+        AI --> SA["📊 Skill Assessment<br/>🔍 Competency analysis"]
+        AI --> AC["🔄 Adaptive Content<br/>📈 Dynamic difficulty"]
+        AI --> QS["⭐ Quality Scoring<br/>🎯 Automated evaluation"]
+        AI --> PR["🔮 Predictive Recommendations<br/>📊 Success probability"]
+    end
+
+    %% ⚙️ Core Engine with Enhanced Capabilities
+    subgraph "⚙️ Challenge Core Engine"
+        CE["🎯 Challenge Engine<br/>🔧 Orchestration Hub"]
+        CE --> TM["📑 Template Manager<br/>🎨 Dynamic content system"]
+        CE --> PM["📊 Progress Manager<br/>📈 Real-time tracking"]
+        CE --> VM["✅ Validation Manager<br/>🔍 Multi-layer verification"]
+        CE --> RM["🏆 Reward Manager<br/>💎 Achievement system"]
+        CE --> SM["👥 Social Manager<br/>🌐 Community features"]
+    end
+
+    %% 🛡️ Enhanced Anti-Exploitation
+    subgraph "🛡️ Security & Validation System"
+        AE["🔒 Anti-Exploitation Engine<br/>🛡️ Fraud prevention"]
+        AE --> PV["📋 Process Validation<br/>🔍 Step-by-step verification"]
+        AE --> PR_SEC["👥 Peer Review System<br/>🤝 Community validation"]
+        AE --> TA["⏱️ Time-based Authenticity<br/>📊 Pattern analysis"]
+        AE --> QC["🎯 Quality Control<br/>🔍 AI-powered assessment"]
+        AE --> BC["⛓️ Blockchain Verification<br/>🔐 Immutable records"]
+    end
+
+    %% 🗄️ Enhanced Backend Services
+    subgraph "🗄️ Backend Infrastructure"
+        FS["🔥 Firestore Database<br/>☁️ Real-time sync"]
+        PS["💼 Portfolio Service<br/>🎨 Automated showcase"]
+        US["👤 User Service<br/>🔐 Profile management"]
+        NS["🔔 Notification Service<br/>📱 Multi-channel alerts"]
+        AS["📊 Analytics Service<br/>📈 Advanced insights"]
+        CS["☁️ Cloud Storage<br/>📁 Media management"]
+    end
+
+    %% 🔗 Enhanced Connections with Data Flow
+    D -.->|"User Selections"| AI
+    SP -.->|"Learning Context"| AI
+    TT -.->|"Performance Data"| AI
+    MB -.->|"Preference Analysis"| AI
+    COL -.->|"Team Dynamics"| AI
+    GAM -.->|"Achievement History"| AI
+
+    AI -.->|"Generated Content"| CE
+    CE -.->|"Validation Requests"| AE
+    AE -.->|"Security Results"| FS
+    CE -.->|"Portfolio Updates"| PS
+    CE -.->|"User Events"| US
+    CE -.->|"Notifications"| NS
+    CE -.->|"Analytics Data"| AS
+    CE -.->|"Media Assets"| CS
+
+    %% Real-time feedback loops
+    AS -.->|"Usage Insights"| AI
+    PS -.->|"Portfolio Analytics"| AI
+    AE -.->|"Security Metrics"| AS
+
+    %% 🎨 Enhanced Styling with Modern Colors
+    classDef userLayer fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000
+    classDef challengeTypes fill:#e8f5e8,stroke:#388e3c,stroke-width:2px,color:#000
+    classDef aiLayer fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000
+    classDef coreLayer fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000
+    classDef securityLayer fill:#ffebee,stroke:#d32f2f,stroke-width:3px,color:#000
+    classDef backend fill:#e0f2f1,stroke:#00796b,stroke-width:2px,color:#000
+
+    class U,D,SP,TT,MB,COL,GAM userLayer
+    class DS,SPC,TTC,MBC,COLC,GAMC challengeTypes
+    class AI,PG,SA,AC,QS,PR aiLayer
+    class CE,TM,PM,VM,RM,SM coreLayer
+    class AE,PV,PR_SEC,TA,QC,BC securityLayer
+    class FS,PS,US,NS,AS,CS backend

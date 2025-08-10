@@ -1,0 +1,31 @@
+{
+  "name": "TradeYa Development Scripts",
+  "description": "Safe development utilities that don't affect migration",
+  "scripts": {
+    "dev:safe": "vite --mode development --no-clearScreen",
+    "build:staging": "vite build --mode staging",
+    "preview:local": "vite preview --port 4173",
+    "test:unit:safe": "jest --testMatch='**/__tests__/**/*.test.ts' --passWithNoTests",
+    "test:migration:dry-run": "jest --testMatch='**/migration/**/*.test.ts' --passWithNoTests",
+    "lint:check": "eslint src --ext .ts,.tsx --max-warnings 0",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "type:check": "tsc --noEmit",
+    "format:check": "prettier --check 'src/**/*.{ts,tsx}'",
+    "format:fix": "prettier --write 'src/**/*.{ts,tsx}'",
+    "docs:serve": "http-server docs -p 8080",
+    "docs:build": "markdown-to-html docs",
+    "analyze:bundle": "vite-bundle-analyzer dist",
+    "analyze:deps": "madge --image dependency-graph.svg src",
+    "security:audit": "npm audit --audit-level moderate",
+    "security:check": "npm audit --dry-run",
+    "migration:prepare": "echo 'Preparing for migration...' && npm run type:check && npm run lint:check",
+    "migration:validate": "echo 'Validating migration readiness...' && npm run test:migration:dry-run",
+    "performance:baseline": "lighthouse http://localhost:4173 --output json --output-path performance-baseline.json",
+    "cleanup:cache": "rm -rf node_modules/.cache && rm -rf .vite",
+    "cleanup:build": "rm -rf dist && rm -rf build",
+    "env:check": "node scripts/check-environment.js",
+    "firebase:check": "firebase --version && firebase projects:list",
+    "git:status": "git status --porcelain",
+    "health:check": "npm run env:check && npm run firebase:check && npm run type:check"
+  }
+}

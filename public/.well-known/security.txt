@@ -1,0 +1,28 @@
+Contact: mailto:security@tradeya.app
+Contact: https://tradeya.app/security/report
+Expires: 2026-06-09T23:59:59.000Z
+Encryption: https://tradeya.app/.well-known/pgp-key.txt
+Acknowledgments: https://tradeya.app/security/acknowledgments
+Preferred-Languages: en
+Canonical: https://tradeya.app/.well-known/security.txt
+Policy: https://tradeya.app/security/policy
+
+# Security Policy for TradeYa Platform
+# 
+# We take security seriously and appreciate responsible disclosure.
+# Please report security vulnerabilities through our designated channels.
+# 
+# Scope:
+# - tradeya.app and all subdomains
+# - Mobile applications (when available)
+# - API endpoints
+# 
+# Out of scope:
+# - Social engineering attacks
+# - Physical attacks
+# - Denial of service attacks
+# 
+# Response timeline:
+# - Initial response: 24-48 hours
+# - Triage: 3-5 business days
+# - Resolution: Varies by severity

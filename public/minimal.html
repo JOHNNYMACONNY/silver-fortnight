@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TradeYa Minimal Test</title>
+  <script>
+    // Test if basic JavaScript works
+    window.onload = function() {
+      document.getElementById('status').textContent = 'JavaScript is working!';
+      
+      // Test if Firebase SDK can be loaded
+      try {
+        const firebaseConfig = {
+          apiKey: "AIzaSyCCr7wxWHJyv4C9pGOJ0Juf7latDmceTew",
+          authDomain: "tradeya-45ede.firebaseapp.com",
+          projectId: "tradeya-45ede",
+          storageBucket: "tradeya-45ede.firebasestorage.app",
+          messagingSenderId: "476911238747",
+          appId: "1:476911238747:web:e9b73b157f3fa63ba4897e"
+        };
+        
+        document.getElementById('firebase').textContent = 'Firebase config loaded successfully';
+      } catch (error) {
+        document.getElementById('firebase').textContent = 'Firebase error: ' + error.message;
+      }
+    };
+  </script>
+</head>
+<body>
+  <h1>TradeYa Minimal Test Page</h1>
+  <p id="status">JavaScript is not working</p>
+  <p id="firebase">Firebase status unknown</p>
+  
+  <h2>Environment Variables Test</h2>
+  <p>This section will be empty in the static HTML, but would show environment variables if they were accessible.</p>
+  
+  <h2>CSP Test</h2>
+  <button onclick="eval('document.getElementById(\'csp\').textContent = \'eval() is working!\';')">Test eval()</button>
+  <p id="csp">Click the button to test if eval() works</p>
+</body>
+</html>

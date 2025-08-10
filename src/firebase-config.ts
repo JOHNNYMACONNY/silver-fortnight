@@ -1,0 +1,465 @@
+import { FirebaseApp, initializeApp, getApps } from 'firebase/app';
+import { 
+  Auth,
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  signInWithPopup,
+  signInWithRedirect,
+  GoogleAuthProvider,
+  fetchSignInMethodsForEmail,
+  User,
+  connectAuthEmulator
+} from 'firebase/auth';
+import { Firestore, getFirestore, Timestamp, connectFirestoreEmulator } from 'firebase/firestore';
+import { getStorage, FirebaseStorage, connectStorageEmulator } from 'firebase/storage';
+
+/**
+ * ROBUST Firebase Configuration - Fixed Version
+ * 
+ * Addresses all critical issues causing hook.js:608 overrideMethod errors:
+ * 1. Single initialization pattern
+ * 2. Proper error handling without unsafe fallbacks
+ * 3. Environment variable validation
+ * 4. Prevents duplicate initialization
+ * 5. Safe test environment handling
+ */
+
+// Environment variable validation with detailed error messages
+const getRequiredEnvVar = (name: string): string => {
+  try {
+    // Test environment - return mock values
+    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+      const testValues: Record<string, string> = {
+        VITE_FIREBASE_API_KEY: 'mock-api-key-for-testing',
+        VITE_FIREBASE_AUTH_DOMAIN: 'mock-project.firebaseapp.com',
+        VITE_FIREBASE_PROJECT_ID: 'mock-project-id',
+        VITE_FIREBASE_STORAGE_BUCKET: 'mock-project.appspot.com',
+        VITE_FIREBASE_MESSAGING_SENDER_ID: '123456789',
+        VITE_FIREBASE_APP_ID: '1:123456789:web:abcdef123456'
+      };
+      return testValues[name] || 'mock-value';
+    }
+
+    // Production/Development environment
+    let value: string | undefined;
+    
+    // Try Node.js environment variables first (for SSR/production scripts)
+    if (typeof process !== 'undefined' && process.env) {
+      value = process.env[name] || process.env[name.replace('VITE_', 'REACT_APP_')];
+    }
+    
+    // Try Vite environment variables (browser environment)
+    if (!value && typeof import.meta !== 'undefined' && import.meta.env) {
+      value = (import.meta.env as Record<string, string>)[name];
+    }
+    
+    if (!value) {
+      console.error(`Missing required environment variable: ${name}`);
+      console.error('Please ensure this variable is set in your .env file.');
+      throw new Error(
+        `Missing required environment variable: ${name}. ` +
+        `Please ensure this variable is set in your .env file or environment.`
+      );
+    }
+    
+    return value;
+  } catch (error) {
+    console.error(`Environment variable error for ${name}:`, error);
+    throw error;
+  }
+};
+
+// Firebase configuration with proper validation
+const getFirebaseConfig = () => {
+  try {
+    const config = {
+      apiKey: getRequiredEnvVar('VITE_FIREBASE_API_KEY'),
+      authDomain: getRequiredEnvVar('VITE_FIREBASE_AUTH_DOMAIN'),
+      projectId: getRequiredEnvVar('VITE_FIREBASE_PROJECT_ID'),
+      storageBucket: getRequiredEnvVar('VITE_FIREBASE_STORAGE_BUCKET'),
+      messagingSenderId: getRequiredEnvVar('VITE_FIREBASE_MESSAGING_SENDER_ID'),
+      appId: getRequiredEnvVar('VITE_FIREBASE_APP_ID')
+    };
+    
+    console.log('Firebase: Configuration loaded successfully', {
+      projectId: config.projectId,
+      authDomain: config.authDomain
+    });
+    
+    return config;
+  } catch (error) {
+    console.error('Firebase configuration error:', error);
+    throw new Error(`Firebase configuration failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+};
+
+// Global Firebase instances - initialized once
+let firebaseApp: FirebaseApp | null = null;
+let firebaseAuth: Auth | null = null;
+let firebaseDb: Firestore | null = null;
+let firebaseStorage: FirebaseStorage | null = null;
+
+// Initialization state tracking
+let initializationPromise: Promise<void> | null = null;
+let initializationError: Error | null = null;
+
+/**
+ * Initialize Firebase services safely
+ * Prevents duplicate initialization and handles errors properly
+ */
+const initializeFirebase = async (): Promise<void> => {
+  // Return existing initialization promise if already in progress
+  if (initializationPromise) {
+    return initializationPromise;
+  }
+  
+  // Throw previous error if initialization failed
+  if (initializationError) {
+    throw initializationError;
+  }
+  
+  // If already initialized, return immediately
+  if (firebaseApp && firebaseAuth && firebaseDb && firebaseStorage) {
+    console.log('Firebase: Already initialized, skipping');
+    return;
+  }
+  
+  initializationPromise = (async () => {
+    try {
+      console.log('Firebase: Starting initialization...');
+      
+      // Check if Firebase app already exists (prevents duplicate initialization)
+      const existingApps = getApps();
+      if (existingApps.length > 0) {
+        console.log('Firebase: Using existing app instance');
+        firebaseApp = existingApps[0];
+      } else {
+        console.log('Firebase: Creating new app instance');
+        const config = getFirebaseConfig();
+        firebaseApp = initializeApp(config);
+      }
+      
+      // Initialize services
+      firebaseAuth = getAuth(firebaseApp);
+      firebaseDb = getFirestore(firebaseApp);
+      firebaseStorage = getStorage(firebaseApp);
+      
+      // Connect to emulators in development if they're running
+      if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
+        try {
+          // Only connect to emulators if they haven't been connected already
+          if (process.env.VITE_USE_FIREBASE_EMULATORS === 'true') {
+            console.log('Firebase: Connecting to emulators...');
+            
+            // Connect emulators only once
+            if (!(firebaseAuth as any)._delegate?._emulator) {
+              connectAuthEmulator(firebaseAuth, 'http://localhost:9099');
+            }
+            if (!(firebaseDb as any)._delegate?._emulator) {
+              connectFirestoreEmulator(firebaseDb, 'localhost', 8080);
+            }
+            if (!(firebaseStorage as any)._delegate?._emulator) {
+              connectStorageEmulator(firebaseStorage, 'localhost', 9199);
+            }
+          }
+        } catch (emulatorError) {
+          console.warn('Firebase: Emulator connection failed (this is OK in production):', emulatorError);
+        }
+      }
+      
+      console.log('Firebase: Initialization completed successfully');
+      
+    } catch (error) {
+      initializationError = error instanceof Error ? error : new Error('Firebase initialization failed');
+      console.error('Firebase: Initialization failed:', initializationError);
+      throw initializationError;
+    }
+  })();
+  
+  return initializationPromise;
+};
+
+/**
+ * Safe getter for Firebase instances with initialization
+ * Throws meaningful errors instead of returning empty objects
+ */
+const getFirebaseInstances = async () => {
+  // Handle test environment
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+    return {
+      app: {} as FirebaseApp,
+      auth: {
+        currentUser: null,
+        onAuthStateChanged: jest.fn(),
+        signOut: jest.fn(),
+      } as unknown as Auth,
+      db: {} as Firestore,
+      storage: {} as FirebaseStorage
+    };
+  }
+  
+  // Initialize if not already done
+  if (!firebaseApp || !firebaseAuth || !firebaseDb || !firebaseStorage) {
+    await initializeFirebase();
+  }
+  
+  // Final validation
+  if (!firebaseApp || !firebaseAuth || !firebaseDb || !firebaseStorage) {
+    throw new Error('Firebase services failed to initialize properly');
+  }
+  
+  return {
+    app: firebaseApp,
+    auth: firebaseAuth,
+    db: firebaseDb,
+    storage: firebaseStorage
+  };
+};
+
+// Synchronous getters for backward compatibility (with proper error handling)
+const getSyncFirebaseAuth = (): Auth => {
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+    return {
+      currentUser: null,
+      onAuthStateChanged: jest.fn(),
+      signOut: jest.fn(),
+    } as unknown as Auth;
+  }
+  
+  if (!firebaseAuth) {
+    throw new Error('Firebase Auth not initialized. Call initializeFirebase() first or ensure initialization completed.');
+  }
+  return firebaseAuth;
+};
+
+const getSyncFirebaseDb = (): Firestore => {
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+    return {} as Firestore;
+  }
+  
+  if (!firebaseDb) {
+    throw new Error('Firestore not initialized. Call initializeFirebase() first or ensure initialization completed.');
+  }
+  return firebaseDb;
+};
+
+const getSyncFirebaseStorage = (): FirebaseStorage => {
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+    return {} as FirebaseStorage;
+  }
+  
+  if (!firebaseStorage) {
+    throw new Error('Firebase Storage not initialized. Call initializeFirebase() first or ensure initialization completed.');
+  }
+  return firebaseStorage;
+};
+
+export {
+  getFirebaseConfig,
+  initializeFirebase,
+  getFirebaseInstances,
+  getSyncFirebaseAuth,
+  getSyncFirebaseDb,
+  getSyncFirebaseStorage
+};
+
+// Export initialized Firebase instances for use in other modules
+export { firebaseAuth, firebaseDb };
+
+// Export the db instance as default export for backward compatibility
+export default getSyncFirebaseDb;
+
+// Types and interfaces
+export interface AuthResult<T> {
+  user: T | null;
+  error: {
+    code: string;
+    message: string;
+  } | null;
+}
+
+export interface CreateUserProfileData {
+  uid: string;
+  email?: string;
+  displayName: string;
+  profilePicture?: string;
+  createdAt: any;
+  updatedAt: any;
+  provider?: string;
+  lastSignInTime?: number;
+  emailVerified?: boolean;
+  role?: UserRole;
+  photoURL?: string;
+  bestProfilePicture?: string;
+}
+
+export interface UpdateUserProfileData {
+  lastSignInTime?: number;
+  updatedAt?: any;
+  emailVerified?: boolean;
+  profilePicture?: string;
+  photoURL?: string;
+  bestProfilePicture?: string;
+  provider?: string;
+}
+
+export type UserRole = 'user' | 'admin' | 'moderator';
+
+export interface UserProfile extends CreateUserProfileData {
+  role?: UserRole;
+  bannerURL?: string;
+  bannerData?: any;
+  customBannerDesign?: any;
+  bio?: string;
+  interests?: string;
+  location?: string;
+  reputationScore?: number;
+  skills?: any;
+}
+
+// Rate limiter (unchanged)
+class RateLimiter {
+  private attempts: Map<string, { count: number; timestamp: number }> = new Map();
+  private readonly limit = 5;
+  private readonly timeWindow = 60 * 1000; // 1 minute
+
+  async checkLimit(identifier: string): Promise<boolean> {
+    const now = Date.now();
+    const record = this.attempts.get(identifier);
+
+    if (!record) {
+      this.attempts.set(identifier, { count: 1, timestamp: now });
+      return true;
+    }
+
+    if (now - record.timestamp > this.timeWindow) {
+      this.attempts.set(identifier, { count: 1, timestamp: now });
+      return true;
+    }
+
+    if (record.count >= this.limit) {
+      return false;
+    }
+
+    record.count++;
+    return true;
+  }
+
+  resetLimit(identifier: string): void {
+    this.attempts.delete(identifier);
+  }
+}
+
+export const rateLimiter = new RateLimiter();
+export { Timestamp };
+
+// Enhanced Auth methods with proper error handling
+export const signIn = async (email: string, password: string): Promise<AuthResult<User>> => {
+  try {
+    const auth = getSyncFirebaseAuth();
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return { user: userCredential.user, error: null };
+  } catch (error: any) {
+    console.error('Sign in error:', error);
+    return {
+      user: null,
+      error: {
+        code: error.code || 'auth/unknown-error',
+        message: error.message || 'Sign in failed'
+      }
+    };
+  }
+};
+
+export const signUp = async (email: string, password: string): Promise<AuthResult<User>> => {
+  try {
+    const auth = getSyncFirebaseAuth();
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    return { user: userCredential.user, error: null };
+  } catch (error: any) {
+    console.error('Sign up error:', error);
+    return {
+      user: null,
+      error: {
+        code: error.code || 'auth/unknown-error',
+        message: error.message || 'Sign up failed'
+      }
+    };
+  }
+};
+
+export const signOut = async (): Promise<AuthResult<void>> => {
+  try {
+    const auth = getSyncFirebaseAuth();
+    await firebaseSignOut(auth);
+    return { user: null, error: null };
+  } catch (error: any) {
+    console.error('Sign out error:', error);
+    return {
+      user: null,
+      error: {
+        code: error.code || 'auth/unknown-error',
+        message: error.message || 'Sign out failed'
+      }
+    };
+  }
+};
+
+export const signInWithGoogle = async (): Promise<AuthResult<User>> => {
+  try {
+    const auth = getSyncFirebaseAuth();
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    
+    try {
+      const result = await signInWithPopup(auth, provider);
+      return { user: result.user, error: null };
+    } catch (popupError: any) {
+      if (popupError.code === 'auth/popup-blocked' || popupError.code === 'auth/popup-closed-by-user') {
+        await signInWithRedirect(auth, provider);
+        return {
+          user: null,
+          error: {
+            code: 'auth/redirect-initiated',
+            message: 'Redirect sign-in initiated'
+          }
+        };
+      }
+      throw popupError;
+    }
+  } catch (error: any) {
+    console.error('Google sign in error:', error);
+    return {
+      user: null,
+      error: {
+        code: error.code || 'auth/unknown-error',
+        message: error.message || 'Google sign in failed'
+      }
+    };
+  }
+};
+
+export const checkExistingAccount = async (email: string): Promise<{ exists: boolean; methods?: string[] }> => {
+  try {
+    const auth = getSyncFirebaseAuth();
+    const methods = await fetchSignInMethodsForEmail(auth, email);
+    return {
+      exists: methods.length > 0,
+      methods
+    };
+  } catch (error) {
+    console.error('Check existing account error:', error);
+    return {
+      exists: false
+    };
+  }
+};
+
+// Initialize Firebase immediately in non-test environments
+if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
+  initializeFirebase().catch(error => {
+    console.error('Failed to initialize Firebase on module load:', error);
+  });
+}

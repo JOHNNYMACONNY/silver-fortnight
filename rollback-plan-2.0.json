@@ -1,0 +1,104 @@
+{
+  "id": "rollback-2.0-1749741425007",
+  "version": "2.0",
+  "strategy": "IMMEDIATE",
+  "estimatedTime": 1800000,
+  "dataLossRisk": "MINIMAL",
+  "steps": [
+    {
+      "step": 1,
+      "name": "Emergency Stop",
+      "description": "Stop all migration processes immediately",
+      "estimatedTime": 60000,
+      "automated": true,
+      "dependencies": [],
+      "validation": [
+        "All processes stopped",
+        "No active transactions"
+      ],
+      "emergencyStop": true
+    },
+    {
+      "step": 2,
+      "name": "Health Assessment",
+      "description": "Assess system health and determine rollback scope",
+      "estimatedTime": 180000,
+      "automated": true,
+      "dependencies": [
+        "Emergency Stop"
+      ],
+      "validation": [
+        "Health metrics collected",
+        "Impact assessed"
+      ],
+      "emergencyStop": false
+    },
+    {
+      "step": 3,
+      "name": "Data Reversion",
+      "description": "Revert data changes to pre-migration state",
+      "estimatedTime": 900000,
+      "automated": false,
+      "dependencies": [
+        "Health Assessment"
+      ],
+      "validation": [
+        "Data reverted",
+        "Integrity verified"
+      ],
+      "emergencyStop": false
+    },
+    {
+      "step": 4,
+      "name": "System Verification",
+      "description": "Verify system functionality and performance",
+      "estimatedTime": 600000,
+      "automated": true,
+      "dependencies": [
+        "Data Reversion"
+      ],
+      "validation": [
+        "All systems operational",
+        "Performance baseline met"
+      ],
+      "emergencyStop": false
+    },
+    {
+      "step": 5,
+      "name": "Monitoring Reset",
+      "description": "Reset monitoring and alerting systems",
+      "estimatedTime": 60000,
+      "automated": true,
+      "dependencies": [
+        "System Verification"
+      ],
+      "validation": [
+        "Monitoring active",
+        "Alerts configured"
+      ],
+      "emergencyStop": false
+    }
+  ],
+  "validations": [
+    {
+      "name": "Database Connectivity",
+      "critical": true,
+      "timeout": 30000
+    },
+    {
+      "name": "Data Integrity",
+      "critical": true,
+      "timeout": 120000
+    },
+    {
+      "name": "Performance Baseline",
+      "critical": false,
+      "timeout": 60000
+    }
+  ],
+  "emergencyContacts": [
+    "oncall-engineer@tradeya.com",
+    "database-admin@tradeya.com",
+    "engineering-manager@tradeya.com"
+  ]
+}

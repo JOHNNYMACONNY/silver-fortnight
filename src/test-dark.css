@@ -1,0 +1,18 @@
+/* Test file to check if dark mode styles are working */
+.test-dark-mode {
+  background-color: white;
+  color: black;
+}
+
+.dark .test-dark-mode {
+  background-color: #111827;
+  color: white;
+}
+
+.test-colors {
+  background-color: #fef2f2;
+}
+
+.dark .test-colors {
+  background-color: #7f1d1d;
+}

@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://tradeya.app/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1
+
+# Disallow specific paths
+Disallow: /api/
+Disallow: /_next/
+Disallow: /debug*
+Disallow: /test*
+Disallow: /*test*
+Disallow: /admin/
+Disallow: /private/
+
+# Allow specific assets
+Allow: /images/
+Allow: /icons/
+Allow: /assets/
+Allow: /favicon.ico
+Allow: /manifest.json

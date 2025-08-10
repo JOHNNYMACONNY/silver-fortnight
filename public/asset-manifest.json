@@ -1,0 +1,47 @@
+{
+  "assetManifest": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-06-09",
+    "optimizationResults": {
+      "totalFilesProcessed": 13,
+      "originalSize": "2.51 MB",
+      "optimizedSize": "1.17 MB",
+      "totalSavings": "1.34 MB",
+      "compressionRatio": "53.4%"
+    },
+    "assets": {
+      "favicons": {
+        "ico": "/favicon.ico",
+        "png": {
+          "16x16": "/icons/favicon-16x16.png",
+          "32x32": "/icons/favicon-32x32.png",
+          "48x48": "/icons/favicon-48x48.png",
+          "96x96": "/icons/favicon-96x96.png",
+          "144x144": "/icons/favicon-144x144.png",
+          "192x192": "/icons/favicon-192x192.png",
+          "256x256": "/icons/favicon-256x256.png",
+          "512x512": "/icons/favicon-512x512.png"
+        }
+      },
+      "logos": {
+        "main": "/images/tradeya-logo.png",
+        "optimized": "/images/optimized/tradeya-logo.png",
+        "svg": "/images/tradeya-logo-3d.svg"
+      },
+      "scripts": {
+        "theme": "/assets/js/theme-initializer.js"
+      }
+    },
+    "recommendations": {
+      "webp": "Consider generating WebP versions for better compression",
+      "avif": "Consider AVIF format for next-generation browsers",
+      "lazyLoading": "Implement lazy loading for images",
+      "cdn": "Consider using a CDN for static assets"
+    },
+    "seo": {
+      "structuredData": "Add JSON-LD structured data for better SEO",
+      "openGraph": "Implement Open Graph meta tags",
+      "twitterCards": "Add Twitter Card meta tags"
+    }
+  }
+}

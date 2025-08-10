@@ -1,0 +1,140 @@
+# GitLeaks Configuration for Firebase Security Rules
+# This configuration is specifically tuned for detecting sensitive information
+# in Firebase security rules and related configuration files
+
+title = "Firebase Security GitLeaks Configuration"
+
+[allowlist]
+paths = [
+    '''node_modules''',
+    '''dist''',
+    '''coverage''',
+    '''(.*?)(jpg|gif|doc|pdf|bin)$''',
+    '''package-lock.json$'''
+]
+
+# Whitelist test files that might contain mock credentials
+regexes = [
+    '''TEST_FIREBASE_''',
+    '''MOCK_AUTH_TOKEN''',
+    '''fake-api-key''',
+]
+
+# Firebase Configuration Leaks
+[[rules]]
+id = "firebase-config"
+description = "Firebase Configuration"
+regex = '''(?i)(firebase|firestore|storage).*["\'].*?(key|secret|token|password|credential).*?["\']'''
+tags = ["firebase", "config"]
+[rules.allowlist]
+paths = [
+    '''test''',
+    '''__mocks__''',
+    '''jest.setup.ts'''
+]
+
+# Firebase Rules Syntax
+[[rules]]
+id = "firebase-rules-syntax"
+description = "Firebase Rules Syntax Check"
+regex = '''(?i)(match|allow|if|function).*?({|}|\(|\))'''
+tags = ["firebase", "rules"]
+[rules.allowlist]
+paths = [
+    '''firestore\.rules$''',
+    '''storage\.rules$''',
+    '''.*test\.ts$'''
+]
+
+# Security Sensitive Functions
+[[rules]]
+id = "security-functions"
+description = "Security Sensitive Functions"
+regex = '''(?i)(isAdmin|hasRole|isAuthenticated|validateUser)'''
+tags = ["security", "functions"]
+[rules.allowlist]
+paths = [
+    '''firestore\.rules$''',
+    '''storage\.rules$''',
+    '''.*test\.ts$'''
+]
+
+# API Keys and Tokens
+[[rules]]
+id = "api-keys"
+description = "API Keys and Tokens"
+regex = '''(?i)(api[_-]?key|token|secret|password|credential)["\']?\s*[:=]\s*["']([^"']{8,})["']'''
+tags = ["key", "api", "token"]
+[rules.allowlist]
+paths = [
+    '''test''',
+    '''__mocks__''',
+]
+
+# Firebase Project IDs
+[[rules]]
+id = "firebase-project-id"
+description = "Firebase Project ID"
+regex = '''(?i)(projectId|project-id|FIREBASE_PROJECT)["']?\s*[:=]\s*["']([^"']+)["']'''
+tags = ["firebase", "project"]
+[rules.allowlist]
+paths = [
+    '''firebase\.json$''',
+    '''.*test\.ts$''',
+    '''jest\.config.*'''
+]
+
+# Environment Variables
+[[rules]]
+id = "env-vars"
+description = "Environment Variables"
+regex = '''(?i)(FIREBASE|STORAGE|FIRESTORE|AUTH)_[A-Z_]+[\s]*='''
+tags = ["env", "config"]
+[rules.allowlist]
+paths = [
+    '''\.env\.example$''',
+    '''\.env\.test$'''
+]
+
+# Service Account Keys
+[[rules]]
+id = "service-account"
+description = "Google Service Account File"
+regex = '''(?i)(type.*?:\s*"service_account"|project_id|private_key|client_email)'''
+tags = ["google", "credentials"]
+
+# Security Rule Patterns
+[[rules]]
+id = "security-rule-patterns"
+description = "Common Security Rule Patterns"
+regex = '''(?i)(allow|deny)\s+(read|write|create|update|delete)\s*:'''
+tags = ["security", "rules"]
+[rules.allowlist]
+paths = [
+    '''firestore\.rules$''',
+    '''storage\.rules$''',
+    '''.*test\.ts$'''
+]
+
+# Custom Functions
+[[rules]]
+id = "custom-functions"
+description = "Custom Security Functions"
+regex = '''function\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\('''
+tags = ["security", "functions"]
+[rules.allowlist]
+paths = [
+    '''firestore\.rules$''',
+    '''storage\.rules$''',
+    '''.*test\.ts$'''
+]
+
+[allowlist]
+description = "Global Allowlist"
+paths = [
+    '''jest\.config\.js$''',
+    '''package\.json$''',
+    '''tsconfig\.json$''',
+    '''README\.md$''',
+    '''CHANGELOG\.md$'''
+]

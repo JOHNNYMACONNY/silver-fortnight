@@ -1,0 +1,129 @@
+{
+  "migrationId": "deployment-1749713262543",
+  "overallStatus": "FAILED",
+  "currentPhase": 1,
+  "totalPhases": 3,
+  "overallProgress": 0,
+  "startTime": "2025-06-12T07:31:51.984Z",
+  "lastUpdate": "2025-06-12T07:31:53.567Z",
+  "phases": [
+    {
+      "phaseNumber": 1,
+      "name": "Initial Rollout",
+      "percentage": 10,
+      "targetDocuments": 1000,
+      "duration": 3600000,
+      "criteria": {
+        "required": [
+          "health_score_above_90",
+          "error_rate_below_1_percent"
+        ],
+        "optional": [
+          "no_critical_alerts"
+        ],
+        "healthScoreMinimum": 90,
+        "errorRateMaximum": 0.01,
+        "responseTimeMaximum": 1000,
+        "validationChecks": [
+          "data_integrity",
+          "performance_baseline"
+        ]
+      },
+      "rollbackConditions": [
+        {
+          "metric": "error_rate",
+          "operator": ">",
+          "threshold": 0.05,
+          "description": "Error rate exceeds 5%"
+        }
+      ],
+      "monitoringInterval": 30000,
+      "status": "ROLLED_BACK",
+      "startTime": "2025-06-12T07:31:51.991Z",
+      "endTime": "2025-06-12T07:31:53.566Z"
+    },
+    {
+      "phaseNumber": 2,
+      "name": "Expanded Rollout",
+      "percentage": 50,
+      "targetDocuments": 5000,
+      "duration": 7200000,
+      "criteria": {
+        "required": [
+          "health_score_above_85",
+          "error_rate_below_2_percent"
+        ],
+        "optional": [
+          "user_feedback_positive"
+        ],
+        "healthScoreMinimum": 85,
+        "errorRateMaximum": 0.02,
+        "responseTimeMaximum": 1500,
+        "validationChecks": [
+          "data_integrity",
+          "user_impact"
+        ]
+      },
+      "rollbackConditions": [
+        {
+          "metric": "error_rate",
+          "operator": ">",
+          "threshold": 0.03,
+          "description": "Error rate exceeds 3%"
+        }
+      ],
+      "monitoringInterval": 60000,
+      "status": "PENDING"
+    },
+    {
+      "phaseNumber": 3,
+      "name": "Full Rollout",
+      "percentage": 100,
+      "targetDocuments": 10000,
+      "duration": 14400000,
+      "criteria": {
+        "required": [
+          "health_score_above_80",
+          "migration_complete"
+        ],
+        "optional": [],
+        "healthScoreMinimum": 80,
+        "errorRateMaximum": 0.05,
+        "responseTimeMaximum": 2000,
+        "validationChecks": [
+          "full_system_validation"
+        ]
+      },
+      "rollbackConditions": [
+        {
+          "metric": "error_rate",
+          "operator": ">",
+          "threshold": 0.1,
+          "description": "Error rate exceeds 10%"
+        }
+      ],
+      "monitoringInterval": 120000,
+      "status": "PENDING"
+    }
+  ],
+  "healthMetrics": {
+    "overallHealth": 100,
+    "systemHealth": 100,
+    "dataIntegrity": 100,
+    "performance": 100,
+    "userSatisfaction": 100,
+    "lastAssessment": "2025-06-12T07:31:51.984Z"
+  },
+  "alerts": [],
+  "rollbackHistory": [
+    {
+      "timestamp": "2025-06-12T07:31:53.567Z",
+      "phase": 1,
+      "trigger": "automatic",
+      "reason": "Phase 1 failed - automatic rollback",
+      "automatic": true,
+      "success": true,
+      "documentsAffected": 1000
+    }
+  ]
+}

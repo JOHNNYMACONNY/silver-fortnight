@@ -1,0 +1,16 @@
+{
+
+  "json.schemas": [
+
+    {
+
+      "fileMatch": ["tsconfig.json", "tsconfig.*.json"],
+
+      "url": "./node_modules/typescript/lib/tsconfig.schema.json"
+
+    }
+
+  ],
+  "github.copilot.nextEditSuggestions.enabled": true
+
+}

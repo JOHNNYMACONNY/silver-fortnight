@@ -1,0 +1,510 @@
+/**
+ * TradesPage Migration Tests
+ * 
+ * Tests the migration compatibility features implemented in TradesPage.tsx
+ * Validates real-world migration scenarios and compatibility layer functionality.
+ */
+
+import React from 'react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { TradesPage } from '../../pages/TradesPage';
+import { migrationRegistry } from '../../services/migration/migrationRegistry';
+import { TradeCompatibilityService } from '../../services/migration/tradeCompatibility';
+import { AuthProvider } from '../../AuthContext';
+import { ToastProvider } from '../../contexts/ToastContext';
+import { usePerformance } from '../../contexts/PerformanceContext';
+
+// Mock dependencies
+jest.mock('../../services/migration/migrationRegistry');
+jest.mock('../../services/migration/tradeCompatibility');
+jest.mock('../../services/firestore');
+jest.mock('../../contexts/PerformanceContext', () => ({
+  usePerformance: () => ({
+    startTimer: jest.fn(),
+    endTimer: jest.fn(),
+    recordMetric: jest.fn()
+  })
+}));
+
+const mockMigrationRegistry = migrationRegistry as jest.Mocked<typeof migrationRegistry>;
+const mockTradeCompatibility = TradeCompatibilityService as jest.Mocked<typeof TradeCompatibilityService>;
+
+// Test data - represents both old and new schema formats
+const legacyTradeData = {
+  id: 'legacy-trade-1',
+  title: 'Web Development for Logo Design',
+  description: 'I can build you a website in exchange for a professional logo',
+  offeredSkills: ['React', 'JavaScript', 'CSS'],
+  requestedSkills: ['Graphic Design', 'Logo Design'],
+  creatorId: 'user-123',
+  participantId: null,
+  status: 'active',
+  createdAt: new Date('2024-01-15'),
+  updatedAt: new Date('2024-01-15')
+};
+
+const modernTradeData = {
+  id: 'modern-trade-1',
+  title: 'Data Analysis for Content Writing',
+  description: 'I can provide data analysis services for quality content writing',
+  skillsOffered: [
+    { id: 'python', name: 'Python', level: 'expert' },
+    { id: 'data-analysis', name: 'Data Analysis', level: 'expert' }
+  ],
+  skillsWanted: [
+    { id: 'content-writing', name: 'Content Writing', level: 'intermediate' },
+    { id: 'copywriting', name: 'Copywriting', level: 'intermediate' }
+  ],
+  participants: {
+    creator: 'user-456',
+    participant: null
+  },
+  status: 'active',
+  createdAt: new Date('2024-02-15'),
+  updatedAt: new Date('2024-02-15'),
+  schemaVersion: '2.0'
+};
+
+// Mock user profiles
+const mockUserProfiles = {
+  'user-123': {
+    uid: 'user-123',
+    displayName: 'John Developer',
+    profilePicture: 'https://example.com/john.jpg',
+    location: 'San Francisco, CA'
+  },
+  'user-456': {
+    uid: 'user-456',
+    displayName: 'Sarah Analyst',
+    profilePicture: 'https://example.com/sarah.jpg',
+    location: 'New York, NY'
+  }
+};
+
+// Test wrapper component
+const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <AuthProvider>
+  <ToastProvider>
+  { children }
+  </ToastProvider>
+  </AuthProvider>
+);
+
+describe('TradesPage Migration Tests', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    // Reset migration registry state
+    mockMigrationRegistry.isInitialized.mockReturnValue(true);
+    mockMigrationRegistry.trades = mockTradeCompatibility;
+  });
+
+  describe('Migration Status Detection', () => {
+    test('should detect when migration registry is ready', async () => {
+      // Setup: Migration registry is ready
+      (require('../../services/migration').isMigrationReady as jest.Mock).mockReturnValue(true);
+      (require('../../services/migration').getMigrationStatus as jest.Mock).mockReturnValue({
+        migrationMode: true,
+        initialized: true,
+        services: { trades: true, chat: true }
+      });
+
+      mockTradeCompatibility.queryTrades.mockResolvedValue([modernTradeData]);
+
+      render(
+        <TestWrapper>
+        <TradesPage />
+        </TestWrapper>
+      );
+
+      // Should show compatibility mode indicator in development
+      await waitFor(() => {
+        const statusIndicator = screen.getByText(/compatibility mode/i);
+        expect(statusIndicator).toBeInTheDocument();
+      });
+
+      expect(mockTradeCompatibility.queryTrades).toHaveBeenCalled();
+    });
+
+    test('should handle migration registry not ready state', async () => {
+      // Setup: Migration registry is not ready
+      (require('../../services/migration').isMigrationReady as jest.Mock).mockReturnValue(false);
+
+      render(
+        <TestWrapper>
+        <TradesPage />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        const statusText = screen.getByText(/migration services are initializing/i);
+        expect(statusText).toBeInTheDocument();
+      });
+    });
+
+    test('should activate fallback mode when migration service fails', async () => {
+      // Setup: Migration registry is ready but service fails
+      (require('../../services/migration').isMigrationReady as jest.Mock).mockReturnValue(true);
+      (require('../../services/migration').getMigrationStatus as jest.Mock).mockReturnValue({
+        migrationMode: true,
+        initialized: true,
+        services: { trades: true, chat: true }
+      });
+
+      mockTradeCompatibility.queryTrades.mockRejectedValue(new Error('Migration service error'));
+
+      render(
+        <TestWrapper>
+        <TradesPage />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        const fallbackIndicator = screen.getByText(/fallback/i);
+        expect(fallbackIndicator).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Data Compatibility', () => {
+    test('should handle legacy trade data format', async () => {
+      (require('../../services/migration').isMigrationReady as jest.Mock).mockReturnValue(true);
+      (require('../../services/migration').getMigrationStatus as jest.Mock).mockReturnValue({
+        migrationMode: true,
+        initialized: true,
+        services: { trades: true, chat: true }
+      });
+
+      // Return legacy format data
+      mockTradeCompatibility.queryTrades.mockResolvedValue([legacyTradeData]);
+
+      render(
+        <TestWrapper>
+        <TradesPage />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Web Development for Logo Design')).toBeInTheDocument();
+      });
+
+      // Verify that legacy data is properly handled
+      expect(mockTradeCompatibility.queryTrades).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ fieldPath: 'status', value: 'active' })
+        ]),
+        20
+      );
+    });
+
+    test('should handle modern trade data format', async () => {
+      (require('../../services/migration').isMigrationReady as jest.Mock).mockReturnValue(true);
+      (require('../../services/migration').getMigrationStatus as jest.Mock).mockReturnValue({
+        migrationMode: true,
+        initialized: true,
+        services: { trades: true, chat: true }
+      });
+
+      mockTradeCompatibility.queryTrades.mockResolvedValue([modernTradeData]);
+
+      render(
+        <TestWrapper>
+        <TradesPage />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Data Analysis for Content Writing')).toBeInTheDocument();
+      });
+    });
+
+    test('should handle mixed legacy and modern data formats', async () => {
+      (require('../../services/migration').isMigrationReady as jest.Mock).mockReturnValue(true);
+      (require('../../services/migration').getMigrationStatus as jest.Mock).mockReturnValue({
+        migrationMode: true,
+        initialized: true,
+        services: { trades: true, chat: true }
+      });
+
+      // Return both legacy and modern format data
+      mockTradeCompatibility.queryTrades.mockResolvedValue([legacyTradeData, modernTradeData]);
+
+      render(
+        <TestWrapper>
+        <TradesPage />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Web Development for Logo Design')).toBeInTheDocument();
+        expect(screen.getByText('Data Analysis for Content Writing')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Search and Filtering with Migration Data', () => {
+    beforeEach(() => {
+      (require('../../services/migration').isMigrationReady as jest.Mock).mockReturnValue(true);
+      (require('../../services/migration').getMigrationStatus as jest.Mock).mockReturnValue({
+        migrationMode: true,
+        initialized: true,
+        services: { trades: true, chat: true }
+      });
+    });
+
+    test('should search in both legacy and modern skill formats', async () => {
+      mockTradeCompatibility.queryTrades.mockResolvedValue([legacyTradeData, modernTradeData]);
+
+      render(
+        <TestWrapper>
+        <TradesPage />
+        </TestWrapper>
+      );
+
+      // Wait for trades to load
+      await waitFor(() => {
+        expect(screen.getByText('Web Development for Logo Design')).toBeInTheDocument();
+      });
+
+      // Search for a skill that exists in legacy format
+      const searchInput = screen.getByPlaceholderText(/search/i);
+      fireEvent.change(searchInput, { target: { value: 'React' } });
+
+      await waitFor(() => {
+        expect(screen.getByText('Web Development for Logo Design')).toBeInTheDocument();
+        expect(screen.queryByText('Data Analysis for Content Writing')).not.toBeInTheDocument();
+      });
+    });
+
+    test('should search in modern skill format', async () => {
+      mockTradeCompatibility.queryTrades.mockResolvedValue([legacyTradeData, modernTradeData]);
+
+      render(
+        <TestWrapper>
+        <TradesPage />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Data Analysis for Content Writing')).toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByPlaceholderText(/search/i);
+      fireEvent.change(searchInput, { target: { value: 'Python' } });
+
+      await waitFor(() => {
+        expect(screen.queryByText('Web Development for Logo Design')).not.toBeInTheDocument();
+        expect(screen.getByText('Data Analysis for Content Writing')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Error Handling and Recovery', () => {
+    test('should display user-friendly error when migration service fails', async () => {
+      (require('../../services/migration').isMigrationReady as jest.Mock).mockReturnValue(true);
+      (require('../../services/migration').getMigrationStatus as jest.Mock).mockReturnValue({
+        migrationMode: true,
+        initialized: true,
+        services: { trades: true, chat: true }
+      });
+
+      mockTradeCompatibility.queryTrades.mockRejectedValue(new Error('Database connection failed'));
+
+      render(
+        <TestWrapper>
+        <TradesPage />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText(/failed to load trades/i)).toBeInTheDocument();
+        expect(screen.getByText(/operating in fallback mode/i)).toBeInTheDocument();
+      });
+    });
+
+    test('should allow manual refresh when in error state', async () => {
+      (require('../../services/migration').isMigrationReady as jest.Mock).mockReturnValue(true);
+      (require('../../services/migration').getMigrationStatus as jest.Mock).mockReturnValue({
+        migrationMode: true,
+        initialized: true,
+        services: { trades: true, chat: true }
+      });
+
+      // First call fails, second succeeds
+      mockTradeCompatibility.queryTrades
+        .mockRejectedValueOnce(new Error('Temporary error'))
+        .mockResolvedValueOnce([modernTradeData]);
+
+      render(
+        <TestWrapper>
+        <TradesPage />
+        </TestWrapper>
+      );
+
+      // Wait for error state
+      await waitFor(() => {
+        expect(screen.getByText(/failed to load trades/i)).toBeInTheDocument();
+      });
+
+      // Click refresh button
+      const refreshButton = screen.getByText(/refresh/i);
+      fireEvent.click(refreshButton);
+
+      // Should recover and show trades
+      await waitFor(() => {
+        expect(screen.getByText('Data Analysis for Content Writing')).toBeInTheDocument();
+      });
+
+      expect(mockTradeCompatibility.queryTrades).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('Performance Impact Validation', () => {
+    test('should not significantly impact performance when using migration compatibility', async () => {
+      (require('../../services/migration').isMigrationReady as jest.Mock).mockReturnValue(true);
+      (require('../../services/migration').getMigrationStatus as jest.Mock).mockReturnValue({
+        migrationMode: true,
+        initialized: true,
+        services: { trades: true, chat: true }
+      });
+
+      // Mock large dataset
+      const largeTrades = Array.from({ length: 20 }, (_, i) => ({
+        ...modernTradeData,
+        id: `trade-${i}`,
+        title: `Trade ${i}`
+      }));
+
+      mockTradeCompatibility.queryTrades.mockResolvedValue(largeTrades);
+
+      const startTime = performance.now();
+
+      render(
+        <TestWrapper>
+        <TradesPage />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Trade 0')).toBeInTheDocument();
+      });
+
+      const endTime = performance.now();
+      const renderTime = endTime - startTime;
+
+      // Render should complete within reasonable time (2 seconds)
+      expect(renderTime).toBeLessThan(2000);
+    });
+  });
+
+  describe('User Experience during Migration', () => {
+    test('should provide clear migration status indicators in development', async () => {
+      // Set NODE_ENV to development
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'development';
+
+      (require('../../services/migration').isMigrationReady as jest.Mock).mockReturnValue(true);
+      (require('../../services/migration').getMigrationStatus as jest.Mock).mockReturnValue({
+        migrationMode: true,
+        initialized: true,
+        services: { trades: true, chat: true }
+      });
+
+      mockTradeCompatibility.queryTrades.mockResolvedValue([]);
+
+      render(
+        <TestWrapper>
+        <TradesPage />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText(/compatibility mode/i)).toBeInTheDocument();
+      });
+
+      // Restore environment
+      process.env.NODE_ENV = originalEnv;
+    });
+
+    test('should hide migration indicators in production', async () => {
+      // Set NODE_ENV to production
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+
+      (require('../../services/migration').isMigrationReady as jest.Mock).mockReturnValue(true);
+      (require('../../services/migration').getMigrationStatus as jest.Mock).mockReturnValue({
+        migrationMode: true,
+        initialized: true,
+        services: { trades: true, chat: true }
+      });
+
+      mockTradeCompatibility.queryTrades.mockResolvedValue([]);
+
+      render(
+        <TestWrapper>
+        <TradesPage />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.queryByText(/compatibility mode/i)).not.toBeInTheDocument();
+      });
+
+      // Restore environment
+      process.env.NODE_ENV = originalEnv;
+    });
+  });
+
+  describe('Migration Query Compatibility', () => {
+    test('should build proper Firestore queries with migration service', async () => {
+      (require('../../services/migration').isMigrationReady as jest.Mock).mockReturnValue(true);
+      (require('../../services/migration').getMigrationStatus as jest.Mock).mockReturnValue({
+        migrationMode: true,
+        initialized: true,
+        services: { trades: true, chat: true }
+      });
+
+      mockTradeCompatibility.queryTrades.mockResolvedValue([]);
+
+      render(
+        <TestWrapper>
+        <TradesPage />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(mockTradeCompatibility.queryTrades).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({ fieldPath: 'status' }),
+            expect.objectContaining({ fieldPath: 'createdAt' })
+          ]),
+          20
+        );
+      });
+    });
+
+    test('should handle category filtering through migration service', async () => {
+      (require('../../services/migration').isMigrationReady as jest.Mock).mockReturnValue(true);
+      (require('../../services/migration').getMigrationStatus as jest.Mock).mockReturnValue({
+        migrationMode: true,
+        initialized: true,
+        services: { trades: true, chat: true }
+      });
+
+      mockTradeCompatibility.queryTrades.mockResolvedValue([]);
+
+      render(
+        <TestWrapper>
+        <TradesPage />
+        </TestWrapper>
+      );
+
+      // Find and interact with category filter (assuming it exists in AdvancedSearch)
+      await waitFor(() => {
+        // This would require the AdvancedSearch component to be properly mocked
+        // For now, we'll test that the component loads without errors
+        expect(screen.getByText(/trades/i)).toBeInTheDocument();
+      });
+    });
+  });
+});

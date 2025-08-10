@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Content Security Policy for TradeYa with specific allowances for embedded content -->
+    <title>TradeYa - Trade Skills and Services</title>
+    <!-- Preconnect to important domains -->
+    <link rel="preconnect" href="https://firestore.googleapis.com">
+    <link rel="preconnect" href="https://res.cloudinary.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://apis.google.com">
+    <link rel="preconnect" href="https://accounts.google.com">
+    <link rel="preconnect" href="https://www.gstatic.com">
+    <link rel="preconnect" href="https://tradeya-45ede.firebaseapp.com">
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- Fallback content in case JavaScript fails to load -->
+    <noscript>
+      <div style="padding: 20px; text-align: center;">
+        <h1>JavaScript Required</h1>
+        <p>Please enable JavaScript to use TradeYa.</p>
+      </div>
+    </noscript>
+    <!-- Debug info that will be hidden when the app loads -->
+    <div id="loading-debug" style="padding: 20px; display: none;">
+      <h2>Loading TradeYa...</h2>
+      <p>If you see this message for more than a few seconds, there might be an issue with the application.</p>
+      <p>Try refreshing the page or checking your internet connection.</p>
+    </div>
+    <script>
+      // Show loading debug info
+      document.getElementById('loading-debug').style.display = 'block';
+
+      // Hide loading debug info when the app loads
+      window.addEventListener('load', function() {
+        document.getElementById('loading-debug').style.display = 'none';
+      });
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

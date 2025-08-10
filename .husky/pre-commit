@@ -1,0 +1,99 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# TradeYa Documentation Pre-commit Hooks
+# Ensures documentation quality and consistency before commits
+
+echo "🔍 Running documentation pre-commit checks..."
+
+# Check if documentation files were modified
+DOCS_MODIFIED=$(git diff --cached --name-only | grep -E '^docs/.*\.md$' | wc -l)
+
+if [ "$DOCS_MODIFIED" -gt 0 ]; then
+  echo "📚 Documentation files detected, running validation..."
+  
+  # Install dependencies if needed
+  if [ ! -d "node_modules" ]; then
+    echo "📦 Installing dependencies..."
+    npm ci
+  fi
+  
+  # Install tsx if not available
+  if ! command -v tsx &> /dev/null; then
+    echo "🔧 Installing tsx..."
+    npm install -g tsx
+  fi
+  
+  # Run documentation validation
+  echo "🔗 Validating cross-references..."
+  if ! npx tsx scripts/maintain-docs.ts validate; then
+    echo "❌ Documentation validation failed!"
+    echo "💡 Fix broken references before committing"
+    exit 1
+  fi
+  
+  # Check Firestore documentation priority
+  echo "🔥 Checking Firestore documentation priority..."
+  if ! npx tsx scripts/maintain-docs.ts priority; then
+    echo "❌ Firestore documentation check failed!"
+    echo "💡 Ensure Firestore docs are properly maintained"
+    exit 1
+  fi
+  
+  # Run quick health check
+  echo "📊 Running documentation health check..."
+  if ! npx tsx scripts/maintain-docs.ts health; then
+    echo "⚠️ Documentation health check completed with warnings"
+    echo "💡 Consider running 'npm run docs:dashboard' to address issues"
+  fi
+  
+  echo "✅ Documentation pre-commit checks passed!"
+else
+  echo "📝 No documentation changes detected, skipping docs validation"
+fi
+
+# Standard pre-commit checks
+echo "🧹 Running standard pre-commit checks..."
+
+# Lint staged files
+if command -v lint-staged &> /dev/null; then
+  lint-staged
+fi
+
+# Run TypeScript check on staged files
+TYPESCRIPT_FILES=$(git diff --cached --name-only | grep -E '\.(ts|tsx)$' | wc -l)
+
+if [ "$TYPESCRIPT_FILES" -gt 0 ]; then
+  echo "🔍 TypeScript files detected, running type check..."
+  if ! npm run type-check; then
+    echo "❌ TypeScript check failed!"
+    echo "💡 Fix type errors before committing"
+    exit 1
+  fi
+fi
+
+echo "✅ All pre-commit checks passed!"
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit
+npm run pre-commit

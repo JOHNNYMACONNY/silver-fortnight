@@ -1,0 +1,24 @@
+{
+  "scripts": {
+    "test:migration:comprehensive": "jest --config jest.config.migration.ts --coverage --verbose --reporters=default --reporters=jest-html-reporters",
+    "test:migration:production-engine": "jest --config jest.config.migration.ts --testPathPattern=productionMigrationEngine.test.ts",
+    "test:migration:monitoring": "jest --config jest.config.migration.ts --testPathPattern=enhancedMonitoring.test.ts",
+    "test:migration:rollback": "jest --config jest.config.migration.ts --testPathPattern=rollbackProcedures.test.ts",
+    "test:migration:coordination": "jest --config jest.config.migration.ts --testPathPattern=migrationCoordination.test.ts",
+    "test:migration:readiness": "jest --config jest.config.migration.ts --testPathPattern=productionReadiness.test.ts",
+    "test:migration:integration": "jest --config jest.config.migration.ts --testPathPattern=integrationTests.test.ts",
+    "test:migration:data-validation": "jest --config jest.config.migration.ts --testPathPattern=dataValidation.test.ts",
+    "test:migration:performance": "jest --config jest.config.migration.ts --testPathPattern=performanceRegression.test.ts",
+    "test:migration:trades-page": "jest --config jest.config.migration.ts --testPathPattern=tradesPageMigration.test.ts",
+    "test:migration:dry-run": "jest --config jest.config.migration.ts --testPathPattern='(productionMigrationEngine|productionReadiness)' --verbose",
+    "test:migration:pre-production": "npm run test:migration:readiness && npm run test:migration:rollback && npm run test:migration:coordination",
+    "test:migration:validation-suite": "npm run test:migration:data-validation && npm run test:migration:integration && npm run test:migration:performance",
+    "test:migration:ci": "jest --config jest.config.migration.ts --ci --coverage --reporters='default' --reporters='jest-junit' --coverageReporters='text' --coverageReporters='lcov' --coverageReporters='json'",
+    "test:migration:watch": "jest --config jest.config.migration.ts --watch --verbose",
+    "migration:validate-env": "node -e \"console.log('Environment validation:', process.env.NODE_ENV || 'development'); console.log('Migration config valid:', !!process.env.FIREBASE_PROJECT_ID);\"",
+    "migration:health-check": "npm run firebase:indexes:verify && npm run test:migration:readiness",
+    "migration:pre-flight": "npm run migration:validate-env && npm run migration:health-check && npm run test:migration:pre-production",
+    "migration:test-report": "jest --config jest.config.migration.ts --coverage --coverageReporters='html' --coverageDirectory='coverage/migration-report'",
+    "migration:performance-baseline": "npm run test:migration:performance -- --verbose --detectOpenHandles"
+  }
+}

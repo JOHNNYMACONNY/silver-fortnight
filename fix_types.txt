@@ -1,0 +1,2 @@
+// Adding missing property to CollaborationRole interface
+previousParticipantId?: string;
