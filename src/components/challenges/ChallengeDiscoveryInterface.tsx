@@ -141,16 +141,15 @@ export const ChallengeDiscoveryInterface: React.FC<ChallengeDiscoveryInterfacePr
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              className="pl-10 bg-white/10 border-white/20 text-white"
+              className="pl-10 glassmorphic"
             />
           </div>
           <Button
             onClick={() => setShowFilters(!showFilters)}
             variant="outline"
-            className={cn(
-              "border-white/20",
-              hasActiveFilters && "border-blue-500/50 bg-blue-500/10"
-            )}
+              className={cn(
+                hasActiveFilters && "ring-2 ring-blue-500/50"
+              )}
           >
             <Filter className="w-4 h-4 mr-2" />
             Filters
@@ -172,7 +171,7 @@ export const ChallengeDiscoveryInterface: React.FC<ChallengeDiscoveryInterfacePr
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-4"
+              className="glassmorphic p-4"
             >
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Challenge Type */}
@@ -221,10 +220,11 @@ export const ChallengeDiscoveryInterface: React.FC<ChallengeDiscoveryInterfacePr
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white"
                   >
                     <option value="">All Categories</option>
-                    <option value={ChallengeCategory.SKILL_DEVELOPMENT}>Skill Development</option>
-                    <option value={ChallengeCategory.PROJECT_BASED}>Project Based</option>
-                    <option value={ChallengeCategory.COMMUNITY}>Community</option>
-                    <option value={ChallengeCategory.COMPETITION}>Competition</option>
+                   <option value={ChallengeCategory.DESIGN}>Design</option>
+                   <option value={ChallengeCategory.DEVELOPMENT}>Development</option>
+                   <option value={ChallengeCategory.AUDIO}>Audio</option>
+                   <option value={ChallengeCategory.VIDEO}>Video</option>
+                   <option value={ChallengeCategory.WRITING}>Writing</option>
                   </select>
                 </div>
               </div>

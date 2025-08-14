@@ -204,7 +204,7 @@ const DevDashboard: React.FC = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-4 right-4 z-50 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-colors"
+          className="fixed bottom-4 right-4 z-overlay bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-colors"
           title="Open Dev Dashboard"
         >
           <Bug className="w-6 h-6" />
@@ -218,7 +218,7 @@ const DevDashboard: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className={`fixed ${isMinimized ? 'bottom-4 right-4' : 'top-4 right-4'} z-50 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl ${
+            className={`fixed ${isMinimized ? 'bottom-4 right-4' : 'top-4 right-4'} z-overlay bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl ${
               isMinimized ? 'w-64 h-12' : 'w-96 h-96'
             } transition-all duration-300`}
           >

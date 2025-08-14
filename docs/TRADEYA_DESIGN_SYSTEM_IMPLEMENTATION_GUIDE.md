@@ -1491,7 +1491,7 @@ const meta: Meta<typeof Button> = {
   argTypes: {
     variant: {
       control: { type: "select" },
-      options: ["primary", "secondary", "outline", "ghost", "destructive"],
+      options: ["default", "secondary", "outline", "ghost", "destructive", "success", "warning"],
     },
     size: {
       control: { type: "select" },
@@ -1511,7 +1511,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
   args: {
-    variant: "primary",
+    variant: "default",
     children: "Primary Button",
   },
 };
@@ -1541,6 +1541,20 @@ export const Destructive: Story = {
   args: {
     variant: "destructive",
     children: "Destructive Button",
+  },
+};
+
+export const Success: Story = {
+  args: {
+    variant: "success",
+    children: "Success Button",
+  },
+};
+
+export const Warning: Story = {
+  args: {
+    variant: "warning",
+    children: "Warning Button",
   },
 };
 

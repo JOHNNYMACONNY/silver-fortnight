@@ -62,8 +62,8 @@ export const TradeStatusIndicator: React.FC<TradeStatusIndicatorProps> = ({
     switch (status) {
       case "pending":
         return (
-          <div className={cn(iconClasses, "bg-orange-500 animate-pulse")}>
-            <div className="w-full h-full rounded-full bg-orange-400 animate-ping opacity-75" />
+          <div className={cn(iconClasses, "bg-primary animate-pulse")}>
+            <div className="w-full h-full rounded-full bg-primary/80 animate-ping opacity-75" />
           </div>
         );
       
@@ -224,7 +224,7 @@ function getStatusAnimationDuration(status: TradeStatus): "fast" | "standard" | 
 function getStatusClasses(status: TradeStatus): string {
   switch (status) {
     case "pending":
-      return "bg-orange-100 text-orange-800 border border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800";
+      return "bg-primary/10 text-primary border border-primary/30";
     case "negotiating":
       return "bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800";
     case "confirmed":

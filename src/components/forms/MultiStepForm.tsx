@@ -66,7 +66,7 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
 }) => {
   // State management
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [formData, setFormData] = useState(initialData);
+  const [formData, setFormData] = useState<any>(initialData);
   const [stepValidation, setStepValidation] = useState<Record<number, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -105,7 +105,7 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
 
   // Handle field changes
   const handleFieldChange = useCallback((field: string, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       [field]: value
     }));
@@ -226,7 +226,7 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
   const currentStep = steps[currentStepIndex];
   const isFirstStep = currentStepIndex === 0;
   const isLastStep = currentStepIndex === steps.length - 1;
-  const currentStepValid = stepValidation[currentStepIndex] ?? false;
+  const currentStepValid = stepValidation[currentStepIndex] ?? true;
 
   // Progress calculation
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
@@ -315,17 +315,17 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
         </AnimatePresence>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between items-center mt-8 pt-6 border-t border-white/10 dark:border-gray-700/20">
+        <div className="flex justify-between items-center mt-8 pt-6 border-t border-border">
           <button
             type="button"
             onClick={goToPreviousStep}
             disabled={isFirstStep || isSubmitting}
             className={cn(
               'px-6 py-3 rounded-xl font-medium transition-all duration-200',
-              'backdrop-blur-sm border',
+              'glassmorphic',
               isFirstStep || isSubmitting
-                ? 'bg-gray-100/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50 text-gray-400 cursor-not-allowed'
-                : 'bg-white/20 dark:bg-gray-800/20 border-white/30 dark:border-gray-700/30 text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-gray-800/30'
+                ? 'opacity-60 cursor-not-allowed'
+                : ''
             )}
           >
             Previous

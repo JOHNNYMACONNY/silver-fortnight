@@ -23,9 +23,9 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className }) => {
       >
         <span className="relative">
           {resolvedTheme === 'dark' ? (
-            <Sun className="w-5 h-5 text-orange-500" />
+            <Sun className="w-5 h-5 text-primary" />
           ) : (
-            <Moon className="w-5 h-5 text-blue-500" />
+            <Moon className="w-5 h-5 text-secondary" />
           )}
         </span>
         <span className="text-xs font-medium hidden sm:inline">

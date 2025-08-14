@@ -56,13 +56,13 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
 
     try {
       const reviewData = {
-        tradeId,
         reviewerId: currentUser.uid,
         reviewerName: currentUser.displayName || currentUser.email || 'Anonymous',
-        receiverId,
-        receiverName,
+        targetId: receiverId,
+        targetType: 'user' as const,
         rating,
-        comment: comment.trim()
+        comment: comment.trim(),
+        tradeId
       };
 
       const { error: reviewError } = await createReview(reviewData);

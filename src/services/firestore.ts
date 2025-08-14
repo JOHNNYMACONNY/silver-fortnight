@@ -42,6 +42,7 @@ import {
   connectionConverter
 } from './firestoreConverters';
 import { ChatMessage } from '../types/chat';
+import type { BannerData } from '../utils/imageUtils';
 import { MessageType } from './firestoreConverters';
 
 // Collection names
@@ -81,6 +82,8 @@ export interface CollaborationFilters {
   status?: 'open' | 'in-progress' | 'completed' | 'cancelled';
   createdBy?: string;
   skillsRequired?: string[];
+  // New unified skills filter used by UI; server maps to skillsIndex
+  skills?: string[];
   maxParticipants?: number;
   timeCommitment?: string;
   // Search functionality
@@ -96,6 +99,7 @@ export interface CollaborationFilters {
 export interface TradeFilters {
   category?: string;
   status?: TradeStatus;
+  skills?: string[];
   creatorId?: string;
   participantId?: string;
   skillsOffered?: string[];
@@ -135,6 +139,7 @@ export interface User {
   photoURL?: string; // Legacy field for backward compatibility
   bio?: string;
   location?: string;
+  banner?: BannerData | string | null;
   skills?: any; // Can be string, string[], or object - handled by parseSkills
   reputationScore?: number;
   interests?: string;
@@ -767,6 +772,68 @@ export const getUserTrades = async (userId: string): Promise<ServiceResult<Trade
   }
 };
 
+/**
+ * Fetch follower or following user IDs for a given user
+ */
+export const getRelatedUserIds = async (
+  userId: string,
+  relation: 'followers' | 'following',
+  opts?: { limit?: number }
+): Promise<ServiceResult<{ ids: string[] }>> => {
+  try {
+    const db = getSyncFirebaseDb();
+    const followsCol = collection(db, 'userFollows');
+    const constraints: QueryConstraint[] = [];
+    if (relation === 'followers') {
+      constraints.push(where('followingId', '==', userId));
+    } else {
+      constraints.push(where('followerId', '==', userId));
+    }
+    constraints.push(orderBy('createdAt', 'desc'));
+    if (opts?.limit) {
+      constraints.push(limitQuery(opts.limit));
+    }
+    const q = query(followsCol, ...constraints);
+    const snap = await getDocs(q);
+    const ids = snap.docs
+      .filter(d => !(d.data() as any)?.deletedAt)
+      .map(d => relation === 'followers' ? (d.data() as any).followerId : (d.data() as any).followingId)
+      .filter(Boolean);
+    return { data: { ids }, error: null };
+  } catch (error: any) {
+    console.error('Error fetching related user ids:', error);
+    return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to fetch related user ids' } };
+  }
+};
+
+/**
+ * Fetch users by ids in batches of 10 to comply with Firestore 'in' constraints
+ */
+export const getUsersByIds = async (ids: string[]): Promise<ServiceResult<User[]>> => {
+  try {
+    if (!ids.length) return { data: [], error: null };
+    const db = getSyncFirebaseDb();
+    const usersCol = collection(db, COLLECTIONS.USERS).withConverter(userConverter);
+    const chunks: string[][] = [];
+    for (let i = 0; i < ids.length; i += 10) chunks.push(ids.slice(i, i + 10));
+    const results: User[] = [];
+    for (const chunk of chunks) {
+      // Use documentId() when fetching by Firestore doc ID
+      const { documentId } = await import('firebase/firestore');
+      const q = query(usersCol as any, where(documentId(), 'in', chunk));
+      const snap = await getDocs(q);
+      results.push(...snap.docs.map(d => d.data() as User));
+    }
+    // Deduplicate by id
+    const uniqueMap = new Map<string, User>();
+    for (const u of results) uniqueMap.set(u.id, u);
+    return { data: Array.from(uniqueMap.values()), error: null };
+  } catch (error: any) {
+    console.error('Error fetching users by ids:', error);
+    return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to fetch users' } };
+  }
+};
+
 export const requestTradeCompletion = async (
   tradeId: string,
   userId: string,
@@ -1035,10 +1102,16 @@ class CollaborationQueryBuilder {
     }
 
     // Priority 3: Array filters (less efficient, use sparingly)
-    if (this.filters.skillsRequired && this.filters.skillsRequired.length > 0) {
-      // Limit to first 10 skills to avoid query complexity
-      const limitedSkills = this.filters.skillsRequired.slice(0, 10);
-      this.constraints.push(where('skillsRequired', 'array-contains-any', limitedSkills));
+    const uiSkills = (this.filters as any).skills as string[] | undefined;
+    const requiredSkills = this.filters.skillsRequired as string[] | undefined;
+    const combinedSkills = [
+      ...(Array.isArray(uiSkills) ? uiSkills : []),
+      ...(Array.isArray(requiredSkills) ? requiredSkills : [])
+    ];
+    if (combinedSkills.length > 0) {
+      // Use normalized index for better matches and performance
+      const limitedSkills = combinedSkills.map(s => s.toLowerCase()).slice(0, 10);
+      this.constraints.push(where('skillsIndex', 'array-contains-any', limitedSkills));
       this.queryMetadata.skillsFilter = true;
     }
 
@@ -1200,14 +1273,15 @@ function applyClientSideFilters(
       return false;
     }
     
-    // Skills required filter
-    if (originalFilters.skillsRequired && originalFilters.skillsRequired.length > 0) {
-      const hasRequiredSkills = originalFilters.skillsRequired.some(skill => 
-        collab.skillsRequired?.includes(skill)
-      );
-      if (!hasRequiredSkills) {
-        return false;
-      }
+    // Skills filter (supports both legacy skillsRequired and new skills)
+    const legacyReq = Array.isArray(originalFilters.skillsRequired) ? originalFilters.skillsRequired : [];
+    const uiSkills = Array.isArray((originalFilters as any).skills) ? (originalFilters as any).skills as string[] : [];
+    const combined = [...uiSkills, ...legacyReq].map(s => s.toLowerCase());
+    if (combined.length > 0) {
+      const collabRequired = (collab.skillsRequired || []).map(s => (s || '').toLowerCase());
+      const collabNeeded = (collab.skillsNeeded || []).map(s => (s || '').toLowerCase());
+      const hasAny = combined.some(s => collabRequired.includes(s) || collabNeeded.includes(s));
+      if (!hasAny) return false;
     }
     
     // Location filter
@@ -1704,6 +1778,10 @@ export const searchTrades = async (
       }
       if (filters.status) {
         constraints.push(where('status', '==', filters.status));
+      }
+      if (filters.skills && filters.skills.length > 0) {
+        const normalized = filters.skills.map(s => s.toLowerCase());
+        constraints.push(where('skillsIndex', 'array-contains-any', normalized.slice(0, 10)));
       }
       searchQuery = query(searchQuery, ...constraints);
     }

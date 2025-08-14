@@ -52,7 +52,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       <Navbar />
       <Box
         className={cn(
-          'flex-grow',
+          'flex-grow app-content',
           // Responsive padding
           isMobile ? 'py-4' : isTablet ? 'py-6' : 'py-8',
           containerized ? (

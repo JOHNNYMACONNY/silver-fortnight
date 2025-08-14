@@ -168,7 +168,7 @@ export const SmartTooltip: React.FC<TooltipProps> = ({
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.15 }}
             className={cn(
-              'absolute z-50 px-3 py-2 text-sm rounded-lg shadow-lg pointer-events-none',
+              'absolute z-tooltip px-3 py-2 text-sm rounded-lg shadow-lg pointer-events-none',
               classPatterns.glassCard,
               positionClasses[actualPosition]
             )}
@@ -176,9 +176,9 @@ export const SmartTooltip: React.FC<TooltipProps> = ({
             {content}
             
             {/* Arrow */}
-            <div
-              className={cn(
-                'absolute w-2 h-2 bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 transform rotate-45',
+              <div
+                className={cn(
+                  'absolute w-2 h-2 bg-white/75 dark:bg-neutral-800/65 border border-border transform rotate-45',
                 actualPosition === 'top' && 'top-full left-1/2 -translate-x-1/2 -mt-1',
                 actualPosition === 'bottom' && 'bottom-full left-1/2 -translate-x-1/2 -mb-1',
                 actualPosition === 'left' && 'left-full top-1/2 -translate-y-1/2 -ml-1',
@@ -260,7 +260,7 @@ export const InteractiveTour: React.FC<{
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 z-40"
+        className="fixed inset-0 bg-black/50 z-overlay"
         onClick={currentStepData.skippable ? onSkip : undefined}
       />
 
@@ -270,7 +270,7 @@ export const InteractiveTour: React.FC<{
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         className={cn(
-          'fixed z-50 max-w-sm',
+          'fixed z-popover max-w-sm',
           currentStepData.position === 'center' ? 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2' :
           'top-4 right-4'
         )}
@@ -372,7 +372,7 @@ export const HelpCenter: React.FC<{
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 z-overlay flex items-center justify-center p-4"
       onClick={onClose}
     >
       <motion.div
@@ -436,9 +436,9 @@ export const HelpCenter: React.FC<{
                   <h2 className={classPatterns.heading2}>{selectedContent.title}</h2>
                   <div className="flex gap-2 mt-2">
                     <Badge variant="secondary">{selectedContent.category}</Badge>
-                    <Badge variant={
-                      selectedContent.difficulty === 'beginner' ? 'success' :
-                      selectedContent.difficulty === 'intermediate' ? 'warning' : 'error'
+                    <Badge className={
+                      selectedContent.difficulty === 'beginner' ? 'bg-green-500/20 text-green-300' :
+                      selectedContent.difficulty === 'intermediate' ? 'bg-yellow-500/20 text-yellow-300' : 'bg-red-500/20 text-red-300'
                     }>
                       {selectedContent.difficulty}
                     </Badge>

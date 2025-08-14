@@ -34,7 +34,7 @@ export const requestRoleCompletion = async (
 ): Promise<ServiceResponse<CompletionRequest>> => {
   try {
     // Validate role exists and user is the participant
-    const roleRef = doc(db(), `collaborations/${collaborationId}/roles`, roleId);
+    const roleRef = doc(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles`, roleId);
     const roleSnap = await getDoc(roleRef);
 
     if (!roleSnap.exists()) {
@@ -52,7 +52,7 @@ export const requestRoleCompletion = async (
     }
 
     // Get collaboration data
-    const collaborationRef = doc(db(), 'collaborations', collaborationId);
+    const collaborationRef = doc(getSyncFirebaseDb(), 'collaborations', collaborationId);
     const collaborationSnap = await getDoc(collaborationRef);
 
     if (!collaborationSnap.exists()) {
@@ -62,7 +62,7 @@ export const requestRoleCompletion = async (
     const collaboration = collaborationSnap.data() as any;
 
     // Get user data
-    const userRef = doc(db(), 'users', userId);
+    const userRef = doc(getSyncFirebaseDb(), 'users', userId);
     const userSnap = await getDoc(userRef);
 
     if (!userSnap.exists()) {
@@ -73,7 +73,7 @@ export const requestRoleCompletion = async (
 
     // Check if there's already a pending completion request
     const existingRequestQuery = query(
-      collection(db(), `collaborations/${collaborationId}/completionRequests`),
+      collection(getSyncFirebaseDb(), `collaborations/${collaborationId}/completionRequests`),
       where('roleId', '==', roleId),
       where('status', '==', CompletionRequestStatus.PENDING)
     );
@@ -85,7 +85,7 @@ export const requestRoleCompletion = async (
     }
 
     // Create completion request
-    const requestRef = doc(collection(db(), `collaborations/${collaborationId}/completionRequests`));
+    const requestRef = doc(collection(getSyncFirebaseDb(), `collaborations/${collaborationId}/completionRequests`));
 
     const newRequest: CompletionRequest = {
       id: requestRef.id,
@@ -145,7 +145,7 @@ export const confirmRoleCompletion = async (
 ): Promise<ServiceResponse<CollaborationRoleData>> => {
   try {
     // Validate collaboration and user is the creator
-    const collaborationRef = doc(db(), 'collaborations', collaborationId);
+    const collaborationRef = doc(getSyncFirebaseDb(), 'collaborations', collaborationId);
     const collaborationSnap = await getDoc(collaborationRef);
 
     if (!collaborationSnap.exists()) {
@@ -159,7 +159,7 @@ export const confirmRoleCompletion = async (
     }
 
     // Validate role exists and has a pending completion request
-    const roleRef = doc(db(), `collaborations/${collaborationId}/roles`, roleId);
+    const roleRef = doc(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles`, roleId);
     const roleSnap = await getDoc(roleRef);
 
     if (!roleSnap.exists()) {
@@ -173,7 +173,7 @@ export const confirmRoleCompletion = async (
     }
 
     // Validate completion request exists
-    const requestRef = doc(db(), `collaborations/${collaborationId}/completionRequests`, requestId);
+    const requestRef = doc(getSyncFirebaseDb(), `collaborations/${collaborationId}/completionRequests`, requestId);
     const requestSnap = await getDoc(requestRef);
 
     if (!requestSnap.exists()) {
@@ -235,10 +235,9 @@ export const confirmRoleCompletion = async (
           id: role.id,
           title: role.title,
           description: role.description,
-          requiredSkills: role.requiredSkills,
-          completionEvidence: role.completionEvidence,
+          completionEvidence: role.completionEvidence || [],
           completedAt: Timestamp.now(),
-          assignedUserId: role.assignedUserId
+          assignedUserId: role.assignedUserId ?? role.participantId
         },
         request.requesterId,
         true // defaultVisibility
@@ -253,7 +252,7 @@ export const confirmRoleCompletion = async (
       const { awardRoleCompletionXP } = await import('./gamification');
 
       // Determine if this is a complex role based on required skills and description length
-      const isComplexRole = role.requiredSkills.length > 2 || role.description.length > 200;
+      const isComplexRole = (role.requiredSkills?.length ?? 0) > 2 || (role.description?.length ?? 0) > 200;
 
       await awardRoleCompletionXP(request.requesterId, role.id, isComplexRole);
     } catch (gamificationError: any) {
@@ -290,7 +289,7 @@ export const rejectRoleCompletion = async (
 ): Promise<ServiceResponse<CompletionRequest>> => {
   try {
     // Validate collaboration and user is the creator
-    const collaborationRef = doc(db(), 'collaborations', collaborationId);
+    const collaborationRef = doc(getSyncFirebaseDb(), 'collaborations', collaborationId);
     const collaborationSnap = await getDoc(collaborationRef);
 
     if (!collaborationSnap.exists()) {
@@ -304,7 +303,7 @@ export const rejectRoleCompletion = async (
     }
 
     // Validate role exists and has a pending completion request
-    const roleRef = doc(db(), `collaborations/${collaborationId}/roles`, roleId);
+    const roleRef = doc(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles`, roleId);
     const roleSnap = await getDoc(roleRef);
 
     if (!roleSnap.exists()) {
@@ -318,7 +317,7 @@ export const rejectRoleCompletion = async (
     }
 
     // Validate completion request exists
-    const requestRef = doc(db(), `collaborations/${collaborationId}/completionRequests`, requestId);
+    const requestRef = doc(getSyncFirebaseDb(), `collaborations/${collaborationId}/completionRequests`, requestId);
     const requestSnap = await getDoc(requestRef);
 
     if (!requestSnap.exists()) {
@@ -381,7 +380,7 @@ export const getCompletionRequests = async (
 ): Promise<ServiceResponse<CompletionRequest[]>> => {
   try {
     const requestsQuery = query(
-      collection(db(), `collaborations/${collaborationId}/completionRequests`),
+      collection(getSyncFirebaseDb(), `collaborations/${collaborationId}/completionRequests`),
       orderBy('createdAt', 'desc')
     );
 

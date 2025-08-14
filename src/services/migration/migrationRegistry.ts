@@ -199,7 +199,8 @@ export class MigrationServiceRegistry {
         TradeCompatibilityService.normalizeTradeData(sampleTrade);
         tradesValid = true;
       } catch (tradeError) {
-        errors.push(`Trade service validation failed: ${tradeError.message}`);
+        const message = tradeError instanceof Error ? tradeError.message : String(tradeError);
+        errors.push(`Trade service validation failed: ${message}`);
       }
 
       // Validate chat service
@@ -216,11 +217,13 @@ export class MigrationServiceRegistry {
         ChatCompatibilityService.normalizeConversationData(sampleConversation);
         chatValid = true;
       } catch (chatError) {
-        errors.push(`Chat service validation failed: ${chatError.message}`);
+        const message = chatError instanceof Error ? chatError.message : String(chatError);
+        errors.push(`Chat service validation failed: ${message}`);
       }
 
     } catch (error) {
-      errors.push(`Registry validation failed: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      errors.push(`Registry validation failed: ${message}`);
     }
 
     return {

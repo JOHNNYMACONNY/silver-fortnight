@@ -201,7 +201,7 @@ const EvidenceSubmitter: React.FC<EvidenceSubmitterProps> = ({
             <button
               type="button"
               onClick={() => handleSubmit()}
-              className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
               Add Evidence
             </button>

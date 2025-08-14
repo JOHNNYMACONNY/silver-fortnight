@@ -40,6 +40,9 @@ This document provides step-by-step instructions to standardize TradeCard and Co
 - ✅ **NEW**: `ChallengesPage` now renders `ChallengeCard` for both recommended and filtered lists, using a footer slot for CTA buttons (View/Join)
   - Tabs added for All / Active / My Challenges to improve discovery
   - “Joined” detection supports both `userChallenge.id` and `userChallenge.challengeId` shapes
+  - Progression → Filters: `ThreeTierProgressionUI` tier clicks navigate to `ChallengesPage` with the `type` query param; `ChallengesPage` applies it to `selectedType`
+  - Empty-states per tab and a “Clear filters” control added to `ChallengesPage` for graceful UX with no results
+  - Recommendations enriched to prefer user’s recent categories and difficulty band
 
 ## ✅ Implementation Steps - ALL COMPLETED
 
@@ -789,6 +792,37 @@ The TradeYa application now features a completely standardized and enhanced card
 
 ---
 
+## 🎨 Profile Page Style & UX Enhancements (July 2025)
+
+### Summary
+- Header updated with glassmorphic gradient background and overlaid avatar
+- Added reputation badge, website/location/member-since meta row, and skills badges
+- Added compact stats strip (total trades, trades this week)
+- Tabs upgraded with animated underline and a11y semantics (`tablist`/`tab`/`tabpanel`)
+- Lazy-loaded gamification tab content with prefetch-on-hover
+
+### Files Updated
+- `src/pages/ProfilePage.tsx`
+
+### Notes
+- Nav overlap: retained navbar’s `z-navigation`; profile header only overlaps banner area (negative margin) to avoid covering the nav
+- See `docs/PROFILE_PAGE_STYLE_IMPROVEMENTS.md` for a focused summary
+- Additional updates (July 2025):
+  - `UserSocialStats` (compact) integrated into Profile header
+  - `SocialFeatures` used for follow/unfollow action in header
+  - Tab a11y: roving focus with Left/Right arrows and dynamic tabIndex
+  - `PortfolioTab` now lazy-loaded with prefetch on tab hover (Gamification already lazy)
+  - Copy buttons for Email/UID in About tab (owners only)
+  - Email hidden in header for non-owners; shown in About for owners
+  - Reputation badge now sourced from composite reputation (XP 50% + trades 30% + followers 20%) computed on client when header enters viewport
+  - Sticky tab bar with smooth scroll to sections
+  - Scrollspy updates the active tab based on section visibility
+  - Followers chip links to `UserDirectoryPage` via `?relation=followers&user=<id>`
+  - Per-tab skeletons added for Portfolio and Gamification panels
+  - Reputation tooltip clarifies formula
+
+---
+
 ## 🔧 **Latest Fix: ProfilePage Cloudinary Image Display (January 27, 2025)**
 
 ### ✅ Issue Resolved: Cloudinary Profile Images Not Showing on Own Profile Page
@@ -944,6 +978,10 @@ useEffect(() => {
 - ✅ Consistent profile image display across entire application
 
 **Status**: ✅ **DEPLOYED AND VERIFIED** on http://localhost:5175 
+
+Notes (August 2025):
+- Card tilt hover restored by moving transform composition to Framer Motion (`transformPerspective` + motion-driven `rotateX/rotateY`) in `src/components/ui/Card.tsx`.
+- Z-index tokens rolled out app-wide; cards, overlays, menus, and tooltips layer correctly relative to `z-navigation`.
 
 ---
 

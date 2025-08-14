@@ -9,6 +9,8 @@ import { Badge } from '../components/ui/Badge';
 import Box from '../components/layout/primitives/Box';
 import Stack from '../components/layout/primitives/Stack';
 import { themeClasses } from '../utils/themeUtils';
+import { semanticClasses } from '../utils/semanticColors';
+import { TopicLink } from '../components/ui/TopicLink';
 
 /**
  * HomePage component
@@ -72,13 +74,13 @@ const HomePage: React.FC = () => {
                   Get started quickly with our most popular features.
                 </p>
                 <div className="space-y-2">
-                  <Link to="/trades" className="flex items-center justify-between p-2 bg-orange-50 dark:bg-orange-950/20 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-950/30 transition-colors">
-                    <span className="text-sm font-medium">Browse Trades</span>
-                    <span className="text-orange-500">→</span>
+                  <Link to="/trades" className={`flex items-center justify-between p-2 ${semanticClasses('trades').bgSubtle} rounded-lg hover:bg-primary/15 transition-colors`}>
+                    <span className={`text-sm font-medium ${semanticClasses('trades').text}`}>Browse Trades</span>
+                    <span className={semanticClasses('trades').text}>→</span>
                   </Link>
-                  <Link to="/collaborations" className="flex items-center justify-between p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-950/30 transition-colors">
-                    <span className="text-sm font-medium">Find Collaborations</span>
-                    <span className="text-purple-500">→</span>
+                  <Link to="/collaborations" className={`flex items-center justify-between p-2 ${semanticClasses('collaboration').bgSubtle} rounded-lg hover:bg-purple-100 dark:hover:bg-purple-950/30 transition-colors shadow-sm`}> 
+                    <span className={`text-sm font-medium ${semanticClasses('collaboration').text}`}>Find Collaborations</span>
+                    <span className={semanticClasses('collaboration').text}>→</span>
                   </Link>
                 </div>
               </CardContent>
@@ -102,7 +104,7 @@ const HomePage: React.FC = () => {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold">Skill Trades</CardTitle>
-                  <Badge variant="default" className="text-xs bg-orange-500">Active</Badge>
+                  <Badge variant="outline" topic="trades" className="text-xs">Active</Badge>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 pb-3">
@@ -110,20 +112,20 @@ const HomePage: React.FC = () => {
                   Exchange your skills with others in the community. Find the perfect match for your needs.
                 </p>
                 <div className="grid grid-cols-2 gap-2 mb-3">
-                  <div className="text-center p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
-                    <div className="text-lg font-bold text-orange-600 dark:text-orange-400">1,247</div>
+                  <div className={`text-center p-3 ${semanticClasses('trades').bgSubtle} rounded-lg`}>
+                    <div className={`text-lg font-bold ${semanticClasses('trades').text}`}>1,247</div>
                     <div className="text-xs text-muted-foreground">Active Trades</div>
                   </div>
-                  <div className="text-center p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                    <div className="text-lg font-bold text-blue-600 dark:text-blue-400">892</div>
+                  <div className={`text-center p-3 ${semanticClasses('community').bgSubtle} rounded-lg`}>
+                    <div className={`text-lg font-bold ${semanticClasses('community').text} dark:text-blue-400`}>892</div>
                     <div className="text-xs text-muted-foreground">Completed</div>
                   </div>
                 </div>
               </CardContent>
               <CardFooter>
-                <Link to="/trades" className="w-full text-center text-sm font-medium text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors">
+                <TopicLink to="/trades" topic="trades" className="w-full text-center text-sm font-medium transition-colors">
                   Start Trading Skills →
-                </Link>
+                </TopicLink>
               </CardFooter>
             </Card>
           </BentoItem>
@@ -146,7 +148,7 @@ const HomePage: React.FC = () => {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold">Collaborations</CardTitle>
-                  <Badge variant="default" className="text-xs bg-purple-500">Team</Badge>
+                  <Badge variant="outline" topic="collaboration" className="text-xs">Team</Badge>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 pb-3">
@@ -169,9 +171,9 @@ const HomePage: React.FC = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Link to="/collaborations" className="w-full text-center text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors">
+                <TopicLink to="/collaborations" topic="collaboration" className="w-full text-center text-sm font-medium transition-colors">
                   Explore Collaborations →
-                </Link>
+                </TopicLink>
               </CardFooter>
             </Card>
           </BentoItem>
@@ -193,7 +195,7 @@ const HomePage: React.FC = () => {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold">Challenges</CardTitle>
-                  <Badge variant="default" className="text-xs bg-green-500">Rewards</Badge>
+                  <Badge variant="outline" topic="success" className="text-xs">Rewards</Badge>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 pb-3">
@@ -208,9 +210,9 @@ const HomePage: React.FC = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Link to="/challenges" className="w-full text-center text-sm font-medium text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors">
+                <TopicLink to="/challenges" topic="success" className="w-full text-center text-sm font-medium transition-colors">
                   View Challenges →
-                </Link>
+                </TopicLink>
               </CardFooter>
             </Card>
           </BentoItem>
@@ -233,7 +235,7 @@ const HomePage: React.FC = () => {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold">Community Stats</CardTitle>
-                  <Badge variant="secondary" className="text-xs">Live</Badge>
+                  <Badge variant="outline" topic="community" className="text-xs">Live</Badge>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 pb-3">
@@ -268,7 +270,7 @@ const HomePage: React.FC = () => {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
-                  <Badge variant="secondary" className="text-xs">Real-time</Badge>
+                  <Badge variant="outline" topic="community" className="text-xs">Real-time</Badge>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 pb-3">
@@ -285,16 +287,16 @@ const HomePage: React.FC = () => {
                     <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                     <span className="text-xs">Completed: UI/UX Design Sprint</span>
                   </div>
-                  <div className="flex items-center space-x-3 p-2 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                  <div className="flex items-center space-x-3 p-2 bg-primary/10 rounded-lg">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
                     <span className="text-xs">New user: Sarah Chen (Designer)</span>
                   </div>
                 </div>
               </CardContent>
               <CardFooter>
-                <Link to="/users" className="w-full text-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
+                <TopicLink to="/users" topic="community" className="w-full text-center text-sm font-medium transition-colors">
                   Browse Community →
-                </Link>
+                </TopicLink>
               </CardFooter>
             </Card>
           </BentoItem>
@@ -325,9 +327,9 @@ const HomePage: React.FC = () => {
                 </p>
               </CardContent>
               <CardFooter>
-                <Link to="/users" className="w-full text-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
+                <TopicLink to="/users" topic="community" className="w-full text-center text-sm font-medium transition-colors">
                   Browse Users →
-                </Link>
+                </TopicLink>
               </CardFooter>
             </Card>
 
@@ -349,9 +351,9 @@ const HomePage: React.FC = () => {
                 </p>
               </CardContent>
               <CardFooter>
-                <Link to="/messages" className="w-full text-center text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors">
+                <TopicLink to="/messages" topic="collaboration" className="w-full text-center text-sm font-medium transition-colors">
                   Open Messages →
-                </Link>
+                </TopicLink>
               </CardFooter>
             </Card>
 
@@ -373,9 +375,9 @@ const HomePage: React.FC = () => {
                 </p>
               </CardContent>
               <CardFooter>
-                <Link to="/leaderboard" className="w-full text-center text-sm font-medium text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors">
+                <TopicLink to="/leaderboard" topic="success" className="w-full text-center text-sm font-medium transition-colors">
                   View Leaderboard →
-                </Link>
+                </TopicLink>
               </CardFooter>
             </Card>
         </div>

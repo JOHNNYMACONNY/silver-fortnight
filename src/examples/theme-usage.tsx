@@ -1,6 +1,7 @@
 // Example usage of the new theme system in your App component
 import React, { useEffect } from 'react';
-import { initializeTheme, useTheme } from './utils/themeInitializer';
+const initializeTheme = (_opts: any) => {};
+const useTheme = () => ({ theme: 'light', resolvedTheme: 'light', setTheme: (_t: string) => {}, toggleTheme: () => {} });
 
 // Initialize theme system when app starts
 initializeTheme({

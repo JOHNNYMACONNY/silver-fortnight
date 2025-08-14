@@ -116,7 +116,7 @@ export const ItemDetailsStep: React.FC<StepComponentProps> = ({
         value={data.description || ''}
         onChange={(e) => onChange('description', e.target.value)}
         variant="glass"
-        brandAccent="gradient"
+        brandAccent="adaptive"
         minRows={4}
         maxRows={8}
         showCharacterCount
@@ -218,7 +218,7 @@ export const PricingStep: React.FC<StepComponentProps> = ({
         hint="Help others know if their items might interest you"
       />
 
-      <div className="bg-white/10 dark:bg-gray-800/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-gray-700/30">
+      <div className="glassmorphic p-4">
         <h4 className="font-medium text-gray-900 dark:text-white mb-2">Trade Value Guidelines</h4>
         <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
           <li>• Be realistic about your item's current market value</li>
@@ -301,7 +301,7 @@ export const PreferencesStep: React.FC<StepComponentProps> = ({
             type="checkbox"
             checked={data.allowCounterOffers || false}
             onChange={(e) => onChange('allowCounterOffers', e.target.checked)}
-            className="w-4 h-4 text-orange-500 bg-white/20 border-white/30 rounded focus:ring-orange-500 focus:ring-2"
+            className="w-4 h-4 text-primary bg-white/20 border-border rounded focus:ring-ring focus:ring-2"
           />
           <span className="text-gray-900 dark:text-white">Allow counter-offers</span>
         </label>
@@ -333,7 +333,7 @@ export const PreferencesStep: React.FC<StepComponentProps> = ({
         value={data.additionalNotes || ''}
         onChange={(e) => onChange('additionalNotes', e.target.value)}
         variant="glass"
-        brandAccent="gradient"
+        brandAccent="adaptive"
         minRows={3}
         maxRows={5}
         showCharacterCount
@@ -386,9 +386,9 @@ export const ConfirmationStep: React.FC<StepComponentProps> = ({
       </div>
 
       {/* Item Details Summary */}
-      <div className="bg-white/10 dark:bg-gray-800/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 dark:border-gray-700/30">
+      <div className="glassmorphic p-6">
         <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-          <span className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">1</span>
+          <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold mr-3">1</span>
           Item Details
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -416,7 +416,7 @@ export const ConfirmationStep: React.FC<StepComponentProps> = ({
       </div>
 
       {/* Pricing Summary */}
-      <div className="bg-white/10 dark:bg-gray-800/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 dark:border-gray-700/30">
+      <div className="glassmorphic p-6">
         <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
           <span className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">2</span>
           Pricing & Value
@@ -440,7 +440,7 @@ export const ConfirmationStep: React.FC<StepComponentProps> = ({
       </div>
 
       {/* Preferences Summary */}
-      <div className="bg-white/10 dark:bg-gray-800/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 dark:border-gray-700/30">
+      <div className="glassmorphic p-6">
         <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
           <span className="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">3</span>
           Trade Preferences
@@ -473,8 +473,8 @@ export const ConfirmationStep: React.FC<StepComponentProps> = ({
             </div>
           )}
           {data.urgentTrade && (
-            <div className="flex items-center text-sm text-orange-600 dark:text-orange-400">
-              <span className="w-4 h-4 bg-orange-500 rounded-full mr-2"></span>
+            <div className="flex items-center text-sm text-primary">
+              <span className="w-4 h-4 bg-primary rounded-full mr-2"></span>
               Urgent trade
             </div>
           )}
@@ -489,7 +489,7 @@ export const ConfirmationStep: React.FC<StepComponentProps> = ({
       </div>
 
       {/* Final confirmation */}
-      <div className="bg-gradient-to-r from-orange-500/10 to-blue-500/10 backdrop-blur-sm rounded-xl p-6 border border-orange-200/30 dark:border-orange-700/30">
+      <div className="glassmorphic p-6">
         <div className="flex items-center space-x-3">
           <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-blue-500 rounded-full flex items-center justify-center">
             <span className="text-white text-xl">✓</span>

@@ -9,6 +9,7 @@ import {
   signOut as firebaseSignOut
 } from 'firebase/auth';
 import { autoCreateUserProfile } from './utils/autoCreateUserProfile';
+import { markLoginDay } from './services/streaks';
 import { User as FirestoreUser, getUserProfile } from './services/firestore-exports';
 
 // Admin configuration - can be moved to environment variables later
@@ -68,6 +69,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (user) {
           const { data: profile } = await getUserProfile(user.uid);
           setUserProfile(profile || null);
+          // Update login streak on session restore
+          try { await markLoginDay(user.uid); } catch (e) { /* non-blocking */ }
         } else {
           setUserProfile(null);
         }
@@ -101,6 +104,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data: profile } = await getUserProfile(result.user.uid);
       setUserProfile(profile || null);
       await autoCreateUserProfile(); // Ensure Firestore user doc exists
+      // Update login streak on successful sign-in
+      try { await markLoginDay(result.user.uid); } catch (e) { /* non-blocking */ }
       console.log('AuthProvider: Email sign in successful');
     } catch (err) {
       console.error('AuthProvider: Email sign in error', err);
@@ -124,6 +129,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data: profile } = await getUserProfile(result.user.uid);
       setUserProfile(profile || null);
       await autoCreateUserProfile(); // Ensure Firestore user doc exists
+      // Update login streak on successful Google sign-in
+      try { await markLoginDay(result.user.uid); } catch (e) { /* non-blocking */ }
       console.log('AuthProvider: Google sign in successful');
     } catch (err) {
       console.error('AuthProvider: Google sign in error', err);

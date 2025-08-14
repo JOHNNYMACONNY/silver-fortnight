@@ -23,64 +23,34 @@ export type MessageType = 'system' | 'text' | 'image' | 'file';
 
 export const userConverter = {
   toFirestore: (user: User): DocumentData => {
-    const { id, ...data } = user;
-    return {
-      ...data,
-      createdAt: user.createdAt || serverTimestamp(),
-    };
+    const { id, ...data } = user as any;
+    return { ...data, createdAt: (user as any).createdAt || serverTimestamp() };
   },
-  fromFirestore: (
-    snapshot: QueryDocumentSnapshot,
-    options: SnapshotOptions
-  ): User => {
-    const data = snapshot.data(options);
-    return {
-      id: snapshot.id,
-      ...data,
-      createdAt: data.createdAt,
-    } as User;
+  fromFirestore: (snapshot: QueryDocumentSnapshot, options: SnapshotOptions): User => {
+    const data = snapshot.data(options) as DocumentData;
+    return { id: snapshot.id, ...data, createdAt: (data as any).createdAt } as User;
   },
 };
 
 export const tradeConverter = {
   toFirestore: (trade: Trade): DocumentData => {
-    const { id, ...data } = trade;
-    return {
-      ...data,
-      createdAt: trade.createdAt || serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    };
+    const { id, ...data } = trade as any;
+    return { ...data, createdAt: (trade as any).createdAt || serverTimestamp(), updatedAt: serverTimestamp() };
   },
-  fromFirestore: (
-    snapshot: QueryDocumentSnapshot,
-    options: SnapshotOptions
-  ): Trade => {
-    const data = snapshot.data(options);
-    return {
-      id: snapshot.id,
-      ...data,
-    } as Trade;
+  fromFirestore: (snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Trade => {
+    const data = snapshot.data(options) as DocumentData;
+    return { id: snapshot.id, ...data } as Trade;
   },
 };
 
 export const collaborationConverter = {
   toFirestore: (collaboration: Collaboration): DocumentData => {
-    const { id, ...data } = collaboration;
-    return {
-      ...data,
-      createdAt: collaboration.createdAt || serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    };
+    const { id, ...data } = collaboration as any;
+    return { ...data, createdAt: (collaboration as any).createdAt || serverTimestamp(), updatedAt: serverTimestamp() };
   },
-  fromFirestore: (
-    snapshot: QueryDocumentSnapshot,
-    options: SnapshotOptions
-  ): Collaboration => {
-    const data = snapshot.data(options);
-    return {
-      id: snapshot.id,
-      ...data,
-    } as Collaboration;
+  fromFirestore: (snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Collaboration => {
+    const data = snapshot.data(options) as DocumentData;
+    return { id: snapshot.id, ...data } as Collaboration;
   },
 };
 

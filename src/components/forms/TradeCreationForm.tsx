@@ -240,7 +240,7 @@ export const TradeCreationForm: React.FC<TradeCreationFormProps> = ({
       )}
 
       {/* Help Section */}
-      <div className="mt-12 bg-white/5 dark:bg-gray-800/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 dark:border-gray-700/20">
+      <div className="mt-12 glassmorphic p-6">
         <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
           Tips for a Successful Trade
         </h3>

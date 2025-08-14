@@ -1,18 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
-import { getChallenges, joinChallenge, getUserChallenges, onActiveChallenges, getRecommendedChallenges } from '../services/challenges';
+import { getChallenges, joinChallenge, getUserChallenges, onActiveChallenges, getRecommendedChallenges, getFeaturedDaily, getFeaturedWeekly } from '../services/challenges';
 import { Challenge, ChallengeFilters, ChallengeSortBy, ChallengeStatus, ChallengeType, ChallengeDifficulty, ChallengeCategory } from '../types/gamification';
 import { useToast } from '../contexts/ToastContext';
-import { Award, Filter, Search, Clock, Calendar, Users, Trophy } from 'lucide-react';
+import { Award, Filter, Search, Clock, Calendar, Users, Trophy, Dumbbell } from 'lucide-react';
+import { ChallengeCalendar } from '../components/features/challenges/ChallengeCalendar';
 import { ChallengeCard } from '../components/features/challenges/ChallengeCard';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Tooltip } from '../components/ui/Tooltip';
 import { cn } from '../utils/cn';
+import { useBusinessMetrics } from '../contexts/PerformanceContext';
+import { Button } from '../components/ui/Button';
+import { markSkillPracticeDay, hasPracticedToday } from '../services/streaks';
 
 
 export const ChallengesPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { track } = useBusinessMetrics();
 
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [filteredChallenges, setFilteredChallenges] = useState<Challenge[]>([]);
@@ -21,6 +28,9 @@ export const ChallengesPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [liveCount, setLiveCount] = useState<number | null>(null);
   const [recommended, setRecommended] = useState<Challenge[]>([]);
+  const [featuredDaily, setFeaturedDaily] = useState<Challenge | null>(null);
+  const [featuredWeekly, setFeaturedWeekly] = useState<Challenge | null>(null);
+  const [practicedToday, setPracticedToday] = useState<boolean>(false);
 
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,6 +52,22 @@ export const ChallengesPage: React.FC = () => {
     if (currentUser) {
       fetchUserChallenges();
     }
+    // Check practiced-today indicator (non-blocking)
+    (async () => {
+      if (!currentUser?.uid) return;
+      try {
+        const practiced = await hasPracticedToday(currentUser.uid);
+        setPracticedToday(practiced);
+      } catch {}
+    })();
+    // Load featured challenges (non-blocking)
+    (async () => {
+      try {
+        const [d, w] = await Promise.all([getFeaturedDaily(), getFeaturedWeekly()]);
+        setFeaturedDaily(d);
+        setFeaturedWeekly(w);
+      } catch {}
+    })();
     // Subscribe to live updates of active challenges
     const unsubscribe = onActiveChallenges((live) => {
       setLiveCount(live.length);
@@ -51,6 +77,15 @@ export const ChallengesPage: React.FC = () => {
     return () => unsubscribe();
   }, [currentUser]);
 
+  // Apply type filter from query param (e.g., /challenges?type=solo)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const typeParam = params.get('type');
+    if (typeParam && Object.values(ChallengeType).includes(typeParam as ChallengeType)) {
+      setSelectedType(typeParam as ChallengeType);
+    }
+  }, [location.search]);
+
   useEffect(() => {
     // Fetch recommended challenges (non-blocking)
     (async () => {
@@ -58,6 +93,8 @@ export const ChallengesPage: React.FC = () => {
         const res = await getRecommendedChallenges(currentUser?.uid || '');
         if (res.success && res.challenges) {
           setRecommended(res.challenges.slice(0, 3));
+          // Track impressions for recommendations
+          try { track('challenge_recommendation_impressions', res.challenges.length); } catch {}
         }
       } catch (e) {
         // Silent fail for recommendations
@@ -149,6 +186,12 @@ export const ChallengesPage: React.FC = () => {
     }
 
     setFilteredChallenges(result);
+    // Track zero-result state for analytics
+    try {
+      if (result.length === 0) {
+        track('challenge_filters_zero_results', 1);
+      }
+    } catch {}
   };
 
   const resetFilters = () => {
@@ -157,6 +200,7 @@ export const ChallengesPage: React.FC = () => {
     setSelectedDifficulty('');
     setSelectedStatus('');
     setSelectedType('');
+    try { track('challenge_filters_cleared', 1); } catch {}
   };
 
   // Format date
@@ -186,6 +230,13 @@ export const ChallengesPage: React.FC = () => {
       const result = await joinChallenge(challengeId, currentUser.uid);
       if (result.success) {
         addToast('success', 'Successfully joined challenge!');
+        // Track join event
+        try {
+          track('challenge_joins', 1);
+          if (recommended.some((c) => c.id === challengeId)) {
+            track('challenge_recommendation_joins', 1);
+          }
+        } catch {}
         fetchChallenges();
         fetchUserChallenges();
       } else {
@@ -198,7 +249,7 @@ export const ChallengesPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+      <div className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 flex flex-col md:flex-row md:items-center md:justify-between mb-8">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold text-text-primary">Challenges</h1>
@@ -216,13 +267,10 @@ export const ChallengesPage: React.FC = () => {
         </div>
 
         <div className="mt-4 md:mt-0">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="inline-flex items-center px-4 py-2 border border-border-primary rounded-md shadow-sm text-sm font-medium text-text-secondary bg-background-secondary hover:bg-background-tertiary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring transition-colors duration-200"
-          >
+          <Button variant="outline" size="md" onClick={() => setShowFilters(!showFilters)}>
             <Filter className="mr-2 h-4 w-4" />
             Filters
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -248,7 +296,71 @@ export const ChallengesPage: React.FC = () => {
         ))}
       </div>
 
-      <div className="mb-6">
+      <div className="glassmorphic rounded-xl p-4 md:p-6 mb-6">
+        {/* Daily Practice quick action */}
+        {currentUser?.uid && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-card/50">
+              <div className="flex items-center gap-3">
+                <Dumbbell className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="text-sm font-medium text-foreground">Daily Practice</div>
+                  <div className="text-xs text-muted-foreground">
+                    {practicedToday ? (
+                      <span className="inline-flex items-center gap-1">
+                        <span className="inline-block h-2 w-2 rounded-full bg-success" aria-hidden />
+                        Practiced today
+                      </span>
+                    ) : (
+                      'Log a quick practice session to progress your skill streak.'
+                    )}
+                  </div>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                onClick={async () => {
+                  try {
+                    await markSkillPracticeDay(currentUser.uid);
+                    addToast('success', "Logged today's practice");
+                    setPracticedToday(true);
+                  } catch {
+                    addToast('error', 'Failed to log practice');
+                  }
+                }}
+              >
+                Log practice
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {(featuredDaily || featuredWeekly) && (
+          <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
+            {featuredDaily && (
+              <Tooltip content={<div>Today’s featured daily challenge. Base + bonus XP available.</div>}>
+                <Link to={`/challenges/${featuredDaily.id}`} className="inline-flex items-center gap-1 text-primary hover:underline" onClick={(e) => e.stopPropagation()}>
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
+                  Featured today
+                </Link>
+              </Tooltip>
+            )}
+            {featuredWeekly && (
+              <Tooltip content={<div>This week’s featured challenge. Complete for base + bonus XP.</div>}>
+                <Link to={`/challenges/${featuredWeekly.id}`} className="inline-flex items-center gap-1 text-primary hover:underline" onClick={(e) => e.stopPropagation()}>
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
+                  Featured this week
+                </Link>
+              </Tooltip>
+            )}
+          </div>
+        )}
+
+        {/* Minimal calendar strip */}
+        <div className="mb-6">
+          <ChallengeCalendar />
+        </div>
+
         {recommended.length > 0 && (
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-text-primary mb-2">Recommended for you</h3>
@@ -293,7 +405,7 @@ export const ChallengesPage: React.FC = () => {
       </div>
 
       {showFilters && (
-        <div className="bg-card text-card-foreground p-4 rounded-lg shadow-sm border border-border-primary mb-6 transition-all">
+        <div className="glassmorphic rounded-xl p-4 md:p-6 mb-6 transition-all">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label htmlFor="category" className="block text-sm font-medium text-text-primary mb-1">
@@ -372,12 +484,9 @@ export const ChallengesPage: React.FC = () => {
             </div>
           </div>
           <div className="mt-4 flex justify-end">
-            <button
-              onClick={resetFilters}
-              className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary"
-            >
+            <Button variant="ghost" size="sm" onClick={resetFilters}>
               Reset
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -408,7 +517,18 @@ export const ChallengesPage: React.FC = () => {
         <div className="text-center py-12">
           <Trophy className="mx-auto h-12 w-12 text-text-tertiary" />
           <h3 className="mt-2 text-sm font-medium text-text-primary">No challenges found</h3>
-          <p className="mt-1 text-sm text-text-muted">Try adjusting your filters.</p>
+          <p className="mt-1 text-sm text-text-muted">
+            {activeTab === 'mine'
+              ? 'You have not joined any challenges yet.'
+              : activeTab === 'active'
+                ? 'No active challenges match your filters.'
+                : 'Try adjusting your filters.'}
+          </p>
+          <div className="mt-4">
+            <Button variant="outline" size="sm" onClick={resetFilters} aria-label="Clear filters">
+              Clear filters
+            </Button>
+          </div>
         </div>
       )}
 
@@ -431,17 +551,14 @@ export const ChallengesPage: React.FC = () => {
                     >
                       View Details
                     </Link>
-                    <button
+                    <Button
                       onClick={(e) => { e.stopPropagation(); handleJoinChallenge(challenge.id); }}
                       disabled={isUserJoined}
-                      className={`px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
-                        isUserJoined 
-                          ? 'bg-background-tertiary text-text-tertiary cursor-not-allowed' 
-                          : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      }`}
+                      variant={isUserJoined ? 'secondary' : 'primary'}
+                      size="sm"
                     >
                       {isUserJoined ? 'Joined' : 'Join Challenge'}
-                    </button>
+                    </Button>
                   </div>
                 }
               />

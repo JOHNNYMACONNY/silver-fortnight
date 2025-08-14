@@ -95,8 +95,8 @@ export const AICodeReviewInterface: React.FC<AICodeReviewInterfaceProps> = ({
   // Get severity color
   const getSeverityColor = (severity: ReviewFeedback['severity']) => {
     switch (severity) {
-      case 'error': return 'border-red-500/30 bg-red-500/10';
-      case 'warning': return 'border-yellow-500/30 bg-yellow-500/10';
+    case 'error': return 'border-error bg-red-500/10';
+    case 'warning': return 'border-warning bg-yellow-500/10';
       case 'info': return 'border-blue-500/30 bg-blue-500/10';
     }
   };
@@ -105,16 +105,16 @@ export const AICodeReviewInterface: React.FC<AICodeReviewInterfaceProps> = ({
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-400';
     if (score >= 60) return 'text-yellow-400';
-    if (score >= 40) return 'text-orange-400';
+    if (score >= 40) return 'text-primary';
     return 'text-red-400';
   };
 
   // Get impact color
   const getImpactColor = (impact: CodeSuggestion['impact']) => {
     switch (impact) {
-      case 'high': return 'bg-red-500/20 text-red-300 border-red-500/30';
-      case 'medium': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
-      case 'low': return 'bg-green-500/20 text-green-300 border-green-500/30';
+    case 'high': return 'bg-red-500/20 text-red-300 border-error';
+    case 'medium': return 'bg-yellow-500/20 text-yellow-300 border-warning';
+    case 'low': return 'bg-green-500/20 text-green-300 border-success';
     }
   };
 
@@ -133,7 +133,7 @@ export const AICodeReviewInterface: React.FC<AICodeReviewInterfaceProps> = ({
 
       {!review ? (
         /* Code Submission Form */
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardHeader>
             <CardTitle className="text-white flex items-center space-x-2">
               <Code className="w-5 h-5" />
@@ -168,7 +168,7 @@ export const AICodeReviewInterface: React.FC<AICodeReviewInterfaceProps> = ({
             </div>
 
             {error && (
-              <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+              <div className="bg-red-500/20 border border-error rounded-lg p-3">
                 <p className="text-red-200 text-sm">{error}</p>
               </div>
             )}
@@ -201,7 +201,7 @@ export const AICodeReviewInterface: React.FC<AICodeReviewInterfaceProps> = ({
             className="space-y-6"
           >
             {/* Overall Score */}
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <Card className="glassmorphic">
               <CardContent className="p-6">
                 <div className="text-center space-y-4">
                   <div className="flex items-center justify-center space-x-4">
@@ -233,7 +233,7 @@ export const AICodeReviewInterface: React.FC<AICodeReviewInterfaceProps> = ({
             </Card>
 
             {/* Detailed Feedback */}
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <Card className="glassmorphic">
               <CardHeader>
                 <CardTitle className="text-white flex items-center space-x-2">
                   <Target className="w-5 h-5" />
@@ -275,7 +275,7 @@ export const AICodeReviewInterface: React.FC<AICodeReviewInterfaceProps> = ({
 
             {/* Suggestions */}
             {review.suggestions.length > 0 && (
-              <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <Card className="glassmorphic">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center space-x-2">
                     <Lightbulb className="w-5 h-5" />
@@ -323,7 +323,7 @@ export const AICodeReviewInterface: React.FC<AICodeReviewInterfaceProps> = ({
             {/* Strengths and Next Steps */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Strengths */}
-              <Card className="bg-green-500/10 backdrop-blur-md border-green-500/20">
+              <Card className="glassmorphic">
                 <CardHeader>
                   <CardTitle className="text-green-300 flex items-center space-x-2">
                     <CheckCircle className="w-5 h-5" />
@@ -343,7 +343,7 @@ export const AICodeReviewInterface: React.FC<AICodeReviewInterfaceProps> = ({
               </Card>
 
               {/* Next Steps */}
-              <Card className="bg-blue-500/10 backdrop-blur-md border-blue-500/20">
+              <Card className="glassmorphic">
                 <CardHeader>
                   <CardTitle className="text-blue-300 flex items-center space-x-2">
                     <TrendingUp className="w-5 h-5" />

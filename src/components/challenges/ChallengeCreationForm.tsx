@@ -104,7 +104,7 @@ export const ChallengeCreationForm: React.FC<ChallengeCreationFormProps> = ({
 
   // Get challenge type options based on allowed types
   const getTypeOptions = (): DropdownOption[] => {
-    const typeMap = {
+    const typeMap: Record<ChallengeType.SOLO | ChallengeType.TRADE | ChallengeType.COLLABORATION, { label: string; description: string; icon: JSX.Element } > = {
       [ChallengeType.SOLO]: { 
         label: 'Solo Challenge', 
         description: 'Individual skill building',
@@ -122,7 +122,11 @@ export const ChallengeCreationForm: React.FC<ChallengeCreationFormProps> = ({
       }
     };
 
-    return allowedTypes.map(type => ({
+    const allowedCore = allowedTypes.filter(t => 
+      t === ChallengeType.SOLO || t === ChallengeType.TRADE || t === ChallengeType.COLLABORATION
+    ) as (ChallengeType.SOLO | ChallengeType.TRADE | ChallengeType.COLLABORATION)[];
+
+    return allowedCore.map((type) => ({
       value: type,
       label: typeMap[type].label,
       description: typeMap[type].description,
@@ -235,7 +239,7 @@ export const ChallengeCreationForm: React.FC<ChallengeCreationFormProps> = ({
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center justify-center space-x-3"
           >
-            <Target className="w-8 h-8 text-orange-400" />
+            <Target className="w-8 h-8 text-primary" />
             <h1 className="text-3xl font-bold text-white">Create New Challenge</h1>
           </motion.div>
           <p className="text-gray-300 max-w-2xl mx-auto">
@@ -251,7 +255,7 @@ export const ChallengeCreationForm: React.FC<ChallengeCreationFormProps> = ({
           className="space-y-6"
         >
           <h2 className="text-xl font-semibold text-white flex items-center space-x-2">
-            <Award className="w-5 h-5 text-orange-400" />
+            <Award className="w-5 h-5 text-primary" />
             <span>Basic Information</span>
           </h2>
 
@@ -458,15 +462,15 @@ export const ChallengeCreationForm: React.FC<ChallengeCreationFormProps> = ({
           className="space-y-6"
         >
           <h2 className="text-xl font-semibold text-white flex items-center space-x-2">
-            {formData.type === ChallengeType.SOLO && <Zap className="w-5 h-5 text-orange-400" />}
+            {formData.type === ChallengeType.SOLO && <Zap className="w-5 h-5 text-primary" />}
             {formData.type === ChallengeType.TRADE && <TrendingUp className="w-5 h-5 text-blue-400" />}
             {formData.type === ChallengeType.COLLABORATION && <Users className="w-5 h-5 text-purple-400" />}
             <span>{formData.type.charAt(0).toUpperCase() + formData.type.slice(1)} Configuration</span>
           </h2>
 
           {formData.type === ChallengeType.SOLO && (
-            <div className="space-y-4 bg-orange-500/10 rounded-lg p-6 border border-orange-500/20">
-              <p className="text-orange-200 text-sm">
+            <div className="space-y-4 bg-primary/10 rounded-lg p-6 border border-primary/20">
+              <p className="text-primary/70 text-sm">
                 Solo challenges focus on individual skill building with optional AI mentoring support.
               </p>
               {/* Solo-specific fields would go here */}

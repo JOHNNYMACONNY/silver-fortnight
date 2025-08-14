@@ -69,11 +69,13 @@
   - Priority-based filter application (exact matches first, then ranges, then arrays)
   - Query optimization based on filter complexity
   - Metadata tracking for analytics
+  - Skills filtering uses `skillsIndex` with `array-contains-any` for `filters.skills` and legacy `skillsRequired`
 - **Query Builder Features**:
   - Constraint prioritization for performance
   - Smart ordering based on active filters
   - Dynamic limit optimization
   - Query metadata collection
+  - Maps combined `filters.skills` and `filters.skillsRequired` to `skillsIndex` lookups (lowercased, max 10)
 
 #### **2. Enhanced Text Search** ✅
 - **File**: `src/services/firestore.ts`
@@ -257,14 +259,35 @@ async trackFilterUsage(
 ### 🚀 **Deployment Notes**
 
 #### **Database Indexes** (Required)
-```sql
--- Recommended Firestore indexes for optimal performance
-CREATE INDEX idx_collaborations_status_createdAt ON collaborations(status, createdAt);
-CREATE INDEX idx_collaborations_category_createdAt ON collaborations(category, createdAt);
-CREATE INDEX idx_collaborations_skillsRequired ON collaborations(skillsRequired);
-CREATE INDEX idx_collaborations_maxParticipants ON collaborations(maxParticipants);
-CREATE INDEX idx_collaborations_location ON collaborations(location);
+Indexes are defined in `firestore.indexes.json`. Ensure these exist (deploy with `firebase deploy --only firestore:indexes`):
+
+```json
+{
+  "collectionGroup": "collaborations",
+  "queryScope": "COLLECTION",
+  "fields": [
+    {"fieldPath": "skillsIndex", "arrayConfig": "CONTAINS"},
+    {"fieldPath": "status", "order": "ASCENDING"},
+    {"fieldPath": "createdAt", "order": "DESCENDING"}
+  ]
+}
 ```
+
+Optionally, add a variant for `category`:
+
+```json
+{
+  "collectionGroup": "collaborations",
+  "queryScope": "COLLECTION",
+  "fields": [
+    {"fieldPath": "skillsIndex", "arrayConfig": "CONTAINS"},
+    {"fieldPath": "category", "order": "ASCENDING"},
+    {"fieldPath": "createdAt", "order": "DESCENDING"}
+  ]
+}
+```
+
+Backfill script is provided at `scripts/backfill-collab-skills-index.ts`.
 
 #### **Configuration**
 - **Filter Persistence**: Enable/disable via configuration

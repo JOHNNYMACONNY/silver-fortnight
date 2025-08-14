@@ -357,6 +357,15 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // User Streaks Collection - for login/challenge/skill streaks
+    // Document IDs are formatted as `${userId}_${type}` so we can authorize via path variable
+    match /userStreaks/{streakId} {
+      // Only the owner of the streak can read or write their own streak documents
+      allow read, create, update: if isAuthenticated() && streakId.matches('^' + request.auth.uid + '_.*$');
+      // Do not allow deletes from client
+      allow delete: if false;
+    }
+
     // Social Stats Collection - for social features and leaderboard appearances
     match /socialStats/{userId} {
       allow read: if isAuthenticated(); // Allow reading for social features

@@ -216,6 +216,30 @@ export interface SkillEndorsement {
 }
 
 /**
+ * Phase 2B.2 - Skill-specific XP tracking
+ */
+export interface UserSkillXP {
+  userId: string;
+  skillName: string;
+  totalXP: number;
+  level: number; // Derived from totalXP thresholds
+  masteryLevel: 'novice' | 'intermediate' | 'advanced' | 'expert' | 'master';
+  lastUpdated: Timestamp;
+  createdAt: Timestamp;
+}
+
+export interface SkillXPTransaction {
+  id?: string;
+  userId: string;
+  skillName: string;
+  amount: number;
+  source: string; // e.g., 'challenge_completion', 'practice_session'
+  sourceId?: string;
+  description?: string;
+  createdAt: Timestamp;
+}
+
+/**
  * Gamification Service Response Types
  */
 export interface XPAwardResult {
@@ -412,6 +436,9 @@ export interface SocialStats {
   leaderboardAppearances: number;
   topRanks: Record<LeaderboardCategory, number>; // Best rank achieved in each category
   lastUpdated: Timestamp;
+  // Optional composite reputation for caching/analytics (0–100)
+  reputationScore?: number;
+  reputationLastComputedAt?: Timestamp;
 }
 
 export interface LeaderboardNotification {
@@ -424,6 +451,26 @@ export interface LeaderboardNotification {
   period: LeaderboardPeriod;
   createdAt: Timestamp;
 }
+
+/**
+ * Streaks (Phase 2B.2)
+ */
+export type StreakType = 'login' | 'challenge' | 'skill_practice';
+
+export interface UserStreak {
+  userId: string;
+  type: StreakType;
+  currentStreak: number;
+  longestStreak: number;
+  lastActivity: Timestamp;
+  freezesUsed: number;
+  maxFreezes: number;
+  lastFreezeAt?: Timestamp;
+  updatedAt?: Timestamp;
+  createdAt?: Timestamp;
+}
+
+export const STREAK_MILESTONE_THRESHOLDS: number[] = [3, 7, 14, 30];
 
 /**
  * Phase 2B UI Component Props

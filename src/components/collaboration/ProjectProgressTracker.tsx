@@ -118,7 +118,7 @@ export const ProjectProgressTracker: React.FC<ProjectProgressTrackerProps> = ({
       case 'completed': return 'bg-green-500';
       case 'in-progress': return 'bg-blue-500';
       case 'overdue': return 'bg-red-500';
-      case 'blocked': return 'bg-orange-500';
+      case 'blocked': return 'bg-primary';
       case 'not-started': return 'bg-gray-500';
       default: return 'bg-gray-500';
     }
@@ -127,7 +127,7 @@ export const ProjectProgressTracker: React.FC<ProjectProgressTrackerProps> = ({
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'critical': return 'bg-red-500';
-      case 'high': return 'bg-orange-500';
+      case 'high': return 'bg-primary';
       case 'medium': return 'bg-yellow-500';
       case 'low': return 'bg-green-500';
       default: return 'bg-gray-500';
@@ -138,7 +138,7 @@ export const ProjectProgressTracker: React.FC<ProjectProgressTrackerProps> = ({
     <div className="space-y-6">
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardContent className="p-4 text-center">
             <Target className="w-8 h-8 text-blue-400 mx-auto mb-2" />
             <div className="text-2xl font-bold text-white">{projectData.overallProgress}%</div>
@@ -146,7 +146,7 @@ export const ProjectProgressTracker: React.FC<ProjectProgressTrackerProps> = ({
           </CardContent>
         </Card>
         
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardContent className="p-4 text-center">
             <Flag className="w-8 h-8 text-green-400 mx-auto mb-2" />
             <div className="text-2xl font-bold text-white">{completedMilestones}/{totalMilestones}</div>
@@ -154,7 +154,7 @@ export const ProjectProgressTracker: React.FC<ProjectProgressTrackerProps> = ({
           </CardContent>
         </Card>
         
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardContent className="p-4 text-center">
             <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-2" />
             <div className="text-2xl font-bold text-white">{overdueMilestones}</div>
@@ -162,7 +162,7 @@ export const ProjectProgressTracker: React.FC<ProjectProgressTrackerProps> = ({
           </CardContent>
         </Card>
         
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardContent className="p-4 text-center">
             <Clock className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
             <div className="text-2xl font-bold text-white">{upcomingMilestones}</div>
@@ -172,7 +172,7 @@ export const ProjectProgressTracker: React.FC<ProjectProgressTrackerProps> = ({
       </div>
 
       {/* Progress Visualization */}
-      <Card className="bg-white/10 backdrop-blur-md border-white/20">
+      <Card className="glassmorphic">
         <CardHeader>
           <CardTitle className="text-white">Project Progress</CardTitle>
         </CardHeader>
@@ -245,7 +245,7 @@ export const ProjectProgressTracker: React.FC<ProjectProgressTrackerProps> = ({
       </Card>
 
       {/* Recent Activity */}
-      <Card className="bg-white/10 backdrop-blur-md border-white/20">
+      <Card className="glassmorphic">
         <CardHeader>
           <CardTitle className="text-white">Recent Activity</CardTitle>
         </CardHeader>
@@ -278,7 +278,7 @@ export const ProjectProgressTracker: React.FC<ProjectProgressTrackerProps> = ({
       </Card>
 
       {/* Team Performance */}
-      <Card className="bg-white/10 backdrop-blur-md border-white/20">
+      <Card className="glassmorphic">
         <CardHeader>
           <CardTitle className="text-white">Team Performance</CardTitle>
         </CardHeader>
@@ -340,7 +340,7 @@ export const ProjectProgressTracker: React.FC<ProjectProgressTrackerProps> = ({
       {/* Milestones List */}
       <div className="space-y-4">
         {projectData.milestones.map((milestone) => (
-          <Card key={milestone.id} className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card key={milestone.id} className="glassmorphic">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
@@ -436,7 +436,7 @@ export const ProjectProgressTracker: React.FC<ProjectProgressTrackerProps> = ({
       </div>
 
       {projectData.milestones.length === 0 && (
-        <Card className="bg-white/5 backdrop-blur-md border-white/10">
+        <Card className="glassmorphic">
           <CardContent className="p-12 text-center">
             <Flag className="w-16 h-16 text-gray-500 mx-auto mb-4" />
             <h3 className="text-gray-400 font-medium mb-2">No Milestones Yet</h3>
@@ -480,7 +480,7 @@ export const ProjectProgressTracker: React.FC<ProjectProgressTrackerProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-1 mb-6 bg-white/10 backdrop-blur-md rounded-lg p-1">
+      <div className="flex space-x-1 mb-6 glassmorphic p-1">
         {[
           { id: 'overview', label: 'Overview', icon: <BarChart3 className="w-4 h-4" /> },
           { id: 'milestones', label: 'Milestones', icon: <Flag className="w-4 h-4" /> },

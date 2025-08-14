@@ -60,8 +60,8 @@ const statusConfig = {
     label: 'In Progress', 
     variant: 'secondary' as const, 
     icon: TrendingUp,
-    color: 'text-orange-600 dark:text-orange-400',
-    bgColor: 'bg-orange-50 dark:bg-orange-900/20'
+    color: 'text-primary',
+    bgColor: 'bg-primary/10'
   },
   'completed': { 
     label: 'Completed', 
@@ -83,7 +83,7 @@ const categoryConfig = {
   'tech': { label: 'Technology', color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-50 dark:bg-blue-900/20' },
   'design': { label: 'Design', color: 'text-purple-600 dark:text-purple-400', bgColor: 'bg-purple-50 dark:bg-purple-900/20' },
   'marketing': { label: 'Marketing', color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-50 dark:bg-green-900/20' },
-  'content': { label: 'Content', color: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-50 dark:bg-orange-900/20' },
+  'content': { label: 'Content', color: 'text-primary', bgColor: 'bg-primary/10' },
   'business': { label: 'Business', color: 'text-indigo-600 dark:text-indigo-400', bgColor: 'bg-indigo-50 dark:bg-indigo-900/20' },
   'education': { label: 'Education', color: 'text-teal-600 dark:text-teal-400', bgColor: 'bg-teal-50 dark:bg-teal-900/20' }
 };

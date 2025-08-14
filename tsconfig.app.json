@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "src/**/*.stories.tsx",
+    "src/components/ui/stories/**",
+    "src/**/__tests__/**",
+    "e2e/**",
+    "scripts/**",
+    "playwright-report/**",
+    "public/**"
+  ]
+}
+
+

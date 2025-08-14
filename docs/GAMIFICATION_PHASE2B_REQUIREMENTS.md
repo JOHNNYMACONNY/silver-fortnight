@@ -201,11 +201,11 @@ interface SkillXPTransaction {
 }
 ```
 
-### 5. Streak System
+### 5. Streak System (MVP implemented + Phase 2B.2 updates)
 
-**Components to Build:**
+**Components (UI status):**
 
-- `StreakDisplay.tsx` - Current streak display
+- `StreakWidget.tsx` - Current streak display (implemented minimal version)
 - `StreakCalendar.tsx` - Visual streak calendar
 - `StreakMilestone.tsx` - Streak milestone celebrations
 - `StreakRecovery.tsx` - Streak recovery options
@@ -219,19 +219,25 @@ interface SkillXPTransaction {
 - Streak milestone rewards
 - Streak leaderboards
 
-**Database Schema:**
+**Database Schema (implemented as `userStreaks` collection):**
 
 ```typescript
 interface UserStreak {
   userId: string;
-  type: 'login' | 'trade' | 'skill_practice';
+  type: 'login' | 'challenge' | 'skill_practice';
   currentStreak: number;
   longestStreak: number;
   lastActivity: Timestamp;
   freezesUsed: number;
   maxFreezes: number;
 }
+
+// Milestones: [3, 7, 14, 30] days
 ```
+
+### 6. Skill XP (Phase 2B.2)
+
+Implemented `userSkillXP` and `skillXPTransactions` with `addSkillXP()` in `src/services/skillXP.ts`. Hooked into challenge completion to award skill XP aligned to `challenge.category`.
 
 ## Technical Implementation Strategy
 
@@ -312,13 +318,13 @@ interface StreakNotification {
 - Shared component library with Phase 2A
 - Optimized asset loading
 
-### 4. Integration with Existing Systems
+### 4. Integration with Existing Systems (updates)
 
 **Service Integration:**
 
-- Extend `gamification.ts` with new XP award types
+- Extend `gamification.ts` with new XP award types (done: use `awardXPWithLeaderboardUpdate` for challenge XP)
 - Add skill-specific XP tracking to trade/role completion
-- Integrate challenge progress with existing actions
+- Integrate challenge progress with existing actions (done: streak increments on challenge completion)
 - Maintain backward compatibility with Phase 1 & 2A
 
 **Component Integration:**

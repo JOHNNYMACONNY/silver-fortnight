@@ -42,12 +42,14 @@ export const CollaborationApplicationForm: React.FC<CollaborationApplicationForm
 
     try {
       const applicationData = {
-        collaborationId: collaborationId,
+        collaborationId,
+        roleId: 'general',
         message,
         applicantId: currentUser.uid,
         applicantName: userProfile.displayName || 'Anonymous',
         applicantPhotoURL: userProfile.photoURL,
-        skills: userProfile.skills || []
+        skills: userProfile.skills || [],
+        status: 'pending' as const
       };
 
       const result = await createCollaborationApplication(applicationData);

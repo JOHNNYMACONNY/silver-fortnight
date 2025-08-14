@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { cn } from '../../utils/cn';
 import { useTradeYaAnimation } from '../../hooks/useTradeYaAnimation';
 import { TradeProgressRing } from './TradeProgressRing';
@@ -55,9 +55,9 @@ const STEP_CONFIGS = {
     defaultIcon: '📝',
   },
   negotiation: {
-    color: 'text-orange-600 dark:text-orange-400',
-    bgColor: 'bg-orange-100 dark:bg-orange-900/20',
-    borderColor: 'border-orange-300 dark:border-orange-700',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
+    borderColor: 'border-primary/30',
     defaultIcon: '🤝',
   },
   confirmation: {
@@ -129,7 +129,7 @@ export const TradingProgressAnimation: React.FC<TradingProgressAnimationProps> =
   // Animation hook
   const { triggerAnimation } = useTradeYaAnimation({
     type: "progress",
-    intensity: "medium",
+    intensity: "standard",
     tradingContext: "general",
   });
 
@@ -212,10 +212,7 @@ export const TradingProgressAnimation: React.FC<TradingProgressAnimationProps> =
             isClickable && "hover:scale-110"
           )}
           animate={{
-            scale: isAnimating ? [1, 1.2, 1] : 1,
-            boxShadow: isAnimating 
-              ? ["0 0 0 0 rgba(249, 115, 22, 0.4)", "0 0 0 10px rgba(249, 115, 22, 0)", "0 0 0 0 rgba(249, 115, 22, 0)"]
-              : "0 0 0 0 rgba(249, 115, 22, 0)",
+            scale: isAnimating ? [1, 1.2, 1] : 1
           }}
           transition={{ duration: 0.6 }}
         >
@@ -234,10 +231,15 @@ export const TradingProgressAnimation: React.FC<TradingProgressAnimationProps> =
             <div className="absolute inset-0">
               <TradeProgressRing
                 progress={step.progress}
-                size={size === "sm" ? 32 : size === "lg" ? 64 : 48}
+                size={size === "sm" ? "sm" : size === "lg" ? "lg" : "md"}
                 strokeWidth={2}
-                showPercentage={false}
-                tradingContext={step.id}
+                showProgress={false}
+                tradingContext={
+                  step.id === "proposal" ? "proposal" :
+                  step.id === "negotiation" ? "negotiation" :
+                  step.id === "confirmation" ? "confirmation" :
+                  step.id === "completion" ? "completion" : "general"
+                }
               />
             </div>
           )}

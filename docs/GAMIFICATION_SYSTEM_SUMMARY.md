@@ -72,6 +72,14 @@ Level 7: Legend (5000+ XP) - All features unlocked
 - **Responsive Design**: Seamless experience across desktop, tablet, and mobile
 - **Admin Detection**: Enhanced auth system with admin role identification
 
+### Phase 2B.2+ Polish
+- **Leaderboard UX**: Shows your rank row even if outside top N; optional “My Circle” filter to view rankings scoped to people you follow.
+- **Weekly Goal**: Editable target and tips toggle with persisted preferences; analytics and toast on first weekly completion (preference-gated).
+- **Challenges Calendar**: Compact strip on `Challenges` with a "View all" link to `/challenges/calendar`; accessibility enhancements (polite live announcements, `aria-busy` on loading). Analytics events captured via `useBusinessMetrics()`:
+  - `challenge_calendar_strip_view` on strip data load
+  - `challenge_calendar_view_all_click` on the "View all" link
+  - `challenge_calendar_page_view` on full page data load
+
 ## 🔧 Technical Implementation
 
 ### Files Created
@@ -207,16 +215,31 @@ userAchievements/       - User achievement unlocks
 - **Achievement System**: Meaningful rewards for platform participation
 - **Foundation Ready**: Infrastructure for advanced gamification features
 
-## 📈 Next Steps - Phase 2B.2
+## 📈 Phase 2B.2 - Complete
+
+### Added in 2B.2
+- ✅ Login streak updates in auth/session flow (`markLoginDay` in `AuthContext.tsx`)
+- ✅ Streak UI widgets:
+  - Full: `src/components/features/StreakWidget.tsx` (tooltips, same‑day “Freeze used” badge, remaining freezes)
+  - Compact: `src/components/features/StreakWidgetCompact.tsx`
+- ✅ Milestone notifications + realtime toasts (`streak_milestone` via `emitGamificationNotification`)
+- ✅ Streak configuration (`src/services/streakConfig.ts`): thresholds (`VITE_STREAK_THRESHOLDS`), max freezes (`VITE_STREAK_MAX_FREEZES`), user auto‑freeze preference (`localStorage` per‑uid)
+- ✅ Gamification Dashboard:
+  - “View streak details” link to History tab with Streaks panel
+  - Collapsible Upcoming Milestones per streak type
+  - Weekly XP Goal with tips and a persisted “Goal met” badge (`xp-week-goal-<uid>-<YYYY-WW>`). Users can edit a personal weekly target (100–5000) and toggle tips (both persisted locally). When crossing the goal for a given ISO week, an analytics event `weekly_goal_met` (via `useBusinessMetrics`) fires once and a lightweight toast reward is shown.
+  - Opt‑in XP Breakdown (“See breakdown”)
+- ✅ Challenges UX: Daily “Log practice” quick action (advances skill streak) and Base vs Bonus XP hint on cards
+- ✅ Tests: auto‑freeze preference respected, practice logging, weekly goal persistence
 
 ### Planned Enhancements (December 2024)
 - [ ] **Challenge System**: Daily/weekly challenges with special rewards
-- [ ] **Skill-Specific XP**: Individual skill progression tracking
-- [ ] **Streak System**: Consecutive activity tracking and bonuses
+- [ ] **Skill-Specific XP**: Advanced skill analytics and endorsements integration
+- [ ] **Streak System**: Milestone notifications and configurable thresholds
 - [ ] **Advanced Analytics**: Personal progress insights dashboard
 - [ ] **Enhanced Social Features**: Team challenges and collaborative goals
 
-### Phase 2B.2 - Challenge System (Ready for Implementation)
+### Challenge System (Next)
 - Challenge creation and management framework
 - Daily/weekly challenge rotation system
 - Challenge progress tracking and completion rewards

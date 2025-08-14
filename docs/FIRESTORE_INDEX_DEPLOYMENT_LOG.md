@@ -2,8 +2,8 @@
 
 ## Phase 1: Index Deployment - Completion Report
 
-**Date:** June 8, 2025  
-**Time:** 3:45 PM (America/Los_Angeles, UTC-7:00)  
+**Date:** August 12, 2025  
+**Time:**  
 **Project:** tradeya-45ede  
 **Status:** ✅ SUCCESSFULLY COMPLETED
 
@@ -68,7 +68,7 @@ firebase deploy --only firestore:indexes --project tradeya-45ede
 
 ### Index Deployment Results
 
-#### New Indexes Successfully Deployed (17 total):
+#### New Indexes Successfully Deployed (includes additions today):
 
 **Trades Collection Group:**
 1. `(participants.creator, status, createdAt)` - COLLECTION_GROUP
@@ -95,15 +95,17 @@ firebase deploy --only firestore:indexes --project tradeya-45ede
 12. `(userId, achievementId)` - COLLECTION
 
 **Collaborations Collection:**
-13. `(creatorId, status, updatedAt)` - COLLECTION
-14. `(status, roleCount, filledRoleCount, createdAt)` - COLLECTION
-15. `(status, tags[CONTAINS])` - COLLECTION
+13. `(skillsIndex[CONTAINS], status, createdAt)` - COLLECTION
+14. `(skillsIndex[CONTAINS], category, createdAt)` - COLLECTION
+15. `(creatorId, status, updatedAt)` - COLLECTION
+16. `(status, roleCount, filledRoleCount, createdAt)` - COLLECTION
+17. `(status, tags[CONTAINS])` - COLLECTION
 
 **Roles Collection Group:**
-16. `(status, createdAt)` - COLLECTION_GROUP
+18. `(status, createdAt)` - COLLECTION_GROUP
 
 **Applications Collection Group:**
-17. `(status, createdAt)` - COLLECTION_GROUP
+19. `(status, createdAt)` - COLLECTION_GROUP
 
 #### Existing Indexes Preserved (17 total):
 The deployment preserved 17 existing production indexes including:

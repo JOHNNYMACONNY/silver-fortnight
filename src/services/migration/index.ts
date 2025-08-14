@@ -124,11 +124,11 @@ export const migrationUtils = {
     
     // Initialize migration registry
     try {
-      const { migrationRegistry: registry } = await import('./migrationRegistry');
-      if (!registry.isInitialized()) {
-        const { db } = await import('../../firebase-config');
-        registry.initialize(db);
-      }
+        const { migrationRegistry: registry } = await import('./migrationRegistry');
+        if (!registry.isInitialized()) {
+          const { getSyncFirebaseDb } = await import('../../firebase-config');
+          registry.initialize(getSyncFirebaseDb());
+        }
     } catch (error) {
       console.error('Failed to initialize migration registry:', error);
     }

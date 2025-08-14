@@ -5,7 +5,7 @@
  * in TradeYa trading workflows.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { cn } from '../../utils/cn';
 import { useSwipeGestures, TRADE_CARD_SWIPE_CONFIG, TRADING_SWIPE_ACTIONS, type SwipeEvent } from '../../hooks/useSwipeGestures';
 import { useMobileAnimation } from '../../hooks/useMobileAnimation';
@@ -187,6 +187,17 @@ export const SwipeableTradeCard: React.FC<SwipeableTradeCardProps> = ({
     );
   };
 
+  // Handlers compatible with framer-motion onPan/onPanEnd
+  const handlePan = useCallback(() => {
+    // noop: we rely on touch handlers for core logic; onPan used for spring affordance
+  }, []);
+
+  const handlePanEnd = useCallback(() => {
+    // reset any local visual state if needed in future
+  }, []);
+
+  const cardRef = useRef<HTMLDivElement | null>(null);
+
   return (
     <div className={cn(
       "relative bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden",
@@ -203,7 +214,7 @@ export const SwipeableTradeCard: React.FC<SwipeableTradeCardProps> = ({
       <motion.div
         ref={cardRef}
         className={cn(
-          "relative backdrop-blur-md bg-white/80 dark:bg-neutral-800/70 border border-white/20 dark:border-neutral-700/30 rounded-xl shadow-glass overflow-hidden",
+          "relative glassmorphic overflow-hidden",
           "transition-all duration-300",
           disabled && "opacity-50 pointer-events-none"
         )}
@@ -239,13 +250,13 @@ export const SwipeableTradeCard: React.FC<SwipeableTradeCardProps> = ({
           <div className="flex items-center text-sm">
             <span className="text-gray-500 dark:text-gray-400 w-16">Offers:</span>
             <span className="text-gray-900 dark:text-white font-medium">
-              {trade.offeredSkill}
+              {(trade as any).offeredSkills?.[0]?.skill ?? (trade as any).offeredSkills?.[0] ?? (trade as any).offeredSkill ?? 'Unknown'}
             </span>
           </div>
           <div className="flex items-center text-sm">
             <span className="text-gray-500 dark:text-gray-400 w-16">Wants:</span>
             <span className="text-gray-900 dark:text-white font-medium">
-              {trade.requestedSkill}
+              {(trade as any).requestedSkills?.[0]?.skill ?? (trade as any).requestedSkills?.[0] ?? (trade as any).requestedSkill ?? 'Unknown'}
             </span>
           </div>
         </div>

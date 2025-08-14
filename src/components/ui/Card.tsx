@@ -77,10 +77,10 @@ const depthStyles = {
 
 // Enhanced variant styles - Tailwind v4 compatible
 const variantStyles = {
-  default: 'bg-card text-card-foreground border border-border',
-  glass: 'glassmorphic', // Universal glassmorphic utility
-  elevated: 'bg-card text-card-foreground border border-border shadow-lg',
-  premium: 'glassmorphic', // Universal glassmorphic utility
+  default: 'bg-card text-card-foreground border-standard',
+  glass: 'glassmorphic border-glass', // Universal glassmorphic utility
+  elevated: 'bg-card text-card-foreground border-standard shadow-lg',
+  premium: 'glassmorphic border-glass', // Universal glassmorphic utility
 };
 
 // Browser compatibility check
@@ -213,7 +213,10 @@ export const Card: React.FC<CardProps> = ({
         ref={cardRef}
         className={cardClassName}
         style={{
-          transform: use3D ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)` : undefined,
+          // Let Framer Motion compose transform with perspective to avoid overwrite
+          transformPerspective: 1000,
+          willChange: 'transform',
+          backfaceVisibility: 'hidden',
           ...glowEffect
         }}
         animate={{

@@ -67,14 +67,14 @@ export const ChatConversationList: React.FC<ChatConversationListProps> = ({
       );
     }
     
-    // For group conversations, search in group name
-    return conversation.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    // For group conversations, search in group title
+    return (conversation as any).title?.toLowerCase().includes(searchTerm.toLowerCase());
   });
   
   // Get conversation display name
   const getConversationName = (conversation: ChatConversation) => {
     if (conversation.type === 'group') {
-      return conversation.name;
+      return (conversation as any).title;
     }
     
     // For direct conversations, show the other participant's name
@@ -115,7 +115,7 @@ export const ChatConversationList: React.FC<ChatConversationListProps> = ({
     
     // Fallback avatar
     return (
-      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-100 text-orange-800 font-semibold">
+      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary font-semibold">
         {otherParticipant?.name.charAt(0).toUpperCase() || '?'}
       </div>
     );
@@ -172,7 +172,7 @@ export const ChatConversationList: React.FC<ChatConversationListProps> = ({
         {/* New conversation button */}
         <button
           onClick={onNewConversation}
-          className="mt-2 w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+          className="mt-2 w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
         >
           <PlusIcon />
           <span className="ml-2">New Conversation</span>
@@ -183,7 +183,7 @@ export const ChatConversationList: React.FC<ChatConversationListProps> = ({
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
           </div>
         ) : filteredConversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-32 px-4 text-center">
@@ -195,7 +195,7 @@ export const ChatConversationList: React.FC<ChatConversationListProps> = ({
             {!searchTerm && (
               <button
                 onClick={onNewConversation}
-                className="mt-2 text-orange-500 hover:text-orange-600 text-sm font-medium"
+      className="mt-2 text-primary hover:text-primary/80 text-sm font-medium"
               >
                 Start a new conversation
               </button>
@@ -222,9 +222,9 @@ export const ChatConversationList: React.FC<ChatConversationListProps> = ({
                       {getConversationName(conversation)}
                     </p>
                     {/* Last message timestamp */}
-                    {conversation.lastMessageTimestamp && (
+                    {(conversation as any).lastMessage?.createdAt && (
                       <p className="text-xs text-gray-500 flex-shrink-0">
-                        {formatTimestamp(conversation.lastMessageTimestamp)}
+                        {formatTimestamp((conversation as any).lastMessage?.createdAt)}
                       </p>
                     )}
                   </div>
@@ -235,13 +235,13 @@ export const ChatConversationList: React.FC<ChatConversationListProps> = ({
                       <p>{conversation.lastMessage.content}</p>
                     ) : (
                       // Display trade link if available in metadata
-                      conversation.metadata?.tradeId && (
-                        <a
-                          href={`/trades/${conversation.metadata.tradeId}`}
+                      (conversation as any).relatedTradeId && (
+                <a
+                          href={`/trades/${(conversation as any).relatedTradeId}`}
                           onClick={(e) => e.stopPropagation()} // Prevent selecting conversation when clicking link
-                          className="text-orange-600 hover:underline"
+                  className="text-primary hover:underline"
                         >
-                          {conversation.metadata.tradeName || 'View trade'}
+                          {(conversation as any).title || 'View trade'}
                         </a>
                       )
                     )}
@@ -249,7 +249,7 @@ export const ChatConversationList: React.FC<ChatConversationListProps> = ({
 
                   {/* Unread count */}
                   {conversation.unreadCount && conversation.unreadCount[currentUser?.uid || ''] > 0 && (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 mt-1">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary mt-1">
                       {conversation.unreadCount[currentUser?.uid || '']}
                     </span>
                   )}

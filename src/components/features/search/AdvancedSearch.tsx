@@ -327,7 +327,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
   return (
     <Card className="w-full mx-auto rounded-2xl shadow-lg border-2 border-transparent focus-within:border-primary transition-all duration-300 bg-card">
-      <CardContent style={{ padding: '1rem' }} className="md:p-6">
+      <CardContent className="p-4 md:p-6">
         <form onSubmit={handleFormSubmit}>
           <Stack gap="md">
             <Cluster gap="sm" align="center">
@@ -335,6 +335,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                 as={motion.div}
                 ref={suggestionsRef}
                 className="relative flex-grow"
+                // @ts-expect-error motion props passthrough
                 animate={searchIconControls}
               >
               <motion.div
@@ -343,7 +344,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                 transition={{ type: 'spring', stiffness: 200, damping: 25 }}
               >
                 <Search
-                  className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground z-10"
+                    className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground z-card-layer-1"
                 />
                 <Input
                   ref={searchInputRef}
@@ -353,22 +354,15 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                   onFocus={(e) => {
                     setIsSearchFocused(true);
                     if (recentSearches.length > 0) setShowRecentSearches(true);
-                    if (window.innerWidth >= 768) {
-                      e.target.style.paddingLeft = '3rem';
-                    }
                   }}
                   onBlur={(e) => {
                     setTimeout(() => {
                       setIsSearchFocused(false);
                       setShowRecentSearches(false);
                     }, 200)
-                    if (window.innerWidth >= 768) {
-                      e.target.style.paddingLeft = '3rem';
-                    } else {
-                      e.target.style.paddingLeft = '2.5rem';
-                    }
                   }}
                   aria-label="Search"
+                  className="pl-10 md:pl-12"
                 />
               </motion.div>
               <AnimatePresence>
@@ -377,8 +371,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-full w-full bg-card border border-border rounded-lg shadow-xl z-50 overflow-hidden"
-                    style={{ marginTop: '0.5rem' }}
+                    className="absolute top-full w-full glassmorphic rounded-lg shadow-xl z-popover overflow-hidden mt-2"
                   >
                     <ul>
                       {filteredSuggestions.map((suggestion, index) => (
@@ -401,16 +394,14 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-full w-full bg-card border border-border rounded-lg shadow-xl z-50 overflow-hidden"
-                    style={{ marginTop: '0.5rem' }}
+                   className="absolute top-full w-full glassmorphic rounded-lg shadow-xl z-popover overflow-hidden mt-2"
                   >
-                    <h3 className="text-sm font-semibold text-muted-foreground" style={{ padding: '0.5rem 1rem' }}>Recent Searches</h3>
+                    <h3 className="text-sm font-semibold text-muted-foreground px-4 py-2">Recent Searches</h3>
                     <ul>
                       {recentSearches.slice(0, 3).map((search) => (
                         <li
                           key={search}
-                          className="cursor-pointer hover:bg-muted transition-colors"
-                          style={{ padding: '0.75rem 1rem' }}
+                          className="cursor-pointer hover:bg-muted transition-colors px-4 py-3"
                           onMouseDown={() => selectSuggestion(search)}
                         >
                           {search}
@@ -502,10 +493,9 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                 exit={{ opacity: 0, height: 0, y: -20 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
               >
-                <Card className="overflow-hidden backdrop-blur-md bg-card/80 border border-border/30 shadow-xl">
+                <Card className="overflow-hidden glassmorphic shadow-xl">
                   <CardContent className="p-6">
-                    <Box
-                      as={motion.div}
+                    <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.2 }}
@@ -518,7 +508,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                           Refine your search with these powerful filters
                         </p>
                       </Stack>
-                    </Box>
+                    </motion.div>
 
                     <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="lg">
                       {/* Status Filter */}
@@ -635,8 +625,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
                     {/* Popular Filters */}
                     {popularFilters.length > 0 && (
-                      <Box
-                        as={motion.div}
+                      <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.3 }}
@@ -660,11 +649,10 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                             ))}
                           </Cluster>
                         </Stack>
-                      </Box>
+                      </motion.div>
                     )}
 
-                    <Box
-                      as={motion.div}
+                    <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.5 }}
@@ -690,7 +678,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                           </Button>
                         </Cluster>
                       </Cluster>
-                    </Box>
+                    </motion.div>
                   </CardContent>
                 </Card>
               </motion.div>

@@ -281,16 +281,16 @@ export const useMobileOptimization = (): MobileOptimizationState & MobileOptimiz
   const optimizeScrolling = useCallback((container: HTMLElement) => {
     if (!state.isTouchDevice) return () => {};
 
-    // Enable momentum scrolling on iOS
-    container.style.webkitOverflowScrolling = 'touch';
-    container.style.overflowScrolling = 'touch';
+    // Enable momentum scrolling on iOS (vendor-specific)
+    (container.style as any).webkitOverflowScrolling = 'touch';
+    (container.style as any).overflowScrolling = 'touch';
 
     // Prevent scroll chaining
     container.style.overscrollBehavior = 'contain';
 
     return () => {
-      container.style.webkitOverflowScrolling = '';
-      container.style.overflowScrolling = '';
+      (container.style as any).webkitOverflowScrolling = '';
+      (container.style as any).overflowScrolling = '';
       container.style.overscrollBehavior = '';
     };
   }, [state.isTouchDevice]);

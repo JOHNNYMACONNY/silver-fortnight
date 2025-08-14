@@ -8,12 +8,25 @@ This guide provides comprehensive documentation for using the TradeYa gamificati
 
 ## Component Overview
 
-The gamification system includes 4 main UI components:
+The gamification system includes these main UI components:
 
 1. **XPDisplay** - Shows user XP progress and level information
 2. **LevelBadge** - Visual level indicator with tier-specific styling
 3. **AchievementBadge** - Individual achievement display with rarity styling
-4. **GamificationDashboard** - Complete gamification overview with tabs
+4. **GamificationDashboard** - Complete gamification overview with tabs (includes Streaks summary, Weekly XP Goal, opt‑in XP Breakdown)
+5. **StreakWidget** - Displays current/longest streak, next milestone, and freeze info
+6. **WeeklyXPGoal** - Shows weekly XP progress with tips and a “Goal met” badge
+7. **XPBreakdown** - Summarizes XP sources (hidden by default behind “See breakdown”)
+8. **Leaderboard** - Global rankings with optional "My Circle" filter and a current-user context row
+
+## Updates (Phase 2B.2+)
+
+- WeeklyXPGoal now supports:
+  - Editable target (100–5000 XP). Persisted in localStorage per-user under `weekly-xp-goal-target-<uid>`.
+  - Tips toggle persisted in localStorage under `weekly-xp-goal-tips-<uid>`.
+  - One-time per-week analytics event `weekly_goal_met` via `useBusinessMetrics()` when crossing to ≥100% for a given week key (YYYY-WW), plus a lightweight toast reward.
+- Notification Preferences supports a **Weekly Goal Met** toast toggle; when disabled, WeeklyXPGoal suppresses the toast while still recording analytics.
+- XPBreakdown visibility now persists per-user via localStorage under `xp-breakdown-visible-<uid>` so the previously chosen state is restored on load.
 
 ## Quick Start
 
@@ -44,6 +57,58 @@ function UserProfile({ userId }: { userId: string }) {
 ```
 
 ## Component Reference
+### StreakWidget
+
+Props:
+```typescript
+interface StreakWidgetProps {
+  userId: string;
+  type?: 'login' | 'challenge' | 'skill_practice';
+  className?: string;
+}
+```
+Notes:
+- Tooltips explain thresholds and +XP at milestones
+- Shows “Freeze used” badge only on the day a freeze was consumed
+- Respects env thresholds and max freezes from `streakConfig`
+
+### WeeklyXPGoal
+
+Props:
+```typescript
+interface WeeklyXPGoalProps {
+  userId: string;
+  target?: number; // default 500; overridden by persisted user preference if present
+  className?: string;
+}
+```
+Notes:
+- Persists a per‑week “goal met” badge via localStorage (`xp-week-goal-<uid>-<YYYY-WW>`)
+- Target and tips preferences persist via localStorage; component UI remains compact using progressive disclosure
+
+### Leaderboard
+
+Props:
+```typescript
+interface LeaderboardProps {
+  category: LeaderboardCategory;
+  period: LeaderboardPeriod;
+  limit?: number;
+  showCurrentUser?: boolean;
+  compact?: boolean;
+  refreshInterval?: number;
+}
+```
+
+Notes:
+- Shows a context row for the current user even if they’re not in the top N.
+- Includes an optional "My Circle" toggle (shown only if the user follows anyone) to scope rankings to people the user follows.
+- The "My Circle" toggle persists per user via localStorage (`leaderboard-circle-<uid>`).
+
+### XPBreakdown
+
+- Hidden by default; reveal via a “See breakdown” button to reduce noise
+- Visibility persists per-user using `xp-breakdown-visible-<uid>`
 
 ### 1. XPDisplay Component
 

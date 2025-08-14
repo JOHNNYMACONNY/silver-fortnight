@@ -14,18 +14,13 @@ export interface NetworkInformation {
   removeEventListener(type: 'change', listener: () => void): void;
 }
 
-// Navigator with additional APIs
-export interface ExtendedNavigator extends Navigator {
-  readonly connection?: NetworkInformation;
-  readonly mozConnection?: NetworkInformation;
-  readonly webkitConnection?: NetworkInformation;
-  getBattery?(): Promise<BatteryManager>;
-  memory?: {
-    readonly jsHeapSizeLimit: number;
-    readonly totalJSHeapSize: number;
-    readonly usedJSHeapSize: number;
-  };
-}
+// Export legacy aliases to satisfy existing imports
+export type ExtendedNavigator = Navigator;
+export type ExtendedPerformance = Performance;
+export type ExtendedWindow = Window;
+export type ExtendedHTMLLinkElement = HTMLLinkElement;
+
+// Navigator augmentations are applied via global interface merging below
 
 // Battery API
 export interface BatteryManager extends EventTarget {
@@ -39,20 +34,9 @@ export interface BatteryManager extends EventTarget {
   onlevelchange: ((this: BatteryManager, ev: Event) => any) | null;
 }
 
-// Performance API extensions
-export interface ExtendedPerformance extends Performance {
-  readonly memory?: {
-    readonly usedJSHeapSize: number;
-    readonly totalJSHeapSize: number;
-    readonly jsHeapSizeLimit: number;
-  };
-}
+// Performance augmentations are applied via global interface merging below
 
-// Window with custom properties
-export interface ExtendedWindow extends Window {
-  __rum_business_metrics__?: Record<string, any>;
-  __COLLECT_METRICS__?: any;
-}
+// Window augmentations are applied via global interface merging below
 
 // Layout Shift Entry (Web Vitals)
 export interface LayoutShiftEntry extends PerformanceEntry {
@@ -73,10 +57,7 @@ export interface FirstInputEntry extends PerformanceEntry {
   readonly cancelable: boolean;
 }
 
-// HTML Link Element with fetch priority
-export interface ExtendedHTMLLinkElement extends HTMLLinkElement {
-  fetchPriority?: 'high' | 'low' | 'auto';
-}
+// Link element augmentations are applied via global interface merging below
 
 // Resource Priority types
 export type ResourcePriority = 'high' | 'low' | 'auto';
@@ -107,10 +88,32 @@ export interface ExtendedPerformanceResourceTiming extends PerformanceResourceTi
 
 // Global declarations for TypeScript
 declare global {
-  interface Navigator extends ExtendedNavigator {}
-  interface Performance extends ExtendedPerformance {}
-  interface Window extends ExtendedWindow {}
-  interface HTMLLinkElement extends ExtendedHTMLLinkElement {}
+  // Augment existing global interfaces without re-extending themselves
+  interface Navigator {
+    readonly connection?: NetworkInformation;
+    readonly mozConnection?: NetworkInformation;
+    readonly webkitConnection?: NetworkInformation;
+    getBattery?: () => Promise<BatteryManager>;
+    memory?: {
+      readonly jsHeapSizeLimit: number;
+      readonly totalJSHeapSize: number;
+      readonly usedJSHeapSize: number;
+    };
+  }
+  interface Performance {
+    readonly memory?: {
+      readonly usedJSHeapSize: number;
+      readonly totalJSHeapSize: number;
+      readonly jsHeapSizeLimit: number;
+    };
+  }
+  interface Window {
+    __rum_business_metrics__?: Record<string, any>;
+    __COLLECT_METRICS__?: any;
+  }
+  interface HTMLLinkElement {
+    fetchPriority: 'high' | 'low' | 'auto';
+  }
 }
 
 export {};

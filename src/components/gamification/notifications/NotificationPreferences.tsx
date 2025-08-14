@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useGamificationNotifications } from '../../../contexts/GamificationNotificationContext';
 import { cn } from '../../../utils/cn';
+import { isAutoFreezeEnabled } from '../../../services/streakConfig';
+import { useAuth } from '../../../AuthContext';
 
 interface NotificationPreferencesProps {
   className?: string;
@@ -11,6 +13,7 @@ export const NotificationPreferences: React.FC<NotificationPreferencesProps> = (
   className = ''
 }) => {
   const { preferences, updatePreferences, isReducedMotion } = useGamificationNotifications();
+  const { currentUser } = useAuth();
 
   const handleToggle = (key: keyof typeof preferences) => {
     updatePreferences({ [key]: !preferences[key] });
@@ -26,6 +29,18 @@ export const NotificationPreferences: React.FC<NotificationPreferencesProps> = (
       title: 'XP Gain Notifications',
       description: 'Show toast notifications when you earn XP',
       icon: '✨'
+    },
+    {
+      key: 'streakToasts' as const,
+      title: 'Streak Milestones',
+      description: 'Show toast notifications for streak milestones',
+      icon: '🔥'
+    },
+    {
+      key: 'weeklyGoalMetToasts' as const,
+      title: 'Weekly Goal Met',
+      description: 'Show a toast when you meet your weekly XP goal',
+      icon: '✅'
     },
     {
       key: 'levelUpModals' as const,
@@ -153,6 +168,36 @@ export const NotificationPreferences: React.FC<NotificationPreferencesProps> = (
           </motion.div>
         ))}
       </div>
+
+      {/* Streak auto-freeze */}
+      <motion.div
+        className={cn('p-4 rounded-lg bg-card border border-border')}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <div className="flex items-start space-x-3">
+          <span className="text-2xl">❄️</span>
+          <div className="flex-1">
+            <h4 className="font-medium text-foreground">Streak Auto-Freeze</h4>
+            <p className="text-sm text-muted-foreground mb-2">Automatically use a freeze to cover a single-day miss.</p>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                defaultChecked={typeof window !== 'undefined' ? isAutoFreezeEnabled(currentUser?.uid, true) : true}
+                onChange={(e) => {
+                  try {
+                    if (typeof window !== 'undefined' && currentUser?.uid) {
+                      window.localStorage.setItem(`streak-auto-freeze-${currentUser.uid}`, String(!!e.target.checked));
+                    }
+                  } catch {}
+                }}
+              />
+              <span>Enable auto-freeze</span>
+            </label>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Duration setting */}
       <motion.div

@@ -16,9 +16,9 @@ const SimpleAsymmetricTest: React.FC = () => {
       <div className="space-y-8">
         {/* Row 1: Small-Large */}
         <div className={generateAsymmetricClasses(pattern, 0, 'gap-6')}>
-          <div className="bg-orange-200 p-6 rounded-lg border-2 border-orange-500">
-            <h3 className="font-bold text-orange-800">Small Item (1/3)</h3>
-            <p className="text-orange-700">This should be 1/3 width on desktop</p>
+          <div className="bg-primary/10 p-6 rounded-lg border-2 border-primary">
+            <h3 className="font-bold text-primary">Small Item (1/3)</h3>
+            <p className="text-primary">This should be 1/3 width on desktop</p>
           </div>
           <div className="bg-blue-200 p-6 rounded-lg border-2 border-blue-500">
             <h3 className="font-bold text-blue-800">Large Item (2/3)</h3>

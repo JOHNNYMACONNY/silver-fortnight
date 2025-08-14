@@ -71,7 +71,7 @@ export const RewardDisplayWidget: React.FC<RewardDisplayWidgetProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-overlay flex items-center justify-center p-4"
         >
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
@@ -121,7 +121,7 @@ export const RewardDisplayWidget: React.FC<RewardDisplayWidgetProps> = ({
               </div>
 
               <CardContent className="space-y-4">
-                {/* Main XP Reward */}
+                 {/* Main XP Reward: Base vs Bonus */}
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: animationStep >= 2 ? 1 : 0, x: animationStep >= 2 ? 0 : -20 }}
@@ -134,11 +134,15 @@ export const RewardDisplayWidget: React.FC<RewardDisplayWidgetProps> = ({
                     </div>
                     <div>
                       <div className="text-white font-medium">Experience Points</div>
-                      {rewards.bonusXP > 0 && (
-                        <div className="text-xs text-green-400">
-                          {rewards.xp} base + {rewards.bonusXP} bonus
-                        </div>
-                      )}
+                      <div className="text-xs text-gray-300">
+                        <span className="text-gray-200">Base:</span> +{rewards.xp}
+                        {rewards.bonusXP > 0 && (
+                          <>
+                            <span className="mx-1 text-gray-500">/</span>
+                            <span className="text-green-400">Bonus:</span> +{rewards.bonusXP}
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <motion.div

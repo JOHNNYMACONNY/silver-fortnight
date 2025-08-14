@@ -8,10 +8,10 @@ Cloudinary is used for image storage and management in the application. The conf
 
 ```env
 VITE_CLOUDINARY_CLOUD_NAME="doqqhj2nt"
-VITE_CLOUDINARY_UPLOAD_PRESET="TradeYa_Prof_Pic_Preset"
-VITE_CLOUDINARY_API_KEY="411756985482938"
-VITE_CLOUDINARY_API_SECRET="Yc3gsui6wCADha6zruVUFMx_1BM"
-VITE_CLOUDINARY_ID="f1414a70ffee9854e4e5031231cbc1"
+VITE_CLOUDINARY_PROFILE_PRESET="TradeYa_Prof_Pic_Preset"
+VITE_CLOUDINARY_BANNER_PRESET="TradeYa_Banner_Preset"
+VITE_CLOUDINARY_PORTFOLIO_PRESET="TradeYa_Portfolio_Preset"
+VITE_CLOUDINARY_UPLOAD_PRESET="tradeya_uploads"
 ```
 
 ## Usage
@@ -19,7 +19,9 @@ VITE_CLOUDINARY_ID="f1414a70ffee9854e4e5031231cbc1"
 The Cloudinary service is implemented in `src/services/cloudinary/cloudinaryService.ts`. It provides the following functions:
 
 - `validateFile`: Validates a file before upload
-- `uploadImage`: Uploads an image to Cloudinary
+- `uploadProfileImage`: Uploads a profile picture with face-crop-friendly transformations
+- `uploadBannerImage`: Uploads a banner image and returns base+transformed URLs
+- `uploadImage`: Generic uploads with a provided folder/preset (fallback)
 - `deleteImage`: Deletes an image from Cloudinary
 - `transformImage`: Generates a Cloudinary URL with transformations
 
@@ -71,21 +73,20 @@ Where:
 - `profile-pictures` is the folder
 - `USER_ID_UNIQUE_IDENTIFIER.jpg` is the filename with user ID
 
+## Banners
+
+- Banners are stored as `{ publicId, version, uploadedAt }` (type `BannerData`).
+- Rendering uses `getBannerImageUrl(BannerData)` which applies `fill`, `width=1200`, `height=300`, `quality=auto`, `format=auto`.
+- The UI shows a default banner until a valid processed URL is available.
+
 ## Recent Changes
 
 The following changes were made to fix issues with profile pictures not appearing:
 
 1. Updated the Cloudinary service to use environment variables instead of hardcoded values
-2. Added the API key, API secret, and Cloudinary ID to the Cloudinary upload requests
-3. Added more detailed error handling and logging to help diagnose issues
-4. Updated the environment variables to match the correct Cloudinary account
-5. Enhanced the URL formatting to ensure proper cloud name and version numbers
-6. Added support for converting relative paths to Cloudinary URLs
-7. Added specific handling for profile pictures using the `TradeYa_Prof_Pic_Preset` upload preset
-8. Updated the folder structure to ensure profile pictures are stored in the correct location
-9. Modified the application to prioritize the `profilePicture` field in Firebase over `photoURL`
-10. Added automatic migration of images from `photoURL` to `profilePicture` when profiles are updated
-11. Created specialized components for handling specific user profile pictures
-12. Improved fallback mechanisms for missing profile pictures
+2. Enabled/required Unsigned upload presets for profile, banner, and portfolio.
+3. Added detailed client-side error logging for Cloudinary responses.
+4. Standardized env variables for all presets.
+5. Improved URL generation with crop/gravity support.
 
 These changes should ensure that profile pictures are properly uploaded to and retrieved from Cloudinary.

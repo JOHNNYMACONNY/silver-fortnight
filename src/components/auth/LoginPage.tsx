@@ -128,7 +128,7 @@ const LoginPage: React.FC = () => {
           />
         </AccessibleFormField>
         <div className="flex justify-end items-center mb-1">
-          <Link to="/reset-password" className="text-sm text-orange-500 hover:text-orange-700 transition-colors duration-200">
+          <Link to="/reset-password" className="text-sm text-primary hover:text-primary/80 transition-colors duration-200">
             Forgot password?
           </Link>
         </div>
@@ -189,7 +189,7 @@ const LoginPage: React.FC = () => {
         </Button>
         <p className="px-8 text-center text-sm text-gray-500 dark:text-gray-400">
           New to TradeYa?{' '}
-          <Link to="/signup" className="underline hover:text-orange-500 transition-colors">
+          <Link to="/signup" className="underline hover:text-primary transition-colors">
             Sign up
           </Link>
         </p>

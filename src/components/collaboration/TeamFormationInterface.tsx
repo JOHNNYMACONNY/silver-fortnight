@@ -133,21 +133,22 @@ export const TeamFormationInterface: React.FC<TeamFormationInterfaceProps> = ({
   };
 
   const getStatusColor = (status: string) => {
+    // Map to semantic token-likes; keep fallbacks minimal
     switch (status) {
-      case 'active': return 'bg-green-500';
-      case 'pending': return 'bg-yellow-500';
-      case 'invited': return 'bg-blue-500';
-      case 'declined': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case 'active': return 'bg-success-500';
+      case 'pending': return 'bg-warning-500';
+      case 'invited': return 'bg-secondary-500';
+      case 'declined': return 'bg-error-500';
+      default: return 'bg-muted';
     }
   };
 
   const getAvailabilityColor = (availability: string) => {
     switch (availability) {
-      case 'available': return 'bg-green-500';
-      case 'busy': return 'bg-yellow-500';
-      case 'away': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case 'available': return 'bg-success-500';
+      case 'busy': return 'bg-warning-500';
+      case 'away': return 'bg-error-500';
+      default: return 'bg-muted';
     }
   };
 
@@ -155,7 +156,7 @@ export const TeamFormationInterface: React.FC<TeamFormationInterfaceProps> = ({
     <div className="space-y-6">
       {/* Team Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardContent className="p-4 text-center">
             <Users className="w-8 h-8 text-blue-400 mx-auto mb-2" />
             <div className="text-2xl font-bold text-white">{teamData.currentMembers.length}</div>
@@ -163,7 +164,7 @@ export const TeamFormationInterface: React.FC<TeamFormationInterfaceProps> = ({
           </CardContent>
         </Card>
         
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardContent className="p-4 text-center">
             <Target className="w-8 h-8 text-green-400 mx-auto mb-2" />
             <div className="text-2xl font-bold text-white">{teamData.openRoles.length}</div>
@@ -171,7 +172,7 @@ export const TeamFormationInterface: React.FC<TeamFormationInterfaceProps> = ({
           </CardContent>
         </Card>
         
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardContent className="p-4 text-center">
             <Mail className="w-8 h-8 text-purple-400 mx-auto mb-2" />
             <div className="text-2xl font-bold text-white">{applications.length}</div>
@@ -179,7 +180,7 @@ export const TeamFormationInterface: React.FC<TeamFormationInterfaceProps> = ({
           </CardContent>
         </Card>
         
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardContent className="p-4 text-center">
             <Zap className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
             <div className="text-2xl font-bold text-white">
@@ -191,32 +192,32 @@ export const TeamFormationInterface: React.FC<TeamFormationInterfaceProps> = ({
       </div>
 
       {/* Team Progress */}
-      <Card className="bg-white/10 backdrop-blur-md border-white/20">
+      <Card className="glassmorphic">
         <CardHeader>
           <CardTitle className="text-white">Team Formation Progress</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-gray-300">Team Size</span>
-              <span className="text-white">{teamData.currentMembers.length} / {teamData.maxMembers}</span>
+              <span className="text-muted-foreground">Team Size</span>
+              <span className="text-foreground">{teamData.currentMembers.length} / {teamData.maxMembers}</span>
             </div>
-            <div className="w-full bg-gray-700 rounded-full h-2">
+            <div className="w-full bg-muted rounded-full h-2">
               <div 
-                className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                className="bg-primary h-2 rounded-full transition-all duration-300"
                 style={{ width: `${(teamData.currentMembers.length / teamData.maxMembers) * 100}%` }}
               />
             </div>
             
             <div className="flex items-center justify-between">
-              <span className="text-gray-300">Roles Filled</span>
-              <span className="text-white">
+              <span className="text-muted-foreground">Roles Filled</span>
+              <span className="text-foreground">
                 {teamData.currentMembers.length} / {teamData.currentMembers.length + teamData.openRoles.length}
               </span>
             </div>
-            <div className="w-full bg-gray-700 rounded-full h-2">
+            <div className="w-full bg-muted rounded-full h-2">
               <div 
-                className="bg-gradient-to-r from-green-500 to-teal-500 h-2 rounded-full transition-all duration-300"
+                className="bg-success h-2 rounded-full transition-all duration-300"
                 style={{ 
                   width: `${(teamData.currentMembers.length / (teamData.currentMembers.length + teamData.openRoles.length)) * 100}%` 
                 }}
@@ -227,7 +228,7 @@ export const TeamFormationInterface: React.FC<TeamFormationInterfaceProps> = ({
       </Card>
 
       {/* Quick Actions */}
-      <Card className="bg-white/10 backdrop-blur-md border-white/20">
+      <Card className="glassmorphic">
         <CardHeader>
           <CardTitle className="text-white">Quick Actions</CardTitle>
         </CardHeader>
@@ -296,7 +297,7 @@ export const TeamFormationInterface: React.FC<TeamFormationInterfaceProps> = ({
       {/* Members Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {teamData.currentMembers.map((member) => (
-          <Card key={member.id} className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card key={member.id} className="glassmorphic">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4 mb-4">
                 <div className="relative">
@@ -369,7 +370,7 @@ export const TeamFormationInterface: React.FC<TeamFormationInterfaceProps> = ({
 
       {/* Add Member Card */}
       <Card 
-        className="bg-white/5 backdrop-blur-md border-white/10 border-dashed cursor-pointer hover:bg-white/10 transition-colors"
+        className="glassmorphic border-dashed cursor-pointer hover:bg-white/10 transition-colors"
         onClick={() => setShowInviteModal(true)}
       >
         <CardContent className="p-6 text-center">
@@ -384,7 +385,7 @@ export const TeamFormationInterface: React.FC<TeamFormationInterfaceProps> = ({
   const renderApplicationsTab = () => (
     <div className="space-y-6">
       {applications.map((application) => (
-        <Card key={application.id} className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card key={application.id} className="glassmorphic">
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-4">
@@ -428,11 +429,11 @@ export const TeamFormationInterface: React.FC<TeamFormationInterfaceProps> = ({
             </div>
 
             <div className="flex space-x-3">
-              <Button className="bg-green-500 hover:bg-green-600">
+              <Button variant="success">
                 <CheckCircle className="w-4 h-4 mr-2" />
                 Accept
               </Button>
-              <Button variant="outline" className="border-red-500 text-red-400 hover:bg-red-500/10">
+              <Button variant="destructive">
                 <XCircle className="w-4 h-4 mr-2" />
                 Decline
               </Button>
@@ -446,7 +447,7 @@ export const TeamFormationInterface: React.FC<TeamFormationInterfaceProps> = ({
       ))}
 
       {applications.length === 0 && (
-        <Card className="bg-white/5 backdrop-blur-md border-white/10">
+        <Card className="glassmorphic">
           <CardContent className="p-12 text-center">
             <Mail className="w-16 h-16 text-gray-500 mx-auto mb-4" />
             <h3 className="text-gray-400 font-medium mb-2">No Applications Yet</h3>
@@ -475,7 +476,7 @@ export const TeamFormationInterface: React.FC<TeamFormationInterfaceProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-1 mb-6 bg-white/10 backdrop-blur-md rounded-lg p-1">
+      <div className="flex space-x-1 mb-6 glassmorphic p-1">
         {[
           { id: 'overview', label: 'Overview', icon: <Eye className="w-4 h-4" /> },
           { id: 'members', label: 'Members', icon: <Users className="w-4 h-4" /> },
@@ -510,7 +511,7 @@ export const TeamFormationInterface: React.FC<TeamFormationInterfaceProps> = ({
 
       {/* Invite Modal */}
       {showInviteModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-overlay">
           <Card className="bg-gray-900 border-gray-700 w-full max-w-md mx-4">
             <CardHeader>
               <CardTitle className="text-white">Invite Team Member</CardTitle>

@@ -190,6 +190,11 @@ This document serves as the master index for all TradeYa production migration an
 - Resource requirements
 - Success metrics and validation
 
+#### 🎨 UI Consistency and Glassmorphism
+- [Glassmorphic Design Enhancements](./GLASSMORPHIC_DESIGN_ENHANCEMENTS.md)
+- [Glassmorphic Implementation Summary](./GLASSMORPHIC_IMPLEMENTATION_SUMMARY.md)
+- [Notifications Dropdown Audit](./NOTIFICATIONS_DROPDOWN_AUDIT.md)
+
 ### 8. Performance and Optimization
 
 #### 📈 [Performance Optimization Consolidated](./PERFORMANCE_OPTIMIZATION_CONSOLIDATED.md)

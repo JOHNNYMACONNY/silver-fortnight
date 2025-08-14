@@ -12,7 +12,7 @@ export const FallbackButton: React.FC<{
   type?: 'button' | 'submit' | 'reset';
 }> = ({ children, onClick, variant = 'default', size = 'md', className = '', disabled = false, type = 'button' }) => {
   const variantClasses = {
-    default: 'bg-orange-500 hover:bg-orange-600 text-white',
+    default: 'bg-primary hover:bg-primary/90 text-primary-foreground',
     secondary: 'bg-gray-100 hover:bg-gray-200 text-gray-900 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100',
     outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800',
     ghost: 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800',
@@ -32,7 +32,7 @@ export const FallbackButton: React.FC<{
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+        'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
         variantClasses[variant as keyof typeof variantClasses] || variantClasses.default,
         sizeClasses[size as keyof typeof sizeClasses] || sizeClasses.md,
         className
@@ -50,14 +50,14 @@ export const FallbackCard: React.FC<{
   variant?: 'default' | 'glass' | 'elevated';
 }> = ({ children, className = '', variant = 'default' }) => {
   const variantClasses = {
-    default: 'backdrop-blur-md bg-white/70 dark:bg-neutral-800/60 border border-white/20 dark:border-neutral-700/30',
-    glass: 'backdrop-blur-lg bg-white/80 dark:bg-neutral-800/70 border border-white/30 dark:border-neutral-700/40 shadow-glass',
-    elevated: 'backdrop-blur-xl bg-white/90 dark:bg-neutral-800/80 border-2 border-white/40 dark:border-neutral-700/50 shadow-2xl'
+    default: 'glassmorphic',
+    glass: 'glassmorphic',
+    elevated: 'glassmorphic shadow-xl'
   };
 
   return (
     <div className={cn(
-      'rounded-xl shadow-glass transition-all duration-300',
+      'transition-all duration-300',
       variantClasses[variant],
       className
     )}>
@@ -109,10 +109,10 @@ export const FallbackBadge: React.FC<{
   className?: string;
 }> = ({ children, variant = 'default', className = '' }) => {
   const variantClasses = {
-    default: 'backdrop-blur-sm bg-orange-100/80 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-200/50 dark:border-orange-800/50',
-    secondary: 'backdrop-blur-sm bg-gray-100/80 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border border-gray-200/50 dark:border-gray-700/50',
-    destructive: 'backdrop-blur-sm bg-red-100/80 text-red-800 dark:bg-red-900/30 dark:text-red-300 border border-red-200/50 dark:border-red-800/50',
-    outline: 'backdrop-blur-sm bg-white/50 dark:bg-neutral-800/50 border border-gray-200/70 text-gray-900 dark:border-gray-700/70 dark:text-gray-100',
+    default: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary border-standard',
+    secondary: 'bg-gray-100/80 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-standard',
+    destructive: 'bg-red-100/80 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-standard',
+    outline: 'bg-white/50 dark:bg-neutral-800/50 border-standard text-gray-900 dark:text-gray-100',
   };
 
   return (
@@ -145,7 +145,7 @@ export const FallbackAvatar: React.FC<{
 
   return (
     <div className={cn(
-      'relative rounded-full overflow-hidden flex items-center justify-center backdrop-blur-sm bg-gray-200/80 dark:bg-gray-700/80 border border-white/20 dark:border-neutral-700/30',
+      'relative rounded-full overflow-hidden flex items-center justify-center bg-muted/60 border border-border',
       sizeClasses[size as keyof typeof sizeClasses] || sizeClasses.md,
       className
     )}>
@@ -202,11 +202,11 @@ export const FallbackModal: React.FC<{
   return (
     <div className="fixed inset-0 z-navigation flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className={cn(
-        'backdrop-blur-xl bg-white/90 dark:bg-neutral-800/90 border border-white/30 dark:border-neutral-700/40 rounded-xl shadow-2xl w-full transition-all duration-300',
+        'glassmorphic w-full transition-all duration-300',
         sizeClasses[size as keyof typeof sizeClasses] || sizeClasses.md
       )}>
         {title && (
-          <div className="flex items-center justify-between p-6 border-b border-white/20 dark:border-neutral-700/30">
+          <div className="flex items-center justify-between p-6 border-b border-border">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">{title}</h3>
             <button
               onClick={onClose}
@@ -241,7 +241,7 @@ export const FallbackLogo: React.FC<{
   return (
     <div className={cn('flex items-center gap-2', className)}>
       <div className={cn(
-        'backdrop-blur-sm bg-orange-500/90 rounded-lg flex items-center justify-center',
+        'bg-primary/90 rounded-lg flex items-center justify-center',
         sizeClasses[size as keyof typeof sizeClasses] || sizeClasses.medium
       )}>
         <span className="text-white font-bold text-sm">T</span>

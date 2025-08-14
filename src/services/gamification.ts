@@ -47,6 +47,13 @@ const triggerRealtimeNotification = (notification: any) => {
 };
 
 /**
+ * Public helper to emit a realtime gamification notification to the in-app queue
+ */
+export const emitGamificationNotification = (notification: any) => {
+  triggerRealtimeNotification(notification);
+};
+
+/**
  * Core XP and Level Management
  */
 
@@ -392,6 +399,9 @@ export const awardXPWithLeaderboardUpdate = async (
     try {
       const { triggerLeaderboardUpdate } = await import('./leaderboards');
       await triggerLeaderboardUpdate(userId, result.xpAwarded);
+      // Also recompute composite reputation since XP changed
+      const { recomputeUserReputation } = await import('./leaderboards');
+      await recomputeUserReputation(userId);
     } catch (error) {
       console.warn('Failed to update leaderboard stats:', error);
       // Don't fail the main XP award if leaderboard update fails
@@ -401,4 +411,5 @@ export const awardXPWithLeaderboardUpdate = async (
   return result;
 };
 
-
+// Re-export types/constants for convenience where modules import from services/gamification
+export { XPSource, XP_VALUES } from '../types/gamification';

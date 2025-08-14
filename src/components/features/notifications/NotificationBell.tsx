@@ -5,6 +5,7 @@ import { useAuth } from '../../../AuthContext';
 import {
   getUserNotifications,
   markAllNotificationsAsRead,
+  markNotificationAsRead,
   type Notification
 } from '../../../services/notifications/notificationService';
 import { Button } from '../../ui/Button';
@@ -54,7 +55,8 @@ export const NotificationBell: React.FC = () => {
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
-      await markAllNotificationsAsRead(notificationId);
+      if (!notificationId) return;
+      await markNotificationAsRead(notificationId);
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
@@ -73,8 +75,30 @@ export const NotificationBell: React.FC = () => {
           <span className="sr-only">Notifications</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
-        <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+      <DropdownMenuContent
+        align="end"
+        className={cn(
+          'w-80',
+          // Glassmorphic surface aligned with navbar
+          'bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md navbar-gradient-border',
+          // Enhanced shadow to match mobile menu aesthetic
+          'shadow-glass-lg',
+          // Accessibility: respect reduced motion
+          'motion-reduce:animate-none motion-reduce:transition-none'
+        )}
+      >
+        <DropdownMenuLabel className="flex items-center justify-between">
+          <span>Notifications</span>
+          {unreadCount > 0 && (
+            <button
+              type="button"
+              onClick={() => currentUser && markAllNotificationsAsRead(currentUser.uid)}
+              className="text-xs text-primary hover:text-primary/90"
+            >
+              Mark all
+            </button>
+          )}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {loading ? (
           <div className="p-4 text-center">
@@ -82,29 +106,39 @@ export const NotificationBell: React.FC = () => {
             <p className="text-sm text-muted-foreground mt-2">Loading notifications...</p>
           </div>
         ) : notifications.length > 0 ? (
-          notifications.slice(0, 5).map(notification => (
-            <DropdownMenuItem key={notification.id} asChild>
-              <Link 
-                to={notification.link || '#'} 
-                className={cn(
-                  'block p-2 rounded-lg transition-colors',
-                  !notification.read ? 'bg-primary/10' : 'hover:bg-accent'
-                )}
-                onClick={() => handleMarkAsRead(notification.id || '')}
-              >
-                <p className="font-semibold text-sm">{notification.title}</p>
-                <p className="text-sm text-muted-foreground">{notification.message || notification.content}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {notification.timestamp ? 
-                    formatDistanceToNow(notification.timestamp.toDate(), { addSuffix: true }) :
-                    notification.createdAt ?
-                    formatDistanceToNow(notification.createdAt.toDate(), { addSuffix: true }) :
-                    'Recently'
-                  }
-                </p>
-              </Link>
-            </DropdownMenuItem>
-          ))
+          <div className="max-h-96 overflow-y-auto divide-y divide-border/60">
+            {notifications.slice(0, 5).map((notification) => (
+              <DropdownMenuItem key={notification.id} asChild>
+                <Link
+                  to={notification.data?.url || '#'}
+                  className={cn(
+                    'block px-4 py-3.5 rounded-none transition-colors focus:outline-none',
+                    'hover:bg-accent/50',
+                    !notification.read && 'bg-primary/10'
+                  )}
+                  onClick={() => handleMarkAsRead(notification.id || '')}
+                >
+                  <div className="grid grid-cols-[1fr,auto] gap-x-3 gap-y-1">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium leading-6 text-foreground whitespace-normal break-words">
+                        {notification.title}
+                      </p>
+                      {Boolean(notification.message || notification.content) && (
+                        <p className="text-sm leading-6 text-muted-foreground whitespace-normal break-words">
+                          {notification.message || notification.content}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground text-right self-start">
+                       {notification.createdAt
+                        ? formatDistanceToNow(notification.createdAt.toDate(), { addSuffix: true })
+                        : 'Recently'}
+                    </div>
+                  </div>
+                </Link>
+              </DropdownMenuItem>
+            ))}
+          </div>
         ) : (
           <div className="p-4 text-center text-sm text-muted-foreground">
             You have no new notifications.

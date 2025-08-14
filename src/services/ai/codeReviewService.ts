@@ -1,4 +1,4 @@
-import { ServiceResponse } from '../types/services';
+import { ServiceResponse } from '../../types/services';
 
 // AI Code Review Configuration
 export interface AICodeReviewConfig {

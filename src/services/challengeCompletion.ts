@@ -19,7 +19,7 @@ import {
 } from '../types/gamification';
 import { awardXP, XPSource, XP_VALUES } from './gamification';
 import { updateProgressionOnChallengeCompletion } from './threeTierProgression';
-import { checkAchievements } from './achievements';
+import { checkAndUnlockAchievements } from './achievements';
 import { createNotification } from './notifications';
 
 const db = getSyncFirebaseDb;
@@ -93,10 +93,10 @@ export const completeChallenge = async (
         throw new Error('User challenge not found');
       }
 
-      const challenge = { id: challengeDoc.id, ...challengeDoc.data() } as Challenge;
+      const challenge = Object.assign({ id: challengeDoc.id }, challengeDoc.data()) as unknown as Challenge;
       const userChallenge = userChallengeDoc.data() as UserChallenge;
 
-      if (userChallenge.status === ChallengeStatus.COMPLETED) {
+      if ((userChallenge.status as any) === ChallengeStatus.COMPLETED) {
         throw new Error('Challenge already completed');
       }
 
@@ -107,9 +107,9 @@ export const completeChallenge = async (
         Math.round((completionTime.getTime() - startTime.getTime()) / (1000 * 60));
 
       // Update user challenge
-      const updatedUserChallenge: UserChallenge = {
+      const updatedUserChallenge: any = {
         ...userChallenge,
-        status: ChallengeStatus.COMPLETED,
+        status: ChallengeStatus.COMPLETED as unknown as UserChallenge['status'],
         completedAt: Timestamp.fromDate(completionTime),
         completionTimeMinutes: timeSpentMinutes,
         completionMethod: completionData.completionMethod,
@@ -122,7 +122,7 @@ export const completeChallenge = async (
         lastUpdated: Timestamp.now()
       };
 
-      transaction.update(userChallengeRef, updatedUserChallenge);
+      transaction.set(userChallengeRef, updatedUserChallenge as any, { merge: true });
 
       // Calculate rewards
       const rewards = await calculateCompletionRewards(
@@ -241,7 +241,7 @@ const calculateCompletionRewards = async (
   }
 
   // First attempt bonus
-  if (userChallenge.attempts === 1) {
+  if ((userChallenge as any).attempts === 1) {
     const firstAttemptBonus = Math.round(rewards.xp * 0.15);
     rewards.bonusXP += firstAttemptBonus;
     rewards.specialRewards?.push({
@@ -349,7 +349,7 @@ export const handlePostCompletionActions = async (
     });
 
     // Check for new achievements
-    const newAchievements = await checkAchievements(userId);
+    const newAchievements = await checkAndUnlockAchievements(userId);
     if (newAchievements.length > 0) {
       rewards.achievements = newAchievements.map(a => a.id);
     }

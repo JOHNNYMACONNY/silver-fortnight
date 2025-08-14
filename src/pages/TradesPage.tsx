@@ -5,7 +5,8 @@ import { getUserProfile, User, getAllTrades } from '../services/firestore-export
 import PerformanceMonitor from '../components/ui/PerformanceMonitor';
 import TradeCard, { ExtendedTrade } from '../components/features/trades/TradeCard';
 import { motion } from 'framer-motion';
-import { AdvancedSearch } from '../components/features/search/AdvancedSearch';
+import { EnhancedSearchBar } from '../components/features/search/EnhancedSearchBar';
+import { EnhancedFilterPanel } from '../components/features/search/EnhancedFilterPanel';
 import { TradeListSkeleton } from '../components/ui/skeletons/TradeCardSkeleton';
 import { useToast } from '../contexts/ToastContext';
 import { AnimatedButton } from '../components/animations';
@@ -13,6 +14,9 @@ import Box from '../components/layout/primitives/Box';
 import Stack from '../components/layout/primitives/Stack';
 import Cluster from '../components/layout/primitives/Cluster';
 import Grid from '../components/layout/primitives/Grid';
+import { useTradeSearch } from '../hooks/useTradeSearch';
+import { getSyncFirebaseDb } from '../firebase-config';
+import { collection, query as fsQuery, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 
 export const TradesPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -22,7 +26,18 @@ export const TradesPage: React.FC = () => {
   const [tradeCreators, setTradeCreators] = useState<{ [key: string]: User }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchFilter, setSearchFilter] = useState({ searchTerm: '', category: '' });
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [filters, setFilters] = useState<any>({});
+
+  const {
+    searchTerm,
+    setSearchTerm,
+    results: searchedTrades,
+    loading: searchLoading,
+    totalCount,
+    search,
+    clearSearch
+  } = useTradeSearch({ enablePersistence: false, pagination: { limit: 20, orderByField: 'title', orderDirection: 'asc' } });
 
   // Fetch trade creators
   const fetchTradeCreators = useCallback(async (creatorIds: string[]) => {
@@ -40,59 +55,87 @@ export const TradesPage: React.FC = () => {
     setTradeCreators(creators);
   }, []);
 
-  // Fetch trades
-  const fetchTrades = useCallback(async () => {
+  // Realtime trades via onSnapshot
+  useEffect(() => {
     setLoading(true);
     setError(null);
+    const db = getSyncFirebaseDb();
+    const tradesCol = collection(db, 'trades');
+    const q = fsQuery(
+      tradesCol,
+      where('status', '==', 'open'),
+      orderBy('createdAt', 'desc'),
+      limit(20)
+    );
 
-    try {
-      // Build filters
-      const filters = {
-        status: 'open' as const
-      };
-
-      // Build pagination
-      const pagination = {
-        limit: 20,
-        orderByField: 'createdAt',
-        orderDirection: 'desc' as const
-      };
-
-      // Fetch trades directly from Firestore
-      const { data: tradesResult, error: tradesError } = await getAllTrades(pagination, filters);
-
-      if (tradesError) {
-        throw new Error(tradesError.message);
-      }
-
-      if (tradesResult?.items) {
-        console.log(`✅ TradesPage: Fetched ${tradesResult.items.length} trades`);
-        setTrades(tradesResult.items as ExtendedTrade[]);
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      try {
+        const items = snapshot.docs
+          .map(doc => ({ id: doc.id, ...(doc.data() as any) }))
+          .filter(trade => !!trade.id) as ExtendedTrade[];
+        setTrades(items);
 
         // Fetch creators for the trades
-        const creatorIds = tradesResult.items
-          .map(trade => trade.creatorId)
-          .filter((id, index, self) => id && self.indexOf(id) === index);
-
+        const creatorIds = items
+          .map(trade => (trade as any).creatorId)
+          .filter((id, index, self) => id && self.indexOf(id) === index) as string[];
         if (creatorIds.length > 0) {
-          await fetchTradeCreators(creatorIds as string[]);
+          await fetchTradeCreators(creatorIds);
         }
-      } else {
-        setTrades([]);
+        setLoading(false);
+      } catch (err: any) {
+        console.error('Error processing realtime trades:', err);
+        setError(err.message || 'Failed to process trades');
+        setLoading(false);
       }
-    } catch (err: any) {
-      console.error('Error fetching trades:', err);
-      setError(err.message || 'Failed to fetch trades');
-      addToast('error', 'Failed to load trades. Please try refreshing the page.');
-    } finally {
+    }, (err) => {
+      console.error('Error subscribing to trades:', err);
+      setError(err.message || 'Failed to subscribe to trades');
       setLoading(false);
-    }
-  }, [addToast, fetchTradeCreators]);
+    });
 
-  // Fetch trades on component mount
+    return () => {
+      unsubscribe();
+    };
+  }, [fetchTradeCreators]);
+
+  // Load search and filters from URL on mount
   useEffect(() => {
-    fetchTrades();
-  }, [fetchTrades]);
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q') || '';
+    const status = params.get('status') || '';
+    const category = params.get('category') || '';
+    const time = params.get('time') || '';
+    const skillLevel = params.get('skillLevel') || '';
+    const skills = params.getAll('skills');
+
+    if (q) {
+      setSearchTerm(q);
+    }
+
+    const loadedFilters: any = {};
+    if (status) loadedFilters.status = status;
+    if (category) loadedFilters.category = category;
+    if (time) loadedFilters.timeCommitment = time;
+    if (skillLevel) loadedFilters.skillLevel = skillLevel;
+    if (skills.length > 0) loadedFilters.skills = skills;
+    if (Object.keys(loadedFilters).length > 0) setFilters(loadedFilters);
+  }, []);
+
+  // Sync search and filters to URL on change
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchTerm) params.set('q', searchTerm);
+    if (filters.status) params.set('status', String(filters.status));
+    if (filters.category) params.set('category', String(filters.category));
+    if (filters.timeCommitment) params.set('time', String(filters.timeCommitment));
+    if (filters.skillLevel) params.set('skillLevel', String(filters.skillLevel));
+    if (Array.isArray(filters.skills) && filters.skills.length > 0) {
+      filters.skills.forEach((s: string) => params.append('skills', s));
+    }
+    const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+    window.history.replaceState({}, '', newUrl);
+  }, [searchTerm, filters]);
 
   // Handle initiate trade button click
   const handleInitiateTrade = useCallback((tradeId: string) => {
@@ -126,23 +169,32 @@ export const TradesPage: React.FC = () => {
     });
   }, []);
 
-  // Filter trades based on search term
+  // Choose backend results when searching/filters are active; apply client-only filters afterward
   const filteredTrades = useMemo(() => {
-    if (!searchFilter.searchTerm) return trades;
-    
-    const lowercasedFilter = searchFilter.searchTerm.toLowerCase();
-    
-    return trades.filter(trade => {
-      const titleMatch = trade.title?.toLowerCase().includes(lowercasedFilter);
-      const offeredSkillsMatch = getTradeSkills(trade, 'offered').some(skill =>
-        skill.toLowerCase().includes(lowercasedFilter)
-      );
-      const wantedSkillsMatch = getTradeSkills(trade, 'wanted').some(skill =>
-        skill.toLowerCase().includes(lowercasedFilter)
-      );
-      return titleMatch || offeredSkillsMatch || wantedSkillsMatch;
-    });
-  }, [trades, searchFilter.searchTerm, getTradeSkills]);
+    const hasFiltersActive = Object.values(filters).some(v => v !== '' && v !== undefined && v !== null && (!(Array.isArray(v)) || v.length > 0));
+    let result: ExtendedTrade[] = (searchTerm || hasFiltersActive)
+      ? (searchedTrades as unknown as ExtendedTrade[])
+      : trades;
+
+    if (filters.timeCommitment) {
+      result = result.filter(trade => String((trade as any).timeCommitment || '').toLowerCase() === String(filters.timeCommitment).toLowerCase());
+    }
+
+    if (filters.skillLevel) {
+      result = result.filter(trade => String((trade as any).skillLevel || '').toLowerCase() === String(filters.skillLevel).toLowerCase());
+    }
+
+    if (Array.isArray(filters.skills) && filters.skills.length > 0) {
+      const selected = filters.skills.map((s: string) => s.toLowerCase());
+      result = result.filter(trade => {
+        const offered = getTradeSkills(trade, 'offered').map(s => String(s).toLowerCase());
+        const wanted = getTradeSkills(trade, 'wanted').map(s => String(s).toLowerCase());
+        return selected.some((s: string) => offered.includes(s) || wanted.includes(s));
+      });
+    }
+
+    return result;
+  }, [trades, searchedTrades, searchTerm, filters, getTradeSkills]);
 
   // Enhanced trades with creator info
   const enhancedTrades = useMemo(() => {
@@ -159,18 +211,68 @@ export const TradesPage: React.FC = () => {
       });
   }, [filteredTrades, tradeCreators]);
 
-  const handleSearch = (term: string, filters: { category?: string }) => {
-    setSearchFilter({ searchTerm: term, category: filters.category || '' });
+  // Derive available skills from current trades (offered + wanted)
+  const availableSkills = useMemo(() => {
+    const frequencyByKey: Record<string, number> = {};
+    const displayByKey: Record<string, string> = {};
+    const source = trades.length > 0 ? trades : filteredTrades;
+    const addSkill = (raw: unknown) => {
+      const s = String(raw || '').trim();
+      if (!s) return;
+      const key = s.toLowerCase();
+      if (!displayByKey[key]) displayByKey[key] = s;
+      frequencyByKey[key] = (frequencyByKey[key] || 0) + 1;
+    };
+    source.forEach(trade => {
+      getTradeSkills(trade as ExtendedTrade, 'offered').forEach(addSkill);
+      getTradeSkills(trade as ExtendedTrade, 'wanted').forEach(addSkill);
+    });
+    return Object.keys(frequencyByKey)
+      .sort((a, b) => {
+        const byFreq = (frequencyByKey[b] || 0) - (frequencyByKey[a] || 0);
+        if (byFreq !== 0) return byFreq;
+        return displayByKey[a].localeCompare(displayByKey[b]);
+      })
+      .map(k => displayByKey[k])
+      .slice(0, 50);
+  }, [trades, filteredTrades, getTradeSkills]);
+
+  const hasActiveFilters = useMemo(() => {
+    return Object.values(filters).some(value => {
+      if (value === undefined || value === null || value === '') return false;
+      if (Array.isArray(value)) return value.length > 0;
+      if (typeof value === 'object' && value && 'start' in value && 'end' in value) {
+        // @ts-ignore
+        return value.start != null || value.end != null;
+      }
+      return true;
+    });
+  }, [filters]);
+
+  // Debounced search when term or filters change (MVP: 300ms)
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      if (searchTerm || hasActiveFilters) {
+        search(searchTerm, filters);
+      } else {
+        clearSearch();
+      }
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [searchTerm, filters, hasActiveFilters, search, clearSearch]);
+
+  const handleSearch = (term: string, f: { category?: string }) => {
+    search(term, { ...filters, category: f.category || filters.category });
   };
 
   const handleSearchTermChange = (term: string) => {
-    setSearchFilter(prev => ({ ...prev, searchTerm: term }));
+    setSearchTerm(term);
   };
 
   return (
     <Box className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Stack gap="lg">
-        <Cluster justify="between" align="center" gap="md" className="mb-6 flex-col md:flex-row">
+        <Cluster justify="between" align="center" gap="md" className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 mb-6 flex-col md:flex-row">
           <h1 className="text-3xl font-bold text-foreground">Available Trades</h1>
           <Cluster gap="sm" align="center">
             <PerformanceMonitor pageName="TradesPage" />
@@ -185,12 +287,46 @@ export const TradesPage: React.FC = () => {
           </Cluster>
         </Cluster>
 
-        <Box className="bg-card text-card-foreground p-6 rounded-lg shadow-sm border border-border mb-8">
-          <AdvancedSearch 
-            onSearch={handleSearch} 
-            searchTerm={searchFilter.searchTerm}
+        <Box className="glassmorphic rounded-xl p-4 md:p-6 mb-8">
+          <EnhancedSearchBar
+            searchTerm={searchTerm}
             onSearchChange={handleSearchTermChange}
+            onSearch={(term) => search(term, filters)}
+            onToggleFilters={() => setShowFilterPanel(true)}
+            hasActiveFilters={hasActiveFilters}
+            resultsCount={searchTerm || hasActiveFilters ? totalCount : enhancedTrades.length}
+            isLoading={loading || searchLoading}
+            placeholder="Search trades by title, offered or wanted skills..."
           />
+
+          <EnhancedFilterPanel
+            isOpen={showFilterPanel}
+            onClose={() => setShowFilterPanel(false)}
+            filters={filters}
+            onFiltersChange={(f: any) => {
+              setFilters(f);
+              search(searchTerm, f);
+            }}
+            onClearFilters={() => {
+              setFilters({});
+              clearSearch();
+            }}
+            availableSkills={availableSkills}
+            persistenceKey="trades-filters"
+          />
+
+          {searchTerm && (
+            <div className="mt-2 text-right">
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="text-sm text-primary hover:text-primary/80 underline"
+                aria-label="Clear search"
+              >
+                Clear search
+              </button>
+            </div>
+          )}
         </Box>
 
         {loading ? (
@@ -198,7 +334,7 @@ export const TradesPage: React.FC = () => {
         ) : error ? (
           <Box className="col-span-full bg-card text-card-foreground p-6 rounded-lg shadow-sm border border-border text-center">
             <p className="text-destructive-foreground">{error}</p>
-            <AnimatedButton onClick={fetchTrades} className="mt-4" tradingContext="general" variant="secondary">
+            <AnimatedButton onClick={() => window.location.reload()} className="mt-4" tradingContext="general" variant="secondary">
               Try Again
             </AnimatedButton>
           </Box>

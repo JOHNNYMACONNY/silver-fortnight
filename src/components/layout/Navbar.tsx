@@ -51,17 +51,17 @@ const Navbar: React.FC = () => {
     <>
       <nav
         className={cn(
-          // Fixed z-index using theme token for Phase 4.1
-          'sticky top-0 z-navigation',
+          // Ensure navbar sits above stray z-50 content but below overlays
+          'sticky top-0 z-[55]',
 
           // Mobile-optimized transitions
           shouldUseReducedAnimations() ? 'transition-none' : 'transition-all duration-300',
 
           // Enhanced glassmorphism based on scroll state
           isScrolled ? (
-            'glassmorphic bg-navbar-glass dark:bg-navbar-glass-dark navbar-gradient-border'
+            'bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-xl backdrop-saturate-150 bg-clip-padding navbar-gradient-border'
           ) : (
-            'bg-navbar-glass/75 dark:bg-navbar-glass-dark/75 backdrop-blur-md border-b border-transparent'
+            'bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md backdrop-saturate-150 bg-clip-padding border-b border-transparent'
           ),
 
           // Mobile-specific optimizations

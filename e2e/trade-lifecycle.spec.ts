@@ -1,22 +1,12 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/auth';
 
 test.describe('Trade Lifecycle E2E Tests', () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to the application
-    await page.goto('/');
-    
-    // Mock authentication state for testing
-    await page.addInitScript(() => {
-      // Mock Firebase auth
-      window.localStorage.setItem('firebase:authUser:test', JSON.stringify({
-        uid: 'test-user-id',
-        email: 'test@example.com',
-        displayName: 'Test User'
-      }));
-    });
-  });
+test.beforeEach(async ({ signedInPage: page }) => {
+  await page.goto('/');
+  await page.waitForLoadState('domcontentloaded');
+});
 
-  test('should complete full trade creation workflow', async ({ page }) => {
+test('should complete full trade creation workflow', async ({ signedInPage: page }) => {
     // Navigate to trade creation
     await page.click('[data-testid="create-trade-button"]');
     
@@ -49,7 +39,7 @@ test.describe('Trade Lifecycle E2E Tests', () => {
     await expect(page.locator('[data-testid="requested-skill"]')).toContainText('UI/UX Design');
   });
 
-  test('should handle trade discovery and filtering', async ({ page }) => {
+test('should handle trade discovery and filtering', async ({ signedInPage: page }) => {
     // Navigate to trades page
     await page.click('[data-testid="nav-trades"]');
     
@@ -80,7 +70,7 @@ test.describe('Trade Lifecycle E2E Tests', () => {
     await expect(page.locator('[data-testid="trade-card"]')).toHaveCountGreaterThan(1);
   });
 
-  test('should handle trade application workflow', async ({ page }) => {
+test('should handle trade application workflow', async ({ signedInPage: page }) => {
     // Navigate to a specific trade
     await page.goto('/trades/test-trade-id');
     
@@ -108,7 +98,7 @@ test.describe('Trade Lifecycle E2E Tests', () => {
     await expect(page.locator('[data-testid="trade-status"]')).toContainText('Application Pending');
   });
 
-  test('should handle trade acceptance and completion', async ({ page }) => {
+test('should handle trade acceptance and completion', async ({ signedInPage: page }) => {
     // Mock trade owner perspective
     await page.addInitScript(() => {
       window.localStorage.setItem('firebase:authUser:test', JSON.stringify({
@@ -162,7 +152,7 @@ test.describe('Trade Lifecycle E2E Tests', () => {
     await expect(page.locator('[data-testid="trade-status"]')).toContainText('Completed');
   });
 
-  test('should handle trade cancellation workflow', async ({ page }) => {
+test('should handle trade cancellation workflow', async ({ signedInPage: page }) => {
     // Navigate to active trade
     await page.goto('/trades/test-active-trade-id');
     
@@ -191,7 +181,7 @@ test.describe('Trade Lifecycle E2E Tests', () => {
     await expect(page.locator('[data-testid="active-trade-card"]')).toHaveCount(0);
   });
 
-  test('should handle trade messaging and communication', async ({ page }) => {
+test('should handle trade messaging and communication', async ({ signedInPage: page }) => {
     // Navigate to active trade
     await page.goto('/trades/test-active-trade-id');
     
@@ -231,7 +221,7 @@ test.describe('Trade Lifecycle E2E Tests', () => {
     await expect(page.locator('[data-testid="chat-message"]').last()).toContainText('project-requirements.pdf');
   });
 
-  test('should handle trade analytics and tracking', async ({ page }) => {
+test('should handle trade analytics and tracking', async ({ signedInPage: page }) => {
     // Navigate to user dashboard
     await page.click('[data-testid="nav-dashboard"]');
     

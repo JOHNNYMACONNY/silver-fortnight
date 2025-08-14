@@ -149,7 +149,7 @@ export const ConnectionsPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+      <div className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 flex flex-col md:flex-row md:items-center md:justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Connections</h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -159,7 +159,7 @@ export const ConnectionsPage: React.FC = () => {
       </div>
 
       <div className="mb-8">
-        <nav className="flex space-x-4" aria-label="Tabs">
+        <nav className="glassmorphic rounded-xl px-2 py-2 flex space-x-2" aria-label="Tabs">
           <button
             onClick={() => setActiveTab('connections')}
             className={`px-3 py-2 font-medium text-sm rounded-md flex items-center transition-colors ${
@@ -221,7 +221,7 @@ export const ConnectionsPage: React.FC = () => {
 
       {loading ? (
         <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500 dark:border-orange-400"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         </div>
       ) : (
         <>

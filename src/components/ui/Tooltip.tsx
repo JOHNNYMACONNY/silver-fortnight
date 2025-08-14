@@ -43,7 +43,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const eventTargetRef = useRef<HTMLElement | null>(null);
 
   // Handler to capture the target element
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = (e: globalThis.MouseEvent) => {
     if (isVisible && !eventTargetRef.current) {
       // Find the closest element that matches our child component
       let target = e.target as HTMLElement;
@@ -59,9 +59,9 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
   // Add event listener for mouse move
   useEffect(() => {
-    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mousemove', handleMouseMove as EventListener);
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mousemove', handleMouseMove as EventListener);
     };
   }, [isVisible]);
 
@@ -118,14 +118,14 @@ export const Tooltip: React.FC<TooltipProps> = ({
   // Merge the child's props with our event handlers and data attribute
   const clonedChild = React.cloneElement<ChildPropsWithTooltip>(children, {
     'data-tooltip-trigger': 'true',
-    onMouseEnter: (e: React.MouseEvent) => {
+    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
       handleMouseEnter();
       // Call the original onMouseEnter if it exists
       if (children.props.onMouseEnter) {
         children.props.onMouseEnter(e);
       }
     },
-    onMouseLeave: (e: React.MouseEvent) => {
+    onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
       handleMouseLeave();
       // Call the original onMouseLeave if it exists
       if (children.props.onMouseLeave) {
@@ -141,7 +141,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
         <div
           ref={tooltipRef}
           className={cn(
-            'fixed z-50 px-2 py-1 text-xs font-medium rounded shadow-md',
+            'fixed z-tooltip px-2 py-1 text-xs font-medium rounded shadow-md',
             'bg-neutral-800 text-white dark:bg-neutral-700',
             'animate-fade-in scale-95 transition-all duration-200',
             positionClasses[position],

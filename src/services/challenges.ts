@@ -32,6 +32,7 @@ import {
   UserChallengeStatus,
   ChallengeType,
   ChallengeDifficulty,
+  ChallengeCategory,
   ChallengeNotification,
   ChallengeNotificationType,
   XP_VALUES,
@@ -39,8 +40,10 @@ import {
 } from '../types/gamification';
 import { ServiceResponse } from '../types/services';
 import { EmbeddedEvidence } from '../types/evidence';
-import { awardXP } from './gamification';
+import { awardXPWithLeaderboardUpdate } from './gamification';
 import { updateProgressionOnChallengeCompletion } from './threeTierProgression';
+import { markChallengeDay } from './streaks';
+import { addSkillXP } from './skillXP';
 
 // Real-time notification support
 let challengeNotificationCallback: ((notification: ChallengeNotification) => void) | null = null;
@@ -212,9 +215,9 @@ export const getChallenges = async (filters: ChallengeFilters = {}): Promise<Cha
     const q = query(queryRef, ...constraints);
     const querySnapshot = await getDocs(q);
 
-    const challenges: Challenge[] = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
+    const challenges: Challenge[] = querySnapshot.docs.map((d) => ({
+      id: d.id,
+      ...(d.data() as Record<string, unknown>)
     })) as Challenge[];
 
     return {
@@ -263,6 +266,26 @@ export const joinChallenge = async (challengeId: string, userId: string): Promis
         throw new Error('User already joined this challenge');
       }
 
+      // Check tier gating (soft flag)
+      try {
+        const enforce = String((process as any)?.env?.VITE_ENFORCE_TIER_GATING || '').toLowerCase();
+        const shouldEnforce = enforce === '1' || enforce === 'true' || enforce === 'yes';
+        if (shouldEnforce && (challenge.type === ChallengeType.TRADE || challenge.type === ChallengeType.COLLABORATION)) {
+          // Lazy import to avoid circulars
+          const { getUserThreeTierProgress } = await import('./threeTierProgression');
+          const prog = await getUserThreeTierProgress(userId);
+          const unlocked = prog.success ? (prog.data?.unlockedTiers || []) : [];
+          if (challenge.type === ChallengeType.TRADE && !unlocked.includes('TRADE')) {
+            throw new Error('Tier locked: Complete 3 Solo challenges and reach skill level 2 to unlock Trade challenges.');
+          }
+          if (challenge.type === ChallengeType.COLLABORATION && !unlocked.includes('COLLABORATION')) {
+            throw new Error('Tier locked: Complete 5 Trade challenges and reach skill level 3 to unlock Collaboration challenges.');
+          }
+        }
+      } catch (e) {
+        // If gating check fails unexpectedly, do not block join unless flag enforced and explicit lock thrown above
+      }
+
       // Check max participants
       if (challenge.maxParticipants && challenge.participantCount >= challenge.maxParticipants) {
         throw new Error('Challenge is full');
@@ -291,8 +314,8 @@ export const joinChallenge = async (challengeId: string, userId: string): Promis
       return { challenge, userChallenge };
     });
 
-    // Award join XP
-    await awardXP(
+    // Award join XP (with leaderboard update)
+    await awardXPWithLeaderboardUpdate(
       userId,
       XP_VALUES.CHALLENGE_JOIN,
       XPSource.CHALLENGE_JOIN,
@@ -380,7 +403,7 @@ export const updateChallengeProgress = async (
     }
 
     if (xpAmount > 0) {
-      await awardXP(
+      await awardXPWithLeaderboardUpdate(
         userId,
         xpAmount,
         XPSource.CHALLENGE_PROGRESS,
@@ -454,7 +477,7 @@ const handleChallengeCompletion = async (
     });
 
     // Calculate completion XP based on difficulty
-    let completionXP = XP_VALUES.CHALLENGE_COMPLETION_BEGINNER;
+    let completionXP: number = XP_VALUES.CHALLENGE_COMPLETION_BEGINNER as number;
     
     switch (challenge.difficulty) {
       case ChallengeDifficulty.INTERMEDIATE:
@@ -479,14 +502,28 @@ const handleChallengeCompletion = async (
 
     const totalXP = completionXP + bonusXP + (challenge.rewards.xp || 0);
 
-    // Award completion XP
-    await awardXP(
+    // Award completion XP (with leaderboard update)
+    await awardXPWithLeaderboardUpdate(
       userId,
       totalXP,
       XPSource.CHALLENGE_COMPLETION,
       challengeId,
       `Completed challenge: ${challenge.title}${bonusXP > 0 ? ' (Early completion bonus!)' : ''}`
     );
+
+    // Update challenge streak
+    try { await markChallengeDay(userId, new Date()); } catch {}
+
+    // Hook: Award skill-specific XP based on challenge category
+    try {
+      const skillName = (challenge.category || '').toString().replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+      if (skillName) {
+        const skillAmount = Math.max(25, Math.round(totalXP * 0.5));
+        await addSkillXP(userId, skillName, skillAmount, 'challenge_completion', challengeId, `Completed challenge: ${challenge.title}`);
+      }
+    } catch (e) {
+      // non-blocking
+    }
 
     // Send completion notification
     const notification: ChallengeNotification = {
@@ -573,9 +610,9 @@ export const getUserChallenges = async (
     const q = query(queryRef, ...constraints);
     const querySnapshot = await getDocs(q);
 
-    const userChallenges = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
+    const userChallenges = querySnapshot.docs.map((d) => ({
+      id: d.id,
+      ...(d.data() as Record<string, unknown>)
     })) as UserChallenge[];
 
     // Get challenge details for each user challenge
@@ -617,7 +654,7 @@ export const onUserChallengeSubmissions = (
   const qRef = collection(getSyncFirebaseDb(), 'challengeSubmissions');
   const q = query(qRef, where('userId', '==', userId), orderBy('submittedAt', 'desc'));
   const unsubscribe = onSnapshot(q, (snapshot) => {
-    const items: ChallengeSubmission[] = snapshot.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as ChallengeSubmission[];
+    const items: ChallengeSubmission[] = snapshot.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) })) as ChallengeSubmission[];
     handler(items);
   });
   return unsubscribe;
@@ -633,7 +670,7 @@ export const onChallengeSubmissions = (
   const qRef = collection(getSyncFirebaseDb(), 'challengeSubmissions');
   const q = query(qRef, where('challengeId', '==', challengeId), orderBy('submittedAt', 'desc'));
   const unsubscribe = onSnapshot(q, (snapshot) => {
-    const items: ChallengeSubmission[] = snapshot.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as ChallengeSubmission[];
+    const items: ChallengeSubmission[] = snapshot.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) })) as ChallengeSubmission[];
     handler(items);
   });
   return unsubscribe;
@@ -673,17 +710,67 @@ export const leaveChallenge = async (userId: string, challengeId: string): Promi
 /**
  * Get recommended challenges for a user
  */
-export const getRecommendedChallenges = async (_userId: string): Promise<ChallengeListResponse> => {
+export const getRecommendedChallenges = async (userId: string): Promise<ChallengeListResponse> => {
   try {
-    // For now, return active challenges with appropriate difficulty
-    // This can be enhanced with user skill analysis later
-    return getChallenges({
+    // Heuristic: prefer categories the user recently engaged with
+    const recent = await getUserChallenges(userId, [UserChallengeStatus.ACTIVE, UserChallengeStatus.COMPLETED]);
+    const preferredCategories = new Set<ChallengeCategory>();
+    let difficultyTally: Record<string, number> = { beginner: 0, intermediate: 0, advanced: 0, expert: 0 };
+
+    if (recent.success && recent.challenges?.length) {
+      for (const c of recent.challenges) {
+        if (c.category) preferredCategories.add(c.category as ChallengeCategory);
+        if (c.difficulty) difficultyTally[(c.difficulty as string).toLowerCase()] = (difficultyTally[(c.difficulty as string).toLowerCase()] || 0) + 1;
+      }
+    }
+
+    const sortedDifficulties = Object.entries(difficultyTally)
+      .sort((a, b) => b[1] - a[1])
+      .map(([k]) => k as keyof typeof difficultyTally);
+
+    // Default band: beginner/intermediate; otherwise center around user’s most common difficulty
+    const band = sortedDifficulties.length > 0 && difficultyTally[sortedDifficulties[0]] > 0
+      ? (() => {
+          const order = ['beginner', 'intermediate', 'advanced', 'expert'];
+          const idx = order.indexOf(sortedDifficulties[0]);
+          const picks = new Set([order[idx]]);
+          if (idx - 1 >= 0) picks.add(order[idx - 1]);
+          if (idx + 1 < order.length) picks.add(order[idx + 1]);
+          return Array.from(picks).map((d) => d.toUpperCase()) as ChallengeDifficulty[];
+        })()
+      : [ChallengeDifficulty.BEGINNER, ChallengeDifficulty.INTERMEDIATE];
+
+    // Try category-focused query first if we have preferences
+    if (preferredCategories.size > 0) {
+      const res = await getChallenges({
+        status: [ChallengeStatus.ACTIVE],
+        category: Array.from(preferredCategories).slice(0, 10),
+        difficulty: band,
+        sortBy: ChallengeSortBy.PARTICIPANT_COUNT,
+        sortOrder: 'desc',
+        limit: 10
+      });
+      if (res.success && res.challenges && res.challenges.length > 0) {
+        const joinedIds = new Set((recent.challenges || []).map((c) => c.id));
+        const filtered = res.challenges.filter((c) => !joinedIds.has(c.id));
+        return { ...res, challenges: filtered, total: filtered.length };
+      }
+    }
+
+    // Fallback: no category filter
+    const fallback = await getChallenges({
       status: [ChallengeStatus.ACTIVE],
-      difficulty: [ChallengeDifficulty.BEGINNER, ChallengeDifficulty.INTERMEDIATE],
+      difficulty: band,
       sortBy: ChallengeSortBy.PARTICIPANT_COUNT,
       sortOrder: 'desc',
       limit: 10
     });
+    if (fallback.success && fallback.challenges) {
+      const joinedIds = new Set((recent.challenges || []).map((c) => c.id));
+      const filtered = fallback.challenges.filter((c) => !joinedIds.has(c.id));
+      return { ...fallback, challenges: filtered, total: filtered.length };
+    }
+    return fallback;
   } catch (error) {
     console.error('Error getting recommended challenges:', error);
     return {
@@ -715,7 +802,7 @@ export const getUserChallengeProgress = async (
       };
     }
 
-    const userChallenge = { id: userChallengeSnap.id, ...userChallengeSnap.data() } as UserChallenge;
+    const userChallenge = { id: userChallengeSnap.id, ...(userChallengeSnap.data() as Record<string, unknown>) } as UserChallenge;
     const progressPercentage = (userChallenge.progress / userChallenge.maxProgress) * 100;
 
     return {
@@ -819,7 +906,7 @@ export const completeChallenge = async (userChallengeId: string): Promise<{
       };
     }
 
-    const userChallenge = { id: userChallengeSnap.id, ...userChallengeSnap.data() } as UserChallenge;
+    const userChallenge = { id: userChallengeSnap.id, ...(userChallengeSnap.data() as Record<string, unknown>) } as UserChallenge;
 
     if (userChallenge.status === UserChallengeStatus.COMPLETED) {
       return {
@@ -845,7 +932,7 @@ export const completeChallenge = async (userChallengeId: string): Promise<{
       const challenge = challengeResponse.data as Challenge;
       
       // Award XP based on difficulty
-      let xpAmount = 100; // Default for beginner
+      let xpAmount: number = 100; // Default for beginner
       switch (challenge.difficulty) {
         case ChallengeDifficulty.INTERMEDIATE:
           xpAmount = 200;
@@ -858,7 +945,7 @@ export const completeChallenge = async (userChallengeId: string): Promise<{
           break;
       }
 
-      await awardXP(userChallenge.userId, xpAmount, XPSource.CHALLENGE_COMPLETION, challenge.id);
+      await awardXPWithLeaderboardUpdate(userChallenge.userId, xpAmount, XPSource.CHALLENGE_COMPLETION, challenge.id);
 
       // Update three-tier progression if this is a tier-based challenge
       if ([ChallengeType.SOLO, ChallengeType.TRADE, ChallengeType.COLLABORATION].includes(challenge.type)) {
@@ -949,7 +1036,7 @@ export const onActiveChallenges = (
   qConstraints.push(orderBy('endDate', 'asc'));
   const q = query(qRef, ...qConstraints);
   const unsubscribe = onSnapshot(q, (snapshot) => {
-    const items: Challenge[] = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Challenge));
+    const items: Challenge[] = snapshot.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) } as Challenge));
     handler(items);
   });
   return unsubscribe;
@@ -979,6 +1066,36 @@ export const getWeeklyChallenges = async (): Promise<ChallengeListResponse> => {
     sortOrder: 'desc',
     limit: 10
   });
+};
+
+/**
+ * Featured daily challenge (first ACTIVE daily by soonest end date)
+ */
+export const getFeaturedDaily = async (): Promise<Challenge | null> => {
+  const res = await getChallenges({
+    type: [ChallengeType.DAILY],
+    status: [ChallengeStatus.ACTIVE],
+    sortBy: ChallengeSortBy.END_DATE,
+    sortOrder: 'asc',
+    limit: 1
+  });
+  if (!res.success || !res.challenges?.length) return null;
+  return res.challenges[0];
+};
+
+/**
+ * Featured weekly challenge (most recently created ACTIVE weekly)
+ */
+export const getFeaturedWeekly = async (): Promise<Challenge | null> => {
+  const res = await getChallenges({
+    type: [ChallengeType.WEEKLY],
+    status: [ChallengeStatus.ACTIVE],
+    sortBy: ChallengeSortBy.CREATED_AT,
+    sortOrder: 'desc',
+    limit: 1
+  });
+  if (!res.success || !res.challenges?.length) return null;
+  return res.challenges[0];
 };
 
 /**

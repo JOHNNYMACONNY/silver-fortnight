@@ -17,7 +17,7 @@ export const updateCollaborationRoleCounts = async (
 export const getCollaborationRoles = async (collaborationId: string): Promise<ServiceResponse<CollaborationRoleData[]>> => {
   try {
     // Implementation using collaborationId parameter
-    const rolesRef = collection(db(), `collaborations/${collaborationId}/roles`);
+    const rolesRef = collection(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles`);
     const rolesSnapshot = await getDocs(rolesRef);
     const roles = rolesSnapshot.docs.map(doc => {
       const data = doc.data() as Record<string, any>;
@@ -69,7 +69,7 @@ export const modifyRole = async (roleId: string, roleData: any) => {
       }
     }
     
-    const roleRef = doc(db(), `collaborations/${collaborationId}/roles/${actualRoleId}`);
+    const roleRef = doc(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles/${actualRoleId}`);
     await updateDoc(roleRef, {
       ...roleData,
       updatedAt: Timestamp.now()
@@ -97,7 +97,7 @@ export const createRoleHierarchy = async (roles: CollaborationRoleData[]) => {
     const collaborationId = role.collaborationId;
     
     // Create a document reference in the roles subcollection
-    const rolesRef = collection(db(), `collaborations/${collaborationId}/roles`);
+    const rolesRef = collection(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles`);
     const roleRef = doc(rolesRef);
     
     // Prepare role data (removing the temp id)
@@ -112,7 +112,7 @@ export const createRoleHierarchy = async (roles: CollaborationRoleData[]) => {
     });
     
     // Also update the role count in the collaboration
-    const collaborationRef = doc(db(), 'collaborations', collaborationId);
+    const collaborationRef = doc(getSyncFirebaseDb(), 'collaborations', collaborationId);
     await updateDoc(collaborationRef, {
       roleCount: increment(1),
       updatedAt: Timestamp.now()
@@ -144,11 +144,11 @@ export const deleteRole = async (roleId: string, collaborationId?: string) => {
       }
     }
     
-    const roleRef = doc(db(), `collaborations/${actualCollabId}/roles/${actualRoleId}`);
+    const roleRef = doc(getSyncFirebaseDb(), `collaborations/${actualCollabId}/roles/${actualRoleId}`);
     await deleteDoc(roleRef);
     
     // Update collaboration document
-    const collaborationRef = doc(db(), 'collaborations', actualCollabId);
+    const collaborationRef = doc(getSyncFirebaseDb(), 'collaborations', actualCollabId);
     await updateDoc(collaborationRef, {
       roleCount: increment(-1),
       updatedAt: Timestamp.now()

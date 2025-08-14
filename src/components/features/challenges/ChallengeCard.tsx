@@ -5,6 +5,9 @@ import { Badge } from '../../ui/Badge';
 import { Clock, Award, Users, Target, Star } from 'lucide-react';
 import { Challenge, ChallengeDifficulty, ChallengeType } from '../../../types/gamification';
 import { ChallengeRecommendation } from '../../../services/challengeDiscovery';
+import { Tooltip } from '../../ui/Tooltip';
+import { useAuth } from '../../../AuthContext';
+import { getUserThreeTierProgress } from '../../../services/threeTierProgression';
 
 export interface ChallengeCardProps {
   challenge: Challenge;
@@ -66,6 +69,31 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
   enhanced = true,
   footer,
 }) => {
+  const { currentUser } = useAuth();
+  const [locked, setLocked] = React.useState<boolean>(false);
+  const [lockReason, setLockReason] = React.useState<string>('');
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        if (!currentUser?.uid) return;
+        // Soft gate: derive a simple lock hint based on progression data (no hard enforcement)
+        const prog = await getUserThreeTierProgress(currentUser.uid);
+        if (!prog.success || !prog.data) return;
+        const tier = challenge.type;
+        if (tier === ChallengeType.TRADE && !prog.data.unlockedTiers.includes('TRADE')) {
+          setLocked(true);
+          setLockReason('Complete 3 Solo challenges and reach skill level 2 to unlock Trade');
+        } else if (tier === ChallengeType.COLLABORATION && !prog.data.unlockedTiers.includes('COLLABORATION')) {
+          setLocked(true);
+          setLockReason('Complete 5 Trade challenges and reach skill level 3 to unlock Collaboration');
+        } else {
+          setLocked(false);
+          setLockReason('');
+        }
+      } catch {}
+    })();
+  }, [currentUser?.uid, challenge.type]);
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -75,6 +103,7 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
 
   return (
     <div
+      data-testid={`challenge-card-${challenge.id}`}
       onKeyDown={handleKeyDown}
       tabIndex={0}
       role="button"
@@ -127,6 +156,21 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
                 <span>{challenge.rewards?.xp || 0} XP</span>
               </div>
             </div>
+          </div>
+
+          {locked && (
+            <div className="mb-3">
+              <Tooltip content={<div className="max-w-xs text-xs">{lockReason}</div>}>
+                <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card/60 px-2 py-0.5 text-[11px] text-muted-foreground">
+                  🔒 Locked
+                </span>
+              </Tooltip>
+            </div>
+          )}
+
+          {/* Base vs Bonus hint */}
+          <div className="text-[11px] text-muted-foreground -mt-3 mb-3">
+            Base XP shown; bonuses available for quality, early completion, first attempt, and streaks.
           </div>
 
           {recommendation && (

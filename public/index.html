@@ -11,10 +11,30 @@
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <title>React App</title>
+    <title>TradeYa</title>
+    <style>
+      html, body, #root { height: 100%; }
+      body { 
+        margin: 0; 
+        background: 
+          radial-gradient(1200px circle at 20% 10%, rgba(249, 115, 22, 0.15), transparent 40%),
+          linear-gradient(135deg, #0b1220 0%, #0e3a8a 55%, #6d28d9 100%);
+        color: #ffffff; 
+      }
+      #pre-root-splash { display: flex; align-items: center; justify-content: center; height: 100%; }
+      .ty-spinner { width: 48px; height: 48px; border-radius: 9999px; border: 4px solid rgba(255,255,255,0.25); border-top-color: #f97316; animation: ty-spin 1s linear infinite; margin: 0 auto; }
+      @keyframes ty-spin { to { transform: rotate(360deg); } }
+    </style>
   </head>
   <body class="bg-background text-foreground">
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root">
+      <div id="pre-root-splash">
+        <div style="text-align:center">
+          <div class="ty-spinner"></div>
+          <p style="margin-top:12px;font-size:16px;opacity:.9">Preparing TradeYa…</p>
+        </div>
+      </div>
+    </div>
   </body>
 </html> 

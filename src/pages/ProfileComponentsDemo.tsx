@@ -130,7 +130,6 @@ export const ProfileComponentsDemo: React.FC = () => {
                     { id: '3', name: 'User Research', level: 'intermediate' }
                   ]}
                 reputationScore={72}
-                compact={true}
               />
             </div>
           </section>

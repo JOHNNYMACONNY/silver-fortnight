@@ -33,6 +33,8 @@ export interface CollaborationRoleData {
   participantId?: string;
   participantName?: string;
   participantPhotoURL?: string;
+  // Alternative assigned user field used by some services
+  assignedUserId?: string;
   previousParticipantId?: string; // Added
   previousParticipantName?: string; // Added
   previousParticipantPhotoURL?: string; // Added
@@ -43,6 +45,11 @@ export interface CollaborationRoleData {
   status: RoleState; // Changed from 'open' | 'filled' | 'completed' | 'abandoned'
   applicationCount: number;
   completionStatus?: CompletionRequestStatus;
+  // Completion metadata used by role completion flows
+  completionRequestedAt?: any; // Timestamp from Firestore
+  completionConfirmedAt?: any; // Timestamp from Firestore
+  completionNotes?: string;
+  completionEvidence?: any[];
   
   // Skills required for the role
   requiredSkills?: Skill[];

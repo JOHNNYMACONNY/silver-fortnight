@@ -4,6 +4,7 @@ export { default as LevelBadge, CompactLevelBadge, DetailedLevelBadge } from './
 export { default as AchievementBadge, CompactAchievementBadge, DetailedAchievementBadge } from './AchievementBadge';
 export { default as GamificationDashboard } from './GamificationDashboard';
 export { default as GamificationIntegration } from './GamificationIntegration';
+export { StreakWidget } from '../features/StreakWidget';
 
 // Notification Components
 export {

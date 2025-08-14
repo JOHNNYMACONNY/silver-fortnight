@@ -41,10 +41,10 @@
 | Page/Component         | Keyboard Navigation | Focus States | Screen Reader | ARIA/Labels | Color Contrast | Reduced Motion | Notes/Issues |
 |------------------------|--------------------|--------------|---------------|-------------|---------------|---------------|--------------|
 | Glassmorphic Modules   | [x]                | [x]          | [x]           | [x]         | [x]           | [x]           | All use .glassmorphic utility class; consistent a11y and contrast |
-| Button                 | [x]                | [x]          | [x]           | [ ]         | [x]           | [x]           | Add ARIA for loading |
+| Button                 | [x]                | [x]          | [x]           | [x]         | [x]           | [x]           | ARIA for loading implemented; default type="button" enforced |
 | Card                   | [x]                | [x]          | [x]           | [x]         | [x]           | [x]           | -            |
 | Alert                  | [x]                | [x]          | [x]           | [x]         | [x]           | [x]           | -            |
-| Modal                  | [x]                | [x]          | [x]           | [ ]         | [x]           | [x]           | Add role="dialog"/aria-modal |
+| Modal                  | [x]                | [x]          | [x]           | [x]         | [x]           | [x]           | role="dialog" and aria-modal present; add focus trap + restore-to-trigger focus |
 | HomePage               | [ ]                | [ ]          | [ ]           | [ ]         | [ ]           | [ ]           |              |
 | HomePage (bento/grid) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] | Some visual/accessibility quirks; will revisit after design system migration |
 | Navbar                 | [x] | [x] | [x] | [x] | [x] | [x] | Fully theme-aware, strong color contrast, keyboard/focus unchanged |
@@ -52,6 +52,7 @@
 | MainLayout             | [x] | [x] | [x] | [ ] | [x] | [x] | - |
 | Box (primitive)        | [x] | [x] | [x] | [ ] | [x] | [x] | - |
 | Grid (primitive)       | [x] | [x] | [x] | [ ] | [x] | [x] | - |
+| EvidenceDisplay        | [x] | [x] | [x] | [x] | [x] | [x] | Keyboard activation, lazy images, decoding=async |
 | LoginPage              | [ ]                | [ ]          | [ ]           | [ ]         | [ ]           | [ ]           |              |
 | SignUpPage             | [ ]                | [ ]          | [ ]           | [ ]         | [ ]           | [ ]           |              |
 | TradeCard              | [ ]                | [ ]          | [ ]           | [ ]         | [ ]           | [ ]           |              |
@@ -95,12 +96,14 @@
 - Action buttons inside clickable cards
   - Issue: In `ConnectionCard`, action buttons (Accept/Decline/Remove) do not stop propagation; clicking them may also trigger card navigation.
   - Location: `src/components/features/connections/ConnectionCard.tsx`
-  - Recommendation: Add `onClick={(e) => { e.stopPropagation(); ... }}` to those buttons and to any interactive child inside card containers.
+  - Status: Implemented in `ConnectionCard` (stopPropagation on actions). Still audit `UserCard`, `TradeCard`, `ProfileCard` for parity.
+  - Recommendation: Ensure all clickable-card children stop propagation.
 
 - Keyboard access for custom clickable blocks
   - Issue: Evidence preview container is mouse-only clickable, lacking keyboard access.
   - Location: `src/components/features/evidence/EvidenceDisplay.tsx`
-  - Recommendation: Use a `<button>` or add `role="button"`, `tabIndex={0}`, and Enter/Space key handlers.
+  - Status: Implemented (role, tabIndex, Enter/Space handlers).
+  - Recommendation: Apply same pattern to any similar preview blocks.
 
 - Modal focus management
   - Observation: Modal sets `role="dialog"` and `aria-modal`. However, focus trapping and return-to-trigger focus are not handled.
@@ -115,7 +118,7 @@
 - Images performance/accessibility
   - Observation: Many `<img>` elements do not specify `loading="lazy"`/`decoding="async"`; some decorative images might need `alt=""` when purely decorative.
   - Locations: Various (e.g., avatars, thumbnails, collaborators list)
-  - Recommendation: Add `loading="lazy"` on non-critical images, `decoding="async"`, and ensure correct `alt` usage.
+  - Recommendation: Add `loading="lazy"` on non-critical images, `decoding="async"`, and ensure correct `alt` usage. Standardize across components.
 
 - System alerts/confirm dialogs
   - Observation: Several uses of `alert/confirm` create blocking, inconsistent UX.

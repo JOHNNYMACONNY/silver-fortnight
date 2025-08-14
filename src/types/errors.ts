@@ -54,6 +54,7 @@ export interface ErrorContext {
   userAgent?: string;
   url?: string;
   additionalData?: Record<string, any>;
+  [key: string]: any;
 }
 
 export interface ErrorRecoveryAction {
@@ -241,7 +242,7 @@ export const createNetworkError = (message: string, context?: ErrorContext): App
       },
       {
         label: 'Check Connection',
-        action: () => window.open('https://www.google.com', '_blank')
+        action: () => { window.open('https://www.google.com', '_blank'); }
       }
     ],
     true
@@ -270,7 +271,7 @@ export const createAuthError = (message: string, context?: ErrorContext): AppErr
     [
       {
         label: 'Sign In',
-        action: () => window.location.href = '/login',
+        action: () => { window.location.href = '/login'; },
         primary: true
       }
     ],
@@ -293,7 +294,7 @@ export const createTradeError = (message: string, context?: ErrorContext): AppEr
       },
       {
         label: 'Contact Support',
-        action: () => window.location.href = '/support'
+        action: () => { window.location.href = '/support'; }
       }
     ],
     true

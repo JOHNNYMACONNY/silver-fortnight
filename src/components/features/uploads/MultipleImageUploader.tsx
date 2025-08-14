@@ -339,8 +339,8 @@ export const MultipleImageUploader: React.FC<MultipleImageUploaderProps> = ({
         <div
           className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
             isDragging
-              ? 'border-orange-500 bg-orange-50'
-              : 'border-gray-300 hover:border-orange-400 hover:bg-gray-50'
+              ? 'border-primary bg-primary/10'
+              : 'border-gray-300 hover:border-primary hover:bg-gray-50'
           }`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -382,7 +382,7 @@ export const MultipleImageUploader: React.FC<MultipleImageUploaderProps> = ({
                 <div key={fileId} className="mb-2">
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
-                      className="bg-orange-500 h-2 rounded-full transition-all duration-300 ease-out"
+                      className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
                       style={{ width: `${progress}%` }}
                     ></div>
                   </div>
@@ -406,7 +406,7 @@ export const MultipleImageUploader: React.FC<MultipleImageUploaderProps> = ({
       />
 
       {imageUrls.length >= maxImages && (
-        <p className="text-sm text-orange-500 mt-2">
+        <p className="text-sm text-primary mt-2">
           Maximum number of images reached ({maxImages})
         </p>
       )}

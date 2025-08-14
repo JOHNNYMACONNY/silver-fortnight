@@ -40,7 +40,7 @@ describe('GlassmorphicInput', () => {
       
       const input = screen.getByPlaceholderText('Enter text...');
       expect(input).toBeInTheDocument();
-      expect(input).toHaveClass('backdrop-blur-sm');
+      expect(input).toHaveClass('glassmorphic');
     });
 
     it('renders with label', () => {
@@ -70,15 +70,14 @@ describe('GlassmorphicInput', () => {
       render(<GlassmorphicInput {...defaultProps} />);
       
       const input = screen.getByPlaceholderText('Enter text...');
-      expect(input).toHaveClass('backdrop-blur-sm');
-      expect(input).toHaveClass('bg-white/10');
+      expect(input).toHaveClass('glassmorphic');
     });
 
     it('applies elevated-glass variant styles', () => {
       render(<GlassmorphicInput {...defaultProps} variant="elevated-glass" />);
       
       const input = screen.getByPlaceholderText('Enter text...');
-      expect(input).toHaveClass('backdrop-blur-md');
+      expect(input).toHaveClass('glassmorphic');
       expect(input).toHaveClass('shadow-lg');
     });
 
@@ -86,8 +85,8 @@ describe('GlassmorphicInput', () => {
       render(<GlassmorphicInput {...defaultProps} variant="inset-glass" />);
 
       const input = screen.getByPlaceholderText('Enter text...');
+      expect(input).toHaveClass('glassmorphic');
       expect(input).toHaveClass('shadow-inner');
-      expect(input).toHaveClass('bg-white/5');
     });
   });
 
@@ -121,7 +120,7 @@ describe('GlassmorphicInput', () => {
       const input = screen.getByPlaceholderText('Enter text...');
       await userEvent.click(input);
       
-      expect(input).toHaveClass('focus:ring-orange-500/30');
+      expect(input).toHaveClass('focus:ring-ring');
     });
 
     it('applies blue brand accent on focus', async () => {

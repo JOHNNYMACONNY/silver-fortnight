@@ -58,6 +58,8 @@ export {
   getUserProfile,
   getAllUsers,
   getAllUsersLegacy,
+  getRelatedUserIds,
+  getUsersByIds,
   deleteUser,
   updateUserRole,
   createTrade,

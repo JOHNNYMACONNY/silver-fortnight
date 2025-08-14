@@ -36,6 +36,27 @@ TradeYa uses a comprehensive testing strategy that includes:
 - Firebase configuration properly mocked for Jest environment
 
 ## Current Test Coverage
+### Targeted Test Runs (New Components)
+
+Use these commands to run only the newly added tests during review:
+
+```bash
+npm test -- WeeklyXPGoal.test.tsx
+npm test -- Leaderboard.circle.test.tsx
+npm test -- Leaderboard.currentUserRow.test.tsx
+npm test -- GamificationDashboard.breakdownPersistence.test.tsx
+npm test -- ChallengesPage.featured.test.tsx
+npm test -- ChallengeCard.lockHint.test.tsx
+npm test -- ChallengesPage.practiceIndicator.test.tsx
+
+# Challenge Calendar (strip + page)
+npm test -- src/__tests__/ChallengeCalendarPage.render.test.tsx
+npm test -- src/components/features/challenges/__tests__/ChallengeCalendar.strip.test.tsx
+
+# Functions (Cloud Functions schedulers)
+npm --prefix functions test
+```
+
 
 ### Authentication Components
 
@@ -175,6 +196,20 @@ const mockGenerateTradePortfolioItem = jest.mocked(generateTradePortfolioItem);
 3. **Test User Interactions**: Use fireEvent for user actions like clicks and form submissions
 4. **Async Testing**: Use waitFor for asynchronous operations and state updates
 5. **Accessibility Testing**: Include proper role and label testing
+
+### UI Composition Regression Guards
+
+- Button `asChild` with Radix Slot requires a single child element. We added an RTL test to prevent regressions where multiple children (e.g., icons + text siblings) cause `React.Children.only` errors in dropdown triggers.
+
+Reference test:
+
+```text
+src/components/ui/__tests__/Button.asChild.dropdown.test.tsx
+```
+
+What it covers:
+- `DropdownMenuTrigger` using `Button asChild` wrapping a `Link` opens the menu without runtime errors.
+- `leftIcon`/`rightIcon` props are ignored when `asChild` is true (single-child rule). 
 
 ### Mock Management
 

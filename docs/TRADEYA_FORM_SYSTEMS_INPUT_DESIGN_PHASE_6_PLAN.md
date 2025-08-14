@@ -1,6 +1,8 @@
 # TradeYa Phase 6: Sophisticated Form Systems & Input Design - Architecture Plan
 
 > **Note:** All glassmorphic effects must use the universal `.glassmorphic` utility class (see `src/index.css`). Legacy or custom glassmorphic class combinations (e.g., `backdrop-blur-*`, `border-*`, `shadow-*`, `bg-white/70`, etc.) are deprecated. Use only `.glassmorphic` and Tailwind v4 utilities for all glassmorphic modules and components.
+>
+> Update: The `GlassmorphicForm` and `GlassmorphicInput` UI components now use the canonical `glassmorphic` surface internally with tokenized borders (`border-border`, `border-glass`, `border-strong`). Variant APIs remain the same; underlying hardcoded `bg-white/*` and `backdrop-blur-*` combos have been removed.
 
 **Document Version:** 1.0  
 **Created:** June 18, 2025  
@@ -142,26 +144,10 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
   className = ''
 }) => {
   const formVariants = {
-    standard: `
-      backdrop-blur-md bg-white/70 dark:bg-neutral-800/60
-      border border-white/20 dark:border-neutral-700/30
-      rounded-2xl p-6
-    `,
-    elevated: `
-      backdrop-blur-lg bg-white/80 dark:bg-neutral-800/70
-      border-2 border-white/30 dark:border-neutral-700/40
-      rounded-3xl p-8 shadow-2xl
-    `,
-    modal: `
-      backdrop-blur-xl bg-white/90 dark:bg-neutral-800/80
-      border border-white/40 dark:border-neutral-700/50
-      rounded-2xl p-8 shadow-beautiful
-    `,
-    stepped: `
-      backdrop-blur-md bg-white/75 dark:bg-neutral-800/65
-      border-l-4 border-gradient-to-b from-orange-500 to-blue-500
-      rounded-r-2xl pl-8 pr-6 py-6
-    `
+    standard: `glassmorphic rounded-2xl p-6`,
+    elevated: `glassmorphic rounded-3xl p-8 shadow-2xl`,
+    modal: `glassmorphic rounded-2xl p-8 shadow-beautiful`,
+    stepped: `glassmorphic rounded-r-2xl pl-8 pr-6 py-6 border-l-4 border-gradient-to-b from-orange-500 to-blue-500`
   };
 
   const blurClasses = {
@@ -240,24 +226,9 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
   const [hasValue, setHasValue] = useState(!!props.value || !!props.defaultValue);
 
   const inputVariants = {
-    glass: `
-      backdrop-blur-sm bg-white/10 dark:bg-neutral-900/10
-      border border-white/20 dark:border-neutral-700/30
-      focus:bg-white/20 dark:focus:bg-neutral-900/20
-      focus:border-white/40 dark:focus:border-neutral-600/40
-    `,
-    'elevated-glass': `
-      backdrop-blur-md bg-white/20 dark:bg-neutral-900/20
-      border-2 border-white/30 dark:border-neutral-700/40
-      shadow-lg focus:shadow-xl
-      focus:bg-white/30 dark:focus:bg-neutral-900/30
-    `,
-    'inset-glass': `
-      backdrop-blur-sm bg-white/5 dark:bg-neutral-900/5
-      border border-white/10 dark:border-neutral-700/20
-      shadow-inset shadow-black/10 dark:shadow-white/5
-      focus:shadow-inset-lg focus:bg-white/15 dark:focus:bg-neutral-900/15
-    `
+    glass: `glassmorphic border-glass`,
+    'elevated-glass': `glassmorphic border-strong border-2 shadow-lg`,
+    'inset-glass': `glassmorphic border-standard shadow-inset`,
   };
 
   const sizeClasses = {

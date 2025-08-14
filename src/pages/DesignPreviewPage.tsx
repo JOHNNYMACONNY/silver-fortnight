@@ -4,7 +4,6 @@ import AnimatedHeading from '../components/ui/AnimatedHeading';
 import GradientMeshBackground from '../components/ui/GradientMeshBackground';
 import { BentoGrid, BentoItem } from '../components/ui/BentoGrid';
 import Card3D from '../components/ui/Card3D';
-import { Input } from '../components/ui/Input';
 import EnhancedInput from '../components/ui/EnhancedInput';
 import AnimatedList from '../components/ui/AnimatedList';
 import PageTransition from '../components/ui/PageTransition';
@@ -94,7 +93,7 @@ const DesignPreviewPage: React.FC = () => {
                 <div className="space-y-4">
                   <div>
                     <h4 className="text-lg font-medium text-foreground mb-2">Standard Input</h4>
-                    <Input
+                    <EnhancedInput
                       label="Username"
                       placeholder="Enter your username"
                       helperText="Standard input component"

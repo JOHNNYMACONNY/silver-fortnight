@@ -179,7 +179,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({ notification
   };
 
   return (
-    <li className={`px-4 py-3 hover:bg-gray-50 ${!notification.read ? 'bg-orange-50' : ''}`}>
+  <li className={`px-4 py-3 hover:bg-gray-50 ${!notification.read ? 'bg-primary/10' : ''}`}>
       <Link to={getNotificationLink()} className="flex items-start" onClick={onClick}>
         {getNotificationIcon()}
 
@@ -194,7 +194,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({ notification
         </div>
 
         {!notification.read && (
-          <span className="ml-2 flex-shrink-0 h-2 w-2 rounded-full bg-orange-500"></span>
+  <span className="ml-2 flex-shrink-0 h-2 w-2 rounded-full bg-primary"></span>
         )}
       </Link>
     </li>

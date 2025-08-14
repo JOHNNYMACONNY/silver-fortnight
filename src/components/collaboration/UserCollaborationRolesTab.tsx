@@ -2,12 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import CollaborationRolesSection from './CollaborationRolesSection';
 import { getUserCollaborationsWithRoles } from '../../services/collaborations';
-import { CollaborationRole } from '../../types/collaboration';
+import { CollaborationRoleData } from '../../types/collaboration';
 
 interface Collaboration {
   id: string;
   title: string;
-  roles: CollaborationRole[];
+  roles: CollaborationRoleData[];
   creatorId: string;
 }
 
@@ -22,7 +22,7 @@ const UserCollaborationRolesTab: React.FC<UserCollaborationRolesTabProps> = ({ u
   const fetchCollaborations = async () => {
     setLoading(true);
     const result = await getUserCollaborationsWithRoles(userId);
-    setCollaborations(result || []);
+    setCollaborations(result as Collaboration[]);
     setLoading(false);
   };
 

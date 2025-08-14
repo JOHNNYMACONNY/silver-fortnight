@@ -191,14 +191,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
   useEffect(() => {
     const selectedElement = listRef.current?.children[selectedIndex] as HTMLElement;
     if (selectedElement) {
-      selectedElement.scrollIntoView({ block: 'nearest' });
+      selectedElement.scrollIntoView({ block: 'start' });
     }
   }, [selectedIndex]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-overlay">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -209,13 +209,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
       <div className="absolute inset-0 flex items-start justify-center pt-[15vh] px-4">
         <div className={cn(
           "w-full max-w-2xl mx-auto",
-          "bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl",
-          "border border-gray-200/50 dark:border-gray-700/50",
+          "glassmorphic",
           "rounded-xl shadow-glass-lg",
           "animate-command-palette-in"
         )}>
           {/* Search Input */}
-          <div className="flex items-center gap-3 p-4 border-b border-gray-200/50 dark:border-gray-700/50">
+          <div className="flex items-center gap-3 p-4 border-b border-divider">
             <Command className="h-5 w-5 text-gray-400" />
             <input
               ref={inputRef}
@@ -288,7 +287,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
           </div>
 
           {/* Footer */}
-          <div className="px-4 py-3 border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 rounded-b-xl">
+          <div className="px-4 py-3 border-t border-divider bg-gray-50/50 dark:bg-gray-800/50 rounded-b-xl">
             <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1">

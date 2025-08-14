@@ -62,7 +62,7 @@ export const SearchEmptyState: React.FC<SearchEmptyStateProps> = ({
     >
       <Card
         variant="glass"
-        className="backdrop-blur-md bg-glass-bg border border-glass-border rounded-xl shadow-glass p-12 text-center"
+        className="glassmorphic p-12 text-center"
       >
         {/* Icon */}
         <motion.div
@@ -71,7 +71,7 @@ export const SearchEmptyState: React.FC<SearchEmptyStateProps> = ({
           animate="animate"
           className="mx-auto w-20 h-20 mb-6 rounded-full bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/30 flex items-center justify-center"
         >
-          <Search className="w-10 h-10 text-orange-600 dark:text-orange-400" />
+        <Search className="w-10 h-10 text-primary" />
         </motion.div>
 
         {/* Title */}

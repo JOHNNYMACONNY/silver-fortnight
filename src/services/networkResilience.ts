@@ -1,3 +1,4 @@
+import React from 'react';
 import { AppError, ErrorCode, ErrorSeverity } from '../types/errors';
 import { errorService } from './errorService';
 
@@ -288,7 +289,7 @@ class NetworkResilienceService {
 
   private getErrorCodeFromStatus(status: number): ErrorCode {
     if (status >= 500) return ErrorCode.SERVER_ERROR;
-    if (status === 404) return ErrorCode.NOT_FOUND;
+    if (status === 404) return ErrorCode.NETWORK_ERROR;
     if (status === 401) return ErrorCode.UNAUTHORIZED;
     if (status === 403) return ErrorCode.FORBIDDEN;
     if (status === 408) return ErrorCode.TIMEOUT_ERROR;

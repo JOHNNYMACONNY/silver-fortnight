@@ -1,4 +1,5 @@
 import { onSchedule } from 'firebase-functions/v2/scheduler';
+import { activateScheduledChallenges, completeExpiredChallenges, scheduleRecurringChallenges } from './challengesScheduler';
 import * as admin from 'firebase-admin';
 
 // Initialize Firebase Admin
@@ -197,3 +198,19 @@ export const autoCompletePendingTrades = onSchedule('every 24 hours', async (eve
       throw error;
     }
   });
+
+// Challenge schedulers (MVP)
+export const activateChallenges = onSchedule('every 1 hours', async () => {
+  const res = await activateScheduledChallenges();
+  if (res.error) throw new Error(res.error);
+});
+
+export const completeChallenges = onSchedule('every 1 hours', async () => {
+  const res = await completeExpiredChallenges();
+  if (res.error) throw new Error(res.error);
+});
+
+export const scheduleWeeklyChallenges = onSchedule('every monday 00:00', async () => {
+  const res = await scheduleRecurringChallenges();
+  if (res.error) throw new Error(res.error);
+});

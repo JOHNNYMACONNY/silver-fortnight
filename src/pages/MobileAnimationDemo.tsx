@@ -74,7 +74,7 @@ export const MobileAnimationDemo: React.FC = () => {
         </div>
 
         {/* Settings Panel */}
-        <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-4 shadow-glass">
+        <div className="glassmorphic p-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
             Settings
           </h2>
@@ -111,7 +111,7 @@ export const MobileAnimationDemo: React.FC = () => {
 
         {/* Action Feedback */}
         {demoState.lastAction && (
-          <div className="backdrop-blur-sm bg-blue-50/80 dark:bg-blue-900/30 border border-blue-200/50 dark:border-blue-800/50 rounded-xl p-3">
+          <div className="glassmorphic p-3">
             <p className="text-sm text-blue-800 dark:text-blue-200">
               <strong>Last Action:</strong> {demoState.lastAction}
             </p>
@@ -119,7 +119,7 @@ export const MobileAnimationDemo: React.FC = () => {
         )}
 
         {/* Mobile Button Demos */}
-        <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-4 shadow-glass">
+        <div className="glassmorphic p-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Mobile Buttons
           </h2>
@@ -190,7 +190,7 @@ export const MobileAnimationDemo: React.FC = () => {
         </div>
 
         {/* Swipeable Card Demo */}
-        <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-4 shadow-glass">
+        <div className="glassmorphic p-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Swipeable Cards
           </h2>
@@ -206,16 +206,16 @@ export const MobileAnimationDemo: React.FC = () => {
         </div>
 
         {/* Swipe Gesture Demo */}
-        <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-4 shadow-glass">
+        <div className="glassmorphic p-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Swipe Gesture Demo
           </h2>
           <div
             className={cn(
-              "h-32 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg",
+               "h-32 bg-gradient-to-r from-primary to-secondary rounded-lg",
               "flex items-center justify-center text-white font-semibold",
               "transition-transform duration-200",
-              isSwipeActive && "scale-95"
+               (isSwipeActive ? "scale-95" : "")
             )}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -223,17 +223,17 @@ export const MobileAnimationDemo: React.FC = () => {
           >
             <div className="text-center">
               <p>Swipe in any direction</p>
-              {isSwipeActive && (
+               {isSwipeActive ? (
                 <p className="text-sm mt-1">
                   Progress: {Math.round(swipeProgress * 100)}%
                 </p>
-              )}
+               ) : null}
             </div>
           </div>
         </div>
 
         {/* Performance Info */}
-        <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-4 shadow-glass">
+        <div className="glassmorphic p-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
             Mobile Optimizations
           </h2>
@@ -248,7 +248,7 @@ export const MobileAnimationDemo: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span>Haptic Support:</span>
-              <span>{navigator.vibrate ? 'Available' : 'Not Available'}</span>
+              <span>{typeof navigator.vibrate === 'function' ? 'Available' : 'Not Available'}</span>
             </div>
             <div className="flex justify-between">
               <span>Touch Device:</span>
@@ -258,7 +258,7 @@ export const MobileAnimationDemo: React.FC = () => {
         </div>
 
         {/* Instructions */}
-        <div className="backdrop-blur-md bg-yellow-50/80 dark:bg-yellow-900/30 border border-yellow-200/50 dark:border-yellow-800/50 rounded-xl p-4 shadow-glass">
+        <div className="glassmorphic p-4">
           <h3 className="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
             Instructions
           </h3>

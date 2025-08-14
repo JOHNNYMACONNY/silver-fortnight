@@ -1,11 +1,12 @@
 // src/components/features/portfolio/PortfolioTab.tsx
 
 import React, { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getUserPortfolioItems } from '../../../services/portfolio';
 import { PortfolioItem } from '../../../types/portfolio';
 import PortfolioItemComponent from './PortfolioItem';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Grid3X3, List, Filter, Settings, Star } from 'lucide-react';
+import { Grid3X3, List, Filter, Settings, Star, X } from 'lucide-react';
 import Box from '../../layout/primitives/Box';
 import Stack from '../../layout/primitives/Stack';
 import Cluster from '../../layout/primitives/Cluster';
@@ -20,8 +21,11 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filter, setFilter] = useState<'all' | 'trades' | 'collaborations' | 'featured'>('all');
+  const [skillFilter, setSkillFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isManaging, setIsManaging] = useState(false);
+  const navigate = useNavigate();
+  const headingRef = React.useRef<HTMLHeadingElement>(null);
 
   const fetchPortfolio = async () => {
     setLoading(true);
@@ -37,27 +41,62 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
   }, [userId, isOwnProfile]);
 
   const filteredItems = useMemo(() => {
+    let items = portfolioItems;
     switch (filter) {
       case 'trades':
-        return portfolioItems.filter(item => item.sourceType === 'trade');
+        items = items.filter(item => item.sourceType === 'trade');
+        break;
       case 'collaborations':
-        return portfolioItems.filter(item => item.sourceType === 'collaboration');
+        items = items.filter(item => item.sourceType === 'collaboration');
+        break;
       case 'featured':
-        return portfolioItems.filter(item => item.featured);
+        items = items.filter(item => item.featured);
+        break;
       default:
-        return portfolioItems;
+        break;
     }
-  }, [portfolioItems, filter]);
+    if (skillFilter) {
+      const s = skillFilter.toLowerCase();
+      items = items.filter(it => Array.isArray((it as any).skills) && (it as any).skills.some((k: string) => (k || '').toLowerCase() === s));
+    }
+    return items;
+  }, [portfolioItems, filter, skillFilter]);
+
+  // Split featured (pinned) items for 'all' view without skill filter
+  const pinnedItems = useMemo(() => {
+    if (filter !== 'all' || skillFilter) return [] as PortfolioItem[];
+    return filteredItems.filter(it => !!it.featured);
+  }, [filteredItems, filter, skillFilter]);
+
+  const regularItems = useMemo(() => {
+    if (filter !== 'all' || skillFilter) return filteredItems;
+    const pinnedIds = new Set(pinnedItems.map(it => it.id));
+    return filteredItems.filter(it => !pinnedIds.has(it.id));
+  }, [filteredItems, pinnedItems, filter, skillFilter]);
+
+  // Listen for skill filter events from the Profile header
+  useEffect(() => {
+    const onSkill = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { skill?: string };
+      if (detail?.skill) setSkillFilter(detail.skill);
+    };
+    window.addEventListener('portfolio:filter-skill', onSkill as EventListener);
+    return () => window.removeEventListener('portfolio:filter-skill', onSkill as EventListener);
+  }, []);
+
+  // Move focus to heading when a skill filter is applied for better a11y
+  useEffect(() => {
+    if (skillFilter && headingRef.current) {
+      headingRef.current.focus();
+    }
+  }, [skillFilter]);
 
   return (
-    <Box
-      as={motion.div}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="portfolio-container"
-      style={{ containerType: 'inline-size' }}
-    >
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+      <Box
+        className="portfolio-container"
+        style={{ containerType: 'inline-size' }}
+      >
       {/* Enhanced Header */}
       <Box className="portfolio-header">
         <Cluster
@@ -68,11 +107,15 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
           className="flex-col sm:flex-row"
         >
           <Cluster gap="sm" align="center">
-            <Box className="rounded-lg bg-accent/10 text-accent" style={{ padding: '0.5rem' }}>
+            <Box className="rounded-lg bg-accent/10 text-accent p-2">
               <Star className="w-5 h-5" />
             </Box>
             <Stack gap="xs">
-              <h2 className="text-xl font-semibold text-text-primary">
+              <h2
+                ref={headingRef}
+                tabIndex={-1}
+                className="text-xl font-semibold text-text-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background rounded"
+              >
                 Portfolio
               </h2>
               <p className="text-sm text-text-muted">
@@ -84,8 +127,21 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
 
           {/* Controls */}
           <Cluster gap="sm" align="center">
+            {skillFilter && (
+              <button
+                type="button"
+                onClick={() => setSkillFilter(null)}
+                className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-3 py-1 text-sm hover:bg-muted"
+                aria-label={`Clear skill filter ${skillFilter}`}
+                title="Clear skill filter"
+              >
+                <span className="font-medium">Skill:</span>
+                <span>{skillFilter}</span>
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
             {/* View Mode Toggle */}
-            <Box className="bg-background-secondary/50 backdrop-blur-sm border border-border/30 rounded-lg" style={{ display: 'flex', alignItems: 'center', padding: '0.25rem' }}>
+             <Box className="glassmorphic flex items-center p-1">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded-md transition-all duration-200 ${
@@ -115,8 +171,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
               <select
                 value={filter}
                 onChange={e => setFilter(e.target.value as any)}
-                className="appearance-none bg-background-secondary/50 backdrop-blur-sm border border-border/30 rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-all duration-200"
-                style={{ padding: '0.5rem 2rem 0.5rem 0.75rem' }}
+                className="appearance-none glassmorphic rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-all duration-200 py-2 pl-3 pr-8"
               >
                 <option value="all">All Items</option>
                 <option value="trades">Trades</option>
@@ -133,7 +188,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
                 className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isManaging
                     ? 'bg-secondary text-secondary-foreground shadow-md hover:bg-secondary/90'
-                    : 'bg-background-secondary/50 backdrop-blur-sm border border-border/30 text-text-secondary hover:bg-background-secondary'
+                    : 'glassmorphic text-text-secondary hover:bg-background-secondary'
                 }`}
                 title={isManaging ? 'Exit management mode' : 'Manage portfolio'}
               >
@@ -146,29 +201,16 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
       </Box>
       <Stack gap="lg">
         {loading ? (
-          <Box
-            as={motion.div}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center"
-            style={{ padding: '3rem 0' }}
-          >
+           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
             <Cluster gap="sm" justify="center" align="center" className="text-text-muted">
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
               <span>Loading portfolio...</span>
             </Cluster>
-          </Box>
-        ) : filteredItems.length === 0 ? (
-          <Box
-            as={motion.div}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="backdrop-blur-md bg-background-secondary/60 border border-border/30 rounded-xl shadow-lg text-center"
-            style={{ padding: '3rem' }}
-          >
+          </motion.div>
+         ) : filteredItems.length === 0 ? (
+           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="glassmorphic text-center p-12">
             <Stack gap="lg" align="center">
-              <Box className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/10 to-primary/20" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center">
                 <Star className="w-8 h-8 text-primary" />
               </Box>
               <Stack gap="sm" align="center">
@@ -182,52 +224,67 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
                   }
                 </p>
               </Stack>
+              {isOwnProfile && (
+                <button
+                  onClick={() => navigate('/portfolio')}
+                  className="inline-flex items-center rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 px-4 py-2"
+                >
+                  Add project
+                </button>
+              )}
               {filter !== 'all' && (
                 <button
                   onClick={() => setFilter('all')}
-                  className="rounded-lg text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-all duration-200"
-                  style={{ display: 'inline-flex', alignItems: 'center', padding: '0.5rem 1rem' }}
+                  className="inline-flex items-center rounded-lg text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-all duration-200 px-4 py-2"
                 >
                   View all items
                 </button>
               )}
             </Stack>
-          </Box>
+          </motion.div>
       ) : (
-          <AnimatePresence mode="wait">
-            <Grid
-              as={motion.div}
-              key={`${viewMode}-${filter}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              columns={viewMode === 'list' ? { base: 1 } : { base: 1, md: 2, lg: 3 }}
-              gap="lg"
-              className="portfolio-items @container"
-              style={{ containerType: 'inline-size' }}
-            >
-              {filteredItems.map((item, index) => (
-                <Box
-                  key={item.id}
-                  as={motion.div}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                >
-                  <PortfolioItemComponent
-                    item={item}
-                    isOwnProfile={isOwnProfile}
-                    isManaging={isManaging}
-                    onChange={fetchPortfolio}
-                  />
-                </Box>
-              ))}
-            </Grid>
+           <AnimatePresence mode="wait">
+            {/* Pinned row */}
+            {pinnedItems.length > 0 && (
+              <Stack gap="sm" className="mb-4">
+                <div className="text-sm font-medium text-text-secondary">Pinned</div>
+                <Grid columns={viewMode === 'list' ? { base: 1 } : { base: 1, md: 2, lg: 3 }} gap="md">
+                  {pinnedItems.map((item, index) => (
+                    <motion.div key={`pinned-${item.id}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, delay: index * 0.06 }}>
+                      <Box>
+                        <PortfolioItemComponent item={item} isOwnProfile={isOwnProfile} isManaging={isManaging} onChange={fetchPortfolio} />
+                      </Box>
+                    </motion.div>
+                  ))}
+                </Grid>
+              </Stack>
+            )}
+            <motion.div key={`${viewMode}-${filter}-${skillFilter ? 'skill' : 'all'}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
+              <Grid
+                columns={viewMode === 'list' ? { base: 1 } : { base: 1, md: 2, lg: 3 }}
+                gap="lg"
+                className="portfolio-items @container"
+                style={{ containerType: 'inline-size' }}
+              >
+                {(filter === 'all' && !skillFilter ? regularItems : filteredItems).map((item, index) => (
+                  <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: index * 0.1 }}>
+                    <Box>
+                      <PortfolioItemComponent
+                        item={item}
+                        isOwnProfile={isOwnProfile}
+                        isManaging={isManaging}
+                        onChange={fetchPortfolio}
+                      />
+                    </Box>
+                  </motion.div>
+                ))}
+              </Grid>
+            </motion.div>
           </AnimatePresence>
         )}
       </Stack>
-    </Box>
+      </Box>
+    </motion.div>
   );
 };
 

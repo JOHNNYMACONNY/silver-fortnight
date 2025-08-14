@@ -15,28 +15,28 @@ const BannerTestPage: React.FC = () => {
           {/* Classic Gradients */}
           <div className="space-y-2">
             <h2 className="text-xl font-semibold text-foreground">Gradient 1</h2>
-            <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-4 shadow-glass">
+            <div className="glassmorphic p-4">
               <DefaultBanner design="gradient1" height="md" />
             </div>
           </div>
 
           <div className="space-y-2">
             <h2 className="text-xl font-semibold text-foreground">Gradient 2</h2>
-            <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-4 shadow-glass">
+            <div className="glassmorphic p-4">
               <DefaultBanner design="gradient2" height="md" />
             </div>
           </div>
 
           <div className="space-y-2">
             <h2 className="text-xl font-semibold text-foreground">Gradient 3</h2>
-            <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-4 shadow-glass">
+            <div className="glassmorphic p-4">
               <DefaultBanner design="gradient3" height="md" />
             </div>
           </div>
 
           <div className="space-y-2">
             <h2 className="text-xl font-semibold text-foreground">3D Gradient</h2>
-            <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-4 shadow-glass">
+            <div className="glassmorphic p-4">
               <DefaultBanner design="gradient3d" height="md" />
             </div>
           </div>
@@ -44,14 +44,14 @@ const BannerTestPage: React.FC = () => {
           {/* Patterns */}
           <div className="space-y-2">
             <h2 className="text-xl font-semibold text-foreground">Geometric 1</h2>
-            <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-4 shadow-glass">
+            <div className="glassmorphic p-4">
               <DefaultBanner design="geometric1" height="md" />
             </div>
           </div>
 
           <div className="space-y-2">
             <h2 className="text-xl font-semibold text-foreground">Geometric 2</h2>
-            <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-4 shadow-glass">
+            <div className="glassmorphic p-4">
               <DefaultBanner design="geometric2" height="md" />
             </div>
           </div>

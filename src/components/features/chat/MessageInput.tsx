@@ -77,7 +77,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           />
           {isNearLimit && (
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-              <span className={`text-xs ${isNearLimit ? 'text-orange-500' : 'text-muted-foreground'}`}>
+  <span className={`text-xs ${isNearLimit ? 'text-primary' : 'text-muted-foreground'}`}>
                 {characterCount}/{MAX_MESSAGE_LENGTH}
               </span>
             </div>

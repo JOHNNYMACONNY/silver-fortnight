@@ -34,6 +34,67 @@ import {
 import { globalCache } from '../utils/cache';
 
 /**
+ * Compute and persist composite reputation for a user
+ * Formula: XP (50%), trades (30%), followers (20%) → 0–100
+ * Normalization caps: XP/5000, trades/100, followers/1000
+ */
+export const recomputeUserReputation = async (userId: string): Promise<void> => {
+  try {
+    const db = getSyncFirebaseDb();
+
+    // Fetch current followers count from socialStats
+    const socialStatsRef = doc(db, 'socialStats', userId);
+    const socialSnap = await getDoc(socialStatsRef);
+    const followersCount = socialSnap.exists() ? ((socialSnap.data() as SocialStats)?.followersCount || 0) : 0;
+
+    // Fetch total XP directly from userXP collection (avoid circular imports)
+    const userXPRef = doc(db, 'userXP', userId);
+    const userXPSnap = await getDoc(userXPRef);
+    const totalXP = userXPSnap.exists() ? (userXPSnap.data() as any)?.totalXP || 0 : 0;
+
+    // Count trades: created + participated
+    const tradesCol = collection(db, 'trades');
+    const [createdSnap, participatedSnap] = await Promise.all([
+      getDocs(query(tradesCol, where('creatorId', '==', userId))),
+      getDocs(query(tradesCol, where('participantId', '==', userId)))
+    ]);
+    const totalTrades = (createdSnap?.size || 0) + (participatedSnap?.size || 0);
+
+    // Compute composite score
+    const xpNorm = Math.min(1, Number(totalXP || 0) / 5000);
+    const tradesNorm = Math.min(1, Number(totalTrades || 0) / 100);
+    const followersNorm = Math.min(1, Number(followersCount || 0) / 1000);
+    const composite = Math.round(100 * (0.5 * xpNorm + 0.3 * tradesNorm + 0.2 * followersNorm));
+
+    // Upsert to socialStats
+    await runTransaction(db, async (tx) => {
+      const snap = await tx.get(socialStatsRef);
+      if (snap.exists()) {
+        tx.update(socialStatsRef, {
+          reputationScore: composite,
+          reputationLastComputedAt: Timestamp.now(),
+          lastUpdated: Timestamp.now(),
+        } as Partial<SocialStats> as any);
+      } else {
+        const initial: SocialStats = {
+          userId,
+          followersCount: followersCount || 0,
+          followingCount: 0,
+          leaderboardAppearances: 0,
+          topRanks: {} as any,
+          reputationScore: composite,
+          reputationLastComputedAt: Timestamp.now(),
+          lastUpdated: Timestamp.now(),
+        };
+        tx.set(socialStatsRef, initial as any);
+      }
+    });
+  } catch (err) {
+    console.warn('Failed to recompute reputation for', userId, err);
+  }
+};
+
+/**
  * Phase 2B.1 - Leaderboard System Implementation
  */
 
@@ -103,6 +164,101 @@ export const getLeaderboard = async (
   } catch (error: any) {
     console.error('Error getting leaderboard:', error);
     return { success: false, error: error.message || 'Failed to get leaderboard' };
+  }
+};
+
+/**
+ * Get leaderboard scoped to a user's following ("My Circle").
+ * Note: Uses client-provided following IDs; results merged and ranked locally.
+ */
+export const getCircleLeaderboard = async (
+  category: LeaderboardCategory,
+  period: LeaderboardPeriod,
+  followingUserIds: string[],
+  currentUserId?: string
+): Promise<ServiceResponse<LeaderboardData>> => {
+  try {
+    if (!followingUserIds || followingUserIds.length === 0) {
+      return { success: true, data: { entries: [], currentUserEntry: undefined, totalParticipants: 0, lastUpdated: Timestamp.now(), period, category } } as any;
+    }
+    const periodRange = calculatePeriodRange(period);
+    const chunks: string[][] = [];
+    for (let i = 0; i < followingUserIds.length; i += 10) {
+      chunks.push(followingUserIds.slice(i, i + 10));
+    }
+    const entries: LeaderboardEntry[] = [];
+    // For each chunk, query the appropriate collection and merge
+    for (const chunk of chunks) {
+      let q;
+      switch (category) {
+        case LeaderboardCategory.TOTAL_XP:
+          if (period === LeaderboardPeriod.ALL_TIME) {
+            q = query(collection(getSyncFirebaseDb(), 'userXP'), where('userId', 'in', chunk));
+          } else {
+            q = query(
+              collection(getSyncFirebaseDb(), 'leaderboardStats'),
+              where('userId', 'in', chunk),
+              where('period', '==', period),
+              where('createdAt', '>=', periodRange.start),
+              where('createdAt', '<=', periodRange.end)
+            );
+          }
+          break;
+        case LeaderboardCategory.WEEKLY_XP:
+          q = query(
+            collection(getSyncFirebaseDb(), 'leaderboardStats'),
+            where('userId', 'in', chunk),
+            where('period', '==', 'weekly'),
+            where('createdAt', '>=', periodRange.start)
+          );
+          break;
+        case LeaderboardCategory.MONTHLY_XP:
+          q = query(
+            collection(getSyncFirebaseDb(), 'leaderboardStats'),
+            where('userId', 'in', chunk),
+            where('period', '==', 'monthly'),
+            where('createdAt', '>=', periodRange.start)
+          );
+          break;
+        default:
+          q = query(collection(getSyncFirebaseDb(), 'userXP'), where('userId', 'in', chunk));
+          break;
+      }
+      const snap = await getDocs(q);
+      snap.docs.forEach((docSnap) => {
+        const data = docSnap.data() as any;
+        entries.push({
+          id: docSnap.id,
+          userId: data.userId || '',
+          userName: data.userName || data.displayName || 'Unknown User',
+          userAvatar: data.userAvatar || data.avatar,
+          rank: 0, // temp; compute after sorting
+          value: data.value || data.totalXP || data.xp || 0,
+          rankChange: data.rankChange || 0,
+          isCurrentUser: currentUserId ? data.userId === currentUserId : false
+        });
+      });
+    }
+    // Sort and rank
+    entries.sort((a, b) => (b.value || 0) - (a.value || 0));
+    entries.forEach((e, i) => (e.rank = i + 1));
+    // Determine current user entry if not already in entries
+    let currentUserEntry = entries.find(e => e.userId === currentUserId);
+    if (!currentUserEntry && currentUserId) {
+      currentUserEntry = await findUserRankInLeaderboard(currentUserId, category, period);
+    }
+    const data: LeaderboardData = {
+      entries,
+      currentUserEntry,
+      totalParticipants: entries.length,
+      lastUpdated: Timestamp.now(),
+      period,
+      category
+    };
+    return { success: true, data };
+  } catch (error: any) {
+    console.error('Error getting circle leaderboard:', error);
+    return { success: false, error: error.message || 'Failed to get circle leaderboard' };
   }
 };
 
@@ -307,6 +463,12 @@ export const followUser = async (
     await updateSocialStats(followerId, 'following', 1);
     await updateSocialStats(followingId, 'followers', 1);
 
+    // Recompute reputation for both users (followers count changed)
+    await Promise.all([
+      recomputeUserReputation(followerId),
+      recomputeUserReputation(followingId)
+    ]);
+
     // Create notification for followed user
     await createNotification({
       recipientId: followingId,
@@ -350,6 +512,12 @@ export const unfollowUser = async (
     // Update social stats
     await updateSocialStats(followerId, 'following', -1);
     await updateSocialStats(followingId, 'followers', -1);
+
+    // Recompute reputation for both users
+    await Promise.all([
+      recomputeUserReputation(followerId),
+      recomputeUserReputation(followingId)
+    ]);
 
     return { success: true };
   } catch (error: any) {
@@ -406,10 +574,11 @@ const updateSocialStats = async (
       const updateField = type === 'followers' ? 'followersCount' : 'followingCount';
       const newCount = Math.max(0, currentStats[updateField] + change);
       
-      transaction.update(statsRef, {
+      const payload: Partial<SocialStats> = {
         [updateField]: newCount,
-        lastUpdated: Timestamp.now()
-      });
+        lastUpdated: Timestamp.now(),
+      } as any;
+      transaction.update(statsRef, payload);
     } else {
       const initialStats: SocialStats = {
         userId,

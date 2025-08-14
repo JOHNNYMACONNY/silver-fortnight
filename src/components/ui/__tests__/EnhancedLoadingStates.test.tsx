@@ -48,7 +48,7 @@ describe('LoadingSpinner', () => {
     const { rerender } = render(<LoadingSpinner variant="glass" />);
     
     let container = screen.getByRole('status', { hidden: true }).parentElement;
-    expect(container).toHaveClass('backdrop-blur-md');
+    expect(container).toHaveClass('glassmorphic');
 
     rerender(<LoadingSpinner variant="minimal" />);
     container = screen.getByRole('status', { hidden: true }).parentElement;

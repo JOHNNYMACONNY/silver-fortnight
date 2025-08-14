@@ -24,6 +24,10 @@ import { initializeFirebase } from './firebase-config';
 import ConsistencyCheckerPage from './pages/ConsistencyCheckerPage';
 import DevDashboard from './components/development/DevDashboard';
 import { logger } from './utils/logging/logger';
+import Spinner from './components/ui/Spinner';
+import AppPreloader from './components/ui/AppPreloader';
+import RoutePreloader from './components/ui/RoutePreloader';
+import { LoadingFallback } from './components/fallbacks/FallbackUISystem';
 
 // Import consistency checker for development
 import './utils/runComprehensiveCheck';
@@ -42,6 +46,7 @@ const ConnectionsPage = lazy(() => import('./pages/ConnectionsPage'));
 const UserDirectoryPage = lazy(() => import('./pages/UserDirectoryPage'));
 const ChallengesPage = lazy(() => import('./pages/ChallengesPage'));
 const ChallengeDetailPage = lazy(() => import('./pages/ChallengeDetailPage'));
+const ChallengeCalendarPage = lazy(() => import('./pages/ChallengeCalendarPage'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const MessagesPage = lazy(() => import('./pages/MessagesPage').then(module => ({ default: module.MessagesPage })));
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
@@ -56,6 +61,7 @@ const MicroAnimationsDemoPage = lazy(() => import('./pages/MicroAnimationsDemoPa
 const NavigationSystemDemoPage = lazy(() => import('./pages/NavigationSystemDemoPage'));
 const DesignSystemOverviewPage = lazy(() => import('./pages/DesignSystemOverviewPage'));
 const AsymmetricLayoutTestPage = lazy(() => import('./pages/AsymmetricLayoutTestPage'));
+const HelpReputation = lazy(() => import('./pages/HelpReputation'));
 const SimpleAsymmetricTest = lazy(() => import('./pages/SimpleAsymmetricTest'));
 
 // Import test components
@@ -81,15 +87,7 @@ import ComponentStatusChecker from './components/ui/ComponentStatusChecker';
 // Production build - test pages removed
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { currentUser, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-orange-500"></div>
-      </div>
-    );
-  }
+  const { currentUser } = useAuth();
 
   if (!currentUser) {
     return <Navigate to="/login" />;
@@ -104,6 +102,7 @@ const db = getSyncFirebaseDb();
 
 function App() {
   const [firebaseInitialized, setFirebaseInitialized] = useState(false);
+  const { loading: authLoading } = useAuth();
 
   useEffect(() => {
     // Initialize error service with user context when available
@@ -125,13 +124,14 @@ function App() {
     });
   }, []);
 
-  if (!firebaseInitialized) {
-    // You can return a loader here if you want
+  const isBootstrapping = !firebaseInitialized || authLoading;
+
+  if (isBootstrapping) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 via-blue-900 to-purple-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-500 mx-auto mb-4"></div>
-          <p className="text-white text-lg">Initializing TradeYa...</p>
+          <Spinner size="lg" color="primary" />
+          <p className="text-white text-lg mt-4">Preparing TradeYa…</p>
         </div>
       </div>
     );
@@ -142,18 +142,14 @@ function App() {
       <NotificationsProvider>
         <GamificationNotificationProvider>
       <MainLayout containerized={false}>
-        {/* Preload critical application resources - TEMPORARILY DISABLED FOR TESTING */}
-        {/* <AppPreloader /> */}
+        {/* Preload critical application resources */}
+        <AppPreloader />
 
-        {/* Preload route-specific resources - TEMPORARILY DISABLED FOR TESTING */}
-        {/* <RoutePreloader /> */}
+        {/* Preload route-specific resources */}
+        <RoutePreloader />
 
-        <Suspense fallback={
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 dark:border-gray-700 border-t-orange-500 dark:border-t-orange-400"></div>
-          </div>
-        }>
-          <Routes>
+        <Suspense fallback={<LoadingFallback size="md" message="Loading…" />}>
+        <Routes>
             <Route path="/" element={<RouteErrorBoundary><HomePage /></RouteErrorBoundary>} />
           <Route path="/trades" element={<RouteErrorBoundary><TradesPage /></RouteErrorBoundary>} />
         <Route path="/trades/:tradeId" element={<RouteErrorBoundary><TradeDetailPage /></RouteErrorBoundary>} />
@@ -164,7 +160,9 @@ function App() {
         <Route path="/connections" element={<RouteErrorBoundary><ConnectionsPage /></RouteErrorBoundary>} />
         <Route path="/directory" element={<RouteErrorBoundary><UserDirectoryPage /></RouteErrorBoundary>} />
         <Route path="/users" element={<Navigate to="/directory" replace />} />
+        <Route path="/docs/profile-reputation" element={<RouteErrorBoundary><HelpReputation /></RouteErrorBoundary>} />
         <Route path="/challenges" element={<RouteErrorBoundary><ChallengesPage /></RouteErrorBoundary>} />
+        <Route path="/challenges/calendar" element={<RouteErrorBoundary><ChallengeCalendarPage /></RouteErrorBoundary>} />
         <Route path="/challenges/:challengeId" element={<RouteErrorBoundary><ChallengeDetailPage /></RouteErrorBoundary>} />
         <Route path="/leaderboard" element={<RouteErrorBoundary><LeaderboardPage /></RouteErrorBoundary>} />
         <Route path="/portfolio" element={<RouteErrorBoundary><PortfolioPage /></RouteErrorBoundary>} />

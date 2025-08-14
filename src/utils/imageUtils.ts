@@ -1,3 +1,25 @@
+export function safeImageUrl(url?: string | null): string | undefined {
+  if (!url) return undefined;
+  try {
+    // Basic sanity check; expand as needed
+    const parsed = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+    return parsed.toString();
+  } catch {
+    return undefined;
+  }
+}
+
+export function getFallbackAvatar(name?: string): string {
+  const initials = (name ?? 'U').slice(0, 2).toUpperCase();
+  // Simple placeholder using data URL; replace with real asset if desired
+  return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'><rect width='100%' height='100%' fill='%2390cdf4'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='48' font-family='Arial, Helvetica, sans-serif'>${initials}</text></svg>`;
+}
+
+export function getProfileImageUrlBasic(url?: string | null, _size?: number): string | undefined {
+  // For simple callers: validate and return as-is
+  return safeImageUrl(url);
+}
+
 // Image utilities for Cloudinary integration and optimization
 
 // Types
@@ -21,17 +43,6 @@ export interface ImageOptimizationOptions {
   version?: string;
 }
 
-// Declare Vite environment extension
-declare global {
-  interface Window {
-    __VITE_ENV__?: {
-      VITE_CLOUDINARY_CLOUD_NAME?: string;
-      VITE_CLOUDINARY_UPLOAD_PRESET?: string;
-      VITE_CLOUDINARY_API_KEY?: string;
-    };
-  }
-}
-
 // Get environment variables
 let CLOUDINARY_CLOUD_NAME: string;
 let CLOUDINARY_UPLOAD_PRESET: string;
@@ -45,7 +56,7 @@ try {
     CLOUDINARY_API_KEY = 'test-key';
   } else {
     // Attempt to get environment variables from Vite or fallback to defaults
-    const viteEnv = window.__VITE_ENV__ || (typeof import.meta !== 'undefined' ? import.meta.env : {});
+    const viteEnv = (typeof import.meta !== 'undefined' && (import.meta as any).env) || (globalThis as any).__VITE_ENV__ || {};
     CLOUDINARY_CLOUD_NAME = viteEnv.VITE_CLOUDINARY_CLOUD_NAME || 'doqqhj2nt';
     CLOUDINARY_UPLOAD_PRESET = viteEnv.VITE_CLOUDINARY_UPLOAD_PRESET || 'tradeya_uploads';
     CLOUDINARY_API_KEY = viteEnv.VITE_CLOUDINARY_API_KEY || '';
@@ -98,6 +109,8 @@ export const formatCloudinaryUrl = (
 
   if (options.width) transformations.push(`w_${options.width}`);
   if (options.height) transformations.push(`h_${options.height}`);
+  if ((options as any).crop) transformations.push(`c_${(options as any).crop}`);
+  if ((options as any).gravity) transformations.push(`g_${(options as any).gravity}`);
   if (options.quality) transformations.push(`q_${options.quality}`);
   if (options.format) transformations.push(`f_${options.format}`);
 
@@ -108,8 +121,12 @@ export const formatCloudinaryUrl = (
 export const uploadImageToCloudinary = async (file: File): Promise<CloudinaryUploadResult> => {
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+  // Prefer the dedicated profile preset if available; fall back to generic
+  const profilePreset = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_CLOUDINARY_PROFILE_PRESET) || (globalThis as any)?.VITE_CLOUDINARY_PROFILE_PRESET;
+  formData.append('upload_preset', profilePreset || CLOUDINARY_UPLOAD_PRESET);
   formData.append('cloud_name', CLOUDINARY_CLOUD_NAME);
+  // Use a consistent folder for profile uploads when using this util
+  formData.append('folder', 'users/profiles');
 
   const response = await fetch(
     `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
@@ -120,7 +137,19 @@ export const uploadImageToCloudinary = async (file: File): Promise<CloudinaryUpl
   );
 
   if (!response.ok) {
-    throw new Error('Image upload failed');
+    try {
+      const errData = await response.json();
+      console.error('Cloudinary profile upload failed', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errData,
+        preset: profilePreset || CLOUDINARY_UPLOAD_PRESET,
+        cloudName: CLOUDINARY_CLOUD_NAME
+      });
+      throw new Error(errData?.error?.message || 'Image upload failed');
+    } catch (e) {
+      throw new Error('Image upload failed');
+    }
   }
 
   const data = await response.json();

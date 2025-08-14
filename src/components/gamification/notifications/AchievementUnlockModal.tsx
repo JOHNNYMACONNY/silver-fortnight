@@ -202,12 +202,12 @@ export const AchievementUnlockModal: React.FC<AchievementUnlockModalProps> = ({
                 
                 {/* Achievement name */}
                 <h3 className="text-lg font-semibold text-foreground">
-                  {notification.achievementName}
+                  {notification.achievementTitle}
                 </h3>
                 
                 {/* Description */}
                 <p className="text-sm mt-1 text-muted-foreground">
-                  {notification.description}
+                  {notification.achievementDescription}
                 </p>
               </motion.div>
               
@@ -219,10 +219,10 @@ export const AchievementUnlockModal: React.FC<AchievementUnlockModalProps> = ({
                 transition={{ delay: 0.6 }}
               >
                 <span className="text-yellow-400 font-bold text-lg">
-                  +{notification.xpGained} XP
+                  +{notification.xpReward} XP
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  (Total: {notification.newTotalXP})
+                  {/* total XP not provided in type; omit */}
                 </span>
               </motion.div>
             </div>

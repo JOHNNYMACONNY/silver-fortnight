@@ -166,7 +166,7 @@ export const LoadingSpinner: React.FC<LoadingStateProps> = ({
 };
 
 // Contextual Loading with Smart Messaging
-export const ContextualLoading: React.FC<ContextualLoadingProps> = ({
+const ContextualLoadingComponent: React.FC<ContextualLoadingProps> = ({
   context,
   progress,
   stage,
@@ -307,7 +307,7 @@ export const ContextualLoading: React.FC<ContextualLoadingProps> = ({
 };
 
 // Skeleton Loading
-export const SkeletonLoading: React.FC<{
+const SkeletonLoadingComponent: React.FC<{
   type: 'card' | 'list' | 'profile' | 'table' | 'custom';
   count?: number;
   className?: string;
@@ -386,7 +386,7 @@ export const SkeletonLoading: React.FC<{
 };
 
 // Progressive Loading with Stages
-export const ProgressiveLoading: React.FC<{
+const ProgressiveLoadingComponent: React.FC<{
   stages: Array<{
     name: string;
     description?: string;
@@ -444,9 +444,7 @@ export const ProgressiveLoading: React.FC<{
 };
 
 // Export all components
-export {
-  LoadingSpinner as default,
-  ContextualLoading,
-  SkeletonLoading,
-  ProgressiveLoading,
-};
+export default LoadingSpinner;
+export const ContextualLoading = ContextualLoadingComponent;
+export const SkeletonLoading = SkeletonLoadingComponent;
+export const ProgressiveLoading = ProgressiveLoadingComponent;

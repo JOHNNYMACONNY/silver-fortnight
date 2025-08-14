@@ -330,7 +330,7 @@ export class RoleStateMachine {
    * @internal This method is planned for future implementation
    * @unused This method will be implemented when notification system is ready
    */
-  // @ts-expect-error: Method is planned for future implementation
+  // Method is planned for future implementation
   private async notifyRoleOpened(role?: CollaborationRoleData): Promise<void> {
     // Implementation for role opened notifications will go here
   }
@@ -341,7 +341,7 @@ export class RoleStateMachine {
    * @internal This method is planned for future implementation
    * @unused This method will be implemented when notification system is ready
    */
-  // @ts-expect-error: Method is planned for future implementation
+  // Method is planned for future implementation
   private async notifyApplicationsUnderReview(role?: CollaborationRoleData): Promise<void> {
     // Implementation for applications under review notifications will go here
   }
@@ -352,7 +352,7 @@ export class RoleStateMachine {
    * @internal This method is planned for future implementation
    * @unused This method will be implemented when notification system is ready
    */
-  // @ts-expect-error: Method is planned for future implementation
+  // Method is planned for future implementation
   private async notifyRoleAssigned(role?: CollaborationRoleData): Promise<void> {
     // Implementation for role assigned notifications will go here
   }
@@ -364,7 +364,7 @@ export class RoleStateMachine {
    * @internal This method is planned for future implementation
    * @unused This method will be implemented when role assignment system is ready
    */
-  // @ts-expect-error: Method is planned for future implementation
+  // Method is planned for future implementation
   private async setupRoleAssignments(): Promise<void> {
     // Implementation for setting up role assignments will go here
   }
@@ -375,7 +375,7 @@ export class RoleStateMachine {
    * @internal This method is planned for future implementation
    * @unused This method will be implemented when role assignment system is ready
    */
-  // @ts-expect-error: Method is planned for future implementation
+  // Method is planned for future implementation
   private async cleanupRoleAssignments(): Promise<void> {
     // Implementation for cleaning up role assignments will go here
   }
@@ -386,7 +386,7 @@ export class RoleStateMachine {
    * @internal This method is planned for future implementation
    * @unused This method will be implemented when role progress tracking system is ready
    */
-  // @ts-expect-error: Method is planned for future implementation
+  // Method is planned for future implementation
   private async initializeRoleProgress(): Promise<void> {
     // Implementation for initializing role progress will go here
   }
@@ -397,7 +397,7 @@ export class RoleStateMachine {
    * @internal This method is planned for future implementation
    * @unused This method will be implemented when role progress tracking system is ready
    */
-  // @ts-expect-error: Method is planned for future implementation
+  // Method is planned for future implementation
   private async cleanupRoleProgress(): Promise<void> {
     // Implementation for cleaning up role progress will go here
   }
@@ -426,7 +426,7 @@ export class RoleStateMachine {
    * @internal This method is planned for future implementation
    * @unused This method will be implemented when completion review system is ready
    */
-  // @ts-expect-error: Method is planned for future implementation
+  // Method is planned for future implementation
   private async initiateCompletionReview(role?: CollaborationRoleData): Promise<void> {
     // Implementation for initiating completion review will go here
   }
@@ -437,7 +437,7 @@ export class RoleStateMachine {
    * @internal This method is planned for future implementation
    * @unused This method will be implemented when completion review system is ready
    */
-  // @ts-expect-error: Method is planned for future implementation
+  // Method is planned for future implementation
   private async cancelCompletionReview(role?: CollaborationRoleData): Promise<void> {
     // Implementation for canceling completion review will go here
   }
@@ -448,7 +448,7 @@ export class RoleStateMachine {
    * @internal This method is planned for future implementation
    * @unused This method will be implemented when completion system is ready
    */
-  // @ts-expect-error: Method is planned for future implementation
+  // Method is planned for future implementation
   private async finalizeCompletion(role?: CollaborationRoleData): Promise<void> {
     // Implementation for finalizing completion will go here
   }
@@ -459,7 +459,7 @@ export class RoleStateMachine {
    * @internal This method is planned for future implementation
    * @unused This method will be implemented when role abandonment system is ready
    */
-  // @ts-expect-error: Method is planned for future implementation
+  // Method is planned for future implementation
   private async handleRoleAbandonment(role?: CollaborationRoleData): Promise<void> {
     // Implementation for handling role abandonment will go here
   }
@@ -470,7 +470,7 @@ export class RoleStateMachine {
    * @internal This method is planned for future implementation
    * @unused This method will be implemented when role abandonment system is ready
    */
-  // @ts-expect-error: Method is planned for future implementation
+  // Method is planned for future implementation
   private async revertRoleAbandonment(role?: CollaborationRoleData): Promise<void> {
     // Implementation for reverting role abandonment will go here
   }

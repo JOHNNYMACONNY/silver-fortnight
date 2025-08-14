@@ -90,7 +90,7 @@ const AsymmetricHomePageLayout = () => {
           <Card variant="glass" className="h-full flex flex-col p-6">
             <h2 className={themeClasses.heading4}>Active Users</h2>
             <p className={themeClasses.body + ' mt-2 flex-grow'}>
-              <span className="text-2xl font-bold text-orange-500">1,247</span>
+              <span className="text-2xl font-bold text-primary">1,247</span>
               <br />
               users online now
             </p>

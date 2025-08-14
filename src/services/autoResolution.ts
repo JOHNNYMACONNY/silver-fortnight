@@ -105,10 +105,10 @@ const autoCompleteTrade = async (trade: Trade): Promise<void> => {
   // Update the trade status
   const { error: updateError } = await updateTrade(trade.id, {
     status: 'completed',
-    completionConfirmedAt: new Date(),
+    completionConfirmedAt: new Date() as any,
     autoCompleted: true,
     autoCompletionReason: 'No response after 14 days',
-    updatedAt: new Date()
+    updatedAt: new Date() as any
   });
 
   if (updateError) {
@@ -123,11 +123,10 @@ const autoCompleteTrade = async (trade: Trade): Promise<void> => {
       try {
         await createNotification({
           userId,
-          type: 'trade_completion',
+          type: 'trade_completed',
           title: 'Trade Auto-Completed',
           content: `Trade "${trade.title}" has been automatically marked as completed due to no response after 14 days.`,
-          relatedId: trade.id,
-          priority: 'medium'
+          relatedId: trade.id
         });
       } catch (error: any) {
         console.error('Failed to send auto-completion notification:', error);
@@ -150,7 +149,7 @@ const sendReminderNotification = async (trade: Trade, remindersSent: number): Pr
 
   const requestDate = trade.completionRequestedAt instanceof Date 
     ? trade.completionRequestedAt 
-    : trade.completionRequestedAt?.toDate();
+    : (trade.completionRequestedAt as any)?.toDate?.();
 
   if (!requestDate) return;
 
@@ -158,15 +157,13 @@ const sendReminderNotification = async (trade: Trade, remindersSent: number): Pr
   
   let title = 'Reminder: Trade Completion';
   let content = `Please confirm completion of trade: ${trade.title}. Your partner is waiting for your confirmation.`;
-  let priority: 'low' | 'medium' | 'high' = 'low';
 
   if (daysSinceRequest >= 10) {
     title = 'Final Reminder: Trade Completion';
     content = `This is your final reminder to confirm completion of trade: ${trade.title}. The trade will be auto-completed in 4 days if no action is taken.`;
-    priority = 'high';
+    // escalate wording only
   } else if (daysSinceRequest >= 7) {
     content = `Please confirm completion of trade: ${trade.title}. This trade has been pending for 7 days.`;
-    priority = 'medium';
   }
 
   console.log(`Sending reminder ${remindersSent + 1} for trade: ${trade.id}`);
@@ -174,11 +171,10 @@ const sendReminderNotification = async (trade: Trade, remindersSent: number): Pr
   // Send notification
   const { error: notificationError } = await createNotification({
     userId: recipientId,
-    type: 'trade_confirmation',
+    type: 'trade',
     title,
     content,
-    relatedId: trade.id,
-    priority
+    relatedId: trade.id
   });
 
   if (notificationError) {
@@ -188,7 +184,7 @@ const sendReminderNotification = async (trade: Trade, remindersSent: number): Pr
   // Update reminders sent count
   const { error: updateError } = await updateTrade(trade.id!, {
     remindersSent: remindersSent + 1,
-    updatedAt: new Date()
+    updatedAt: new Date() as any
   });
 
   if (updateError) {

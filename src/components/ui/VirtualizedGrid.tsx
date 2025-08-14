@@ -96,8 +96,8 @@ function VirtualizedGrid<T>({
 
   // If we're loading and there are no items, show loading component
   if (items.length === 0 && isNextPageLoading) {
-    return loadingComponent || (
-      <Stack align="center" justify="center" className="py-12">
+      return loadingComponent || (
+      <Stack align="center" distribute="center" className="py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 dark:border-gray-700 border-t-orange-500"></div>
       </Stack>
     );

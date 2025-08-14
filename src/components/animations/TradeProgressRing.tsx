@@ -232,7 +232,7 @@ export const TradeProgressRing: React.FC<TradeProgressRingProps> = ({
 /**
  * Size Configuration Helper
  */
-function getSizeConfig(size: string) {
+function getSizeConfig(size: "sm" | "md" | "lg" | "xl") {
   switch (size) {
     case "sm":
       return {

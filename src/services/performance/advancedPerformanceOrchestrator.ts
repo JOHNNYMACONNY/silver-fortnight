@@ -1,7 +1,7 @@
 import { advancedCodeSplitting, intelligentResourcePreloader } from './advancedCodeSplitting';
 import { enhancedPWA } from './enhancedPWA';
 import { SmartOrchestrator } from './smartOrchestrator';
-import { rumService } from './rumService';
+import RUMService from './rumService';
 import { multiLevelCache } from '../../utils/performance/advancedCaching';
 import { bundleOptimizer } from '../../utils/performance/bundleOptimizer';
 
@@ -146,7 +146,7 @@ export class AdvancedPerformanceOrchestrator {
     // Initialize smart orchestrator
     try {
       this.smartOrchestrator = new SmartOrchestrator();
-      await this.smartOrchestrator.initialize();
+      // initialize is internal; SmartOrchestrator auto-initializes on construction
     } catch (error) {
       console.warn('Smart orchestrator initialization failed, continuing without it:', error);
     }
@@ -195,8 +195,8 @@ export class AdvancedPerformanceOrchestrator {
    */
   private async setupIntelligentCaching(): Promise<void> {
     try {
-      if (multiLevelCache && typeof multiLevelCache.initialize === 'function') {
-        await multiLevelCache.initialize();
+      if (multiLevelCache && typeof (multiLevelCache as any).initialize === 'function') {
+        await (multiLevelCache as any).initialize();
         console.log('Intelligent caching initialized');
       } else {
         console.log('Multi-level cache not available, skipping initialization');
@@ -267,8 +267,8 @@ export class AdvancedPerformanceOrchestrator {
     this.currentOptimizations.add('bundle');
     try {
       console.log('Running bundle optimization...');
-      if (bundleOptimizer && typeof bundleOptimizer.optimizeBundles === 'function') {
-        await bundleOptimizer.optimizeBundles();
+      if (bundleOptimizer && typeof (bundleOptimizer as any).optimizeBundles === 'function') {
+        await (bundleOptimizer as any).optimizeBundles();
       } else {
         console.log('Bundle optimizer not available, skipping optimization');
       }
@@ -288,8 +288,8 @@ export class AdvancedPerformanceOrchestrator {
     this.currentOptimizations.add('cache');
     try {
       console.log('Running cache optimization...');
-      if (multiLevelCache && typeof multiLevelCache.optimize === 'function') {
-        await multiLevelCache.optimize();
+      if (multiLevelCache && typeof (multiLevelCache as any).optimize === 'function') {
+        await (multiLevelCache as any).optimize();
       } else {
         console.log('Cache optimization not available, skipping');
       }
@@ -348,24 +348,26 @@ export class AdvancedPerformanceOrchestrator {
       // Monitor LCP
       new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1];
-        console.log('LCP:', lastEntry.startTime);
+      const lastEntry = entries[entries.length - 1] as any;
+      if (lastEntry) console.log('LCP:', lastEntry.startTime);
       }).observe({ entryTypes: ['largest-contentful-paint'] });
 
       // Monitor FID
       new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach((entry) => {
-          console.log('FID:', entry.processingStart - entry.startTime);
+        entries.forEach((entry: any) => {
+          if (entry && typeof entry.processingStart === 'number') {
+            console.log('FID:', entry.processingStart - entry.startTime);
+          }
         });
       }).observe({ entryTypes: ['first-input'] });
 
       // Monitor CLS
       new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach((entry) => {
-          if (!(entry as any).hadRecentInput) {
-            console.log('CLS:', (entry as any).value);
+        entries.forEach((entry: any) => {
+          if (entry && !entry.hadRecentInput) {
+            console.log('CLS:', entry.value);
           }
         });
       }).observe({ entryTypes: ['layout-shift'] });

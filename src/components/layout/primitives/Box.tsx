@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface BoxProps extends React.HTMLAttributes<HTMLDivElement> {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   as?: React.ElementType;
 }
 

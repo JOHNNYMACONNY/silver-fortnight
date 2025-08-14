@@ -17,12 +17,18 @@
 - ✅ **Theme Toggle:** The theme toggle component (`src/components/ThemeToggle.tsx`) is functional and correctly switches between light and dark modes using the new system.
 - ✅ **3D Card Components (COMPLETED):** All major card components now use premium variants with 3D tilt effects, brand glow colors, and advanced glassmorphism. TradeCard, CollaborationCard, ProfileCard, UserCard, ConnectionCard, RoleCard, and TradeProposalCard are fully standardized.
 - 🚧 **Component Migration (In Progress):**
-  - ✅ **`Navbar.tsx` & Sub-components (Completed):** The entire navigation bar, including `Navbar.tsx`, `NavItem.tsx`, `UserMenu.tsx`, and `MobileMenu.tsx`, has been fully migrated to use the new semantic classes (`bg-background`, `text-foreground`, etc.). The navigation system is now completely theme-aware.
-  - 🚧 **Other Components:** The vast majority of components have **not** yet been migrated. They are still using direct color classes (e.g., `bg-gray-800`) and will not respond to theme changes until they are updated to use semantic tokens.
+  - ✅ Glassmorphic headers/panels standardized across: `TradesPage`, `UserDirectoryPage`, `ChallengesPage`, `DashboardPage`, `TradeDetailPage`, `NotificationsPage`, `MessagesPage`, `ConnectionsPage`, and verified on `CollaborationsPage`.
+  - ✅ Action buttons standardized to shared `Button`; `asChild` usage enforced (single child). See `docs/COMPONENT_GUIDELINES.md`.
+  - ✅ Brand tokenization in shared components (chat, evidence, fallbacks, streak/gamification). Replaced `text-orange-*`, `bg-orange-*`, `border-orange-*`, `ring-orange-*` with semantic tokens: `text-primary`, `bg-primary`/`bg-primary/10`, `border-border`, `ring-ring`. Gradients preserved.
+  - ✅ Form systems updated: `components/forms/TradeCreationSteps.tsx`, `components/forms/ProfileCompletionSteps.tsx`; verified `components/ui/GlassmorphicForm.tsx` brand accents now use neutral ring tokens.
+  - ✅ Design utilities: `src/utils/designSystem.ts` (`textInput`, `badge.brand`) migrated to tokens.
+  - ✅ Style guide: `components/ui/EnhancedStyleGuide.tsx` updated to use tokenized classes.
+  - 🚧 Remaining: migrate badges/progress/animations still using raw orange; clean up demo/test pages.
 
 **Next Steps:**
 - Systematically migrate all UI components to use the semantic color tokens defined in this plan.
 - Update typography and layout systems according to Phases 3 and 4.
+- Button composition guideline: when using `asChild` (Radix Slot), pass exactly one React element child and include any icons/text inside that element. Our `Button` renders only the single child in `asChild` mode to maintain Slot semantics.
 
 ---
 
@@ -1073,6 +1079,23 @@ interface CenterProps {
 ---
 
 ## PHASE 5: IMPLEMENTATION STRATEGY
+### Component Migration
+
+- Page headers/panels standardized: Glassmorphic headers and panels applied consistently using `glassmorphic`, `border-border`, `bg-card`, and semantic text tokens across all key pages, including `CollaborationsPage`.
+- Action buttons standardized: All new/changed buttons use the shared `Button` (or `AnimatedButton` where intended). When using `asChild`, exactly one child element is passed; icons/text live inside the child.
+- Brand tokenization in shared components: Chat lists, evidence gallery links, fallbacks, and gamification counters migrated to `text-primary`, `bg-primary` (or `bg-primary/10` for pills), `ring-ring`, and `border-border`. Gradients (`from/to/via`) retained.
+- Tooling: lint:brand: Added brand audit script wired into `npm run validate`. Run `npm run lint:brand` to detect single‑color orange utilities; fix by replacing with semantic tokens.
+
+#### Remaining work
+- Finish tokenization in forms and badges where legacy orange remains (e.g., reputation tiers that still reference orange in some thresholds, demo/test pages).
+- Migrate animation/status components using raw orange (e.g., trade status indicators, progress animations) to semantic tokens or status palettes.
+- Clean up legacy demo/test pages: `HomePage`, `SimpleAsymmetricTest`, `AsymmetricLayoutTestPage`, `MicroAnimationsDemoPage`, and utility spinners.
+
+### Enforcement & Audits
+
+- Use `npm run lint:brand` to flag disallowed raw orange utilities in non‑gradient UI.
+- CI `npm run validate` runs: lint, tests, `lint:glass`, and `lint:brand` to enforce design‑system standards.
+
 
 > **🎯 Objective:** Detailed roadmap with testing, validation, and rollback strategies
 

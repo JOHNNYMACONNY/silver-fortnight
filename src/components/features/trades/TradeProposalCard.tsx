@@ -86,7 +86,7 @@ const TradeProposalCard: React.FC<TradeProposalCardProps> = ({
               />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-foreground hover:text-orange-600 dark:hover:text-orange-400 transition-colors duration-200">{proposal.proposerName || 'Anonymous'}</h3>
+  <h3 className="text-lg font-semibold text-foreground hover:text-primary/80 transition-colors duration-200">{proposal.proposerName || 'Anonymous'}</h3>
               <p className="text-sm text-muted-foreground">
                 Proposed {formatDate(proposal.createdAt)}
               </p>

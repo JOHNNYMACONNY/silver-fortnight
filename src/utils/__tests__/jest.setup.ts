@@ -103,6 +103,15 @@ jest.mock('firebase/firestore', () => ({
   orderBy: jest.fn(),
   limit: jest.fn(),
   onSnapshot: jest.fn(),
+  runTransaction: jest.fn(async (_db, fn) => {
+    const txn = {
+      get: jest.fn(),
+      set: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    } as any;
+    return await fn(txn);
+  }),
   Timestamp: {
     now: jest.fn(() => ({ seconds: Date.now() / 1000, nanoseconds: 0 })),
     fromDate: jest.fn((date) => ({ seconds: date.getTime() / 1000, nanoseconds: 0 })),

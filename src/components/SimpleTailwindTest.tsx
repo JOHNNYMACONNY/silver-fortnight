@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from './ui/Button';
 
 const SimpleTailwindTest: React.FC = () => {
   React.useEffect(() => {
@@ -99,13 +100,13 @@ const SimpleTailwindTest: React.FC = () => {
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-gray-800">Interactive Elements</h2>
         
-        <button className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 shadow-md">
+        <Button variant="success">
           🚀 Green Button (hover to test)
-        </button>
+        </Button>
         
-        <button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 shadow-md ml-4">
+        <Button variant="secondary" className="ml-4">
           🧡 Orange Button (hover to test)
-        </button>
+        </Button>
       </div>
 
       {/* Dark Mode Test */}

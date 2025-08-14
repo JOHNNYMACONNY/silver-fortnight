@@ -72,7 +72,7 @@ export const ChallengeCompletionInterface: React.FC<ChallengeCompletionInterface
   const { showToast } = useToast();
   const {
     announceToScreenReader,
-    getKeyboardNavigationProps,
+    handleKeyboardNavigation,
     getFormFieldProps
   } = useAccessibility();
   const {
@@ -160,7 +160,7 @@ export const ChallengeCompletionInterface: React.FC<ChallengeCompletionInterface
       </div>
 
       {/* Challenge Summary */}
-      <Card className="bg-white/10 backdrop-blur-md border-white/20">
+      <Card className="glassmorphic">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-white">{challenge.title}</CardTitle>
@@ -185,7 +185,7 @@ export const ChallengeCompletionInterface: React.FC<ChallengeCompletionInterface
       </Card>
 
       {/* Submission Form */}
-      <Card className="bg-white/10 backdrop-blur-md border-white/20">
+      <Card className="glassmorphic">
         <CardHeader>
           <CardTitle className="text-white flex items-center space-x-2">
             <Upload className="w-5 h-5" aria-hidden="true" />
@@ -430,7 +430,7 @@ export const ChallengeCompletionInterface: React.FC<ChallengeCompletionInterface
 
       {/* Rewards Summary */}
       {rewards && (
-        <Card className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-md border-purple-500/30">
+        <Card className="glassmorphic">
           <CardHeader>
             <CardTitle className="text-white flex items-center justify-center space-x-2">
               <Gift className="w-5 h-5" />
@@ -438,7 +438,7 @@ export const ChallengeCompletionInterface: React.FC<ChallengeCompletionInterface
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* XP Rewards */}
+            {/* XP Rewards: Base vs Bonus */}
             <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
               <div className="flex items-center space-x-2">
                 <Zap className="w-5 h-5 text-yellow-400" />
@@ -448,11 +448,15 @@ export const ChallengeCompletionInterface: React.FC<ChallengeCompletionInterface
                 <div className="text-xl font-bold text-yellow-400">
                   +{rewards.xp + rewards.bonusXP} XP
                 </div>
-                {rewards.bonusXP > 0 && (
-                  <div className="text-xs text-green-400">
-                    +{rewards.bonusXP} bonus
-                  </div>
-                )}
+                <div className="text-xs text-gray-300">
+                  <span className="text-gray-200">Base:</span> +{rewards.xp}
+                  {rewards.bonusXP > 0 && (
+                    <>
+                      <span className="mx-1 text-gray-500">/</span>
+                      <span className="text-green-400">Bonus:</span> +{rewards.bonusXP}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 

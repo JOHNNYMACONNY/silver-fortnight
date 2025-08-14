@@ -53,7 +53,8 @@ export type AnimationType =
   | "success"
   | "error"
   | "progress"
-  | "trading-state";
+  | "trading-state"
+  | "swipe";
 
 export type AnimationIntensity = "subtle" | "standard" | "enhanced" | "dramatic";
 export type BrandColorScheme = "orange" | "blue" | "purple" | "mixed" | "adaptive";
@@ -68,6 +69,8 @@ export interface MicroInteractionProps {
   delay?: number;
   tradingContext?: TradingContext;
   respectMotionPreferences?: boolean;
+  /** Optional performance mode hint for mobile adaptations */
+  performanceMode?: "standard" | "reduced";
   onAnimationStart?: () => void;
   onAnimationComplete?: () => void;
 }
@@ -101,7 +104,7 @@ export function useTradeYaAnimation(props: MicroInteractionProps): UseTradeYaAni
   const performanceRef = useRef({ frameCount: 0, droppedFrames: 0 });
   
   // Integration with existing systems
-  const { reportMetric } = usePerformance();
+  const { addBusinessMetric } = usePerformance();
   const prefersReducedMotion = useReducedMotion();
   
   // Determine if animations should run
@@ -180,10 +183,10 @@ export function useTradeYaAnimation(props: MicroInteractionProps): UseTradeYaAni
           performanceMetrics: { ...prev.performanceMetrics, fps },
         }));
 
-        reportMetric("animation-fps", fps);
+        addBusinessMetric("animation.fps", fps);
 
         if (fps < 45) {
-          reportMetric("animation-performance-degradation", fps);
+          addBusinessMetric("animation.performanceDegradation", fps);
         }
 
         frameCount = 0;
@@ -197,7 +200,7 @@ export function useTradeYaAnimation(props: MicroInteractionProps): UseTradeYaAni
 
     frameId = requestAnimationFrame(measureFrame);
     return () => cancelAnimationFrame(frameId);
-  }, [shouldAnimate, animationState.isAnimating, reportMetric]);
+  }, [shouldAnimate, animationState.isAnimating, addBusinessMetric]);
 
   // Utility function to convert hex to rgb
   const hexToRgb = useCallback((hex: string): string => {
@@ -292,7 +295,7 @@ export function useTradeYaAnimation(props: MicroInteractionProps): UseTradeYaAni
     if (!shouldAnimate) return;
 
     // Report animation start metric
-    reportMetric("animation-triggered", 1);
+    addBusinessMetric("animation.triggered", 1);
 
     setAnimationState((prev) => ({
       ...prev,
@@ -313,7 +316,7 @@ export function useTradeYaAnimation(props: MicroInteractionProps): UseTradeYaAni
       }));
       props.onAnimationComplete?.();
     }, animationTiming);
-  }, [shouldAnimate, animationTiming, props, reportMetric]);
+  }, [shouldAnimate, animationTiming, props, addBusinessMetric]);
 
   // Reset animation
   const resetAnimation = useCallback(() => {

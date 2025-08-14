@@ -76,7 +76,7 @@ const EvidenceGallery: React.FC<EvidenceGalleryProps> = ({
               href={embedUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-orange-500 hover:text-orange-600 flex items-center"
+      className="text-sm text-primary hover:text-primary/80 flex items-center"
             >
               <span>View Evidence</span>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">

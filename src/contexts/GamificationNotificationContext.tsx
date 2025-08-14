@@ -83,6 +83,8 @@ export const GamificationNotificationProvider: React.FC<{ children: React.ReactN
           return preferences.levelUpModals;
         case 'achievement_unlock':
           return preferences.achievementUnlockModals;
+        case 'streak_milestone':
+          return preferences.streakToasts;
         default:
           return true;
       }

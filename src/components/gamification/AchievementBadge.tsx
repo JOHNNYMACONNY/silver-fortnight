@@ -41,29 +41,29 @@ export const AchievementBadge: React.FC<AchievementBadgeProps> = ({
 
   const rarityColors = {
     [AchievementRarity.COMMON]: {
-      bg: 'from-gray-400 to-gray-600',
-      border: 'border-gray-400',
-      glow: 'shadow-gray-400/50'
+      bg: 'from-muted-foreground to-foreground',
+      border: 'border-border',
+      glow: 'shadow-muted-foreground/50'
     },
     [AchievementRarity.UNCOMMON]: {
-      bg: 'from-green-400 to-green-600',
-      border: 'border-green-400',
-      glow: 'shadow-green-400/50'
+      bg: 'from-success-400 to-success-600',
+      border: 'border-success-400',
+      glow: 'shadow-success-400/50'
     },
     [AchievementRarity.RARE]: {
-      bg: 'from-blue-400 to-blue-600',
-      border: 'border-blue-400',
-      glow: 'shadow-blue-400/50'
+      bg: 'from-secondary-400 to-secondary-600',
+      border: 'border-secondary-400',
+      glow: 'shadow-secondary-400/50'
     },
     [AchievementRarity.EPIC]: {
-      bg: 'from-purple-400 to-purple-600',
-      border: 'border-purple-400',
-      glow: 'shadow-purple-400/50'
+      bg: 'from-accent-400 to-accent-600',
+      border: 'border-accent-400',
+      glow: 'shadow-accent-400/50'
     },
     [AchievementRarity.LEGENDARY]: {
-      bg: 'from-yellow-400 to-orange-500',
-      border: 'border-yellow-400',
-      glow: 'shadow-yellow-400/50'
+      bg: 'from-warning-400 to-primary-500',
+      border: 'border-warning-400',
+      glow: 'shadow-warning-400/50'
     }
   };
 
@@ -163,7 +163,7 @@ export const AchievementBadge: React.FC<AchievementBadgeProps> = ({
         {BadgeComponent}
         
         {/* Tooltip */}
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-popover text-popover-foreground text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 max-w-xs">
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-popover text-popover-foreground text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-tooltip max-w-xs">
           <div className="font-semibold">
             {unlocked ? achievement.title : 'Locked Achievement'}
           </div>

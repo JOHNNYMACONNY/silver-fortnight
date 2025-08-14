@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import debounce from 'lodash.debounce';
 import { getAllCollaborations, CollaborationFilters, Collaboration } from '../services/firestore-exports';
 import { useFilterPersistence } from '../services/filterPersistence';
@@ -50,6 +50,7 @@ export const useCollaborationSearch = (options: SearchOptions = {}): UseCollabor
   const [queryMetadata, setQueryMetadata] = useState<any>(null);
   const [totalCount, setTotalCount] = useState(0);
   const [popularFilters, setPopularFilters] = useState<Partial<CollaborationFilters>[]>([]);
+  const requestIdRef = useRef(0);
 
   // Filter persistence service
   const filterPersistence = useFilterPersistence(userId);
@@ -86,6 +87,7 @@ export const useCollaborationSearch = (options: SearchOptions = {}): UseCollabor
   // Enhanced debounced search with backend optimization
   const debouncedSearch = useMemo(
     () => debounce(async (term: string, filterOptions: CollaborationFilters = {}) => {
+      const id = ++requestIdRef.current;
       setLoading(true);
       setError(null);
       
@@ -109,6 +111,7 @@ export const useCollaborationSearch = (options: SearchOptions = {}): UseCollabor
           searchFilters
         );
 
+        if (id !== requestIdRef.current) return;
         if (result.error) {
           throw new Error(result.error.message);
         }
@@ -126,12 +129,13 @@ export const useCollaborationSearch = (options: SearchOptions = {}): UseCollabor
           );
         }
       } catch (err: any) {
+        if (id !== requestIdRef.current) return;
         setError(err.message || 'Failed to search collaborations');
         setResults([]);
         setTotalCount(0);
         setQueryMetadata(null);
       } finally {
-        setLoading(false);
+        if (id === requestIdRef.current) setLoading(false);
       }
     }, 300),
     [enablePersistence, enableAnalytics, userId, pagination]
@@ -141,6 +145,13 @@ export const useCollaborationSearch = (options: SearchOptions = {}): UseCollabor
   const search = useCallback(async (term: string, filterOptions: CollaborationFilters = {}) => {
     setSearchTerm(term);
     await debouncedSearch(term, filterOptions);
+  }, [debouncedSearch]);
+
+  // Cancel debounced calls on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
   }, [debouncedSearch]);
 
   // Clear search with persistence cleanup

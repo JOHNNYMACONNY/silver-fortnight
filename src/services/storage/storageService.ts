@@ -6,7 +6,7 @@
  */
 
 import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from 'firebase/storage';
-import { storage } from '../../firebase-config';
+import { getSyncFirebaseStorage } from '../../firebase-config';
 import { v4 as uuidv4 } from 'uuid';
 
 // Maximum file size in bytes (5MB)
@@ -71,7 +71,7 @@ export const uploadFile = async (
     const fullPath = `${path}/${fileName}`;
     
     // Create a reference to the file location
-    const storageRef = ref(storage, fullPath);
+    const storageRef = ref(getSyncFirebaseStorage(), fullPath);
     
     // Upload the file
     const snapshot = await uploadBytes(storageRef, file, metadata);
@@ -107,7 +107,7 @@ export const deleteFile = async (
     }
     
     // Create a reference to the file
-    const fileRef = ref(storage, path);
+    const fileRef = ref(getSyncFirebaseStorage(), path);
     
     // Delete the file
     await deleteObject(fileRef);
@@ -132,7 +132,7 @@ export const listFiles = async (
 ): Promise<{ urls: string[] | null; error: string | null }> => {
   try {
     // Create a reference to the directory
-    const directoryRef = ref(storage, path);
+    const directoryRef = ref(getSyncFirebaseStorage(), path);
     
     // List all items in the directory
     const result = await listAll(directoryRef);

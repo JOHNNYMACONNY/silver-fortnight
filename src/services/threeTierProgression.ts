@@ -149,8 +149,8 @@ export const updateProgressionOnChallengeCompletion = async (
         for (const tier of newUnlocks) {
           await awardXP(
             userId,
-            XP_VALUES.TIER_UNLOCK_BONUS,
-            XPSource.ACHIEVEMENT,
+            (XP_VALUES as any).TIER_UNLOCK_BONUS ?? 200,
+            XPSource.ACHIEVEMENT_UNLOCK,
             `tier-unlock-${tier}`,
             `Unlocked ${tier} challenges!`
           );

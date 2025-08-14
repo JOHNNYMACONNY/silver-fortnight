@@ -59,11 +59,11 @@ export interface NotificationState {
   title: string;
   message: string;
   duration?: number;
-  actions?: Array<{
-    label: string;
-    onClick: () => void;
-    variant?: 'primary' | 'secondary';
-  }>;
+    actions?: Array<{
+      label: string;
+      onClick: () => void;
+      variant?: 'default' | 'secondary' | 'outline' | 'destructive';
+    }>;
 }
 
 interface EnhancedFeedbackSystemProps {
@@ -184,7 +184,7 @@ export const EnhancedFeedbackSystem: React.FC<EnhancedFeedbackSystemProps> = ({
           {
             label: 'Retry',
             onClick: handleSubmitFeedback,
-            variant: 'primary',
+            variant: 'default',
           },
         ],
       });
@@ -312,7 +312,7 @@ export const EnhancedFeedbackSystem: React.FC<EnhancedFeedbackSystemProps> = ({
                 ].map(({ value, label, icon: Icon }) => (
                   <Button
                     key={value}
-                    variant={feedback.type === value ? 'primary' : 'secondary'}
+                    variant={feedback.type === value ? 'default' : 'secondary'}
                     onClick={() => setFeedback(prev => ({ ...prev, type: value as any }))}
                     className="flex items-center gap-2 h-12"
                   >
@@ -336,7 +336,7 @@ export const EnhancedFeedbackSystem: React.FC<EnhancedFeedbackSystemProps> = ({
                 ].map(({ value, label }) => (
                   <Button
                     key={value}
-                    variant={feedback.category === value ? 'primary' : 'secondary'}
+                    variant={feedback.category === value ? 'default' : 'secondary'}
                     onClick={() => setFeedback(prev => ({ ...prev, category: value as any }))}
                     className="h-10"
                   >
@@ -430,7 +430,7 @@ export const EnhancedFeedbackSystem: React.FC<EnhancedFeedbackSystemProps> = ({
               <h3 className={classPatterns.heading4 + ' mb-3'}>Review Your Feedback</h3>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Badge variant="brand">{feedback.type}</Badge>
+                  <Badge variant="secondary">{feedback.type}</Badge>
                   <Badge variant="secondary">{feedback.category}</Badge>
                 </div>
                 <div className="flex items-center gap-1">
@@ -476,7 +476,7 @@ export const EnhancedFeedbackSystem: React.FC<EnhancedFeedbackSystemProps> = ({
   return (
     <>
       {/* Main feedback trigger */}
-      <div className={`fixed ${positionClasses[position]} z-50`}>
+      <div className={`fixed ${positionClasses[position]} z-overlay`}>
         {!isOpen && (
           <motion.div
             initial={{ scale: 0 }}
@@ -529,7 +529,7 @@ export const EnhancedFeedbackSystem: React.FC<EnhancedFeedbackSystemProps> = ({
       </div>
 
       {/* Notifications */}
-      <div className="fixed top-6 right-6 z-50 space-y-2 max-w-sm">
+      <div className="fixed top-6 right-6 z-toast space-y-2 max-w-sm">
         <AnimatePresence>
           {notifications.map((notification) => (
             <motion.div

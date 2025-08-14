@@ -22,6 +22,7 @@ import ProfileHoverCard from '../components/ui/ProfileHoverCard';
 import { CollaborationRoleData, RoleState, Skill } from '../types/collaboration';
 
 import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
 import { formatDate } from '../utils/dateUtils';
 import { getProfileImageUrl } from '../utils/imageUtils';
 
@@ -224,7 +225,7 @@ export const CollaborationDetailPage: React.FC = () => {
           </p>
           <Link
             to="/collaborations"
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
+            className="inline-flex items-center text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
           >
             Back to Collaborations
           </Link>
@@ -270,7 +271,7 @@ export const CollaborationDetailPage: React.FC = () => {
       <div className="mb-6">
         <Link
           to="/collaborations"
-          className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/90"
+            className="inline-flex items-center text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
         >
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back to Collaborations
@@ -409,12 +410,12 @@ export const CollaborationDetailPage: React.FC = () => {
             </div>
             <div>
               <h3 className="text-lg font-medium text-foreground">Skills Needed</h3>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-2 flex flex-wrap gap-1.5">
                 {collaboration.skillsNeeded && collaboration.skillsNeeded.length > 0 ? (
                   collaboration.skillsNeeded.map(skill => (
-                    <span key={skill} className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+                    <Badge key={skill} variant="outline" className="text-xs rounded-full px-3 py-1">
                       {skill}
-                    </span>
+                    </Badge>
                   ))
                 ) : (
                   <p className="text-muted-foreground">No specific skills required</p>
@@ -442,13 +443,14 @@ export const CollaborationDetailPage: React.FC = () => {
 
           {!isOwner && !isCollaborator && (
             <div className="mt-8">
-              <button
+              <Button
+                className="w-full"
+                topic="collaboration"
                 onClick={() => setShowApplicationForm(true)}
                 disabled={hasApplied}
-                className="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed"
               >
                 {hasApplied ? 'Application Submitted' : 'Apply to Collaborate'}
-              </button>
+              </Button>
             </div>
           )}
         </div>

@@ -101,24 +101,9 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
 
   // Input variant styles
   const inputVariants = {
-    glass: `
-      backdrop-blur-sm bg-white/10 dark:bg-neutral-900/10
-      border border-white/20 dark:border-neutral-700/30
-      focus:bg-white/20 dark:focus:bg-neutral-900/20
-      focus:border-white/40 dark:focus:border-neutral-600/40
-    `,
-    'elevated-glass': `
-      backdrop-blur-md bg-white/20 dark:bg-neutral-900/20
-      border-2 border-white/30 dark:border-neutral-700/40
-      shadow-lg focus:shadow-xl
-      focus:bg-white/30 dark:focus:bg-neutral-900/30
-    `,
-    'inset-glass': `
-      backdrop-blur-sm bg-white/5 dark:bg-neutral-900/5
-      border border-white/10 dark:border-neutral-700/20
-      shadow-inner
-      focus:shadow-inner focus:bg-white/15 dark:focus:bg-neutral-900/15
-    `
+    glass: `glassmorphic`,
+    'elevated-glass': `glassmorphic shadow-lg focus:shadow-xl`,
+    'inset-glass': `glassmorphic shadow-inner focus:shadow-inner`
   };
 
   // Size classes
@@ -130,13 +115,10 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
 
   // Brand accent classes
   const brandAccentClasses = {
-    orange: 'focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50',
-    blue: 'focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50',
-    purple: 'focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50',
-    adaptive: `
-      focus:ring-2 focus:ring-gradient-to-r 
-      focus:from-orange-500/30 focus:via-blue-500/30 focus:to-purple-500/30
-    `
+    orange: 'focus:ring-2 focus:ring-ring focus:border-ring',
+    blue: 'focus:ring-2 focus:ring-ring focus:border-ring',
+    purple: 'focus:ring-2 focus:ring-ring focus:border-ring',
+    adaptive: 'focus:ring-2 focus:ring-ring focus:border-ring'
   };
 
   // Validation classes

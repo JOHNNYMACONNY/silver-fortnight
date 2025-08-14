@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
-import { db } from '../firebase-config';
+import { getSyncFirebaseDb } from '../firebase-config';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { Avatar } from '../components/ui/Avatar';
 import { fetchUserData } from '../utils/userUtils';
@@ -25,17 +25,18 @@ export const MessageDisplayTest: React.FC = () => {
         console.log('Directly testing conversation:', conversationId);
 
         // Create a direct reference to the messages subcollection
-        const messagesRef = collection(db(), 'conversations', conversationId, 'messages');
-        const q = query(messagesRef, orderBy('createdAt', 'asc'));
+        const messagesRef = collection(getSyncFirebaseDb(), 'conversations', conversationId, 'messages');
+        const q = query(messagesRef as any, orderBy('createdAt', 'asc'));
         const querySnapshot = await getDocs(q);
 
         console.log('Found messages:', querySnapshot.size);
         
         const messagesList: any[] = [];
         querySnapshot.forEach((doc) => {
+          const raw = doc.data();
           const messageData = {
             id: doc.id,
-            ...doc.data()
+            ...(raw && typeof raw === 'object' ? raw : {})
           };
           console.log('Message data:', messageData);
           messagesList.push(messageData);
@@ -101,7 +102,7 @@ export const MessageDisplayTest: React.FC = () => {
       
       {loading ? (
         <div className="flex justify-center items-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-orange-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-primary"></div>
         </div>
       ) : error ? (
         <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
@@ -149,12 +150,12 @@ export const MessageDisplayTest: React.FC = () => {
                         <div
                           className={`px-4 py-2 rounded-lg ${
                             isCurrentUser
-                              ? 'bg-orange-500 text-white'
+                              ? 'bg-primary text-primary-foreground'
                               : 'bg-gray-100 text-gray-900'
                           }`}
                         >
                           <p>{message.content}</p>
-                          <p className={`text-xs mt-1 ${isCurrentUser ? 'text-orange-100' : 'text-gray-500'}`}>
+                          <p className={`text-xs mt-1 ${isCurrentUser ? 'text-primary/20' : 'text-gray-500'}`}>
                             {message.createdAt ? formatDate(message.createdAt) : 'Unknown time'}
                           </p>
                         </div>

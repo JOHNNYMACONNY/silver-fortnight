@@ -66,8 +66,7 @@ export const createSecureRoute = ({
   if (rateLimitKey && rateLimitConfig) {
     import('../utils/rateLimiting').then(({ rateLimiter }) => {
       rateLimiter.updateConfig({
-        ...rateLimitConfig,
-        identifier: rateLimitKey
+        ...rateLimitConfig
       });
     });
   }

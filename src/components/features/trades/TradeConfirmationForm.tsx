@@ -204,68 +204,13 @@ const TradeConfirmationForm: React.FC<TradeConfirmationFormProps> = ({
           <div className="mb-6">
             <h3 className="text-lg font-medium text-foreground mb-2">Completion Evidence</h3>
 
-            {/* Creator's Evidence */}
-            {trade.creatorEvidence && trade.creatorEvidence.length > 0 && (
-              <div className="mb-4">
-                <h4 className="text-md font-medium text-foreground mb-2">
-                  Creator's Evidence
-                  {trade.creatorName && ` (${trade.creatorName})`}
-                </h4>
-                <EvidenceGallery
-                  evidence={trade.creatorEvidence}
-                  title=""
-                  emptyMessage="No evidence has been provided."
-                />
-                {trade.creatorCompletionNotes && (
-                  <div className="mt-2 bg-muted/50 border border-border p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground whitespace-pre-line">
-                      <strong>Notes:</strong> {trade.creatorCompletionNotes}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Participant's Evidence */}
-            {trade.participantEvidence && trade.participantEvidence.length > 0 && (
-              <div className="mb-4">
-                <h4 className="text-md font-medium text-foreground mb-2">
-                  Participant's Evidence
-                  {trade.participantId && ` (${trade.participantId})`}
-                </h4>
-                <EvidenceGallery
-                  evidence={trade.participantEvidence}
-                  title=""
-                  emptyMessage="No evidence has been provided."
-                />
-                {trade.participantCompletionNotes && (
-                  <div className="mt-2 bg-muted/50 border border-border p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground whitespace-pre-line">
-                      <strong>Notes:</strong> {trade.participantCompletionNotes}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Legacy Evidence (for backward compatibility) */}
-            {(!trade.creatorEvidence || trade.creatorEvidence.length === 0) &&
-             (!trade.participantEvidence || trade.participantEvidence.length === 0) &&
-             trade.completionEvidence && trade.completionEvidence.length > 0 && (
-              <div>
-                <h4 className="text-md font-medium text-foreground mb-2">Evidence</h4>
-                <EvidenceGallery
-                  evidence={trade.completionEvidence}
-                  title=""
-                  emptyMessage="No evidence has been provided."
-                />
-              </div>
-            )}
-
-            {/* No Evidence Message */}
-            {(!trade.creatorEvidence || trade.creatorEvidence.length === 0) &&
-             (!trade.participantEvidence || trade.participantEvidence.length === 0) &&
-             (!trade.completionEvidence || trade.completionEvidence.length === 0) && (
+            {((trade.completionEvidence && trade.completionEvidence.length > 0) || (trade.evidence && trade.evidence.length > 0)) ? (
+              <EvidenceGallery
+                evidence={trade.completionEvidence && trade.completionEvidence.length > 0 ? trade.completionEvidence : (trade.evidence || [])}
+                title=""
+                emptyMessage="No evidence has been provided."
+              />
+            ) : (
               <div className="bg-muted/50 border border-border p-4 rounded-lg">
                 <p className="text-muted-foreground italic">No evidence has been provided.</p>
               </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../AuthContext';
-import { getAllUsers, User } from '../services/firestore-exports';
+import { getAllUsers, getRelatedUserIds, getUsersByIds, User } from '../services/firestore-exports';
 import { useToast } from '../contexts/ToastContext';
 import { Search, Filter, AlertCircle } from '../utils/icons';
 import { ErrorBoundary } from '../components/ui/ErrorBoundary';
@@ -38,6 +38,9 @@ export const UserDirectoryPage: React.FC = () => {
   const [selectedSkill, setSelectedSkill] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  // Relation filter via query params (?relation=followers|following&user=ID)
+  const [relationFilter, setRelationFilter] = useState<'followers' | 'following' | null>(null);
+  const [relationUserId, setRelationUserId] = useState<string | null>(null);
 
   // Unique skills and locations for filters
   const [availableSkills, setAvailableSkills] = useState<string[]>([]);
@@ -94,19 +97,52 @@ export const UserDirectoryPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    // Parse relation filter from query params
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const relation = params.get('relation');
+      const user = params.get('user');
+      if ((relation === 'followers' || relation === 'following') && user) {
+        setRelationFilter(relation);
+        setRelationUserId(user);
+      } else {
+        setRelationFilter(null);
+        setRelationUserId(null);
+      }
+    } catch (e) {}
+
     const fetchUsers = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        const { data: usersList, error: usersError } = await getAllUsers();
+        // If relation filter present, fetch via follows relations first
+        if (relationFilter && relationUserId) {
+          const rel = await getRelatedUserIds(relationUserId, relationFilter, { limit: 100 });
+          if (rel.error) {
+            setError(rel.error.message);
+            setUsers([]);
+            setFilteredUsers([]);
+            return;
+          }
+          const { data: relatedUsers, error: relatedErr } = await getUsersByIds(rel.data?.ids || []);
+          if (relatedErr) {
+            setError(relatedErr.message);
+            setUsers([]);
+            setFilteredUsers([]);
+            return;
+          }
+          const uniqueUsers = (relatedUsers || []).filter((user, index, self) => index === self.findIndex(u => u.id === user.id));
+          setUsers(uniqueUsers);
+          setFilteredUsers(uniqueUsers);
+        } else {
+          const { data: usersList, error: usersError } = await getAllUsers();
 
-        if (usersError) {
-          console.error('[UserDirectoryPage] Error from getAllUsers:', usersError);
-          setError(usersError.message);
-          setLoading(false);
-          return;
-        }
+          if (usersError) {
+            console.error('[UserDirectoryPage] Error from getAllUsers:', usersError);
+            setError(usersError.message);
+            return;
+          }
 
         console.log('[UserDirectoryPage] getAllUsers result:', { usersList, hasItems: !!usersList?.items });
 
@@ -155,16 +191,18 @@ export const UserDirectoryPage: React.FC = () => {
 
           setAvailableSkills(Array.from(skills).sort());
           setAvailableLocations(Array.from(locations).sort());
-        } else {
+        }
+        else {
           console.warn('[UserDirectoryPage] No users data received');
           setUsers([]);
           setFilteredUsers([]);
         }
-
-        setLoading(false);
+        
+      }
       } catch (error) {
         console.error('[UserDirectoryPage] Error in fetchUsers:', error);
         setError(error instanceof Error ? error.message : 'Failed to load users');
+      } finally {
         setLoading(false);
       }
     };
@@ -209,8 +247,14 @@ export const UserDirectoryPage: React.FC = () => {
       );
     }
 
+    // Apply relation filter if present (client-side placeholder for now)
+    if (relationFilter && relationUserId) {
+      // TODO: Enhance to server-side query using follow relationships
+      // For now, we keep the full list to avoid misleading filters without data
+    }
+
     setFilteredUsers(result);
-  }, [users, searchTerm, selectedSkill, selectedLocation, parseSkills]);
+  }, [users, searchTerm, selectedSkill, selectedLocation, parseSkills, relationFilter, relationUserId]);
 
   useEffect(() => {
     applyFilters();
@@ -240,11 +284,15 @@ export const UserDirectoryPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+      <div className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 flex flex-col md:flex-row md:items-center md:justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground">User Directory</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Find and connect with other users
+            {relationFilter && relationUserId
+              ? relationFilter === 'followers'
+                ? `Followers of ${relationUserId}`
+                : `Following of ${relationUserId}`
+              : 'Find and connect with other users'}
           </p>
         </div>
 
@@ -260,7 +308,7 @@ export const UserDirectoryPage: React.FC = () => {
       </div>
 
       {showFilters && (
-        <div className="p-4 rounded-lg shadow-sm border mb-6 transition">
+        <div className="glassmorphic rounded-xl p-4 md:p-6 mb-6 transition">
           <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
             <div className="flex-1">
               <label htmlFor="search" className="block text-sm font-medium text-foreground mb-1">

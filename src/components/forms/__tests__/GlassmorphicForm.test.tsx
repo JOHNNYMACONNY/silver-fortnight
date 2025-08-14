@@ -54,7 +54,7 @@ describe('GlassmorphicForm', () => {
       render(<GlassmorphicForm {...defaultProps} />);
       
       const form = document.querySelector('form');
-      expect(form).toHaveClass('backdrop-blur-md');
+      expect(form).toHaveClass('glassmorphic');
       expect(form).toHaveClass('rounded-2xl');
     });
 
@@ -62,7 +62,7 @@ describe('GlassmorphicForm', () => {
       render(<GlassmorphicForm {...defaultProps} variant="elevated" />);
       
       const form = document.querySelector('form');
-      expect(form).toHaveClass('backdrop-blur-lg');
+      expect(form).toHaveClass('glassmorphic');
       expect(form).toHaveClass('rounded-3xl');
       expect(form).toHaveClass('shadow-2xl');
     });
@@ -71,7 +71,7 @@ describe('GlassmorphicForm', () => {
       render(<GlassmorphicForm {...defaultProps} variant="modal" />);
       
       const form = document.querySelector('form');
-      expect(form).toHaveClass('backdrop-blur-xl');
+      expect(form).toHaveClass('glassmorphic');
       expect(form).toHaveClass('shadow-beautiful');
     });
 
@@ -79,31 +79,17 @@ describe('GlassmorphicForm', () => {
       render(<GlassmorphicForm {...defaultProps} variant="stepped" />);
       
       const form = document.querySelector('form');
+      expect(form).toHaveClass('glassmorphic');
       expect(form).toHaveClass('border-l-4');
       expect(form).toHaveClass('rounded-r-2xl');
     });
   });
 
   describe('Blur Intensity', () => {
-    it('applies small blur intensity', () => {
+    it('uses the canonical glassmorphic surface regardless of blurIntensity', () => {
       render(<GlassmorphicForm {...defaultProps} blurIntensity="sm" />);
-      
       const form = document.querySelector('form');
-      expect(form).toHaveClass('backdrop-blur-sm');
-    });
-
-    it('applies large blur intensity', () => {
-      render(<GlassmorphicForm {...defaultProps} blurIntensity="lg" />);
-      
-      const form = document.querySelector('form');
-      expect(form).toHaveClass('backdrop-blur-lg');
-    });
-
-    it('applies extra large blur intensity', () => {
-      render(<GlassmorphicForm {...defaultProps} blurIntensity="xl" />);
-      
-      const form = document.querySelector('form');
-      expect(form).toHaveClass('backdrop-blur-xl');
+      expect(form).toHaveClass('glassmorphic');
     });
   });
 
@@ -112,7 +98,7 @@ describe('GlassmorphicForm', () => {
       render(<GlassmorphicForm {...defaultProps} brandAccent="orange" />);
       
       const form = document.querySelector('form');
-      expect(form).toHaveClass('ring-orange-500/20');
+      expect(form).toHaveClass('ring-ring/20');
     });
 
     it('applies blue brand accent', () => {
@@ -219,7 +205,7 @@ describe('GlassmorphicFormSection', () => {
       
       const section = screen.getByText('Section content');
       expect(section.parentElement).toHaveClass('rounded-xl');
-      expect(section.parentElement).toHaveClass('backdrop-blur-sm');
+      expect(section.parentElement).toHaveClass('glassmorphic');
     });
 
     it('renders with title', () => {
@@ -255,24 +241,23 @@ describe('GlassmorphicFormSection', () => {
       render(<GlassmorphicFormSection {...defaultProps} />);
       
       const section = screen.getByText('Section content').parentElement;
-      expect(section).toHaveClass('bg-white/5');
-      expect(section).toHaveClass('border-white/10');
+      expect(section).toHaveClass('glassmorphic');
     });
 
     it('applies highlighted variant styles', () => {
       render(<GlassmorphicFormSection {...defaultProps} variant="highlighted" />);
       
       const section = screen.getByText('Section content').parentElement;
-      expect(section).toHaveClass('bg-white/10');
-      expect(section).toHaveClass('border-white/20');
+      expect(section).toHaveClass('glassmorphic');
+      expect(section).toHaveClass('border-strong');
     });
 
     it('applies subtle variant styles', () => {
       render(<GlassmorphicFormSection {...defaultProps} variant="subtle" />);
       
       const section = screen.getByText('Section content').parentElement;
-      expect(section).toHaveClass('bg-white/2');
-      expect(section).toHaveClass('border-white/5');
+      expect(section).toHaveClass('glassmorphic');
+      expect(section).toHaveClass('border-standard');
     });
   });
 });
@@ -320,14 +305,14 @@ describe('GlassmorphicFormActions', () => {
       render(<GlassmorphicFormActions {...defaultProps} />);
       
       const container = screen.getByRole('button').parentElement;
-      expect(container).toHaveClass('pt-6', 'border-t');
+      expect(container).toHaveClass('pt-6', 'border-t', 'border-border');
     });
 
     it('applies elevated variant styles', () => {
       render(<GlassmorphicFormActions {...defaultProps} variant="elevated" />);
       
       const container = screen.getByRole('button').parentElement;
-      expect(container).toHaveClass('bg-white/5');
+      expect(container).toHaveClass('glassmorphic');
       expect(container).toHaveClass('rounded-b-2xl');
     });
 
@@ -335,8 +320,7 @@ describe('GlassmorphicFormActions', () => {
       render(<GlassmorphicFormActions {...defaultProps} variant="floating" />);
       
       const container = screen.getByRole('button').parentElement;
-      expect(container).toHaveClass('backdrop-blur-sm');
-      expect(container).toHaveClass('bg-gradient-to-t');
+      expect(container).toHaveClass('glassmorphic');
     });
   });
 });

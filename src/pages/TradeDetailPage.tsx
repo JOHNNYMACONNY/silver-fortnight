@@ -40,6 +40,7 @@ import TradeProposalForm from '../components/features/trades/TradeProposalForm';
 import { useToast } from '../contexts/ToastContext';
 import { Modal } from '../components/ui/Modal';
 import { ArrowLeft, Edit, Trash2, MapPin, Clock, DollarSign, Users } from 'lucide-react';
+import { Button } from '../components/ui/Button';
 
 // Additional interface for local state
 // interface LocalState {
@@ -439,7 +440,7 @@ export const TradeDetailPage: React.FC = () => {
           {error}
         </div>
         <div className="mt-6">
-          <Link to="/trades" className="text-primary hover:text-primary/90 font-medium">
+          <Link to="/trades" className="font-medium text-primary hover:text-primary/90">
             ← Back to Trades
           </Link>
         </div>
@@ -454,7 +455,7 @@ export const TradeDetailPage: React.FC = () => {
           <p className="text-muted-foreground">Trade not found.</p>
         </div>
         <div className="mt-6">
-          <Link to="/trades" className="text-primary hover:text-primary/90 font-medium">
+          <Link to="/trades" className="font-medium text-primary hover:text-primary/90">
             ← Back to Trades
           </Link>
         </div>
@@ -468,8 +469,8 @@ export const TradeDetailPage: React.FC = () => {
       <PerformanceMonitor pageName={`TradeDetailPage-${tradeId}`} />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-6">
-          <Link to="/trades" className="text-primary hover:text-primary/90 font-medium">
+        <div className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 mb-6">
+          <Link to="/trades" className="font-medium text-primary hover:text-primary/90">
             ← Back to Trades
           </Link>
         </div>
@@ -682,7 +683,7 @@ export const TradeDetailPage: React.FC = () => {
         </div>
 
         {/* Change Request History */}
-        {trade.changeRequests && trade.changeRequests.length > 0 && (
+        {Array.isArray(trade.changeRequests) && trade.changeRequests.length > 0 && (
           <div className="p-6 border-b border-border">
             <ChangeRequestHistory changeRequests={trade.changeRequests} />
           </div>
@@ -808,7 +809,7 @@ export const TradeDetailPage: React.FC = () => {
             )}
 
             {/* Legacy Evidence Display (for backward compatibility) */}
-            {!trade.completionEvidence && trade.completionEvidence && trade.completionEvidence.length > 0 && (
+            {Array.isArray(trade.completionEvidence) && trade.completionEvidence.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-lg font-medium text-foreground mb-2">Legacy Evidence</h3>
 
@@ -864,19 +865,11 @@ export const TradeDetailPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-2">Offering</h3>
               <div className="flex flex-wrap gap-2">
-                {trade.offeredSkills && trade.offeredSkills.length > 0 ? (
-                  trade.offeredSkills.map((skill, index) => ( // skill is TradeSkill object
+                {Array.isArray(trade.offeredSkills) && trade.offeredSkills.length > 0 ? (
+                  trade.offeredSkills.map((skill: any, index: number) => (
                     <TradeSkillDisplay
                       key={index}
                       skill={skill} // Pass TradeSkill object directly
-                      className="bg-success/10 text-success-foreground"
-                    />
-                  ))
-                ) : trade.offering ? ( // Fallback for string-based offering
-                  trade.offering.split(',').map((skillName, index) => (
-                    <TradeSkillDisplay
-                      key={index}
-                      skill={{ name: skillName.trim(), level: 'intermediate' }} // Create a TradeSkill object
                       className="bg-success/10 text-success-foreground"
                     />
                   ))
@@ -889,19 +882,11 @@ export const TradeDetailPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-2">Seeking</h3>
               <div className="flex flex-wrap gap-2">
-                {trade.requestedSkills && trade.requestedSkills.length > 0 ? (
-                  trade.requestedSkills.map((skill, index) => ( // skill is TradeSkill object
+                {Array.isArray(trade.requestedSkills) && trade.requestedSkills.length > 0 ? (
+                  trade.requestedSkills.map((skill: any, index: number) => (
                     <TradeSkillDisplay
                       key={index}
                       skill={skill} // Pass TradeSkill object directly
-                      className="bg-info/10 text-info-foreground"
-                    />
-                  ))
-                ) : trade.seeking ? ( // Fallback for string-based seeking
-                  trade.seeking.split(',').map((skillName, index) => (
-                    <TradeSkillDisplay
-                      key={index}
-                      skill={{ name: skillName.trim(), level: 'intermediate' }} // Create a TradeSkill object
                       className="bg-info/10 text-info-foreground"
                     />
                   ))
@@ -1032,52 +1017,32 @@ export const TradeDetailPage: React.FC = () => {
                       </select>
                     </div>
 
-                    <div className="flex space-x-4">
-                      <button
-                        type="submit"
-                        className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                        disabled={isSaving}
-                      >
-                        {isSaving ? 'Saving...' : 'Save Changes'}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setIsEditing(false)}
-                        className="bg-secondary text-secondary-foreground px-4 py-2 rounded-md hover:bg-secondary/80 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                        disabled={isSaving}
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                  <div className="flex space-x-4">
+                    <Button type="submit" variant="primary" disabled={isSaving}>
+                      {isSaving ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                    <Button type="button" variant="secondary" onClick={() => setIsEditing(false)} disabled={isSaving}>
+                      Cancel
+                    </Button>
+                  </div>
                   </div>
                 </form>
               ) : (
                 <>
                   <p className="text-muted-foreground">This is your trade listing.</p>
                   <div className="mt-4 flex space-x-4">
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors duration-200"
-                    >
+                    <Button variant="primary" onClick={() => setIsEditing(true)}>
                       Edit Trade
-                    </button>
-                    <button
-                      onClick={handleDeleteTrade}
-                      className="bg-destructive text-destructive-foreground px-4 py-2 rounded-md hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors duration-200"
-                      disabled={isDeleting}
-                    >
+                    </Button>
+                    <Button variant="destructive" onClick={handleDeleteTrade} disabled={isDeleting}>
                       {isDeleting ? 'Deleting...' : 'Delete Trade'}
-                    </button>
+                    </Button>
 
                     {/* Mark Complete button for trade creator */}
                     {trade.status === 'in-progress' && (
-                      <button
-                        onClick={handleRequestCompletion}
-                        className="bg-success text-success-foreground px-4 py-2 rounded-md hover:bg-success/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors duration-200"
-                      >
+                      <Button variant="success" onClick={handleRequestCompletion}>
                         Mark Complete
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </>
@@ -1111,14 +1076,14 @@ export const TradeDetailPage: React.FC = () => {
                               break;
                             case 'View Proposals':
                               // Scroll to proposals section
-                              document.getElementById('proposals-section')?.scrollIntoView({ behavior: 'smooth' });
+                              document.getElementById('proposals-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                               break;
                             case 'Leave Review':
                               setShowReviewForm(true);
                               break;
                             case 'Waiting for Other User':
                               // Scroll to evidence section
-                              document.getElementById('evidence-section')?.scrollIntoView({ behavior: 'smooth' });
+                              document.getElementById('evidence-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                               break;
                             default:
                               // Default action is to contact
@@ -1150,31 +1115,20 @@ export const TradeDetailPage: React.FC = () => {
                                 <p className="text-sm text-success-foreground mb-4">
                                   The other user has requested completion. You can now confirm the trade is complete.
                                 </p>
-                                <button
-                                  onClick={handleConfirmCompletion}
-                                  className="w-full bg-success text-success-foreground px-4 py-2 rounded-md hover:bg-success/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors duration-200"
-                                >
+                                <Button className="w-full" variant="success" onClick={handleConfirmCompletion}>
                                   Confirm Trade Completion
-                                </button>
+                                </Button>
                               </div>
 
                               {/* Regular action buttons */}
-                              <button
-                                onClick={handlePrimaryAction}
-                                className="w-full bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors duration-200"
-                                disabled={actions.primaryDisabled}
-                              >
+                              <Button className="w-full" variant="primary" onClick={handlePrimaryAction} disabled={actions.primaryDisabled}>
                                 {actions.primaryAction}
-                              </button>
+                              </Button>
 
                               {actions.secondaryAction && (
-                                <button
-                                  onClick={handleSecondaryAction}
-                                  className="w-full bg-secondary text-secondary-foreground px-4 py-2 rounded-md hover:bg-secondary/80 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors duration-200"
-                                  disabled={actions.secondaryDisabled}
-                                >
+                                <Button className="w-full" variant="secondary" onClick={handleSecondaryAction} disabled={actions.secondaryDisabled}>
                                   {actions.secondaryAction}
-                                </button>
+                                </Button>
                               )}
                             </>
                           );
@@ -1183,22 +1137,14 @@ export const TradeDetailPage: React.FC = () => {
                         // Default return for other statuses
                         return (
                           <>
-                            <button
-                              onClick={handlePrimaryAction}
-                              className="w-full bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors duration-200"
-                              disabled={actions.primaryDisabled}
-                            >
+                            <Button className="w-full" variant="primary" onClick={handlePrimaryAction} disabled={actions.primaryDisabled}>
                               {actions.primaryAction}
-                            </button>
+                            </Button>
 
                             {actions.secondaryAction && (
-                              <button
-                                onClick={handleSecondaryAction}
-                                className="w-full bg-secondary text-secondary-foreground px-4 py-2 rounded-md hover:bg-secondary/80 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors duration-200"
-                                disabled={actions.secondaryDisabled}
-                              >
+                              <Button className="w-full" variant="secondary" onClick={handleSecondaryAction} disabled={actions.secondaryDisabled}>
                                 {actions.secondaryAction}
-                              </button>
+                              </Button>
                             )}
                           </>
                         );
@@ -1273,15 +1219,11 @@ export const TradeDetailPage: React.FC = () => {
                         />
                       </div>
 
-                      <div className="flex justify-end">
-                        <button
-                          type="submit"
-                          className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors duration-200"
-                          disabled={sendingMessage}
-                        >
-                          {sendingMessage ? 'Sending...' : 'Send Message'}
-                        </button>
-                      </div>
+                  <div className="flex justify-end">
+                    <Button type="submit" variant="primary" disabled={sendingMessage}>
+                      {sendingMessage ? 'Sending...' : 'Send Message'}
+                    </Button>
+                  </div>
                     </form>
                   )}
                 </div>
@@ -1336,19 +1278,13 @@ export const TradeDetailPage: React.FC = () => {
             <div className="bg-card border border-border rounded-lg p-6 text-center transition-colors duration-200">
               <h3 className="text-lg font-medium text-foreground mb-2">Interested in this trade?</h3>
               <p className="text-muted-foreground mb-4">Submit a proposal to let the trade creator know you're interested.</p>
-              <button
-                onClick={() => setShowProposalForm(true)}
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors duration-200"
-              >
+              <Button variant="primary" onClick={() => setShowProposalForm(true)}>
                 Submit Proposal
-              </button>
+              </Button>
             </div>
           ) : (
             <TradeProposalForm
-              tradeId={trade.id!}
-              tradeName={trade.title}
-              offeredSkills={trade.offeredSkills ? trade.offeredSkills.map(s => s.name) : []}
-              requestedSkills={trade.requestedSkills ? trade.requestedSkills.map(s => s.name) : []}
+              trade={trade as any}
               onSuccess={() => {
                 setShowProposalForm(false);
                 addToast('success', 'Proposal submitted successfully!');
@@ -1377,12 +1313,9 @@ export const TradeDetailPage: React.FC = () => {
             <div className="bg-card border border-border rounded-lg p-6 text-center transition-colors duration-200">
               <h3 className="text-lg font-medium text-foreground mb-2">Have you completed a trade with this user?</h3>
               <p className="text-muted-foreground mb-4">Share your experience and help others in the community.</p>
-              <button
-                onClick={() => setShowReviewForm(true)}
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors duration-200"
-              >
+              <Button variant="primary" onClick={() => setShowReviewForm(true)}>
                 Write a Review
-              </button>
+              </Button>
             </div>
           )}
         </div>

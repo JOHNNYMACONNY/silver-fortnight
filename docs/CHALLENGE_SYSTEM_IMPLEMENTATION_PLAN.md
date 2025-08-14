@@ -5,15 +5,38 @@
 - Challenges UI hardening implemented
   - `src/pages/ChallengesPage.tsx`: guards for missing `difficulty` and safe `rewards.xp` rendering
   - `src/pages/ChallengeDetailPage.tsx`: switched to `services/challenges.getChallenge` and `types/gamification.Challenge`; normalized `difficulty`/`status`; supports `deadline` or `endDate`; handles `participants` vs `participantCount`
-- Recommendations MVP
+- Recommendations MVP (baseline implemented)
   - Added a "Recommended for you" section on `ChallengesPage` powered by `getRecommendedChallenges`
+  - Excludes already-joined challenges; logs lightweight analytics for impressions and joins
 - Challenge list UX
   - Standardized challenge list to use shared `ChallengeCard` with accessible footer actions
   - Added tabs to `ChallengesPage` for `All / Active / My Challenges` aligned with service APIs
+  - Progression → Filters: Clicking tiers in `ThreeTierProgressionUI` navigates to `ChallengesPage?type=solo|trade|collaboration` and the page applies the filter from the query param
+  - Empty-states per tab and a "Clear filters" control ensure graceful UX when no results
 - Creation Flow Validation
   - `src/components/challenges/ChallengeCreationForm.tsx`: category options now derive from `ChallengeCategory`; added `rewards.xp` and `endDate` validation; strict required field checks
 - Data integrity tooling
   - `scripts/backfill-challenges.ts`: one-time backfill to normalize `difficulty`, `status`, `endDate`, and `rewards.xp`
+
+- Recommendations quality and analytics (August 2025)
+  - Exclude already-joined challenges from `getRecommendedChallenges` results in `src/services/challenges.ts`
+  - Lightweight analytics added in `src/pages/ChallengesPage.tsx` using `useBusinessMetrics`:
+    - `challenge_recommendation_impressions`
+    - `challenge_joins`
+    - `challenge_recommendation_joins`
+    - `challenge_filters_zero_results`
+    - `challenge_filters_cleared`
+  - Test stability: added `data-testid="challenge-card-{id}"` on `ChallengeCard` and covered empty/clear-flow in tests
+
+- Detail page polish (August 2025)
+  - `src/pages/ChallengeDetailPage.tsx`: wired real join (`joinChallenge`) and participation detection (`getUserChallengeProgress`)
+  - Added participant progress bar and an “Ending soon” badge based on `endDate`/`deadline`
+  - Retains live submissions preview via `onChallengeSubmissions`
+
+- Tooling & E2E (August 2025)
+  - `firestore.indexes.json`: added composite index for `challenges` on `(status ASC, endDate ASC)` to support active list ordering
+  - `scripts/seed-challenges.ts`: seed ~24 challenges across categories / difficulties / types for local UX validation
+  - `e2e/challenges-recommendations.spec.ts`: covers join-from-recommendations and `?type=solo` filter navigation
 
 ### How to run
 
@@ -35,12 +58,14 @@ npm run type-check && npm run lint
 ### Next Up (tracked)
 
 - Add unit tests: render `ChallengesPage` and `ChallengeDetailPage` with partial docs; verify recommendations render
-- Ensure Firestore indexes for `status == ACTIVE` + `orderBy(endDate)` are deployed; update index docs if needed
+- Ensure Firestore indexes for `status == ACTIVE` + `orderBy(endDate)` are verified and deployed; update index docs if needed
 - Optionally surface Three-Tier Progression UI on dashboard per plan
   - Mounted `ThreeTierProgressionUI` on `DashboardPage` (initial integration)
+  - Wired tier selection to `ChallengesPage` filter via query param
+  - Enrich recommendations via user category history and difficulty banding (implemented in `services/challenges.getRecommendedChallenges`)
 
-**Last Updated**: January 2025  
-**Status**: 68% Complete - Backend Infrastructure Complete, UI Components Functional, Realtime Subscriptions & Seed Data Added  
+**Last Updated**: August 2025  
+**Status**: ~70% Complete - Backend Infrastructure Complete, UI Components Functional, Recommendations MVP, Realtime Subscriptions & Seed Data Added  
 **Priority**: HIGH - Core User-Facing Feature  
 **Estimated Timeline**: 6 weeks for complete implementation  
 
@@ -129,7 +154,7 @@ The challenge system has a **comprehensive foundation** with both backend and fr
 - ✅ `ChallengeManagementDashboard.tsx` - Comprehensive management (457 lines)
 - ✅ `ChallengeCompletionInterface.tsx` - Multi-step completion workflow (533 lines)
 - ✅ `ThreeTierProgressionUI.tsx` - Visual progression system (255 lines)
-- ✅ `AICodeReviewInterface.tsx` - Functional (wired to OpenRouter service)
+- ⚠️ `AICodeReviewInterface.tsx` - Functional UI; service integration staged separately
 
 #### Pages (80% Functional)
 - ✅ `ChallengesPage.tsx` - Functional listing with filtering and search, plus live-updating active count badge

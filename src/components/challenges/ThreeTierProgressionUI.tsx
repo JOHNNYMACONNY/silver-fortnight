@@ -86,7 +86,7 @@ export const ThreeTierProgressionUI: React.FC<ThreeTierProgressionUIProps> = ({
   if (loading) {
     return (
       <div className={cn("flex items-center justify-center p-8", className)}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -94,11 +94,11 @@ export const ThreeTierProgressionUI: React.FC<ThreeTierProgressionUIProps> = ({
   return (
     <div className={cn("space-y-6", className)}>
       {/* Progress Overview */}
-      <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+      <div className="glassmorphic p-6">
         <h3 className="text-xl font-semibold text-white mb-4">Challenge Progression</h3>
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
-            <div className="text-2xl font-bold text-orange-400">{progress?.soloCompletions || 0}</div>
+            <div className="text-2xl font-bold text-primary">{progress?.soloCompletions || 0}</div>
             <div className="text-sm text-gray-300">Solo Completed</div>
           </div>
           <div className="text-center">
@@ -125,9 +125,9 @@ export const ThreeTierProgressionUI: React.FC<ThreeTierProgressionUIProps> = ({
               whileHover={unlocked ? { scale: 1.02 } : {}}
               whileTap={unlocked ? { scale: 0.98 } : {}}
               className={cn(
-                "relative overflow-hidden rounded-xl border transition-all duration-300 cursor-pointer",
+                "relative overflow-hidden rounded-xl transition-all duration-300 cursor-pointer",
                 unlocked 
-                  ? "border-white/30 bg-white/10 backdrop-blur-md hover:bg-white/15" 
+                  ? "glassmorphic hover:bg-white/15" 
                   : "border-gray-600 bg-gray-800/50 cursor-not-allowed",
                 isSelected && unlocked && "ring-2 ring-white/50"
               )}
@@ -208,7 +208,7 @@ export const ThreeTierProgressionUI: React.FC<ThreeTierProgressionUIProps> = ({
 
       {/* Next Tier Progress */}
       {progress?.nextTierRequirements && (
-        <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+        <div className="glassmorphic p-6">
           <h4 className="font-semibold text-white mb-3">Next Tier Progress</h4>
           <div className="space-y-3">
             <div>
@@ -220,7 +220,7 @@ export const ThreeTierProgressionUI: React.FC<ThreeTierProgressionUIProps> = ({
               </div>
               <div className="w-full bg-gray-700 rounded-full h-2">
                 <div 
-                  className="bg-gradient-to-r from-orange-500 to-blue-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-primary to-blue-500 h-2 rounded-full transition-all duration-300"
                   style={{ 
                     width: `${Math.min(100, (getCompletionCount(progress.currentTier) / progress.nextTierRequirements.requiredCompletions) * 100)}%` 
                   }}

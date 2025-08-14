@@ -1,0 +1,83 @@
+# Page snapshot
+
+```yaml
+- navigation:
+  - link "TradeYa Logo TradeYa":
+    - /url: /
+    - img "TradeYa Logo"
+    - text: TradeYa
+  - link "Trades":
+    - /url: /trades
+  - link "Collaborations":
+    - /url: /collaborations
+  - link "Directory":
+    - /url: /directory
+  - link "Challenges":
+    - /url: /challenges
+  - link "Portfolio":
+    - /url: /portfolio
+  - button "Search ⌘K"
+  - button "Switch to dark mode": Dark
+  - button "Notifications"
+  - button "Log In"
+  - button "Sign Up"
+- img "TradeYa Logo"
+- text: TradeYa
+- heading "Log In" [level=1]
+- text: Email
+- textbox "Email"
+- link "Forgot password?":
+  - /url: /reset-password
+- text: Password
+- textbox "Password"
+- button "Log In"
+- text: Or continue with
+- button "Sign in with Google":
+  - img
+  - text: Sign in with Google
+- paragraph:
+  - text: New to TradeYa?
+  - link "Sign up":
+    - /url: /signup
+- button "Open Dev Dashboard"
+- contentinfo:
+  - link "TradeYa Logo TradeYa":
+    - /url: /
+    - img "TradeYa Logo"
+    - text: TradeYa
+  - paragraph: Exchange skills and services with others in your community.
+  - heading "Resources" [level=3]
+  - list:
+    - listitem:
+      - link "Help Center":
+        - /url: /help
+    - listitem:
+      - link "Guides":
+        - /url: /uides
+    - listitem:
+      - link "Blog":
+        - /url: /blog
+  - heading "Company" [level=3]
+  - list:
+    - listitem:
+      - link "About":
+        - /url: /about
+    - listitem:
+      - link "Careers":
+        - /url: /careers
+    - listitem:
+      - link "Contact":
+        - /url: /contact
+  - heading "Legal" [level=3]
+  - list:
+    - listitem:
+      - link "Privacy Policy":
+        - /url: /privacy
+    - listitem:
+      - link "Terms of Service":
+        - /url: /terms
+    - listitem:
+      - link "Cookie Policy":
+        - /url: /cookies
+  - paragraph: "&copy: 2025 TradeYa. All rights reserved."
+```

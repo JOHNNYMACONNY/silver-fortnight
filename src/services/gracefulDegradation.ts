@@ -103,12 +103,13 @@ class GracefulDegradationService {
       const responseTime = Date.now() - startTime;
       this.markServiceUnhealthy(serviceName, responseTime);
       
+      const message = error instanceof Error ? error.message : String(error);
       await errorService.handleError(
         new AppError(
           `Health check failed for service: ${serviceName}`,
           ErrorCode.SERVICE_UNAVAILABLE,
           ErrorSeverity.MEDIUM,
-          { serviceName, error: error.message }
+          { serviceName, error: message }
         )
       );
       
@@ -185,12 +186,13 @@ class GracefulDegradationService {
       }
 
       // Log the error
+      const message = error instanceof Error ? error.message : String(error);
       await errorService.handleError(
         new AppError(
           `Primary operation failed for service: ${serviceName}`,
           ErrorCode.SERVICE_UNAVAILABLE,
           ErrorSeverity.MEDIUM,
-          { serviceName, error: error.message }
+          { serviceName, error: message }
         )
       );
 
@@ -312,7 +314,7 @@ class GracefulDegradationService {
   public getServiceStatus(serviceName?: string): ServiceStatus | ServiceStatus[] {
     if (serviceName) {
       const service = this.services.get(serviceName);
-      return service ? { ...service } : null;
+      return service ? { ...service } : ({} as any);
     }
 
     return Array.from(this.services.values()).map(service => ({ ...service }));

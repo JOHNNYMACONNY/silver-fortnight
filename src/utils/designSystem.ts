@@ -117,9 +117,9 @@ export const classPatterns = {
   flexColumn: 'flex flex-col',
   
   // Glassmorphic patterns
-  glassCard: 'backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl shadow-glass',
-  glassForm: 'backdrop-blur-lg bg-white/80 dark:bg-neutral-800/70 border-2 border-white/30 dark:border-neutral-700/40 rounded-2xl',
-  glassNavbar: 'backdrop-blur-md bg-white/80 dark:bg-neutral-800/80 border-b border-white/20 dark:border-neutral-700/30',
+  glassCard: 'glassmorphic',
+  glassForm: 'glassmorphic rounded-2xl',
+  glassNavbar: 'glassmorphic',
 
   // Typography patterns
   heading1: 'text-4xl font-bold text-foreground',
@@ -133,11 +133,11 @@ export const classPatterns = {
 
   // Button patterns
   primaryButton: 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium px-6 py-3 rounded-lg transition-all duration-200',
-  secondaryButton: 'bg-white/10 hover:bg-white/20 text-foreground border border-white/20 font-medium px-6 py-3 rounded-lg transition-all duration-200',
+  secondaryButton: 'glassmorphic text-foreground font-medium px-6 py-3 rounded-lg transition-all duration-200',
   ghostButton: 'hover:bg-white/10 text-foreground font-medium px-6 py-3 rounded-lg transition-all duration-200',
 
   // Input patterns
-  textInput: 'w-full px-4 py-3 bg-white/50 dark:bg-neutral-800/50 border border-white/20 dark:border-neutral-700/30 rounded-lg focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all duration-200',
+  textInput: 'w-full px-4 py-3 glassmorphic focus:ring-2 focus:ring-ring focus:border-input transition-all duration-200',
   
   // Animation patterns
   fadeIn: 'animate-in fade-in duration-300',
@@ -166,7 +166,7 @@ export const componentVariants = {
     success: 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800',
     warning: 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800',
     error: 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800',
-    brand: 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800',
+    brand: 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary',
   },
 } as const;
 
@@ -245,7 +245,7 @@ export const layouts = {
   
   // Flex layouts
   navbar: 'flex items-center justify-between px-6 py-4',
-  sidebar: 'flex flex-col h-full w-64 bg-white/10 backdrop-blur-md border-r border-white/20',
+  sidebar: 'flex flex-col h-full w-64 glassmorphic',
 } as const;
 
 // Validation Functions
@@ -279,7 +279,7 @@ export const createGlassmorphicStyle = (
     strong: 'bg-white/80 dark:bg-neutral-800/70',
   };
 
-  return `backdrop-blur-md ${backgrounds[intensity]} border border-white/${borderOpacity * 100} dark:border-neutral-700/${borderOpacity * 100 + 10} rounded-xl shadow-glass`;
+  return `glassmorphic`;
 };
 
 // Export all utilities

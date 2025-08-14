@@ -143,8 +143,10 @@ export const getUserChallengeSubmissions = async (
     const querySnapshot = await getDocs(q);
     const submissions: ChallengeSubmissionWithReview[] = [];
 
-    querySnapshot.forEach((doc) => {
-      submissions.push({ id: doc.id, ...doc.data() } as ChallengeSubmissionWithReview);
+    querySnapshot.forEach((snap) => {
+      const data = snap.data() as Record<string, unknown>;
+      const payload = Object.assign({ id: snap.id }, data) as unknown as ChallengeSubmissionWithReview;
+      submissions.push(payload);
     });
 
     // Sort by submission date (newest first)
@@ -191,21 +193,20 @@ export const approveSubmission = async (
         reviewedAt: Timestamp.now()
       };
 
-      const updatedSubmission: ChallengeSubmissionWithReview = {
-        ...submission,
+      const updatedSubmission: ChallengeSubmissionWithReview = Object.assign({}, submission, {
         manualReview: fullManualReview,
         status: manualReview.approved ? 'approved' : 'needs-revision',
         approvedAt: manualReview.approved ? Timestamp.now() : undefined
-      };
+      });
 
-      transaction.update(submissionRef, updatedSubmission);
+      transaction.set(submissionRef, updatedSubmission as any, { merge: true });
 
       // If approved, award additional XP and update progression
       if (manualReview.approved) {
         await awardXP(
           submission.userId,
-          50, // Bonus XP for manual approval
-          XPSource.ACHIEVEMENT,
+          50,
+          XPSource.CHALLENGE_COMPLETION,
           `manual-approval-${submissionId}`,
           'Code approved by mentor!'
         );

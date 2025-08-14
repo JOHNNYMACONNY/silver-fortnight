@@ -14,7 +14,8 @@ import {
   LeaderboardData,
   LEADERBOARD_CONFIGS
 } from '../../types/gamification';
-import { getLeaderboard, getMultipleLeaderboards } from '../../services/leaderboards';
+import { getLeaderboard, getMultipleLeaderboards, getCircleLeaderboard } from '../../services/leaderboards';
+import { getRelatedUserIds } from '../../services/firestore';
 import { useAuth } from '../../AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '../ui/Card';
@@ -24,6 +25,7 @@ import { Avatar } from '../ui/Avatar';
 import Box from '../layout/primitives/Box';
 import Stack from '../layout/primitives/Stack';
 import Cluster from '../layout/primitives/Cluster';
+import Grid from '../layout/primitives/Grid';
 import { Button } from '../ui/Button';
 
 interface LeaderboardProps {
@@ -52,13 +54,29 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showMyCircle, setShowMyCircle] = useState(false);
+  const [followingCount, setFollowingCount] = useState<number | null>(null);
 
   const config = LEADERBOARD_CONFIGS.find(c => c.category === category && c.period === period);
 
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
-      const result = await getLeaderboard(category, period, limit, user?.uid);
+      let result;
+      if (showMyCircle && user?.uid) {
+        // Fetch following IDs and then circle leaderboard
+        const rel = await getRelatedUserIds(user.uid, 'following', { limit: 100 });
+        const followingIds = rel.data?.ids || [];
+        if (followingIds.length === 0) {
+          setLeaderboardData({ entries: [], currentUserEntry: undefined, totalParticipants: 0, lastUpdated: new Date() as any, period, category } as any);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+        result = await getCircleLeaderboard(category, period, followingIds, user?.uid);
+      } else {
+        result = await getLeaderboard(category, period, limit, user?.uid);
+      }
       
       if (result.success && result.data) {
         setLeaderboardData(result.data);
@@ -79,7 +97,28 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
     
     const interval = setInterval(fetchLeaderboard, refreshInterval);
     return () => clearInterval(interval);
-  }, [category, period, limit, user?.uid, refreshInterval]);
+  }, [category, period, limit, user?.uid, refreshInterval, showMyCircle]);
+
+  // Load following count to gate the My Circle toggle
+  useEffect(() => {
+    (async () => {
+      try {
+        if (!user?.uid) {
+          setFollowingCount(null);
+          return;
+        }
+        // Load persisted My Circle preference
+        try {
+          const v = window.localStorage.getItem(`leaderboard-circle-${user.uid}`);
+          if (v === '1') setShowMyCircle(true);
+        } catch {}
+        const rel = await getRelatedUserIds(user.uid, 'following', { limit: 1 });
+        setFollowingCount(rel.data?.ids?.length || 0);
+      } catch {
+        setFollowingCount(null);
+      }
+    })();
+  }, [user?.uid]);
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -164,24 +203,34 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           <CardDescription>{config?.description || 'Top performers'}</CardDescription>
         </CardHeader>
         <CardContent>
-          <EmptyState
-            icon={<Trophy className="w-12 h-12" />}
-            title="No Rankings Yet"
-            description="Complete trades and earn XP to appear on the leaderboard!"
-          />
+          {showMyCircle ? (
+            <EmptyState
+              icon={<Users className="w-12 h-12" />}
+              title="No Circle Rankings Yet"
+              description="People you follow haven’t appeared on this leaderboard yet."
+              actionLabel="Show Global"
+              onAction={() => setShowMyCircle(false)}
+            />
+          ) : (
+            <EmptyState
+              icon={<Trophy className="w-12 h-12" />}
+              title="No Rankings Yet"
+              description="Complete trades and earn XP to appear on the leaderboard!"
+            />
+          )}
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card style={{ containerType: 'inline-size' }}>
+    <Card className="@container">
       <CardHeader>
         <Cluster justify="between" align="center" gap="md">
           <Cluster gap="sm" align="center">
             <Box
-              className="w-10 h-10 rounded-lg flex items-center justify-center text-primary-foreground"
-              style={{ backgroundColor: config?.color || 'hsl(var(--primary))' }}
+              className={`w-10 h-10 rounded-lg flex items-center justify-center text-primary-foreground ${config?.color ? '' : 'bg-primary'}`}
+              style={config?.color ? { backgroundColor: config.color } : undefined}
             >
               {config?.icon || '🏆'}
             </Box>
@@ -195,17 +244,31 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
             <div className="text-xs">
               Updated {new Date(leaderboardData.lastUpdated.toDate()).toLocaleTimeString()}
             </div>
+            {user?.uid && (followingCount ?? 0) > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !showMyCircle;
+                  setShowMyCircle(next);
+                  try { window.localStorage.setItem(`leaderboard-circle-${user!.uid}`, next ? '1' : '0'); } catch {}
+                }}
+                className="text-xs text-primary hover:underline"
+                aria-pressed={showMyCircle}
+                title={showMyCircle ? 'Showing only people you follow' : 'View leaderboard for people you follow'}
+              >
+                {showMyCircle ? 'Showing: My Circle' : 'Filter: My Circle'}
+              </button>
+            )}
           </Stack>
         </Cluster>
       </CardHeader>
 
-      <CardContent className={`${compact ? 'max-h-64' : 'max-h-96'} overflow-y-auto`}>
+        <CardContent className={`${compact ? 'max-h-64' : 'max-h-96'} overflow-y-auto`}>
         <Stack gap="xs">
           <AnimatePresence>
             {leaderboardData.entries.map((entry, index) => (
-              <Box
+              <motion.div
                 key={entry.userId}
-                as={motion.div}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
@@ -229,7 +292,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                       <div className="font-medium">
                         {entry.userName}
                         {entry.isCurrentUser && (
-                          <span className="text-xs bg-primary/20 text-primary rounded-full" style={{ padding: '0.25rem 0.5rem', marginLeft: '0.5rem' }}>
+                          <span className="ml-2 text-xs bg-primary/20 text-primary rounded-full px-2 py-1">
                             You
                           </span>
                         )}
@@ -249,9 +312,34 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                     )}
                   </Stack>
                 </Cluster>
-              </Box>
+              </motion.div>
             ))}
           </AnimatePresence>
+          {leaderboardData.currentUserEntry && !leaderboardData.entries.find(e => e.userId === leaderboardData.currentUserEntry!.userId) && (
+            <div className="mt-2 border-t border-border pt-2">
+              <div className="text-xs text-muted-foreground mb-1">Your rank</div>
+              <div className="p-3 rounded-lg bg-primary/5">
+                <Cluster justify="between" align="center" gap="sm">
+                  <Cluster gap="sm" align="center">
+                    <Box className="flex-shrink-0 w-8 text-center">{getRankIcon(leaderboardData.currentUserEntry.rank)}</Box>
+                    <Avatar
+                      src={leaderboardData.currentUserEntry.userAvatar}
+                      alt={leaderboardData.currentUserEntry.userName || 'You'}
+                      fallback={(leaderboardData.currentUserEntry.userName || 'Y').charAt(0).toUpperCase()}
+                      className="w-8 h-8"
+                    />
+                    <Stack gap="xs">
+                      <div className="font-medium">You</div>
+                      <div className="text-sm text-muted-foreground">Rank #{leaderboardData.currentUserEntry.rank}</div>
+                    </Stack>
+                  </Cluster>
+                  <Stack gap="xs" align="end" className="text-right">
+                    <div className="font-semibold">{formatValue(leaderboardData.currentUserEntry.value, category)}</div>
+                  </Stack>
+                </Cluster>
+              </div>
+            </div>
+          )}
         </Stack>
       </CardContent>
     </Card>
@@ -307,7 +395,7 @@ export const LeaderboardDashboard: React.FC<LeaderboardDashboardProps> = ({
     return (
       <Stack gap="lg">
         <Box className="animate-pulse">
-          <Box className="h-8 bg-muted rounded w-1/3" style={{ marginBottom: '1rem' }}></Box>
+          <Box className="h-8 bg-muted rounded w-1/3 mb-4">&nbsp;</Box>
           <Grid columns={{ base: 1, md: 3 }} gap="lg">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="h-64 bg-muted rounded-lg"></div>

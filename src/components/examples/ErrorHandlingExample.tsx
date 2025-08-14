@@ -90,7 +90,7 @@ const ErrorHandlingExample: React.FC = () => {
         [
           {
             label: 'Contact Support',
-            action: () => window.open('/support', '_blank'),
+            action: () => { window.open('/support', '_blank'); },
             primary: true,
           },
           {

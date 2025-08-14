@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { cn } from '../../utils/cn';
 import { useTradeYaAnimation } from '../../hooks/useTradeYaAnimation';
 import { AnimatedButton } from './AnimatedButton';
@@ -74,9 +74,9 @@ const ERROR_TYPE_CONFIG = {
   },
   timeout: {
     icon: '⏱️',
-    color: 'text-orange-600 dark:text-orange-400',
-    bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-    borderColor: 'border-orange-200 dark:border-orange-800',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
+    borderColor: 'border-primary/30',
     title: 'Request Timeout',
   },
   permission: {
@@ -124,7 +124,7 @@ export const ErrorStateAnimation: React.FC<ErrorAnimationProps> = ({
   // Animation hook
   const { triggerAnimation } = useTradeYaAnimation({
     type: "error",
-    intensity: error.severity === "critical" ? "strong" : "medium",
+    intensity: error.severity === "critical" ? "dramatic" : "standard",
     tradingContext: "general",
   });
 
@@ -164,7 +164,7 @@ export const ErrorStateAnimation: React.FC<ErrorAnimationProps> = ({
   }, [onDismiss]);
 
   // Animation variants
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { 
       opacity: 0, 
       scale: 0.9, 
@@ -189,7 +189,7 @@ export const ErrorStateAnimation: React.FC<ErrorAnimationProps> = ({
     },
   };
 
-  const iconVariants = {
+  const iconVariants: Variants = {
     hidden: { scale: 0, rotate: -180 },
     visible: { 
       scale: 1, 
@@ -210,7 +210,7 @@ export const ErrorStateAnimation: React.FC<ErrorAnimationProps> = ({
     },
   };
 
-  const contentVariants = {
+  const contentVariants: Variants = {
     hidden: { opacity: 0, x: -20 },
     visible: { 
       opacity: 1, 

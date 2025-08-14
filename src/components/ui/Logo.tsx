@@ -36,7 +36,7 @@ const Logo: React.FC<LogoProps> = ({
         className={`${sizeClasses[size]} transition-transform duration-200 hover:scale-105`}
       />
       {showText && (
-        <span className={`font-bold text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors duration-200 ${textSizeClasses[size]}`}>
+        <span className={`font-bold text-primary hover:text-primary/80 transition-colors duration-200 ${textSizeClasses[size]}`}>
           TradeYa
         </span>
       )}

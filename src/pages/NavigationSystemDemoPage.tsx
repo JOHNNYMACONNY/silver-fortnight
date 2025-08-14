@@ -104,7 +104,6 @@ const NavigationSystemDemoPage: React.FC = () => {
                 className="flex items-center space-x-1 hover:text-gray-900 dark:hover:text-white transition-colors"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setActiveSection(crumb.id)}
               >
                 <crumb.icon className="w-4 h-4" />
                 <span>{crumb.label}</span>
@@ -424,7 +423,7 @@ const NavigationSystemDemoPage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden"
+            className="fixed inset-0 bg-black bg-opacity-50 z-overlay lg:hidden"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             <motion.div

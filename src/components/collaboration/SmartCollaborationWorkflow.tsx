@@ -124,7 +124,7 @@ export const SmartCollaborationWorkflow: React.FC<SmartCollaborationWorkflowProp
 
     const generateAISuggestions = () => {
       // Mock AI suggestions based on project type
-      const suggestions = {
+      const suggestions: Record<'learning'|'building'|'creative'|'research', string[]> = {
         learning: [
           'Learn React and build a portfolio website together',
           'Master data structures through collaborative coding',
@@ -147,7 +147,7 @@ export const SmartCollaborationWorkflow: React.FC<SmartCollaborationWorkflowProp
         ]
       };
       
-      setAiSuggestions(suggestions[data.projectType] || []);
+      setAiSuggestions(suggestions[data.projectType as 'learning'|'building'|'creative'|'research'] || []);
       setShowSuggestions(true);
     };
 
@@ -165,16 +165,16 @@ export const SmartCollaborationWorkflow: React.FC<SmartCollaborationWorkflowProp
             Project Type
           </label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {projectTypes.map((type) => (
+           {projectTypes.map((type) => (
               <Card
                 key={type.id}
                 className={cn(
                   "cursor-pointer transition-all duration-300",
                   data.projectType === type.id
-                    ? "bg-white/20 backdrop-blur-md border-white/40 ring-2 ring-blue-500/50"
-                    : "bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15"
+                    ? "glassmorphic ring-2 ring-blue-500/50"
+                    : "glassmorphic"
                 )}
-                onClick={() => onChange('projectType', type.id)}
+               onClick={() => onChange('projectType', type.id as CollaborationWorkflowData['projectType'])}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-3">

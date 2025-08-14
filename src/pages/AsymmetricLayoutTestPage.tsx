@@ -105,10 +105,10 @@ const AsymmetricLayoutTestPage: React.FC = () => {
             contentType="feature"
             layoutRole="simple"
           >
-            <Card variant="glass" className="h-full flex flex-col p-6 border-2 border-orange-500">
+            <Card variant="glass" className="h-full flex flex-col p-6 border-2 border-primary">
               <div className="flex items-center justify-between mb-2">
                 <h2 className={themeClasses.heading4}>Quick Stats</h2>
-                <Badge variant="outline" className="bg-orange-500 text-white">Small (1/3)</Badge>
+                <Badge variant="outline" className="bg-primary text-primary-foreground">Small (1/3)</Badge>
               </div>
               <p className={themeClasses.body + ' mt-2 flex-grow'}>
                 This is a small item (1/3 width) in the first row. It should be narrower than the large item.
@@ -151,7 +151,7 @@ const AsymmetricLayoutTestPage: React.FC = () => {
               </div>
               <div className="flex-grow flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-orange-500">1,247</div>
+                  <div className="text-3xl font-bold text-primary">1,247</div>
                   <div className="text-sm text-gray-600">Active Users</div>
                 </div>
               </div>
@@ -293,7 +293,7 @@ const AsymmetricLayoutTestPage: React.FC = () => {
             <div>
               <strong>Static:</strong> All rows follow the same Small-Large pattern.
             </div>
-            <div className="mt-4 p-3 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+            <div className="mt-4 p-3 bg-primary/10 rounded-lg">
               <strong>Note:</strong> The asymmetric layout system automatically arranges items into rows of 2,
               applying the visual rhythm pattern to create the desired arrangement.
             </div>

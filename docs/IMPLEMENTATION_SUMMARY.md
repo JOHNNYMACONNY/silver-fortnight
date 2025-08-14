@@ -59,6 +59,9 @@ A comprehensive system managing trades from creation to completion, including:
 - Two-sided confirmation with evidence submission
 - Status tracking and visualization with TradeStatusTimeline
 - Dynamic action buttons based on trade status and user role
+ - Shared Button component expanded with `success` and `warning` variants; demo/test pages and collaboration actions updated to use variants
+ - Z-index token rollout completed: `z-overlay`, `z-modal`, `z-popover`, `z-tooltip`, `z-toast`, and `z-navigation` tokens adopted across UI
+ - Card tilt hover restored by delegating transform composition to Framer Motion in `src/components/ui/Card.tsx`
 
 **Implementation Progress:**
 - ✅ Database schema updates (Trade, TradeProposal, TradeSkill interfaces)
@@ -88,7 +91,7 @@ Enables multi-person projects with defined roles and responsibilities:
 - ⬜ Analytics and reporting
 - ⬜ Deployment
 
-### 4. Gamification System (Phase 1, 2A & 2B.1 Completed ✅)
+### 4. Gamification System (Phase 1, 2A & 2B.1 Completed ✅; 2B.2 in progress)
 A comprehensive engagement system with real-time feedback and progression tracking:
 
 **Phase 1 - Core Infrastructure (Completed):**
@@ -124,6 +127,8 @@ A comprehensive engagement system with real-time feedback and progression tracki
 - ✅ Leaderboard system (3 new components + page)
 - ✅ Context management (GamificationNotificationContext)
 - ✅ Integration with trade/role completion events
+- ✅ Challenge XP awards route through leaderboard-aware path
+- ✅ Streaks MVP: persisted challenge streaks with milestone XP rewards
 - ✅ User preferences and accessibility features
 - ✅ Performance optimization (<5KB bundle impact)
 - ✅ Test coverage (17/17 Phase 1 tests + Phase 2A component tests + Phase 2B.1 components)
@@ -153,7 +158,7 @@ Provides AI-generated challenges to help users improve skills:
 - ⚠️ UI components (placeholder components exist but need full functionality)
 - ⚠️ Three-tier progression workflow (Solo → Trade → Collaboration)
 - ⚠️ AI-powered matching and recommendations
-- ⚠️ Challenge completion and reward systems
+- ⚠️ Challenge completion and reward systems (core in place; streak increment + leaderboard XP wired)
 
 ## Implementation Timeline
 

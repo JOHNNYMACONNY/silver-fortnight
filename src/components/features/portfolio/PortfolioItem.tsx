@@ -94,7 +94,9 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
 
   const handleDelete = async () => {
     if (!isOwnProfile || loading) return;
-    if (!window.confirm('Are you sure you want to delete this portfolio item? This action cannot be undone.')) return;
+    // Use non-blocking confirm dialog via native confirm for now; will swap to ConfirmDialog where available in parent
+    const confirmed = window.confirm('Are you sure you want to delete this portfolio item? This action cannot be undone.');
+    if (!confirmed) return;
     setLoading(true);
     try {
       await deletePortfolioItem(item.userId, item.id);
@@ -121,10 +123,8 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
       className={`
-        portfolio-item relative backdrop-blur-md bg-card/70
-        border border-border/30 rounded-xl shadow-lg
+        portfolio-item relative glassmorphic
         transition-all duration-300 hover:shadow-xl hover:-translate-y-1
-        hover:bg-card/80
         ${item.featured ? 'ring-2 ring-accent/50 shadow-accent/20' : ''}
         ${item.pinned ? 'bg-secondary/10' : ''}
       `}
@@ -132,19 +132,19 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
       {/* Badges */}
       <div className="absolute top-4 left-4 flex gap-2 z-10">
         {item.featured && (
-          <span className="inline-flex items-center gap-1 bg-gradient-to-r from-accent/10 to-accent/20 text-accent-foreground text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-sm border border-accent/50">
+          <span className="inline-flex items-center gap-1 bg-gradient-to-r from-accent/10 to-accent/20 text-accent-foreground text-xs font-medium px-3 py-1.5 rounded-full border border-accent/50">
             <Star className="w-3 h-3" />
             Featured
           </span>
         )}
         {item.pinned && (
-          <span className="inline-flex items-center gap-1 bg-gradient-to-r from-secondary/10 to-secondary/20 text-secondary-foreground text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-sm border border-secondary/50">
+          <span className="inline-flex items-center gap-1 bg-gradient-to-r from-secondary/10 to-secondary/20 text-secondary-foreground text-xs font-medium px-3 py-1.5 rounded-full border border-secondary/50">
             <Pin className="w-3 h-3" />
             Pinned
           </span>
         )}
         {!item.visible && isOwnProfile && (
-          <span className="inline-flex items-center gap-1 bg-gradient-to-r from-background-secondary/10 to-background-secondary/20 text-text-muted text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-sm border border-border/50">
+          <span className="inline-flex items-center gap-1 bg-gradient-to-r from-background-secondary/10 to-background-secondary/20 text-text-muted text-xs font-medium px-3 py-1.5 rounded-full border border-border/50">
             <EyeOff className="w-3 h-3" />
             Hidden
           </span>
@@ -405,8 +405,8 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
 
       {/* Evidence Modal */}
       {showEvidenceModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div className="bg-card p-6 rounded-lg max-w-lg w-full">
+        <div className="fixed inset-0 bg-black/50 z-overlay flex items-center justify-center">
+          <div className="bg-card p-6 rounded-lg max-w-lg w-full z-modal">
             <h3 className="text-xl font-semibold mb-4 text-text-primary">Evidence</h3>
             <p className="text-text-secondary">Modal content goes here.</p>
             <button onClick={() => setShowEvidenceModal(false)} className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded">

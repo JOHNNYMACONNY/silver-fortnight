@@ -269,7 +269,7 @@ export const NotificationsPage: React.FC = () => {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Page Header */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold text-foreground">Notifications</h1>
           <Button
             onClick={handleMarkAllAsRead}
@@ -308,9 +308,9 @@ export const NotificationsPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Page Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-foreground">Notifications</h1>
         <Button
           onClick={handleMarkAllAsRead}
@@ -321,7 +321,7 @@ export const NotificationsPage: React.FC = () => {
       </div>
       
       {/* Filters */}
-      <div className="flex justify-center border-b border-border mb-6">
+      <div className="glassmorphic rounded-xl px-2 py-2 border-b border-transparent mb-6 flex justify-center">
         {['all', 'unread', 'trade', 'collaboration', 'challenge', 'message', 'system'].map((f) => (
           <button
             key={f}

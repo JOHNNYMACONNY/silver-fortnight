@@ -6,7 +6,7 @@ import { Card, CardHeader, CardContent } from '../../ui/Card';
 import { Skeleton } from '../../ui/skeletons/Skeleton';
 import { EmptyState } from '../../ui/EmptyState';
 import { Avatar } from '../../ui/Avatar';
-import { getProfileImageUrl } from '../../utils/imageUtils';
+import { getProfileImageUrl } from '../../../utils/imageUtils';
 // import { themeClasses } from '../../../utils/themeUtils';
 
 interface ReviewsListProps {
@@ -82,7 +82,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
               <div className="flex justify-between items-start">
                 <div className="flex items-start gap-4">
                   <Avatar
-                    src={getProfileImageUrl(review.reviewerPhotoURL, 32)}
+                    src={getProfileImageUrl(review.reviewerPhotoURL ?? null, 32)}
                     alt={review.reviewerName || 'Anonymous'}
                     fallback={(review.reviewerName || 'A').charAt(0).toUpperCase()}
                   />

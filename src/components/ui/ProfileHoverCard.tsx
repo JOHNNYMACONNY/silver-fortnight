@@ -149,7 +149,7 @@ export const ProfileHoverCard: React.FC<ProfileHoverCardProps> = ({
         {isVisible && (
           <motion.div
             ref={cardRef}
-            className={`fixed z-50 w-72 rounded-lg backdrop-blur-sm bg-card-glass border border-border-secondary p-4 shadow-lg`}
+            className={`fixed z-popover w-72 rounded-lg glassmorphic p-4 shadow-lg`}
             style={{
               top: `${position.top}px`,
               left: `${position.left}px`

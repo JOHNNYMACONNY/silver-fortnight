@@ -32,21 +32,21 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
     switch (severity) {
       case ErrorSeverity.LOW: return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
       case ErrorSeverity.MEDIUM: return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case ErrorSeverity.HIGH: return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+      case ErrorSeverity.HIGH: return 'bg-primary/20 text-primary border-primary/30';
       case ErrorSeverity.CRITICAL: return 'bg-red-500/20 text-red-400 border-red-500/30';
     }
   };
 
   const getIcon = () => {
     if (isOffline) {
-      return <WifiOff className="w-8 h-8 text-orange-400" />;
+      return <WifiOff className="w-8 h-8 text-primary" />;
     }
     
     switch (error.severity) {
       case ErrorSeverity.CRITICAL:
         return <AlertTriangle className="w-8 h-8 text-red-400" />;
       default:
-        return <Bug className="w-8 h-8 text-orange-400" />;
+        return <Bug className="w-8 h-8 text-primary" />;
     }
   };
 
@@ -81,7 +81,7 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
       exit={{ opacity: 0, scale: 0.95 }}
       className={cn("w-full max-w-2xl mx-auto", className)}
     >
-      <Card className="bg-white/10 backdrop-blur-md border-white/20">
+      <Card className="glassmorphic">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4">
             {getIcon()}
@@ -184,7 +184,7 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
 
           {/* Additional actions */}
           {!isOffline && (
-            <div className="flex justify-center gap-2 pt-2 border-t border-white/10">
+            <div className="flex justify-center gap-2 pt-2 border-t border-border">
               <Button
                 onClick={copyErrorDetails}
                 variant="ghost"

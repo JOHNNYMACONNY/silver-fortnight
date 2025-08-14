@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 
-export default {
+const config = {
   safelist: [
     // Grid columns (for dynamic columns/colSpan/rowSpan)
     {
@@ -227,6 +227,14 @@ export default {
         'navbar-glass-dark': 'var(--nav-background-dark)',
         'navbar-glass-border': 'var(--nav-border)',
         'navbar-glass-border-dark': 'var(--nav-border-dark)',
+        // Border token colors
+        'border-default': 'var(--border-default)',
+        'border-strong': 'var(--border-strong)',
+        'border-divider': 'var(--border-divider)',
+        // Semantic border colors
+        'border-success': 'var(--border-success)',
+        'border-warning': 'var(--border-warning)',
+        'border-error': 'var(--border-error)'
       },
       boxShadow: {
         custom: 'var(--color-shadow)',
@@ -361,4 +369,6 @@ export default {
   plugins: [
     require('@tailwindcss/container-queries'),
   ],
-} satisfies Config;
+} satisfies Config & { safelist?: any };
+
+export default config;

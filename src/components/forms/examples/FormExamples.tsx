@@ -36,7 +36,14 @@ const locations: DropdownOption[] = [
  * Example 1: Basic Form with Validation
  */
 export const BasicFormExample: React.FC = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    email: string;
+    password: string;
+    confirmPassword: string;
+    bio: string;
+    category: string;
+    interests: string[];
+  }>({
     email: '',
     password: '',
     confirmPassword: '',
@@ -120,15 +127,10 @@ export const BasicFormExample: React.FC = () => {
             {/* Bio Textarea */}
             <GlassmorphicTextarea
               label="Bio"
-              fieldName="bio"
-              validationRules={[
-                ValidationRules.minLength(20, 'Bio must be at least 20 characters'),
-                ValidationRules.maxLength(500, 'Bio must be no more than 500 characters')
-              ]}
               value={formData.bio}
               onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
               variant="glass"
-              brandAccent="gradient"
+              brandAccent="adaptive"
               placeholder="Tell us about yourself..."
               minRows={3}
               maxRows={6}
@@ -137,15 +139,12 @@ export const BasicFormExample: React.FC = () => {
             />
 
             {/* Category Dropdown */}
+            {/* Note: GlassmorphicDropdown does not support validationRules prop directly */}
             <GlassmorphicDropdown
               label="Primary Interest"
               options={categories}
-              fieldName="category"
-              validationRules={[
-                ValidationRules.required('Please select a category')
-              ]}
               value={formData.category}
-              onChange={(value) => setFormData(prev => ({ ...prev, category: value as string }))}
+              onChange={(value) => setFormData({ ...formData, category: String(value) })}
               variant="glass"
               brandAccent="orange"
               searchable={true}
@@ -156,9 +155,8 @@ export const BasicFormExample: React.FC = () => {
             <GlassmorphicDropdown
               label="Additional Interests"
               options={categories}
-              fieldName="interests"
               value={formData.interests}
-              onChange={(value) => setFormData(prev => ({ ...prev, interests: value as string[] }))}
+               onChange={(value: string | string[]) => setFormData({ ...formData, interests: Array.isArray(value) ? value : [] })}
               variant="glass"
               brandAccent="blue"
               multiSelect={true}
@@ -267,7 +265,7 @@ export const AdvancedValidationExample: React.FC = () => {
               value={formData.age}
               onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
               variant="glass"
-              brandAccent="gradient"
+              brandAccent="adaptive"
               placeholder="Enter your age"
             />
 
@@ -378,7 +376,7 @@ export const MultiStepFormExample: React.FC = () => {
     return (
       <div className="space-y-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Review Your Information</h3>
-        <div className="bg-white/10 dark:bg-gray-800/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 dark:border-gray-700/30">
+        <div className="glassmorphic p-6">
           <dl className="space-y-3">
             <div>
               <dt className="text-sm text-gray-600 dark:text-gray-400">Name:</dt>
@@ -446,7 +444,7 @@ export const MultiStepFormExample: React.FC = () => {
           initialData={{}}
           onSubmit={handleSubmit}
           variant="stepped"
-          brandAccent="gradient"
+          brandAccent="orange"
           showProgressBar={true}
           showStepNumbers={true}
           allowStepNavigation={false}
@@ -509,7 +507,7 @@ export const PrebuiltFormsExample: React.FC = () => {
       </h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-6 shadow-glass">
+        <div className="glassmorphic p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Trade Creation Form
           </h3>
@@ -524,7 +522,7 @@ export const PrebuiltFormsExample: React.FC = () => {
           </button>
         </div>
 
-        <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-6 shadow-glass">
+        <div className="glassmorphic p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Profile Completion Form
           </h3>
@@ -561,7 +559,7 @@ export const FormExamples: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
       {/* Navigation */}
-      <div className="backdrop-blur-lg bg-white/80 dark:bg-neutral-800/80 border-b border-white/20 dark:border-neutral-700/30 sticky top-0 z-10 shadow-glass">
+      <div className="glassmorphic sticky sticky-below-navbar z-sticky">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             TradeYa Form Components Examples
@@ -574,7 +572,7 @@ export const FormExamples: React.FC = () => {
                 className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                   activeExample === example.id
                     ? 'bg-gradient-to-r from-orange-500 to-blue-500 text-white shadow-glass'
-                    : 'backdrop-blur-sm bg-white/50 dark:bg-neutral-800/50 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-neutral-800/70 border border-white/20 dark:border-neutral-700/30'
+                     : 'glassmorphic text-gray-700 dark:text-gray-300'
                 }`}
               >
                 {example.title}

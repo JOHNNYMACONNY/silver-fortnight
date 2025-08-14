@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Home, ShoppingBag, Briefcase, Users, Award, Trophy, MessageSquare, Bell, User, Settings, Shield, LogOut } from '../../utils/icons';
 import { useAuth } from '../../AuthContext';
 import NavItem from './NavItem';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './Sheet';
 import { Button } from './Button';
+import { Avatar } from './Avatar';
 import Logo from './Logo';
 import { cn } from '../../utils/cn';
 
@@ -15,6 +16,10 @@ interface MobileMenuProps {
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
   const { currentUser, logout, isAdmin } = useAuth();
+  const [query, setQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const mainNavItems = [
     { to: '/', label: 'Home', icon: <Home className="mr-2 h-5 w-5" /> },
@@ -38,6 +43,15 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
     userNavItems.push({ to: '/admin', label: 'Admin', icon: <Shield className="mr-2 h-5 w-5" /> });
   }
 
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredMainNavItems = useMemo(() => (
+    normalizedQuery ? mainNavItems.filter(i => i.label.toLowerCase().includes(normalizedQuery)) : mainNavItems
+  ), [normalizedQuery]);
+
+  const filteredUserNavItems = useMemo(() => (
+    normalizedQuery ? userNavItems.filter(i => i.label.toLowerCase().includes(normalizedQuery)) : userNavItems
+  ), [normalizedQuery, userNavItems]);
+
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent 
@@ -45,29 +59,76 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
         className={cn(
           "w-full max-w-xs p-0",
           // Phase 4.1: Enhanced glassmorphism for mobile menu
-          "bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl",
-          "border-r border-gray-200/50 dark:border-gray-700/50",
+          "bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-xl",
+          "border-r border-navbar-glass-border dark:border-navbar-glass-border-dark",
           // Phase 4.1: Enhanced shadow
           "shadow-glass-lg"
         )}
+        hideOverlay={false}
       >
         <SheetHeader className={cn(
-          "p-4 border-b border-gray-200/50 dark:border-gray-700/50",
-          // Phase 4.1: Subtle glassmorphism for header
-          "bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+          "sticky top-0 z-navigation p-4 navbar-gradient-border",
+          // Glassmorphic sticky header
+          "bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md"
         )}>
           <SheetTitle className="flex items-center">
             <Logo size="medium" showText={true} />
           </SheetTitle>
+          <div className="mt-3">
+            {isSearchOpen ? (
+              <div className="relative flex items-center gap-2">
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search menu..."
+                  className={cn(
+                    "w-full rounded-lg px-3 py-2 text-sm",
+                    "bg-navbar-glass/90 dark:bg-navbar-glass-dark/90",
+                    "backdrop-blur-md",
+                    "border border-navbar-glass-border dark:border-navbar-glass-border-dark",
+                    "placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  )}
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setIsSearchOpen(false);
+                    setQuery('');
+                  }}
+                  className="whitespace-nowrap"
+                >
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-muted-foreground",
+                  "bg-navbar-glass/80 dark:bg-navbar-glass-dark/80",
+                  "border border-navbar-glass-border dark:border-navbar-glass-border-dark"
+                )}
+                onClick={() => {
+                  setIsSearchOpen(true);
+                  setTimeout(() => searchInputRef.current?.focus(), 50);
+                }}
+              >
+                Search
+              </Button>
+            )}
+          </div>
         </SheetHeader>
         
-        <div className="p-4 overflow-y-auto">
+        <div className="p-4 overflow-y-auto mobile-safe-area">
           {/* Main Navigation Section */}
           <div className="space-y-1">
             <h3 className="px-2 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Navigation
             </h3>
-            {mainNavItems.map((item, index) => (
+            {filteredMainNavItems.map((item, index) => (
               <NavItem
                 key={index}
                 to={item.to}
@@ -87,50 +148,52 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
 
           {/* User Account Section */}
           {currentUser ? (
-            <div className="mt-6 pt-4 border-t border-gray-200/50 dark:border-gray-700/50 space-y-1">
-              <h3 className="px-2 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Account
-              </h3>
-              {userNavItems.map((item, index) => (
-                <NavItem
-                  key={index}
-                  to={item.to}
-                  label={item.label}
-                  icon={item.icon}
-                  variant="mobile"
-                  onClick={onClose}
-                  className={cn(
-                    // Phase 4.1: Enhanced mobile nav item styling
-                    "transition-all duration-200 hover:scale-[1.02]",
-                    "hover:bg-gray-50/80 dark:hover:bg-gray-800/80",
-                    "active:scale-[0.98] rounded-lg"
-                  )}
-                />
-              ))}
-              
-              {/* Logout Button */}
-              <Button
-                variant="ghost"
+            <div className="mt-6 pt-4 border-t border-divider space-y-1">
+              <button
+                type="button"
+                onClick={() => setIsAccountOpen((v) => !v)}
                 className={cn(
-                  "w-full justify-start mt-2",
-                  // Phase 4.1: Enhanced logout button styling
-                  "transition-all duration-200 hover:scale-[1.02]",
-                  "hover:bg-red-50/80 dark:hover:bg-red-900/20",
-                  "hover:text-red-600 dark:hover:text-red-400",
-                  "active:scale-[0.98] rounded-lg"
+                  "w-full px-2 py-2 rounded-lg flex items-center gap-3",
+                  "hover:bg-gray-50/80 dark:hover:bg-gray-800/80 transition-colors"
                 )}
-                onClick={() => {
-                  logout();
-                  onClose();
-                }}
               >
-                <LogOut className="mr-2 h-5 w-5" />
-                Log Out
-              </Button>
+                <Avatar
+                  alt={currentUser.displayName ?? 'User'}
+                  fallback={currentUser.displayName?.charAt(0)?.toUpperCase() ?? 'U'}
+                  className="h-7 w-7"
+                />
+                <div className="flex-1 text-left">
+                  <div className="text-sm font-medium text-foreground">Account</div>
+                  {currentUser.email && (
+                    <div className="text-xs text-muted-foreground truncate">{currentUser.email}</div>
+                  )}
+                </div>
+                <span className="text-xs text-muted-foreground">{isAccountOpen ? 'Hide' : 'Show'}</span>
+              </button>
+
+              {isAccountOpen && (
+                <div className="space-y-1">
+                  {filteredUserNavItems.map((item, index) => (
+                    <NavItem
+                      key={index}
+                      to={item.to}
+                      label={item.label}
+                      icon={item.icon}
+                      variant="mobile"
+                      onClick={onClose}
+                      className={cn(
+                        "transition-all duration-200 hover:scale-[1.02]",
+                        "hover:bg-gray-50/80 dark:hover:bg-gray-800/80",
+                        "active:scale-[0.98] rounded-lg"
+                      )}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             /* Authentication Section */
-            <div className="mt-6 pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
+            <div className="mt-6 pt-4 border-t border-divider">
               <div className="flex flex-col space-y-2">
                 <Button 
                   asChild 
@@ -161,6 +224,34 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             </div>
           )}
         </div>
+
+        {/* Footer logout row */}
+        {currentUser && (
+          <div className={cn(
+            "sticky bottom-0 p-4 border-t",
+            "bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md",
+            "border-navbar-glass-border dark:border-navbar-glass-border-dark",
+            "mobile-safe-area"
+          )}>
+            <Button
+              variant="ghost"
+              className={cn(
+                "w-full justify-start",
+                "transition-all duration-200 hover:scale-[1.02]",
+                "hover:bg-red-50/80 dark:hover:bg-red-900/20",
+                "hover:text-red-600 dark:hover:text-red-400",
+                "active:scale-[0.98] rounded-lg"
+              )}
+              onClick={() => {
+                logout();
+                onClose();
+              }}
+            >
+              <LogOut className="mr-2 h-5 w-5" />
+              Log Out
+            </Button>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );

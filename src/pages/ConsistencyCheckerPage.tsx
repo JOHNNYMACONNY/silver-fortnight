@@ -103,7 +103,7 @@ const ConsistencyCheckerPage: React.FC = () => {
               Total Issues: {report.summary.totalIssues} | 
               Critical: {report.summary.criticalIssues} | 
               High: {report.summary.highPriorityIssues}
-              {report.summary.falsePositives !== undefined && ` | False Positives: ${report.summary.falsePositives}`}
+              {(report.summary as any).falsePositives !== undefined && ` | False Positives: ${(report.summary as any).falsePositives}`}
             </div>
           </div>
           

@@ -107,7 +107,7 @@ const FormSystemDemoPage: React.FC = () => {
                 <div className={`
                   w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
                   ${step <= currentStep 
-                    ? 'bg-orange-500 text-white' 
+                    ? 'bg-primary text-primary-foreground' 
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
                   }
                 `}>
@@ -116,7 +116,7 @@ const FormSystemDemoPage: React.FC = () => {
                 {step < 3 && (
                   <div className={`
                     w-12 h-0.5 mx-2
-                    ${step < currentStep ? 'bg-orange-500' : 'bg-gray-200 dark:bg-gray-700'}
+                    ${step < currentStep ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'}
                   `} />
                 )}
               </div>
@@ -277,28 +277,28 @@ const FormSystemDemoPage: React.FC = () => {
         <Card variant="glass" className="p-6">
           <h3 className="text-xl font-semibold mb-4">Validation States</h3>
           <div className="space-y-4">
-            <GlassmorphicInput
+              <GlassmorphicInput
               label="Success State"
               placeholder="This input is valid"
               validationState="success"
               success="Input is valid!"
               variant="glass"
-              brandAccent="green"
+                brandAccent="orange"
             />
-            <GlassmorphicInput
+              <GlassmorphicInput
               label="Error State"
               placeholder="This input has an error"
               validationState="error"
               error="This field is required"
               variant="glass"
-              brandAccent="red"
+                brandAccent="blue"
             />
-            <GlassmorphicInput
+              <GlassmorphicInput
               label="Warning State"
               placeholder="This input has a warning"
               validationState="warning"
               variant="glass"
-              brandAccent="yellow"
+                brandAccent="purple"
             />
             <GlassmorphicInput
               label="Password with Toggle"
@@ -317,7 +317,7 @@ const FormSystemDemoPage: React.FC = () => {
         <h3 className="text-2xl font-semibold mb-6">Brand Integration Demo</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-4">
-            <h4 className="text-lg font-medium text-orange-600">Orange Brand</h4>
+            <h4 className="text-lg font-medium text-primary">Orange Brand</h4>
             <GlassmorphicInput
               label="Orange Input"
               placeholder="Orange brand styling"

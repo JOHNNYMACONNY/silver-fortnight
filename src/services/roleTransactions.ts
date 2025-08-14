@@ -104,9 +104,9 @@ export class RoleTransactionHandler {
   }
 
   private async performRoleUpdate({ roleId, updates }: RoleUpdate): Promise<void> {
-    const roleRef = doc(db(), 'roles', roleId);
+    const roleRef = doc(getSyncFirebaseDb(), 'roles', roleId);
 
-    await runTransaction(db(), async (transaction) => {
+    await runTransaction(getSyncFirebaseDb(), async (transaction) => {
       const roleDoc = await transaction.get(roleRef);
       
       if (!roleDoc.exists()) {
@@ -143,7 +143,7 @@ export class RoleTransactionHandler {
   }
 
   private async getRoleState(roleId: string): Promise<Record<string, any> | undefined> {
-    const roleRef = doc(db(), 'roles', roleId);
+    const roleRef = doc(getSyncFirebaseDb(), 'roles', roleId);
     const roleDoc = await getDoc(roleRef);
     
     if (!roleDoc.exists()) {
@@ -154,9 +154,9 @@ export class RoleTransactionHandler {
   }
 
   private async restoreRoleState(roleId: string, state: Record<string, any>): Promise<void> {
-    const roleRef = doc(db(), 'roles', roleId);
+    const roleRef = doc(getSyncFirebaseDb(), 'roles', roleId);
     
-    await runTransaction(db(), async (transaction) => {
+    await runTransaction(getSyncFirebaseDb(), async (transaction) => {
       const roleDoc = await transaction.get(roleRef);
       
       if (!roleDoc.exists()) {

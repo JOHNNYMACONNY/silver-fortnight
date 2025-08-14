@@ -13,7 +13,7 @@ export const getTradeStatusClasses = (status: string): string => {
     case 'in-progress':
       return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300';
     case 'pending_evidence':
-      return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300';
+      return 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary';
     case 'pending_confirmation':
       return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300';
     case 'completed':
@@ -21,7 +21,7 @@ export const getTradeStatusClasses = (status: string): string => {
     case 'cancelled':
       return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
     case 'disputed':
-      return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300';
+      return 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary';
     default:
       return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
   }

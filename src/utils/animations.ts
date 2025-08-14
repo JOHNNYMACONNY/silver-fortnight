@@ -1,3 +1,5 @@
+import type { Variants } from 'framer-motion';
+
 /**
  * Animation Utilities
  *
@@ -212,7 +214,6 @@ export const MOTION_VARIANTS = {
       opacity: 1,
       y: 0,
       transition: {
-        type: "spring",
         stiffness: 400,
         damping: 17
       }
@@ -233,7 +234,6 @@ export const MOTION_VARIANTS = {
       scale: 1,
       y: 0,
       transition: {
-        type: "spring",
         stiffness: 300,
         damping: 25
       }
@@ -266,7 +266,7 @@ export const MOTION_VARIANTS = {
       }
     }
   }
-};
+} as const satisfies Record<string, Variants>;
 
 // Helper function to animate an element using the Web Animations API
 export const animateElement = (

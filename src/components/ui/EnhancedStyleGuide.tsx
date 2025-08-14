@@ -59,10 +59,10 @@ export const EnhancedStyleGuide: React.FC = () => {
           
           {auditResult && (
             <div className="flex items-center gap-2">
-              <Badge variant={auditResult.summary.totalIssues === 0 ? 'success' : 'warning'}>
+              <Badge className={auditResult.summary.totalIssues === 0 ? componentVariants.badge.success : componentVariants.badge.warning}>
                 {auditResult.summary.totalIssues} issues found
               </Badge>
-              <Badge variant="brand">
+              <Badge className={componentVariants.badge.brand}>
                 {auditResult.summary.autoFixableCount} auto-fixable
               </Badge>
             </div>
@@ -82,7 +82,7 @@ export const EnhancedStyleGuide: React.FC = () => {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div>
-                <div className={classPatterns.heading2 + ' text-orange-500'}>
+                <div className={classPatterns.heading2 + ' text-primary'}>
                   {auditResult.summary.totalIssues}
                 </div>
                 <div className={classPatterns.bodySmall}>Total Issues</div>
@@ -110,7 +110,7 @@ export const EnhancedStyleGuide: React.FC = () => {
         )}
       </motion.div>
 
-      <Tabs defaultValue="colors" className="space-y-8">
+      <Tabs value="colors" onValueChange={() => {}} className="space-y-8">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="colors" className="flex items-center gap-2">
             <Palette className="w-4 h-4" />
@@ -153,8 +153,8 @@ export const EnhancedStyleGuide: React.FC = () => {
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <div 
-                        className="w-20 h-20 rounded-xl mb-3 mx-auto shadow-lg border-2 border-white/20"
+                       <div 
+                        className="w-20 h-20 rounded-xl mb-3 mx-auto shadow-lg border-2 border-border"
                         style={{ backgroundColor: color }}
                         title={`${name}: ${color}`}
                       />
@@ -294,7 +294,7 @@ export const EnhancedStyleGuide: React.FC = () => {
                       <code className={classPatterns.caption + ' font-mono'}>{name}</code>
                     </div>
                     <div 
-                      className="bg-orange-500 rounded"
+                      className="bg-primary rounded"
                       style={{ width: value, height: '16px' }}
                     />
                     <div className={classPatterns.bodySmall + ' text-muted-foreground'}>

@@ -15,7 +15,8 @@ import {
 } from 'firebase/firestore';
 import { ServiceResponse } from '../types/services';
 import { SkillLevel, UserSkill } from '../types/gamification';
-import { awardXP, XPSource } from './gamification';
+import { awardXP } from './gamification';
+import { XPSource } from '../types/gamification';
 
 const db = getSyncFirebaseDb;
 
@@ -130,7 +131,7 @@ export const createSkillAssessment = async (
       await awardXP(
         assessment.userId,
         25,
-        XPSource.SKILL_DEVELOPMENT,
+        XPSource.ACHIEVEMENT_UNLOCK,
         `self-assessment-${assessmentId}`,
         `Self-assessed ${assessment.skillName} skill`
       );
@@ -169,11 +170,7 @@ export const getUserSkillAssessments = async (
     }
 
     const querySnapshot = await getDocs(q);
-    const assessments: SkillAssessment[] = [];
-
-    querySnapshot.forEach((doc) => {
-      assessments.push({ id: doc.id, ...doc.data() } as SkillAssessment);
-    });
+    const assessments: SkillAssessment[] = querySnapshot.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) } as SkillAssessment));
 
     return {
       success: true,

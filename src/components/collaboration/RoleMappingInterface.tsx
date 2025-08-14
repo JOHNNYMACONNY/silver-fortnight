@@ -215,15 +215,12 @@ export const RoleMappingInterface: React.FC<RoleMappingInterfaceProps> = ({
         className={cn(
           "transition-all duration-300 cursor-pointer",
           isSelected 
-            ? "bg-white/20 backdrop-blur-md border-white/40 ring-2 ring-blue-500/50" 
-            : "bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15"
+            ? "glassmorphic ring-2 ring-blue-500/50" 
+            : "glassmorphic"
         )}
       >
-        <CardHeader 
-          className="pb-3"
-          onClick={() => setExpandedRole(isExpanded ? null : roleType)}
-        >
-          <div className="flex items-center justify-between">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between cursor-pointer" onClick={() => setExpandedRole(isExpanded ? null : roleType)}>
             <div className="flex items-center space-x-3">
               <div className={cn(
                 "w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-r",
@@ -420,7 +417,7 @@ export const RoleMappingInterface: React.FC<RoleMappingInterfaceProps> = ({
 
       {/* Selected Roles Summary */}
       {selectedRoles.length > 0 && (
-        <Card className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-md border-blue-500/30">
+        <Card className="glassmorphic">
           <CardHeader>
             <CardTitle className="text-white flex items-center space-x-2">
               <Users className="w-5 h-5" />

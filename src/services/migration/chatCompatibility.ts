@@ -150,8 +150,9 @@ export class ChatCompatibilityService {
         compatibilityLayerUsed: true
       } as ChatConversation;
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error('Error normalizing conversation data:', error);
-      throw new Error(`Failed to normalize conversation data: ${error.message}`);
+      throw new Error(`Failed to normalize conversation data: ${message}`);
     }
   }
 
@@ -181,8 +182,9 @@ export class ChatCompatibilityService {
         editedAt: data.editedAt
       } as ChatMessage;
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error('Error normalizing message data:', error);
-      throw new Error(`Failed to normalize message data: ${error.message}`);
+      throw new Error(`Failed to normalize message data: ${message}`);
     }
   }
 
@@ -207,11 +209,12 @@ export class ChatCompatibilityService {
 
       return ChatCompatibilityService.normalizeConversationData({
         id: docSnap.id,
-        ...docSnap.data()
+        ...(docSnap.data() as Record<string, unknown>)
       });
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error(`Error fetching conversation ${conversationId}:`, error);
-      throw new Error(`Failed to fetch conversation: ${error.message}`);
+      throw new Error(`Failed to fetch conversation: ${message}`);
     }
   }
 
@@ -249,7 +252,7 @@ export class ChatCompatibilityService {
           try {
             return ChatCompatibilityService.normalizeConversationData({
               id: doc.id,
-              ...doc.data()
+              ...(doc.data() as Record<string, unknown>)
             });
           } catch (normalizeError) {
             console.error(`Error normalizing conversation ${doc.id}:`, normalizeError);
@@ -264,7 +267,8 @@ export class ChatCompatibilityService {
           }
         });
       } catch (newFormatError) {
-        console.log('New format query failed, trying legacy format:', newFormatError.message);
+        const message = newFormatError instanceof Error ? newFormatError.message : String(newFormatError);
+        console.log('New format query failed, trying legacy format:', message);
       }
       
       // Try legacy format as fallback if we don't have enough results
@@ -282,7 +286,7 @@ export class ChatCompatibilityService {
           const legacyConversations = legacySnapshot.docs
             .map(doc => {
               try {
-                const data = doc.data();
+                const data = doc.data() as Record<string, unknown>;
                 // Check if user is in legacy participants format
                 if (data.participants && Array.isArray(data.participants)) {
                   const isParticipant = data.participants.some((p: any) => 
@@ -292,7 +296,7 @@ export class ChatCompatibilityService {
                   if (isParticipant) {
                     return ChatCompatibilityService.normalizeConversationData({
                       id: doc.id,
-                      ...data
+                      ...(data as Record<string, unknown>)
                     });
                   }
                 }
@@ -311,7 +315,8 @@ export class ChatCompatibilityService {
             }
           });
         } catch (legacyError) {
-          console.log('Legacy format query also failed:', legacyError.message);
+          const message = legacyError instanceof Error ? legacyError.message : String(legacyError);
+          console.log('Legacy format query also failed:', message);
         }
       }
       
@@ -324,8 +329,9 @@ export class ChatCompatibilityService {
       
       return conversations.slice(0, limitCount);
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error(`Error getting conversations for user ${userId}:`, error);
-      throw new Error(`Failed to get user conversations: ${error.message}`);
+      throw new Error(`Failed to get user conversations: ${message}`);
     }
   }
 
@@ -362,7 +368,8 @@ export class ChatCompatibilityService {
         const beforeDocRef = doc(this.db, 'conversations', conversationId, 'messages', beforeMessageId);
         const beforeDoc = await getDoc(beforeDocRef);
         if (beforeDoc.exists()) {
-          q = query(q, where('createdAt', '<', beforeDoc.data().createdAt));
+          const beforeData = beforeDoc.data() as Record<string, any>;
+          q = query(q, where('createdAt', '<', beforeData.createdAt));
         }
       }
       
@@ -370,11 +377,12 @@ export class ChatCompatibilityService {
       
       const messages = querySnapshot.docs.map(doc => {
         try {
-          return ChatCompatibilityService.normalizeMessageData({
-            id: doc.id,
-            conversationId,
-            ...doc.data()
-          });
+            const raw = doc.data() as Record<string, unknown>;
+            return ChatCompatibilityService.normalizeMessageData({
+              id: doc.id,
+              conversationId,
+              ...raw
+            });
         } catch (normalizeError) {
           console.error(`Error normalizing message ${doc.id}:`, normalizeError);
           // Return a basic message as fallback
@@ -392,8 +400,9 @@ export class ChatCompatibilityService {
       // Messages come in desc order, reverse to get chronological order
       return messages.reverse();
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error(`Error getting messages for conversation ${conversationId}:`, error);
-      throw new Error(`Failed to get messages: ${error.message}`);
+      throw new Error(`Failed to get messages: ${message}`);
     }
   }
 
@@ -436,8 +445,9 @@ export class ChatCompatibilityService {
         return false;
       });
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error(`Error searching conversations for user ${userId}:`, error);
-      throw new Error(`Failed to search conversations: ${error.message}`);
+      throw new Error(`Failed to search conversations: ${message}`);
     }
   }
 
@@ -471,22 +481,23 @@ export class ChatCompatibilityService {
         try {
           const conversation = ChatCompatibilityService.normalizeConversationData({
             id: doc.id,
-            ...doc.data()
+            ...(doc.data() as Record<string, unknown>)
           });
           
           // Check if both users are participants
           if (conversation.participantIds.includes(userId2)) {
             return conversation;
           }
-        } catch (normalizeError) {
-          console.error(`Error normalizing conversation ${doc.id}:`, normalizeError);
+      } catch (normalizeError) {
+        console.error(`Error normalizing conversation ${doc.id}:`, normalizeError);
         }
       }
       
       return null;
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error(`Error finding direct conversation between ${userId1} and ${userId2}:`, error);
-      throw new Error(`Failed to find direct conversation: ${error.message}`);
+      throw new Error(`Failed to find direct conversation: ${message}`);
     }
   }
 

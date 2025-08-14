@@ -105,14 +105,14 @@ describe('GlassmorphicDropdown', () => {
       render(<GlassmorphicDropdown {...defaultProps} />);
       
       const trigger = screen.getByRole('combobox');
-      expect(trigger).toHaveClass('backdrop-blur-sm');
+      expect(trigger).toHaveClass('glassmorphic');
     });
 
     it('applies elevated-glass variant styles', () => {
       render(<GlassmorphicDropdown {...defaultProps} variant="elevated-glass" />);
       
       const trigger = screen.getByRole('combobox');
-      expect(trigger).toHaveClass('backdrop-blur-md');
+      expect(trigger).toHaveClass('glassmorphic');
       expect(trigger).toHaveClass('shadow-lg');
     });
 
@@ -120,7 +120,7 @@ describe('GlassmorphicDropdown', () => {
       render(<GlassmorphicDropdown {...defaultProps} variant="modal-glass" />);
       
       const trigger = screen.getByRole('combobox');
-      expect(trigger).toHaveClass('backdrop-blur-lg');
+      expect(trigger).toHaveClass('glassmorphic');
       expect(trigger).toHaveClass('shadow-xl');
     });
   });
@@ -540,7 +540,7 @@ describe('GlassmorphicDropdown', () => {
       const trigger = screen.getByRole('combobox');
       await userEvent.click(trigger);
       
-      expect(trigger).toHaveClass('focus:ring-orange-500/30');
+      expect(trigger).toHaveClass('focus:ring-primary-500/30');
     });
   });
 });

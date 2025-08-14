@@ -5,9 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Progress } from "@/components/ui/Progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
 import { Loader2, X, CheckCircle, AlertCircle } from "lucide-react";
-import { useUploadFile } from "react-firebase-hooks/storage";
-import { ref } from "firebase/storage";
-import { storage } from "@/services/firestore";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getSyncFirebaseStorage } from "@/firebase-config";
 
 interface ImageUploaderProps {
   onUploadSuccess: (url: string) => void;
@@ -23,7 +22,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
 
-  const [uploadFile] = useUploadFile();
+  const storage = getSyncFirebaseStorage();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -44,18 +43,15 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
     try {
       const storageRef = ref(storage, `images/${userId}/${selectedFile.name}`);
-      const result = await uploadFile(storageRef, selectedFile, {
-        onProgress: (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setProgress(progress);
-        },
+      const task = uploadBytesResumable(storageRef, selectedFile);
+      task.on("state_changed", (snapshot) => {
+        const pct = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setProgress(pct);
       });
-
-      if (result) {
-        const downloadURL = await result.ref.getDownloadURL();
-        onUploadSuccess(downloadURL);
-        setSelectedFile(null);
-      }
+      await task;
+      const downloadURL = await getDownloadURL(storageRef);
+      onUploadSuccess(downloadURL);
+      setSelectedFile(null);
     } catch (err: any) {
       setError(err.message);
     } finally {

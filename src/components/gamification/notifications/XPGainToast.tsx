@@ -52,12 +52,12 @@ export const XPGainToast: React.FC<XPGainToastProps> = ({
         layout={!isReducedMotion}
       >
         {/* Gradient border effect */}
-        <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-orange-500/20 via-purple-500/20 to-blue-500/20 -z-10" />
+        <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary/20 via-purple-500/20 to-blue-500/20 -z-10" />
         
         {/* Source icon */}
         <div className={cn(
           'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center',
-          'bg-gradient-to-br from-orange-500 to-purple-600',
+          'bg-gradient-to-br from-primary to-purple-600',
           'text-white text-lg font-bold shadow-md'
         )}>
           {sourceConfig.icon}
@@ -68,7 +68,7 @@ export const XPGainToast: React.FC<XPGainToastProps> = ({
           <div className="flex items-center space-x-2">
             <span className={cn(
               'text-lg font-bold',
-              'bg-gradient-to-r from-orange-500 to-purple-600 bg-clip-text text-transparent'
+              'bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent'
             )}>
               +{notification.amount} XP
             </span>
@@ -76,7 +76,7 @@ export const XPGainToast: React.FC<XPGainToastProps> = ({
             {/* XP gain animation effect */}
             {!isReducedMotion && (
               <motion.div
-                className="text-orange-500"
+                className="text-primary"
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
@@ -126,7 +126,7 @@ export const XPGainToast: React.FC<XPGainToastProps> = ({
         {/* Progress bar for auto-dismiss */}
         {!isReducedMotion && (
           <motion.div
-            className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-orange-500 to-purple-600 rounded-b-lg"
+            className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-primary to-purple-600 rounded-b-lg"
             initial={{ width: '100%' }}
             animate={{ width: '0%' }}
             transition={{ duration: 3, ease: 'linear' }}

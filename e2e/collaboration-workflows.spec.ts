@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/auth';
 
 test.describe('Collaboration Workflows E2E Tests', () => {
   test.beforeEach(async ({ page }) => {

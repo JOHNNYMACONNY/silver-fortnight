@@ -23,7 +23,7 @@ const adaptNotification = (notification: Partial<Notification>): Partial<Notific
   if (!notification) return {};
 
   // Map notification type from service format to firestore format
-  let firestoreType: Notification['type'] = 'system'; // Default to system type
+  let firestoreType: Notification['type'] = 'system';
 
   // Convert the type - ensure both old and new type values are handled
   switch (notification.type) {
@@ -32,9 +32,7 @@ const adaptNotification = (notification: Partial<Notification>): Partial<Notific
     case 'trade_completed': // Firestore type
       firestoreType = 'trade'; // Map to unified 'trade' type
       break;
-    case 'project':
-      firestoreType = 'project';
-      break;
+    // no 'project' type in unified service type
     case 'challenge':
       firestoreType = 'challenge';
       break;
@@ -145,13 +143,16 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [currentUser]);
 
   // Helper function to map firestore notification type to service notification type
-  const mapFirestoreTypeToServiceType = (firestoreType: string): 'trade' | 'project' | 'challenge' | 'message' | 'system' => {
+  const mapFirestoreTypeToServiceType = (firestoreType: string): ServiceNotification['type'] => {
     switch (firestoreType) {
       case 'trade_interest':
+        return 'trade_interest';
       case 'trade_completed':
-        return 'trade';
+        return 'trade_completed';
+      case 'collaboration':
+        return 'collaboration';
       case 'review':
-        return 'system';
+        return 'review';
       case 'message':
         return 'message';
       default:

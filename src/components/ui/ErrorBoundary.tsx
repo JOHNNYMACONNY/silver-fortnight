@@ -59,7 +59,7 @@ const RouteErrorBoundary: React.FC<Props> = (props) => {
           </button>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 text-sm text-white bg-orange-500 rounded hover:bg-orange-600"
+        className="px-4 py-2 text-sm text-primary-foreground bg-primary rounded hover:bg-primary/80"
           >
             Try Again
           </button>

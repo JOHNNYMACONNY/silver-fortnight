@@ -48,44 +48,28 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
   } = useMobileOptimization();
   // Form variant styles
   const formVariants = {
-    standard: `
-      backdrop-blur-md bg-white/70 dark:bg-neutral-800/60
-      border border-white/20 dark:border-neutral-700/30
-      rounded-2xl p-6
-    `,
-    elevated: `
-      backdrop-blur-lg bg-white/80 dark:bg-neutral-800/70
-      border-2 border-white/30 dark:border-neutral-700/40
-      rounded-3xl p-8 shadow-2xl
-    `,
-    modal: `
-      backdrop-blur-xl bg-white/90 dark:bg-neutral-800/80
-      border border-white/40 dark:border-neutral-700/50
-      rounded-2xl p-8 shadow-beautiful
-    `,
-    stepped: `
-      backdrop-blur-md bg-white/75 dark:bg-neutral-800/65
-      border-l-4 border-gradient-to-b from-orange-500 to-blue-500
-      rounded-r-2xl pl-8 pr-6 py-6
-    `
+    standard: `glassmorphic rounded-2xl p-6`,
+    elevated: `glassmorphic rounded-3xl p-8 shadow-2xl`,
+    modal: `glassmorphic rounded-2xl p-8 shadow-beautiful`,
+    stepped: `glassmorphic rounded-r-2xl pl-8 pr-6 py-6 border-l-4 border-gradient-to-b from-orange-500 to-blue-500`
   };
 
   // Blur intensity classes
   const blurClasses = {
-    sm: 'backdrop-blur-sm',
-    md: 'backdrop-blur-md', 
-    lg: 'backdrop-blur-lg',
-    xl: 'backdrop-blur-xl'
+    sm: '',
+    md: '', 
+    lg: '',
+    xl: ''
   };
 
   // Brand accent classes
   const brandAccentClasses = {
-    orange: 'ring-1 ring-orange-500/20 focus-within:ring-orange-500/40 focus-within:ring-2',
-    blue: 'ring-1 ring-blue-500/20 focus-within:ring-blue-500/40 focus-within:ring-2',
-    purple: 'ring-1 ring-purple-500/20 focus-within:ring-purple-500/40 focus-within:ring-2',
+    orange: 'ring-1 ring-ring focus-within:ring-ring focus-within:ring-2',
+    blue: 'ring-1 ring-ring focus-within:ring-ring focus-within:ring-2',
+    purple: 'ring-1 ring-ring focus-within:ring-ring focus-within:ring-2',
     gradient: `
       ring-1 ring-gradient-to-r from-orange-500/20 via-blue-500/20 to-purple-500/20
-      focus-within:ring-2 focus-within:from-orange-500/40 focus-within:via-blue-500/40 focus-within:to-purple-500/40
+      focus-within:ring-2 focus-within:ring-ring
     `
   };
 
@@ -98,12 +82,9 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
 
   // Border classes
   const borderClasses = {
-    'glass-borders': 'border border-white/20 dark:border-neutral-700/30',
-    'dual-borders': 'border-2 border-white/30 dark:border-neutral-700/40',
-    'gradient-borders': `
-      border border-transparent bg-gradient-to-r from-orange-500/20 via-blue-500/20 to-purple-500/20
-      bg-clip-border
-    `
+    'glass-borders': 'border-border',
+    'dual-borders': 'border-2 border-border',
+    'gradient-borders': `border border-transparent bg-gradient-to-r from-orange-500/20 via-blue-500/20 to-purple-500/20 bg-clip-border`
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -113,26 +94,10 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
 
   // Mobile-optimized form variants
   const mobileFormVariants = {
-    standard: `
-      backdrop-blur-sm bg-white/80 dark:bg-neutral-800/70
-      border border-white/30 dark:border-neutral-700/40
-      rounded-xl p-4
-    `,
-    elevated: `
-      backdrop-blur-md bg-white/85 dark:bg-neutral-800/75
-      border-2 border-white/40 dark:border-neutral-700/50
-      rounded-2xl p-6 shadow-xl
-    `,
-    modal: `
-      backdrop-blur-lg bg-white/90 dark:bg-neutral-800/80
-      border border-white/50 dark:border-neutral-700/60
-      rounded-2xl p-6 shadow-2xl
-    `,
-    stepped: `
-      backdrop-blur-md bg-white/75 dark:bg-neutral-800/65
-      border border-white/25 dark:border-neutral-700/35
-      rounded-xl p-4
-    `,
+    standard: `glassmorphic rounded-xl p-4`,
+    elevated: `glassmorphic rounded-2xl p-6 shadow-xl`,
+    modal: `glassmorphic rounded-2xl p-6 shadow-2xl`,
+    stepped: `glassmorphic rounded-xl p-4`,
   };
 
   return (
@@ -149,7 +114,7 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
         // Variant-specific styles - use mobile variants on mobile
         isMobile ? mobileFormVariants[variant] : formVariants[variant],
 
-        // Blur intensity (only for standard variant, others have their own blur)
+        // Blur intensity (now handled by glassmorphic utility)
         variant === 'standard' && !isMobile && blurClasses[blurIntensity],
 
         // Brand accent
@@ -201,19 +166,19 @@ export const GlassmorphicFormSection: React.FC<GlassmorphicFormSectionProps> = (
   variant = 'default',
 }) => {
   const sectionVariants = {
-    default: 'bg-white/5 dark:bg-neutral-900/5 border border-white/10 dark:border-neutral-700/20',
-    highlighted: 'bg-white/10 dark:bg-neutral-900/10 border border-white/20 dark:border-neutral-700/30',
-    subtle: 'bg-white/2 dark:bg-neutral-900/2 border border-white/5 dark:border-neutral-700/10'
+    default: 'glassmorphic',
+    highlighted: 'glassmorphic border-strong',
+    subtle: 'glassmorphic border-standard'
   };
 
   return (
     <div className={cn(
-      'rounded-xl p-6 backdrop-blur-sm transition-all duration-300',
+      'rounded-xl p-6 transition-all duration-300',
       sectionVariants[variant],
       className
     )}>
       {(title || description) && (
-        <div className="mb-6 pb-4 border-b border-white/10 dark:border-neutral-700/20">
+        <div className="mb-6 pb-4 border-b border-border">
           {title && (
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               {title}
@@ -257,15 +222,14 @@ export const GlassmorphicFormActions: React.FC<GlassmorphicFormActionsProps> = (
   };
 
   const variantClasses = {
-    default: 'pt-6 border-t border-white/10 dark:border-neutral-700/20',
+    default: 'pt-6 border-t border-border',
     elevated: `
-      pt-6 mt-6 border-t border-white/20 dark:border-neutral-700/30
-      bg-white/5 dark:bg-neutral-900/5 -mx-6 -mb-6 px-6 pb-6 rounded-b-2xl
+      pt-6 mt-6 border-t border-border
+      glassmorphic -mx-6 -mb-6 px-6 pb-6 rounded-b-2xl
     `,
     floating: `
       pt-4 -mx-6 -mb-6 px-6 pb-6
-      bg-gradient-to-t from-white/10 to-transparent dark:from-neutral-900/10
-      backdrop-blur-sm rounded-b-2xl
+      glassmorphic rounded-b-2xl
     `
   };
 

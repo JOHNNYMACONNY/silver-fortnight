@@ -1,6 +1,6 @@
 # Actual Implementation Status - TradeYa
 
-**Last Updated**: December 2024
+**Last Updated**: August 2025
 **Audit Source**: Codebase analysis and documentation review
 
 ## ✅ FULLY IMPLEMENTED & OPERATIONAL
@@ -23,11 +23,14 @@
 - **Notifications**: Full notification system integration
 - **User Experience**: Complete trade workflow
 
-### 4. Collaboration System (80% Complete)
+### 4. Collaboration System (87% Complete)
 - **Complex Backend**: Full role management and workflows
 - **Role Assignment**: Complete application and completion system
 - **Gamification Integration**: XP rewards for role completion
+- **Server-side Skills Filtering**: ✅ Implemented via `skillsIndex` with composite indexes
+- **Backfill**: ✅ `scripts/backfill-collab-skills-index.ts` available and executed
 - **Missing**: Simplified UI interface (placeholder only)
+ - **✅ Tests Added**: Role completion (approve/reject, permission checks), role abandonment/reopen, missing-role edge cases
 
 ### 5. Performance Features (100% Complete)
 - **RUM Service**: Production-grade performance monitoring
@@ -39,17 +42,18 @@
 - **Chat/Messages**: ✅ Fully real-time with onSnapshot
 - **Notifications**: ✅ Fully real-time
 - **Trades**: ❌ One-time fetch (should be real-time)
-- **Collaborations**: ❌ One-time fetch (should be real-time)
+- **Collaborations**: ⚠️ Hybrid — realtime subscription for latest items; server-side filtered search via `getAllCollaborations`
 - **Leaderboards**: ❌ Polling (should be real-time)
 
 ## ⚠️ PARTIALLY IMPLEMENTED
 
-### 1. Challenge System (30% Complete)
+### 1. Challenge System (35% Complete)
 - **✅ Database Layer**: Complete CRUD operations and schema
 - **✅ Service Layer**: Full challenge management services
 - **❌ UI Components**: Placeholder/demo code only
 - **❌ Three-Tier Progression**: Not implemented
 - **❌ Challenge Discovery**: No user interface
+ - **✅ Tests Added**: Tier gating (block/success paths), basic service behaviors
 
 ### 2. Migration System (90% Complete)
 - **✅ Migration Tools**: Complete tooling and scripts
@@ -82,6 +86,7 @@
 
 ### Minor Issues
 - **Documentation**: Inaccurate completion claims (being addressed)
+- **TypeScript**: Pending cleanup to get `npm run validate` fully green (brand/glass audits already pass)
 
 ## 📊 IMPLEMENTATION SUMMARY
 
@@ -93,8 +98,8 @@
 | **Collaboration Backend** | ✅ Complete | ✅ Complete | 100% |
 | **Performance Monitoring** | ✅ Complete | ✅ Complete | 100% |
 | **Real-time Features** | ✅ Complete | ⚠️ Partial | 60% |
-| **Challenge System** | ✅ Complete | ⚠️ Partial | 30% |
-| **Collaboration UI** | ✅ Complete | ⚠️ Partial | 80% |
+| **Challenge System** | ✅ Complete | ⚠️ Partial | 35% |
+| **Collaboration UI** | ✅ Complete | ⚠️ Partial | 87% |
 | **AI Features** | ✅ Complete | ❌ Not Built | 0% |
 | **Advanced UI** | ✅ Complete | ❌ Not Built | 0% |
 | **Real-World Integration** | ✅ Complete | ❌ Not Built | 0% |
@@ -107,11 +112,14 @@
 3. ✅ Fix migration registry warnings
 
 ### Future (Complete Planned Features)
-1. Build challenge system UI components
-2. Implement simplified collaboration interface
-3. Develop AI recommendation engine
-4. Add advanced UI features
-5. Improve real-time functionality for trades and collaborations
+1. Finish TypeScript error pass to get `npm run validate` green (without regressing audits)
+2. Build challenge system UI components
+3. Implement simplified collaboration interface
+4. Develop AI recommendation engine
+5. Add advanced UI features
+6. Improve real-time functionality for trades and collaborations
+7. Continue incremental type tightening (remove any-casts/unsafe spreads) in collaboration services
+8. Expand tests for edge cases (invalid role state transitions, missing docs)
 
 ## 📝 NOTES
 
@@ -120,6 +128,47 @@
 - The core infrastructure is solid and production-ready
 - Focus should be on completing user-facing features
 - Real-time functionality needs improvement for better user experience
+ - Brand/design-system alignment completed: semantic tokens in place, glassmorphic pages standardized, Button `asChild` rule enforced.
+
+## 🧭 DEVELOPER RECOMMENDATIONS (For Future Development)
+
+### Firestore & Data-Shaping
+- Use `getSyncFirebaseDb()`/`getSyncFirebaseAuth()` exclusively (avoid `db()`/direct singletons).
+- Avoid spreading unknown Firestore data (no `...doc.data()`). Prefer `Object.assign({ id: doc.id }, doc.data() as Record<string, unknown>)`.
+- Keep converter/generics aligned: `FirestoreDataConverter<AppModelType, DocumentData, DocumentData>`.
+- Store timestamps as `Timestamp` and only convert at the UI layer.
+
+### Type Safety
+- Continue removing `any` casts; enrich domain interfaces (e.g., `CollaborationRoleData` completion fields).
+- Prefer string-literal enums for states (`RoleState`, `CompletionRequestStatus`, `ChallengeType`).
+- Validate external indices/keys with type guards before indexing objects.
+
+### Services & Errors
+- Route all data access through services; avoid direct Firestore calls in components.
+- Use `AppError` with `ErrorCode` and `ErrorSeverity` consistently; keep `ErrorContext` minimal and typed.
+
+### Testing
+- Centralize environment mocks in Jest setup: `matchMedia`, `ResizeObserver`, `IntersectionObserver`.
+- Mock Firestore `runTransaction` (already added) for transactional service tests.
+- Cover happy and guard paths: tier gating (block/success), permission checks (creator-only), missing-doc cases.
+
+### Configuration
+- Tier-gating controlled via `VITE_ENFORCE_TIER_GATING` (accepts `1/true/yes`); keep gating checks defensive but non-blocking when disabled.
+
+### UI/Design System
+- Tailwind CSS v4 syntax only; keep animations mindful of `prefers-reduced-motion`.
+- When using `Button asChild`, ensure a single child element and include icons/text within it.
+- Keep brand/glass audits in validation (`npm run lint:brand`, `npm run lint:glass`).
+
+### Portfolio
+- Use portfolio services for CRUD and visibility/pin/feature toggles.
+- Generate portfolio items on completion flows via `generateTradePortfolioItem` / `generateCollaborationPortfolioItem`.
+
+## 🔎 DESIGN-SYSTEM AUDITS (Current)
+
+- Brand token audit: `npm run lint:brand` — PASS
+- Glassmorphism audit: `npm run lint:glass` — PASS
+- Enforcement: both included in `npm run validate`
 
 ## 🔄 RECENT FIXES (December 2024)
 
@@ -137,8 +186,17 @@
 
 ### Deployment Required:
 ```bash
-# Deploy the new indexes
+# Deploy the new indexes (trades + collaborations skillsIndex)
 firebase deploy --only firestore:indexes --project tradeya-45ede
+```
+
+### Backfill Utilities (Skills Index)
+```bash
+# Collaborations (dry run)
+npx tsx scripts/backfill-collab-skills-index.ts --project=tradeya-45ede --dry
+
+# Collaborations (execute)
+npx tsx scripts/backfill-collab-skills-index.ts --project=tradeya-45ede
 ```
 
 ## 🔄 RECENT FIXES (August 2025)
@@ -147,6 +205,25 @@ firebase deploy --only firestore:indexes --project tradeya-45ede
 1. Prevented runtime crash when `challenge.difficulty` is missing from Firestore by defaulting to `beginner` in `src/pages/ChallengesPage.tsx`.
 2. Impact: Eliminates `Cannot read properties of undefined (reading 'charAt')` and allows the Challenges list to render even with incomplete data.
 3. Follow-ups: Consider validating challenge documents to always include `difficulty` and backfilling existing records.
+
+### Accessibility and Interaction Hardening
+1. Button default type set to `button` by default with `aria-busy` support in `src/components/ui/Button.tsx`.
+2. Button `asChild` now renders a single child to satisfy Radix `Slot` requirements, fixing `React.Children.only` errors in dropdown triggers. If icons are needed, include them inside the single child element.
+2. ConnectionCard action buttons updated to stop propagation to avoid unintended card navigation.
+3. Evidence previews made fully keyboard-accessible with role, tabIndex, and Enter/Space handlers; images use `loading="lazy"` and `decoding="async"`.
+4. Open tasks: Add modal focus trap and restore-to-trigger focus; standardize lazy/decoding across images; audit reduced-motion gating for custom animations.
+
+### Services Hardening & Tests
+1. Tier-gating logic made enum-safe in `src/services/challenges.ts`; added tests for block/success.
+2. Role completion flows aligned with types and Firestore shape; tests added for approve/reject and creator-only permission.
+3. Role abandonment/reopen flows validated with tests; ensured notification side-effects are non-blocking.
+4. Jest setup enhanced with `runTransaction` mock to support transactional services in tests.
+
+### UI Consistency Updates (Notifications Dropdown)
+1. Notification dropdown now uses the same glassmorphic surface as `UserMenu` (`bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md navbar-gradient-border shadow-glass-lg`).
+2. Improved readability with a grid layout, clearer hierarchy (title/body/time), dividers, and better spacing.
+3. Fixed bug where clicking a single notification called the bulk API; now calls `markNotificationAsRead(id)` correctly. Bulk "Mark all" remains available.
+4. Documentation added: `docs/NOTIFICATIONS_DROPDOWN_AUDIT.md`.
 
 ## 🎯 SUCCESS CRITERIA
 

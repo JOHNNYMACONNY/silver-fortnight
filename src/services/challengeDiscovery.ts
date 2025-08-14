@@ -151,8 +151,10 @@ export const discoverChallenges = async (
     const querySnapshot = await getDocs(finalQuery);
 
     let challenges: Challenge[] = [];
-    querySnapshot.forEach((doc) => {
-      challenges.push({ id: doc.id, ...doc.data() } as Challenge);
+    querySnapshot.forEach((snap) => {
+      const data = snap.data();
+      const challenge = Object.assign({ id: snap.id }, data) as unknown as Challenge;
+      challenges.push(challenge);
     });
 
     // Apply additional filters that can't be done in Firestore
@@ -205,7 +207,7 @@ const buildUserContext = async (userId: string): Promise<UserDiscoveryContext> =
 
     // Get user skill assessments
     const skillsResponse = await getUserSkillAssessments(userId);
-    const skillAssessments = skillsResponse.success ? skillsResponse.data : [];
+  const skillAssessments = skillsResponse.success ? (skillsResponse.data || []) : [];
 
     // Build skill levels map
     const skillLevels: Record<string, SkillLevel> = {};
@@ -220,7 +222,7 @@ const buildUserContext = async (userId: string): Promise<UserDiscoveryContext> =
     // Default preferences (would be stored in user profile)
     const preferences: UserPreferences = {
       preferredDifficulty: ChallengeDifficulty.INTERMEDIATE,
-      preferredCategories: [ChallengeCategory.SKILL_DEVELOPMENT],
+      preferredCategories: [ChallengeCategory.DEVELOPMENT],
       learningStyle: 'hands-on',
       timeAvailability: 'focused-sessions',
       motivationFactors: ['learning', 'achievement']
@@ -260,9 +262,11 @@ const applyClientSideFilters = (
     // Search query filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      const matchesTitle = challenge.title.toLowerCase().includes(query);
-      const matchesDescription = challenge.description.toLowerCase().includes(query);
-      const matchesTags = challenge.tags?.some(tag => tag.toLowerCase().includes(query));
+      const matchesTitle = (challenge.title || '').toLowerCase().includes(query);
+      const matchesDescription = (challenge.description || '').toLowerCase().includes(query);
+      const matchesTags = (challenge.tags ?? [])
+        .filter((tag): tag is string => typeof tag === 'string')
+        .some(tag => tag.toLowerCase().includes(query));
       
       if (!matchesTitle && !matchesDescription && !matchesTags) {
         return false;
@@ -271,16 +275,16 @@ const applyClientSideFilters = (
 
     // Skills filter
     if (filters.skills && filters.skills.length > 0) {
-      const challengeSkills = challenge.tags || [];
+      const challengeSkills = (challenge.tags ?? []).filter((t): t is string => typeof t === 'string');
       const hasMatchingSkill = filters.skills.some(skill => 
-        challengeSkills.some(tag => tag.toLowerCase().includes(skill.toLowerCase()))
+        challengeSkills.some(tag => tag.toLowerCase().includes((skill || '').toLowerCase()))
       );
       if (!hasMatchingSkill) return false;
     }
 
     // Time estimate filter
     if (filters.timeEstimate) {
-      const timeEstimate = parseTimeEstimate(challenge.timeEstimate);
+      const timeEstimate = parseTimeEstimate(challenge.timeEstimate as string | undefined);
       if (filters.timeEstimate.min && timeEstimate < filters.timeEstimate.min) return false;
       if (filters.timeEstimate.max && timeEstimate > filters.timeEstimate.max) return false;
     }
@@ -366,7 +370,7 @@ const calculateRelevanceScore = (challenge: Challenge, userContext: UserDiscover
   else score -= 10;
 
   // Skill relevance
-  const challengeSkills = challenge.tags || [];
+  const challengeSkills = (challenge.tags ?? []).filter((t): t is string => typeof t === 'string');
   const userSkills = Object.keys(userContext.skillLevels);
   const skillMatches = challengeSkills.filter(skill => 
     userSkills.some(userSkill => userSkill.toLowerCase().includes(skill.toLowerCase()))
@@ -374,7 +378,7 @@ const calculateRelevanceScore = (challenge: Challenge, userContext: UserDiscover
   score += skillMatches * 5;
 
   // Preference alignment
-  if (userContext.preferences.preferredCategories?.includes(challenge.category)) {
+  if (challenge.category && userContext.preferences.preferredCategories?.includes(challenge.category)) {
     score += 10;
   }
 
@@ -382,7 +386,8 @@ const calculateRelevanceScore = (challenge: Challenge, userContext: UserDiscover
 };
 
 // Helper functions
-const parseTimeEstimate = (timeEstimate: string): number => {
+const parseTimeEstimate = (timeEstimate?: string): number => {
+  if (!timeEstimate) return 60;
   const match = timeEstimate.match(/(\d+)/);
   return match ? parseInt(match[1]) : 60; // Default to 60 minutes
 };
@@ -414,7 +419,7 @@ const generateRecommendationReasons = (challenge: Challenge, userContext: UserDi
     reasons.push(`Perfect for your current ${userContext.currentTier} tier`);
   }
   
-  const challengeSkills = challenge.tags || [];
+  const challengeSkills = (challenge.tags ?? []).filter((t): t is string => typeof t === 'string');
   const userSkills = Object.keys(userContext.skillLevels);
   const matchingSkills = challengeSkills.filter(skill => 
     userSkills.some(userSkill => userSkill.toLowerCase().includes(skill.toLowerCase()))
@@ -424,7 +429,7 @@ const generateRecommendationReasons = (challenge: Challenge, userContext: UserDi
     reasons.push(`Matches your ${matchingSkills.slice(0, 2).join(', ')} skills`);
   }
   
-  if (userContext.preferences.preferredCategories?.includes(challenge.category)) {
+  if (challenge.category && userContext.preferences.preferredCategories?.includes(challenge.category)) {
     reasons.push('Aligns with your interests');
   }
   
@@ -466,7 +471,8 @@ const estimateCompletionTime = (challenge: Challenge, userContext: UserDiscovery
   const challengeDifficultyNumber = getDifficultyNumber(challenge.difficulty);
   const skillMultiplier = avgSkillLevel / challengeDifficultyNumber;
   
-  const estimatedTime = Math.round(baseTime / skillMultiplier);
+  const safeMultiplier = skillMultiplier || 1;
+  const estimatedTime = Math.round(baseTime / safeMultiplier);
   
   if (estimatedTime < 60) return `${estimatedTime} minutes`;
   if (estimatedTime < 120) return '1-2 hours';

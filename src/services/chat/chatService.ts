@@ -39,6 +39,8 @@ import {
   migrateLegacyConversation,
   migrateLegacyMessage
 } from '../../types/chat';
+// Re-export canonical chat types for component imports
+export type { ChatMessage, ChatConversation } from '../../types/chat';
 
 /**
  * Get all conversations for a user

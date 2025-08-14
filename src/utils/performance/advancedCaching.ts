@@ -159,7 +159,7 @@ export class MultiLevelCache {
     entry.lastAccessed = Date.now();
     this.trackAccess(key);
 
-    return entry.data;
+    return entry.data as T;
   }
 
   /**
@@ -351,14 +351,14 @@ export class MultiLevelCache {
     }
   }
 
-  private async getFromPersistentCache(key: string): Promise<CacheEntry | null> {
-    if (!this.persistentCache) return null;
+  private async getFromPersistentCache(key: string): Promise<CacheEntry | undefined> {
+    if (!this.persistentCache) return undefined;
 
     try {
       const transaction = this.persistentCache.transaction(['cache'], 'readonly');
       const store = transaction.objectStore('cache');
       
-      return new Promise<CacheEntry | null>((resolve, reject) => {
+      return new Promise<CacheEntry | undefined>((resolve, reject) => {
         const request = store.get(key);
         request.onsuccess = () => {
           const result = request.result;
@@ -366,14 +366,14 @@ export class MultiLevelCache {
             const { key: _, ...entry } = result;
             resolve(entry as CacheEntry);
           } else {
-            resolve(null);
+            resolve(undefined);
           }
         };
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
       console.error('Failed to get from persistent cache:', error);
-      return null;
+      return undefined;
     }
   }
 
@@ -443,15 +443,16 @@ export class ServiceWorkerCache {
     }
   }
 
-  async getCached(request: string | Request): Promise<Response | null> {
-    if (!this.isSupported) return null;
+  async getCached(request: string | Request): Promise<Response | undefined> {
+    if (!this.isSupported) return undefined;
 
     try {
       const cache = await caches.open('tradeya-v1');
-      return await cache.match(request);
+      const match = await cache.match(request);
+      return match ?? undefined;
     } catch (error) {
       console.error('Failed to get cached response:', error);
-      return null;
+      return undefined;
     }
   }
 

@@ -68,6 +68,8 @@ export const CompletionReviewModal: React.FC<CompletionReviewModalProps> = ({
     }
   };
 
+  const [activeTab, setActiveTab] = useState('details');
+
   return (
     <Card className="max-h-[80vh] overflow-y-auto border-none shadow-none">
       <CardHeader>
@@ -90,7 +92,7 @@ export const CompletionReviewModal: React.FC<CompletionReviewModalProps> = ({
           </div>
         </div>
 
-        <Tabs defaultValue="details">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="evidence">

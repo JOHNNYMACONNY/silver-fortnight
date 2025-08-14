@@ -232,7 +232,8 @@ export const getAbandonedRoles = async (collaborationId: string): Promise<Collab
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => {
       const data = doc.data();
-      return { id: doc.id, ...data } as CollaborationRoleData;
+      const obj = data && typeof data === 'object' ? data : {};
+      return Object.assign({ id: doc.id }, obj) as CollaborationRoleData;
     });
 
   } catch (error) {

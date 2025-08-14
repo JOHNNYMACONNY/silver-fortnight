@@ -267,7 +267,7 @@ export const ImprovedProjectCreationWizard: React.FC<ImprovedProjectCreationWiza
                   onClick={() => {
                     const current = data.communicationTools || [];
                     const updated = current.includes(tool)
-                      ? current.filter(t => t !== tool)
+                      ? current.filter((t: string) => t !== tool)
                       : [...current, tool];
                     onChange('communicationTools', updated);
                   }}
@@ -309,7 +309,7 @@ export const ImprovedProjectCreationWizard: React.FC<ImprovedProjectCreationWiza
         </div>
 
         {/* Launch Options */}
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardHeader>
             <CardTitle className="text-white">Launch Options</CardTitle>
           </CardHeader>
@@ -345,7 +345,7 @@ export const ImprovedProjectCreationWizard: React.FC<ImprovedProjectCreationWiza
         </Card>
 
         {/* Project Summary */}
-        <Card className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-md border-blue-500/30">
+        <Card className="glassmorphic">
           <CardHeader>
             <CardTitle className="text-white">Project Summary</CardTitle>
           </CardHeader>
@@ -372,7 +372,7 @@ export const ImprovedProjectCreationWizard: React.FC<ImprovedProjectCreationWiza
             <div>
               <div className="text-gray-300 text-sm mb-1">Roles Selected</div>
               <div className="flex flex-wrap gap-1">
-                {data.selectedRoles?.map((role, index) => (
+                {data.selectedRoles?.map((role: any, index: number) => (
                   <Badge key={index} className="bg-blue-500/20 text-blue-300">
                     {role.title}
                   </Badge>
@@ -410,7 +410,7 @@ export const ImprovedProjectCreationWizard: React.FC<ImprovedProjectCreationWiza
   };
 
   const renderModeSelector = () => (
-    <Card className="bg-white/10 backdrop-blur-md border-white/20 mb-6">
+    <Card className="glassmorphic mb-6">
       <CardHeader>
         <CardTitle className="text-white text-center">Choose Your Creation Experience</CardTitle>
       </CardHeader>
@@ -443,9 +443,9 @@ export const ImprovedProjectCreationWizard: React.FC<ImprovedProjectCreationWiza
               key={option.mode}
               className={cn(
                 "cursor-pointer transition-all duration-300",
-                creationMode === option.mode
-                  ? "bg-blue-500/20 border-blue-500/50 ring-2 ring-blue-500/30"
-                  : "bg-white/5 border-white/10 hover:bg-white/10"
+                 creationMode === option.mode
+                   ? "ring-2 ring-blue-500/30 glassmorphic"
+                   : "glassmorphic"
               )}
               onClick={() => setCreationMode(option.mode)}
             >
@@ -471,7 +471,9 @@ export const ImprovedProjectCreationWizard: React.FC<ImprovedProjectCreationWiza
       <div className={cn("max-w-4xl mx-auto", className)}>
         {renderModeSelector()}
         <SmartCollaborationWorkflow
-          onComplete={handleFinalSubmit}
+          onComplete={(workflowData) =>
+            handleFinalSubmit({ ...projectData, ...workflowData } as ProjectCreationData)
+          }
           onCancel={onCancel}
           initialData={projectData}
         />

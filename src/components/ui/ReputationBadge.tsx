@@ -28,9 +28,9 @@ export const getReputationLevel = (score: number): {
   } else if (score >= 75) {
     return {
       label: 'Expert',
-      color: 'bg-orange-100 dark:bg-orange-900/30',
-      textColor: 'text-orange-800 dark:text-orange-300',
-      borderColor: 'border-orange-200 dark:border-orange-800'
+      color: 'bg-primary/10',
+      textColor: 'text-primary',
+      borderColor: 'border-primary/30'
     };
   } else if (score >= 60) {
     return {

@@ -124,52 +124,32 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
 
   // Dropdown variant styles
   const dropdownVariants = {
-    glass: `
-      backdrop-blur-lg bg-white/90 dark:bg-neutral-800/90
-      border border-white/30 dark:border-neutral-700/40
-      shadow-xl rounded-2xl
-    `,
-    'elevated-glass': `
-      backdrop-blur-xl bg-white/95 dark:bg-neutral-800/95
-      border-2 border-white/40 dark:border-neutral-700/50
-      shadow-2xl rounded-3xl
-    `,
-    'modal-glass': `
-      backdrop-blur-2xl bg-white/98 dark:bg-neutral-800/98
-      border border-white/50 dark:border-neutral-700/60
-      shadow-beautiful rounded-2xl
-    `
+    glass: `glassmorphic rounded-2xl`,
+    'elevated-glass': `glassmorphic rounded-3xl shadow-xl`,
+    'modal-glass': `glassmorphic rounded-2xl shadow-xl`
   };
 
   // Trigger variant styles
   const triggerVariants = {
     glass: `
-      backdrop-blur-sm bg-white/20 dark:bg-neutral-900/20
-      border border-white/30 dark:border-neutral-700/40
-      hover:bg-white/30 dark:hover:bg-neutral-900/30
+      glassmorphic
     `,
     'elevated-glass': `
-      backdrop-blur-md bg-white/30 dark:bg-neutral-900/30
-      border-2 border-white/40 dark:border-neutral-700/50
-      hover:bg-white/40 dark:hover:bg-neutral-900/40
-      shadow-lg hover:shadow-xl
+      glassmorphic shadow-lg
     `,
     'modal-glass': `
-      backdrop-blur-lg bg-white/40 dark:bg-neutral-900/40
-      border border-white/50 dark:border-neutral-700/60
-      hover:bg-white/50 dark:hover:bg-neutral-900/50
-      shadow-xl hover:shadow-2xl
+      glassmorphic shadow-xl
     `
   };
 
   // Brand accent classes
   const brandAccentClasses = {
-    orange: 'focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50',
-    blue: 'focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50', 
-    purple: 'focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50',
+    orange: 'focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500/50',
+    blue: 'focus:ring-2 focus:ring-secondary-500/30 focus:border-secondary-500/50', 
+    purple: 'focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500/50',
     gradient: `
       focus:ring-2 focus:ring-gradient-to-r 
-      focus:from-orange-500/30 focus:via-blue-500/30 focus:to-purple-500/30
+      focus:from-primary-500/30 focus:via-secondary-500/30 focus:to-accent-500/30
     `
   };
 
@@ -245,7 +225,7 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
           'focus:outline-none',
           triggerVariants[variant],
           !error && brandAccentClasses[brandAccent],
-          error && 'ring-2 ring-red-500/30 border-red-500/50'
+           error && 'ring-2 ring-error-500/30 border-error-500/50'
         )}
       >
         <span className={cn(
@@ -285,14 +265,14 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             className={cn(
-              'absolute z-50 w-full mt-2 py-2 overflow-hidden',
+              'absolute z-popover w-full mt-2 py-2 overflow-hidden',
               dropdownVariants[variant]
             )}
             style={{ maxHeight }}
           >
             {/* Search Input */}
             {searchable && (
-              <div className="px-3 pb-2 border-b border-white/20 dark:border-neutral-700/30">
+              <div className="px-3 pb-2 border-b border-border">
                 <div className="relative">
                   <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" data-testid="search-icon" />
                   <input
@@ -303,9 +283,8 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className={cn(
                       'w-full pl-10 pr-3 py-2 text-sm rounded-lg',
-                      'backdrop-blur-sm bg-white/20 dark:bg-neutral-900/20',
-                      'border border-white/20 dark:border-neutral-700/30',
-                      'focus:outline-none focus:ring-2 focus:ring-blue-500/30',
+                      'bg-transparent',
+                      'border-0 focus:outline-none focus:ring-2 focus:ring-secondary-500/30',
                       'placeholder:text-gray-500 dark:placeholder:text-gray-400',
                       'text-gray-900 dark:text-white'
                     )}
@@ -324,8 +303,8 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
                 Object.entries(groupedOptions).map(([groupName, groupOptions]) => (
                   <div key={groupName}>
                     {groupName !== 'default' && (
-                      <div
-                        className="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-white/10 dark:border-neutral-700/20"
+                        <div
+                          className="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-divider"
                         data-testid={`group-header-${groupName.toLowerCase().replace(/\s+/g, '-')}`}
                       >
                         {groupName}
@@ -345,7 +324,7 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
                           'hover:bg-white/10 dark:hover:bg-neutral-700/20',
                           'transition-colors duration-150',
                           'disabled:opacity-50 disabled:cursor-not-allowed',
-                          selectedValues.includes(option.value) && 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                           selectedValues.includes(option.value) && 'bg-secondary-500/10 text-secondary-600 dark:text-secondary-400'
                         )}
                       >
                         {option.icon && (
@@ -366,7 +345,7 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
                         </div>
 
                         {selectedValues.includes(option.value) && (
-                          <CheckIcon className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" data-testid="check-icon" />
+                          <CheckIcon className="h-4 w-4 text-secondary-600 dark:text-secondary-400 flex-shrink-0" data-testid="check-icon" />
                         )}
                       </motion.button>
                     ))}

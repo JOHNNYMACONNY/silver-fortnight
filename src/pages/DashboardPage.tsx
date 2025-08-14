@@ -11,6 +11,9 @@ import Stack from '../components/layout/primitives/Stack';
 import Cluster from '../components/layout/primitives/Cluster';
 import Grid from '../components/layout/primitives/Grid';
 import { ThreeTierProgressionUI } from '../components/challenges/ThreeTierProgressionUI';
+import { StreakWidget } from '../components/features/StreakWidget';
+import { Button } from '../components/ui/Button';
+import { semanticClasses } from '../utils/semanticColors';
 
 const DashboardPage: React.FC = () => {
   const { stats, recentActivity, loading, error, refreshData } = useDashboardData();
@@ -66,7 +69,7 @@ const DashboardPage: React.FC = () => {
     <Box className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <Stack gap="lg">
         <header>
-          <Cluster className="flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8" wrap>
+          <Cluster className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8" wrap>
             <Stack gap="xs">
               <h1 className="text-3xl font-bold text-foreground">
                 {getGreeting()}, {user?.displayName || user?.email?.split('@')[0] || 'Trader'}!
@@ -74,28 +77,18 @@ const DashboardPage: React.FC = () => {
               <p className="text-muted-foreground mt-1">Welcome back to your trading dashboard</p>
             </Stack>
             <Cluster gap="sm">
-              <button 
-                onClick={refreshData}
-                className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-3 py-2 rounded-lg transition flex items-center gap-2"
-                title="Refresh data"
-              >
-                <RefreshCw className="w-4 h-4" />
+              <Button variant="secondary" size="md" onClick={refreshData} title="Refresh data">
+                <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh
-              </button>
-              <button 
-                onClick={() => navigate('/trades?action=create')}
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
+              </Button>
+              <Button variant="primary" size="md" topic="trades" onClick={() => navigate('/trades?action=create')}>
+                <Plus className="w-4 h-4 mr-2" />
                 New Trade
-              </button>
-              <button 
-                onClick={() => navigate('/connections')}
-                className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-lg transition flex items-center gap-2"
-              >
-                <Users className="w-4 h-4" />
+              </Button>
+              <Button variant="secondary" size="md" onClick={() => navigate('/connections')}>
+                <Users className="w-4 h-4 mr-2" />
                 Invite Friend
-              </button>
+              </Button>
             </Cluster>
           </Cluster>
         </header>
@@ -161,6 +154,20 @@ const DashboardPage: React.FC = () => {
                 showViewAll={false}
               />
             </Box>
+            {/* Minimal Streak UI */}
+            {user && (
+              <>
+                <Box className="mt-6">
+                  <StreakWidget userId={user.uid} type="login" />
+                </Box>
+                <Box className="mt-4">
+                  <StreakWidget userId={user.uid} type="challenge" />
+                </Box>
+                <Box className="mt-4">
+                  <StreakWidget userId={user.uid} type="skill_practice" />
+                </Box>
+              </>
+            )}
           </Box>
         </Grid>
 
@@ -213,7 +220,7 @@ const DashboardPage: React.FC = () => {
             <Grid columns={2} gap="sm">
               <button 
                 onClick={() => navigate('/trades')}
-                className="bg-primary text-primary-foreground px-4 py-3 rounded-lg hover:bg-primary/90 transition flex flex-col items-center gap-2 text-center"
+                className={`px-4 py-3 rounded-lg transition flex flex-col items-center gap-2 text-center ${semanticClasses('trades').bgSolid} text-white hover:bg-primary/90`}
               >
                 <Search className="w-6 h-6" />
                 <span className="text-sm font-medium">Browse Trades</span>
@@ -261,7 +268,10 @@ const DashboardPage: React.FC = () => {
         {/* Challenge Progression (Three-Tier) */}
         <Box className="bg-card text-card-foreground rounded-lg shadow border border-border p-6 mt-8">
           <h2 className="text-xl font-semibold mb-4 text-card-foreground">Challenge Progression</h2>
-          <ThreeTierProgressionUI />
+          <ThreeTierProgressionUI onTierSelect={(tier) => {
+            const type = tier.toLowerCase();
+            navigate(`/challenges?type=${type}`);
+          }} />
         </Box>
       </Stack>
     </Box>

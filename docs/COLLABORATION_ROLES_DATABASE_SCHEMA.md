@@ -120,6 +120,8 @@ export interface CollaborationRoleData { // Changed from CollaborationRole to Co
   participantId?: string;
   participantName?: string;
   participantPhotoURL?: string;
+  // Alternative assigned user field used by some services
+  assignedUserId?: string;
   previousParticipantId?: string; 
   previousParticipantName?: string; 
   previousParticipantPhotoURL?: string; 
@@ -128,11 +130,15 @@ export interface CollaborationRoleData { // Changed from CollaborationRole to Co
   
   // Status
   // Updated to use RoleState enum from src/types/collaboration.ts
-  status: \'DRAFT\' | \'OPEN\' | \'IN_REVIEW\' | \'ASSIGNED\' | \'IN_PROGRESS\' | \'COMPLETION_REQUESTED\' | \'FILLED\' | \'COMPLETED\' | \'ABANDONED\' | \'UNNEEDED\';
+  status: RoleState;
   applicationCount: number;
   
   // Completion tracking
-  completionStatus?: \'pending\' | \'approved\' | \'rejected\';
+  completionStatus?: CompletionRequestStatus;
+  completionRequestedAt?: Timestamp;
+  completionConfirmedAt?: Timestamp;
+  completionNotes?: string;
+  completionEvidence?: any[];
   
   // Timestamps
   createdAt: Timestamp;

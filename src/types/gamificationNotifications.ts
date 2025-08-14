@@ -39,7 +39,8 @@ export interface AchievementUnlockNotification {
 export type GamificationNotification = 
   | XPGainNotification 
   | LevelUpNotification 
-  | AchievementUnlockNotification;
+  | AchievementUnlockNotification
+  | { type: 'streak_milestone'; message: string; timestamp: Date; userId: string };
 
 /**
  * Notification display preferences for gamification events
@@ -48,6 +49,8 @@ export interface GamificationNotificationPreferences {
   xpGainToasts: boolean;
   levelUpModals: boolean;
   achievementUnlockModals: boolean;
+  streakToasts: boolean;
+  weeklyGoalMetToasts?: boolean;
   soundEffects: boolean;
   reducedMotion: boolean;
   batchNotifications: boolean; // Group multiple XP gains together
@@ -61,6 +64,8 @@ export const DEFAULT_GAMIFICATION_PREFERENCES: GamificationNotificationPreferenc
   xpGainToasts: true,
   levelUpModals: true,
   achievementUnlockModals: true,
+  streakToasts: true,
+  weeklyGoalMetToasts: true,
   soundEffects: false, // Default to off for better UX
   reducedMotion: false, // Will be detected from system preferences
   batchNotifications: true,
@@ -102,7 +107,7 @@ export const XP_SOURCE_DISPLAY_CONFIG: Record<XPSource, {
   },
   [XPSource.EVIDENCE_SUBMISSION]: {
     icon: '📎',
-    color: 'text-orange-500',
+    color: 'text-primary',
     displayName: 'Evidence Submission'
   },
   [XPSource.ACHIEVEMENT_UNLOCK]: {

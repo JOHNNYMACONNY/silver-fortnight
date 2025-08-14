@@ -1,6 +1,6 @@
 # TradeYa Gamification Implementation Plan
 
-**Status**: Phase 1 COMPLETED ✅ (June 2, 2025) | Phase 2 PLANNED
+**Status**: Phase 1 COMPLETED ✅ (June 2, 2025) | Phase 2A/2B COMPLETE ✅ | Phase 2C IN PROGRESS
 **Current Implementation**: Fully functional XP system, achievements, and user progress tracking
 
 This document outlines the comprehensive gamification system for TradeYa, designed to enhance user engagement, encourage skill development, and foster community building through meaningful progression mechanics.
@@ -15,12 +15,13 @@ This document outlines the comprehensive gamification system for TradeYa, design
 - Automatic XP awards for trade/role completions
 - Error-resilient integration with existing systems
 
-### 🔄 Phase 2 PLANNED (Next Implementation)
-- Real-time notifications and animations
-- Enhanced achievement system with progressive unlocks
-- Skill development and endorsement system
-- Community features and leaderboards
-- Advanced gamification analytics
+### ✅ Phase 2A/2B Highlights (Implemented)
+- Real-time notifications and animations (toasts, level-up, unlocks)
+- Weekly XP Goal (editable target, tips, analytics+preference)
+- Streaks (auto-freeze preference, milestones, practice indicator)
+- Challenges UX (featured chips, base/bonus consistency)
+- Leaderboard polish (current-user row, My Circle filter with persistence)
+- Scheduling (activate/complete/schedule challenges – MVP)
 
 ## Table of Contents
 
@@ -94,16 +95,16 @@ This document outlines the comprehensive gamification system for TradeYa, design
 - **Endorsement Display**: Show endorsement counts and recent endorsers on profiles
 - **Skill Verification**: Verified skill levels based on endorsement thresholds
 
-### 🔄 Phase 2C: Community Features & Leaderboards (Priority 3)
+### 🔄 Phase 2C: Community Features & Leaderboards (Next)
 
 #### Leaderboard System
-- **Global Leaderboards**: Top users by XP, level, achievements, and skill categories
+- **Leaderboards**: My Circle as first-class filter; seasonal tags; current-user context row (done)
 - **Weekly/Monthly Resets**: Time-based leaderboards with seasonal rewards
 - **Category Leaderboards**: Separate rankings for different skill areas
-- **Friend Leaderboards**: Compare progress with connections
+- **Friend Leaderboards**: Compare progress with connections (My Circle done)
 
 #### Community Challenges
-- **Weekly Challenges**: Platform-wide challenges with special rewards
+- **Weekly Challenges**: Platform-wide challenges with special rewards (scheduler MVP done)
 - **Community Goals**: Collaborative achievements requiring multiple users
 - **Challenge Seasons**: Themed challenge series with exclusive rewards
 - **Mentorship System**: Connect high-level users with newcomers

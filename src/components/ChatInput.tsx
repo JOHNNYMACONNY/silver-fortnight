@@ -7,6 +7,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { sendMessage } from '../services/chat/chatService';
 import { useAuth } from '../AuthContext';
+import { useToast } from '../contexts/ToastContext';
 
 // Icons
 const SendIcon = () => (
@@ -33,6 +34,7 @@ interface ChatInputProps {
 
 export const ChatInput: React.FC<ChatInputProps> = ({ conversationId }) => {
   const { currentUser, userProfile } = useAuth();
+  const { addToast } = useToast();
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -49,7 +51,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ conversationId }) => {
         senderId: currentUser.uid,
         senderName: userProfile.displayName || 'Unknown User',
         senderAvatar: userProfile.photoURL,
-        content: message.trim()
+        content: message.trim(),
+        type: 'text'
       });
 
       // Clear input
@@ -61,11 +64,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({ conversationId }) => {
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      alert('Failed to send message. Please try again.');
+      addToast('error', 'Failed to send message. Please try again.');
     } finally {
       setSending(false);
     }
-  }, [message, currentUser, userProfile, sending, conversationId, setMessage, setSending, inputRef]);
+  }, [message, currentUser, userProfile, sending, conversationId, setMessage, setSending, inputRef, addToast]);
 
   // Handle input change
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -86,12 +89,25 @@ export const ChatInput: React.FC<ChatInputProps> = ({ conversationId }) => {
   }, [handleSendMessage]);
 
   return (
-    <div className="border-t border-gray-200 p-4">
-      <div className="flex items-end space-x-2">
+    <div className="border-t border-border p-4">
+      <div className="flex flex-col gap-2">
+        {/* Templates row */}
+        <div className="flex flex-wrap gap-2 text-xs">
+          <button type="button" className="rounded-full border border-border bg-muted/40 px-2 py-1 hover:bg-muted" onClick={() => setMessage(prev => prev ? prev : 'Hi! I’d love to collaborate on a project with you. I’m available next week—are you open to chat?')}>
+            Collab request
+          </button>
+          <button type="button" className="rounded-full border border-border bg-muted/40 px-2 py-1 hover:bg-muted" onClick={() => setMessage(prev => prev ? prev : 'Hey! I’m interested in a trade: I can offer [your skill] in exchange for [their skill]. Interested?')}>
+            Trade inquiry
+          </button>
+          <button type="button" className="rounded-full border border-border bg-muted/40 px-2 py-1 hover:bg-muted" onClick={() => setMessage(prev => prev ? prev : 'Quick intro: I’m [name], a [role]. I enjoyed your work on [project]—would love to connect!')}>
+            Intro
+          </button>
+        </div>
+        <div className="flex items-end space-x-2">
         {/* Attachment button */}
         <button
           type="button"
-          className="flex-shrink-0 text-gray-400 hover:text-gray-500 focus:outline-none"
+          className="flex-shrink-0 text-muted-foreground hover:text-foreground focus:outline-none"
         >
           <AttachmentIcon />
         </button>
@@ -99,13 +115,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({ conversationId }) => {
         {/* Emoji button */}
         <button
           type="button"
-          className="flex-shrink-0 text-gray-400 hover:text-gray-500 focus:outline-none"
+          className="flex-shrink-0 text-muted-foreground hover:text-foreground focus:outline-none"
         >
           <EmojiIcon />
         </button>
 
         {/* Message input */}
-        <div className="flex-1 min-w-0 border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-orange-500">
+        <div className="flex-1 min-w-0 border border-input rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-ring focus-within:border-ring">
           <textarea
             ref={inputRef}
             value={message}
@@ -125,8 +141,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ conversationId }) => {
           disabled={!message.trim() || sending}
           className={`flex-shrink-0 inline-flex items-center justify-center p-2 rounded-full ${
             message.trim() && !sending
-              ? 'bg-orange-500 text-white hover:bg-orange-600'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+              : 'bg-muted text-muted-foreground cursor-not-allowed'
           } focus:outline-none`}
         >
           {sending ? (
@@ -135,6 +151,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ conversationId }) => {
             <SendIcon />
           )}
         </button>
+        </div>
       </div>
     </div>
   );

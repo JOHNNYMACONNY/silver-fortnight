@@ -61,7 +61,7 @@ export const submitRoleApplication = async (
     }
 
     // Get user data
-    const userRef = doc(db(), 'users', userId);
+    const userRef = doc(getSyncFirebaseDb(), 'users', userId);
     const userSnap = await getDoc(userRef);
 
     if (!userSnap.exists()) {
@@ -72,7 +72,7 @@ export const submitRoleApplication = async (
 
     // Check if user already applied
     const existingApplicationQuery = query(
-      collection(db(), `collaborations/${collaborationId}/roles/${roleId}/applications`),
+      collection(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles/${roleId}/applications`),
       where('applicantId', '==', userId)
     );
 
@@ -84,7 +84,7 @@ export const submitRoleApplication = async (
 
     // Check if user already has a role in this collaboration
     const userRolesQuery = query(
-      collection(db(), `collaborations/${collaborationId}/roles`),
+      collection(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles`),
       where('participantId', '==', userId)
     );
 
@@ -95,7 +95,7 @@ export const submitRoleApplication = async (
     }
 
     // Create application
-    const applicationRef = doc(collection(db(), `collaborations/${collaborationId}/roles/${roleId}/applications`));
+    const applicationRef = doc(collection(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles/${roleId}/applications`));
 
     const newApplication: RoleApplication = {
       id: applicationRef.id,
@@ -148,7 +148,7 @@ export const getRoleApplications = async (
 ): Promise<ServiceResponse<RoleApplication[]>> => {
   try {
     const applicationsQuery = query(
-      collection(db(), `collaborations/${collaborationId}/roles/${roleId}/applications`),
+      collection(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles/${roleId}/applications`),
       orderBy('createdAt', 'desc')
     );
 
@@ -171,7 +171,7 @@ export const getRoleApplication = async (
   applicationId: string
 ): Promise<ServiceResponse<RoleApplication>> => {
   try {
-    const applicationRef = doc(db(), `collaborations/${collaborationId}/roles/${roleId}/applications`, applicationId);
+    const applicationRef = doc(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles/${roleId}/applications`, applicationId);
     const applicationSnap = await getDoc(applicationRef);
 
     if (!applicationSnap.exists()) {
@@ -197,7 +197,7 @@ export const updateApplicationStatus = async (
 ): Promise<ServiceResponse<RoleApplication>> => {
   try {
     // Validate collaboration and role
-    const collaborationRef = doc(db(), 'collaborations', collaborationId);
+    const collaborationRef = doc(getSyncFirebaseDb(), 'collaborations', collaborationId);
     const collaborationSnap = await getDoc(collaborationRef);
 
     if (!collaborationSnap.exists()) {
@@ -211,7 +211,7 @@ export const updateApplicationStatus = async (
       return { success: false, error: 'Only the collaboration creator can accept or reject applications' };
     }
 
-    const roleRef = doc(db(), `collaborations/${collaborationId}/roles`, roleId);
+    const roleRef = doc(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles`, roleId);
     const roleSnap = await getDoc(roleRef);
 
     if (!roleSnap.exists()) {
@@ -225,7 +225,7 @@ export const updateApplicationStatus = async (
     }
 
     // Get the application
-    const applicationRef = doc(db(), `collaborations/${collaborationId}/roles/${roleId}/applications`, applicationId);
+    const applicationRef = doc(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles/${roleId}/applications`, applicationId);
     const applicationSnap = await getDoc(applicationRef);
 
     if (!applicationSnap.exists()) {
@@ -247,7 +247,7 @@ export const updateApplicationStatus = async (
 
     // If accepting, update role and reject other applications
     if (status === ApplicationStatus.ACCEPTED) {
-      await runTransaction(db(), async (transaction) => {
+      await runTransaction(getSyncFirebaseDb(), async (transaction) => {
         // Update role status and participant
         transaction.update(roleRef, {
           status: RoleState.FILLED,
@@ -260,7 +260,7 @@ export const updateApplicationStatus = async (
 
         // Reject other pending applications
         const otherApplicationsQuery = query(
-          collection(db(), `collaborations/${collaborationId}/roles/${roleId}/applications`),
+          collection(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles/${roleId}/applications`),
           where('status', '==', ApplicationStatus.PENDING),
           where('id', '!=', applicationId)
         );
@@ -291,7 +291,7 @@ export const updateApplicationStatus = async (
 
         // Update collaboration status if needed
         const allRolesQuery = query(
-          collection(db(), `collaborations/${collaborationId}/roles`)
+          collection(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles`)
         );
 
         const allRolesSnap = await getDocs(allRolesQuery);

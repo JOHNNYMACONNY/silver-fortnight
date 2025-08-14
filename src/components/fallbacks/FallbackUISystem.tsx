@@ -306,11 +306,12 @@ export const withFallback = <P extends object>(
   Component: React.ComponentType<P>,
   FallbackComponent: React.ComponentType<any> = LoadingFallback
 ) => {
-  return React.forwardRef<any, P>((props, ref) => (
+  const Wrapped = (props: P) => (
     <Suspense fallback={<FallbackComponent />}>
-      <Component {...props} ref={ref} />
+      <Component {...props} />
     </Suspense>
-  ));
+  );
+  return Wrapped;
 };
 
 // Fallback Provider Context

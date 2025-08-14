@@ -39,6 +39,29 @@ This dual approach balances personalization with community engagement while mana
 ### Scheduled Community Challenges
 
 - **Daily Challenges**: Quick tasks refreshed every 24 hours
+### Scheduling Automation (Implemented - MVP)
+
+- Cloud Functions added to manage lifecycle:
+  - `activateChallenges` (hourly): moves `upcoming` → `active` when `startDate <= now`.
+  - `completeChallenges` (hourly): moves `active` → `completed` when `endDate <= now`.
+  - `scheduleWeeklyChallenges` (Mondays): seeds upcoming challenges from `challengeTemplates` with `recurrence`.
+- Client surfaces a minimal “Featured today/this week” chip on `ChallengesPage` using convenience helpers.
+  - Featured chips include subtle tooltips clarifying that base + bonus XP are available on completion.
+
+Indexes:
+- Ensure composite indexes exist for queries on `challenges` by `status`, `startDate`, `endDate` as needed by schedulers.
+
+
+### Reward Visibility (Base vs Bonus)
+
+- All challenge views should consistently display rewards as "Base" and "Bonus" where applicable.
+- Detail page: show Base XP and a compact list of potential bonuses.
+- Completion results: show total XP and a secondary line with "Base: +X / Bonus: +Y".
+
+### Practice UX (Minimal)
+
+- Keep “Log practice” quick action.
+- Show a subtle “Practiced today” indicator (text with dot) on the Challenges page when the user has logged practice for the day.
 - **Weekly Challenges**: More substantial challenges running Monday-Sunday
 - **Monthly Competitions**: Major challenges with significant depth
 - **Themed Series**: Connected challenges around seasonal or industry themes
@@ -503,7 +526,15 @@ exports.scheduleWeeklyChallenges = functions.pubsub
 Central location for discovering and participating in challenges:
 
 - **Active Challenges**: Currently available challenges
-- **Challenge Calendar**: Visual calendar of scheduled challenges
+- **Challenge Calendar**: Visual calendar of scheduled challenges. A compact strip (`src/components/features/challenges/ChallengeCalendar.tsx`) now appears on `ChallengesPage` with a "View all" link. The full list view is available at `/challenges/calendar` (`src/pages/ChallengeCalendarPage.tsx`).
+  - Accessibility & UX:
+    - Strip and page include polite live announcements with counts after load.
+    - Loading states are announced via `aria-busy`.
+    - The page includes a short subtitle clarifying cadence: “Daily challenges reset daily; Weekly challenges run Monday–Sunday.”
+  - Analytics:
+    - `challenge_calendar_strip_view` on strip data load
+    - `challenge_calendar_view_all_click` on “View all”
+    - `challenge_calendar_page_view` on page data load
 - **Leaderboards**: Rankings for different challenge types
 - **Upcoming Challenges**: Preview of future challenges
 - **Completed Challenges**: Archive of past challenges

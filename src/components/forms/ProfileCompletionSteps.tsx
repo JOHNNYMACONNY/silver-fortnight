@@ -89,7 +89,7 @@ export const BasicInfoStep: React.FC<StepComponentProps> = ({
         </p>
       </div>
 
-      <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-6 shadow-glass">
+      <div className="glassmorphic p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <GlassmorphicInput
             label="First Name"
@@ -156,7 +156,7 @@ export const BasicInfoStep: React.FC<StepComponentProps> = ({
         <div className={cn(
           'flex items-center space-x-2 text-sm transition-all duration-200 mt-4 p-3 rounded-lg',
           isValid 
-            ? 'backdrop-blur-sm bg-green-50/80 dark:bg-green-900/30 border border-green-200/50 dark:border-green-800/50 text-green-600 dark:text-green-400' 
+            ? 'backdrop-blur-sm bg-green-50/80 dark:bg-green-900/30 border border-success text-green-600 dark:text-green-400' 
             : 'backdrop-blur-sm bg-gray-50/80 dark:bg-gray-900/30 border border-gray-200/50 dark:border-gray-800/50 text-gray-500 dark:text-gray-400'
         )}>
           <div className={cn(
@@ -252,8 +252,8 @@ export const AvatarBioStep: React.FC<StepComponentProps> = ({
           <div className={cn(
             'w-32 h-32 rounded-full border-4 border-dashed transition-all duration-200 flex items-center justify-center overflow-hidden',
             avatarPreview 
-              ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
-              : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 hover:border-orange-500 dark:hover:border-orange-400'
+              ? 'border-success bg-green-50 dark:bg-green-900/20' 
+              : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 hover:border-ring dark:hover:border-ring'
           )}>
             {avatarPreview ? (
               <img
@@ -310,7 +310,7 @@ export const AvatarBioStep: React.FC<StepComponentProps> = ({
         value={data.bio || ''}
         onChange={(e) => onChange('bio', e.target.value)}
         variant="glass"
-        brandAccent="gradient"
+        brandAccent="adaptive"
         minRows={4}
         maxRows={8}
         showCharacterCount
@@ -447,7 +447,7 @@ export const TradingPreferencesStep: React.FC<StepComponentProps> = ({
               type="checkbox"
               checked={data.openToCounterOffers || false}
               onChange={(e) => onChange('openToCounterOffers', e.target.checked)}
-              className="w-4 h-4 text-orange-500 bg-white/20 border-white/30 rounded focus:ring-orange-500 focus:ring-2"
+              className="w-4 h-4 text-primary bg-white/20 border-border rounded focus:ring-ring focus:ring-2"
             />
             <span className="text-gray-900 dark:text-white">Open to counter-offers</span>
           </label>
@@ -457,7 +457,7 @@ export const TradingPreferencesStep: React.FC<StepComponentProps> = ({
               type="checkbox"
               checked={data.allowPartialTrades || false}
               onChange={(e) => onChange('allowPartialTrades', e.target.checked)}
-              className="w-4 h-4 text-blue-500 bg-white/20 border-white/30 rounded focus:ring-blue-500 focus:ring-2"
+              className="w-4 h-4 text-blue-500 bg-white/20 border-border rounded focus:ring-blue-500 focus:ring-2"
             />
             <span className="text-gray-900 dark:text-white">Allow partial trades</span>
           </label>
@@ -467,7 +467,7 @@ export const TradingPreferencesStep: React.FC<StepComponentProps> = ({
               type="checkbox"
               checked={data.mentorNewTraders || false}
               onChange={(e) => onChange('mentorNewTraders', e.target.checked)}
-              className="w-4 h-4 text-purple-500 bg-white/20 border-white/30 rounded focus:ring-purple-500 focus:ring-2"
+              className="w-4 h-4 text-purple-500 bg-white/20 border-border rounded focus:ring-purple-500 focus:ring-2"
             />
             <span className="text-gray-900 dark:text-white">Help mentor new traders</span>
           </label>
@@ -477,7 +477,7 @@ export const TradingPreferencesStep: React.FC<StepComponentProps> = ({
               type="checkbox"
               checked={data.receiveRecommendations || false}
               onChange={(e) => onChange('receiveRecommendations', e.target.checked)}
-              className="w-4 h-4 text-green-500 bg-white/20 border-white/30 rounded focus:ring-green-500 focus:ring-2"
+              className="w-4 h-4 text-green-500 bg-white/20 border-border rounded focus:ring-green-500 focus:ring-2"
             />
             <span className="text-gray-900 dark:text-white">Receive trade recommendations</span>
           </label>
@@ -485,35 +485,35 @@ export const TradingPreferencesStep: React.FC<StepComponentProps> = ({
       </div>
 
       {/* Communication Preferences */}
-      <div className="bg-white/10 dark:bg-gray-800/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-gray-700/30">
+      <div className="glassmorphic p-4">
         <h4 className="font-medium text-gray-900 dark:text-white mb-3">Communication Preferences</h4>
         <div className="space-y-3">
           <label className="flex items-center space-x-3">
-            <input
+              <input
               type="checkbox"
               checked={data.emailNotifications || true}
               onChange={(e) => onChange('emailNotifications', e.target.checked)}
-              className="w-4 h-4 text-orange-500 bg-white/20 border-white/30 rounded focus:ring-orange-500 focus:ring-2"
+              className="w-4 h-4 text-primary bg-white/20 border-border rounded focus:ring-ring focus:ring-2"
             />
             <span className="text-sm text-gray-900 dark:text-white">Email notifications for new trade offers</span>
           </label>
 
           <label className="flex items-center space-x-3">
-            <input
+              <input
               type="checkbox"
               checked={data.weeklyDigest || true}
               onChange={(e) => onChange('weeklyDigest', e.target.checked)}
-              className="w-4 h-4 text-blue-500 bg-white/20 border-white/30 rounded focus:ring-blue-500 focus:ring-2"
+                className="w-4 h-4 text-blue-500 bg-white/20 border-border rounded focus:ring-blue-500 focus:ring-2"
             />
             <span className="text-sm text-gray-900 dark:text-white">Weekly digest of recommended trades</span>
           </label>
 
           <label className="flex items-center space-x-3">
-            <input
+              <input
               type="checkbox"
               checked={data.communityUpdates || false}
               onChange={(e) => onChange('communityUpdates', e.target.checked)}
-              className="w-4 h-4 text-purple-500 bg-white/20 border-white/30 rounded focus:ring-purple-500 focus:ring-2"
+                className="w-4 h-4 text-purple-500 bg-white/20 border-border rounded focus:ring-purple-500 focus:ring-2"
             />
             <span className="text-sm text-gray-900 dark:text-white">Community updates and news</span>
           </label>
@@ -568,7 +568,7 @@ export const ProfileReviewStep: React.FC<StepComponentProps> = ({
       </div>
 
       {/* Profile Summary */}
-      <div className="bg-white/10 dark:bg-gray-800/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 dark:border-gray-700/30">
+      <div className="glassmorphic p-6">
         <div className="flex items-start space-x-4">
           {/* Avatar */}
           <div className="flex-shrink-0">
@@ -576,7 +576,7 @@ export const ProfileReviewStep: React.FC<StepComponentProps> = ({
               <img
                 src={typeof data.avatar === 'string' ? data.avatar : URL.createObjectURL(data.avatar)}
                 alt="Profile avatar"
-                className="w-16 h-16 rounded-full object-cover border-2 border-white/30"
+                className="w-16 h-16 rounded-full object-cover border-2 border-glass"
               />
             ) : (
               <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-blue-500 rounded-full flex items-center justify-center">
@@ -606,7 +606,7 @@ export const ProfileReviewStep: React.FC<StepComponentProps> = ({
 
         {/* Bio */}
         {data.bio && (
-          <div className="mt-4 pt-4 border-t border-white/10 dark:border-gray-700/20">
+                  <div className="mt-4 pt-4 border-t border-border">
             <h5 className="font-medium text-gray-900 dark:text-white mb-2">About</h5>
             <p className="text-gray-700 dark:text-gray-300 text-sm">{data.bio}</p>
           </div>
@@ -622,7 +622,7 @@ export const ProfileReviewStep: React.FC<StepComponentProps> = ({
       </div>
 
       {/* Trading Preferences Summary */}
-      <div className="bg-white/10 dark:bg-gray-800/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 dark:border-gray-700/30">
+      <div className="glassmorphic p-6">
         <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Trading Preferences</h4>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -651,7 +651,7 @@ export const ProfileReviewStep: React.FC<StepComponentProps> = ({
                 return (
                   <span
                     key={interest}
-                    className="px-3 py-1 bg-gradient-to-r from-orange-500/20 to-blue-500/20 text-gray-900 dark:text-white rounded-full text-xs font-medium border border-white/20"
+                    className="px-3 py-1 bg-gradient-to-r from-orange-500/20 to-blue-500/20 text-gray-900 dark:text-white rounded-full text-xs font-medium border border-border"
                   >
                     {category?.label}
                   </span>
@@ -682,8 +682,8 @@ export const ProfileReviewStep: React.FC<StepComponentProps> = ({
             </div>
           )}
           {data.receiveRecommendations && (
-            <div className="flex items-center text-sm text-orange-600 dark:text-orange-400">
-              <span className="w-4 h-4 bg-orange-500 rounded-full mr-2"></span>
+            <div className="flex items-center text-sm text-primary">
+              <span className="w-4 h-4 bg-primary rounded-full mr-2"></span>
               Receives trade recommendations
             </div>
           )}
@@ -691,7 +691,7 @@ export const ProfileReviewStep: React.FC<StepComponentProps> = ({
       </div>
 
       {/* Welcome Message */}
-      <div className="bg-gradient-to-r from-orange-500/10 to-blue-500/10 backdrop-blur-sm rounded-xl p-6 border border-orange-200/30 dark:border-orange-700/30">
+      <div className="glassmorphic p-6">
         <div className="flex items-center space-x-3">
           <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-blue-500 rounded-full flex items-center justify-center">
             <span className="text-white text-xl">🎉</span>

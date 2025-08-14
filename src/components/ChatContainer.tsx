@@ -5,10 +5,11 @@
  */
 
 import React, { useState } from 'react';
+import { useToast } from '../contexts/ToastContext';
 import { ChatConversationList } from './ChatConversationList';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatInput } from './ChatInput';
-import { ChatConversation } from '../services/chat/chatService';
+import type { ChatConversation } from '../types/chat';
 
 // Icons
 const ArrowLeftIcon = () => (
@@ -26,17 +27,18 @@ const InfoIcon = () => (
 export const ChatContainer: React.FC = () => {
   const [selectedConversation, setSelectedConversation] = useState<ChatConversation | null>(null);
   const [showConversationList, setShowConversationList] = useState(true);
+  const { addToast } = useToast();
   
   // Handle new conversation
   const handleNewConversation = () => {
     // This would typically open a modal to select users
-    alert('New conversation functionality would be implemented here');
+    addToast('info', 'New conversation flow coming soon.');
   };
   
   // Get conversation display name
   const getConversationName = (conversation: ChatConversation) => {
     if (conversation.type === 'group') {
-      return conversation.name;
+      return (conversation as any).title;
     }
     
     // For direct conversations, show the other participant's name

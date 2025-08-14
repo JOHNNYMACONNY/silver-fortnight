@@ -164,7 +164,7 @@ export const SkillAssessmentInterface: React.FC<SkillAssessmentInterfaceProps> =
   const getConfidenceColor = (conf: number) => {
     if (conf >= 8) return 'text-green-400';
     if (conf >= 6) return 'text-yellow-400';
-    if (conf >= 4) return 'text-orange-400';
+    if (conf >= 4) return 'text-primary';
     return 'text-red-400';
   };
 
@@ -185,7 +185,7 @@ export const SkillAssessmentInterface: React.FC<SkillAssessmentInterfaceProps> =
         /* Analytics View */
         <div className="space-y-6">
           {/* Current Progress */}
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="glassmorphic">
             <CardHeader>
               <CardTitle className="text-white flex items-center space-x-2">
                 <BarChart3 className="w-5 h-5" />
@@ -246,7 +246,7 @@ export const SkillAssessmentInterface: React.FC<SkillAssessmentInterfaceProps> =
           {/* Strengths and Improvements */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Strengths */}
-            <Card className="bg-green-500/10 backdrop-blur-md border-green-500/20">
+            <Card className="glassmorphic">
               <CardHeader>
                 <CardTitle className="text-green-300 flex items-center space-x-2">
                   <Star className="w-5 h-5" />
@@ -269,23 +269,23 @@ export const SkillAssessmentInterface: React.FC<SkillAssessmentInterfaceProps> =
             </Card>
 
             {/* Improvement Areas */}
-            <Card className="bg-orange-500/10 backdrop-blur-md border-orange-500/20">
+            <Card className="glassmorphic">
               <CardHeader>
-                <CardTitle className="text-orange-300 flex items-center space-x-2">
+                <CardTitle className="text-primary flex items-center space-x-2">
                   <Lightbulb className="w-5 h-5" />
                   <span>Areas for Growth</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
-                  {analytics.improvementAreas.map((area, index) => (
-                    <li key={index} className="text-orange-200 text-sm flex items-start space-x-2">
+                    {analytics.improvementAreas.map((area, index) => (
+                    <li key={index} className="text-primary/70 text-sm flex items-start space-x-2">
                       <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                       <span>{area}</span>
                     </li>
                   ))}
                   {analytics.improvementAreas.length === 0 && (
-                    <li className="text-orange-200 text-sm">Keep up the great work!</li>
+                    <li className="text-primary/70 text-sm">Keep up the great work!</li>
                   )}
                 </ul>
               </CardContent>
@@ -293,7 +293,7 @@ export const SkillAssessmentInterface: React.FC<SkillAssessmentInterfaceProps> =
           </div>
 
           {/* Recent Activity */}
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="glassmorphic">
             <CardHeader>
               <CardTitle className="text-white flex items-center space-x-2">
                 <Clock className="w-5 h-5" />
@@ -340,7 +340,7 @@ export const SkillAssessmentInterface: React.FC<SkillAssessmentInterfaceProps> =
         </div>
       ) : (
         /* Assessment Form */
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardHeader>
             <CardTitle className="text-white flex items-center space-x-2">
               <Brain className="w-5 h-5" />

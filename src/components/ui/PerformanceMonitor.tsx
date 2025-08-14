@@ -322,7 +322,7 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   // Render development overlay
   if (showOverlay && showDevOverlay && process.env.NODE_ENV !== 'production') {
     return (
-      <div className="fixed top-4 right-4 z-50 bg-black bg-opacity-90 text-white p-4 rounded-lg max-w-md text-sm font-mono">
+      <div className="fixed top-4 right-4 z-overlay bg-black bg-opacity-90 text-white p-4 rounded-lg max-w-md text-sm font-mono">
         <div className="flex justify-between items-center mb-2">
           <h3 className="text-lg font-bold">Performance Monitor</h3>
           <button

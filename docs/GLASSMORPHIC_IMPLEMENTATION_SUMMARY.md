@@ -90,9 +90,13 @@ TradeYa has been comprehensively enhanced with modern glassmorphic design patter
 
 ### **Glassmorphic Patterns**
 ```tsx
-// Standard glassmorphic container
-<div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl shadow-glass">
+// Standard glassmorphic container (canonical)
+<div className="glassmorphic rounded-xl">
 ```
+
+### **Quality Controls Added**
+- CI style audit to block ad‑hoc glass combinations on surfaces (`npm run lint:glass`).
+- Documentation updated to define exceptions (navbar, overlays) and reinforce tokenized borders.
 
 ### **Brand Integration**
 - **Orange**: Primary brand color for highlights and interactions

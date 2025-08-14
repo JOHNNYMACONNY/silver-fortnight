@@ -38,7 +38,7 @@ export const CreateCollaborationPage: React.FC = () => {
       <div className="mb-6">
         <Link
           to="/collaborations"
-          className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/90"
+          className="inline-flex items-center text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
         >
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back to Collaborations

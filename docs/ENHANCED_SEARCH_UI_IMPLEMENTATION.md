@@ -19,7 +19,7 @@ This document outlines the implementation of enhanced search UI components for t
 
 #### **New Enhanced Search UI:**
 - ✅ **Premium Glassmorphic Design**: Elevated search bar with glassmorphism effects
-- ✅ **3D Tilt Effects**: Interactive 3D tilt with brand-colored glows
+- ❌ 3D Tilt Effects removed (simplified for clarity and performance)
 - ✅ **Rich Visual Hierarchy**: Clear focus states, icons, and typography
 - ✅ **Smart Search Suggestions**: Popular searches with smooth animations
 - ✅ **Enhanced Filter Integration**: Modal filter panel with tabbed interface
@@ -27,6 +27,23 @@ This document outlines the implementation of enhanced search UI components for t
 - ✅ **Smooth Animations**: Framer Motion powered micro-interactions
 - ✅ **Brand-Colored Accents**: Orange theme matching premium cards
 - ✅ **Responsive Design**: Works beautifully on all screen sizes
+
+## 🧭 **Simplicity Guardrails & MVP Scope**
+
+- **MVP focuses on core tasks**:
+  - `EnhancedSearchBar`: debounced input, clear button, results count, loading state.
+  - `EnhancedFilterPanel`: single modal/drawer with up to 4 core categories; presets optional.
+  - No command palette in MVP; consider later for power users.
+  - No dedicated results route in MVP; add later if usage warrants.
+- **Progressive disclosure**:
+  - Hide advanced options behind a “More filters” link.
+  - Persist only active filters in URL; avoid verbose query strings.
+- **Mobile-first**:
+  - Filters open as a full-screen drawer; large touch targets; respect reduced motion.
+- **Performance guardrails**:
+  - 300ms debounce; cancel in-flight requests; memoize lists; lazy-render panel content.
+
+This keeps the default experience simple while leaving room to grow for power users.
 
 ## 🚀 **Components Implemented**
 
@@ -36,7 +53,8 @@ This document outlines the implementation of enhanced search UI components for t
 
 **Key Features:**
 - **Premium Glassmorphic Design**: Card-based search bar with glassmorphism effects
-- **3D Tilt Effects**: Interactive 3D tilt with brand-colored glows
+- 3D tilt removed per latest UX decision; glow and glassmorphism retained
+- **Full-width Input**: Input field expands to fill the entire bar for comfortable typing
 - **Smart Suggestions**: Popular search terms with click-to-search
 - **Clear Button**: Animated clear button that appears when typing
 - **Filter Integration**: Enhanced filter button with active state indicator
@@ -103,16 +121,18 @@ interface EnhancedSearchBarProps {
 - **Filter Status**: Badge indicating when filters are active
 
 ### **2. Accessibility Improvements**
-- **Keyboard Navigation**: Full keyboard support for all interactions
-- **Screen Reader Support**: Proper ARIA labels and descriptions
-- **Focus Management**: Logical tab order and focus trapping
-- **Reduced Motion**: Respects user's motion preferences
+- **Keyboard Navigation**: Full keyboard support for all interactions (confirmed)
+- **Screen Reader Support**: Proper ARIA labels and descriptions (confirmed)
+- **Focus Management**: Logical tab order and focus trapping (Modal now traps focus and restores to trigger)
+- **Reduced Motion**: Respects user's motion preferences (motion-reduce utilities and runtime guards applied)
 
 ### **3. Performance Optimizations**
-- **Debounced Search**: 300ms delay to prevent excessive API calls
-- **Lazy Loading**: Filter panel only renders when opened
-- **Memoized Components**: Prevents unnecessary re-renders
-- **Efficient Animations**: Hardware-accelerated transforms
+- **Debounced Search**: 300ms delay to prevent excessive API calls (implemented)
+- **Lazy Loading**: Filter panel only renders when opened (implemented)
+- **Memoized Components**: Prevents unnecessary re-renders (implemented)
+- **Efficient Animations**: Hardware-accelerated transforms with reduced-motion fallbacks (implemented)
+- **Request Cancellation Guards**: Ignore stale responses when a newer request finishes first (implemented)
+- **Realtime Backing Data**: Trades/Collaborations lists now use Firestore realtime subscriptions with efficient pagination and proper cleanup
 
 ## 🔧 **Integration Points**
 
@@ -141,6 +161,105 @@ interface EnhancedSearchBarProps {
     onClearFilters={() => setFilters({})}
   />
 </div>
+```
+
+### **TradesPage Integration**
+
+```typescript
+// File: src/pages/TradesPage.tsx
+<Box className="mb-8">
+  <EnhancedSearchBar
+    searchTerm={searchTerm}
+    onSearchChange={handleSearchTermChange}
+    onSearch={(term) => search(term, filters)}
+    onToggleFilters={() => setShowFilterPanel(true)}
+    hasActiveFilters={hasActiveFilters}
+    resultsCount={searchTerm || hasActiveFilters ? totalCount : enhancedTrades.length}
+    isLoading={loading || searchLoading}
+    placeholder="Search trades by title, offered or wanted skills..."
+  />
+
+  <EnhancedFilterPanel
+    isOpen={showFilterPanel}
+    onClose={() => setShowFilterPanel(false)}
+    filters={filters}
+    onFiltersChange={(f) => { setFilters(f); search(searchTerm, f); }}
+    onClearFilters={() => { setFilters({}); clearSearch(); }}
+  />
+</Box>
+```
+
+### **Realtime subscriptions (Firestore) – MVP constraints**
+
+- Initialize Firebase before subscribing. Use `getFirebaseInstances()` and await it in an `async` IIFE inside `useEffect` before calling `onSnapshot`.
+- Prefer simple live queries to avoid composite indexes in MVP:
+  - Use `orderBy('createdAt','desc'), limit(N)`.
+  - Apply light client-side filtering for visibility (e.g., statuses like `open`, `recruiting`).
+- If you need server-side filters (e.g., `where('status','==','open')` + `orderBy('createdAt')`), add a composite index first per Firebase docs and then move filters server-side.
+- Ensure the field used in `orderBy` exists on documents (e.g., `createdAt`).
+
+### **Recent Updates (Aug 2025)**
+
+- Input now uses `w-full` and container is `w-full` to prevent scrunching at the left edge.
+- Removed outer card wrapper on `TradesPage` search section to eliminate double background.
+- Disabled 3D tilt in `EnhancedSearchBar`.
+- Suggestions only display when the input is focused and non-empty.
+- Filter panel: added a top “Clear all” control near active chips; footer action retained.
+- TradesPage: added a page-level “Clear search” link below the search section (only when a term is present).
+- CollaborationsPage: mirrored the page-level “Clear search” link.
+- CollaborationsPage: added summary `StatChip` row (Results/Saved/Joined), sticky search with blur on mobile, `aria-live` results messaging, and a simple Load more paginator (12 per increment).
+- CollaborationsPage: live query now orders by `createdAt` and filters statuses client-side to avoid composite index requirements in MVP; server-side filtering for skills has been added via `skillsIndex` with composite indexes deployed.
+
+### **Backend Search Parity: Trades and Collaborations**
+
+- Trades and Collaborations both use a normalized `skillsIndex: string[]` for server-side filtering with `array-contains-any`.
+- The filter panel emits `filters.skills` which maps to backend `skillsIndex` queries (lowercased, capped at 10 values per Firestore constraints).
+- Composite indexes are defined in `firestore.indexes.json` for common combinations (skills + status/category + orderBy).
+
+### **Data Migration Utilities**
+
+- Backfill scripts:
+  - Trades: `scripts/backfill-trade-skills-index.ts`
+  - Collaborations: `scripts/backfill-collab-skills-index.ts`
+
+Run (dry):
+```bash
+npx tsx scripts/backfill-collab-skills-index.ts --project=YOUR_PROJECT_ID --dry
+```
+Execute:
+```bash
+npx tsx scripts/backfill-collab-skills-index.ts --project=YOUR_PROJECT_ID
+```
+
+URL persistence on `TradesPage`:
+
+```typescript
+// Load from URL on mount
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  setSearchFilter(prev => ({ ...prev, searchTerm: params.get('q') || '' }));
+  const loaded: any = {};
+  if (params.get('status')) loaded.status = params.get('status');
+  if (params.get('category')) loaded.category = params.get('category');
+  if (params.get('time')) loaded.timeCommitment = params.get('time');
+  if (params.get('skillLevel')) loaded.skillLevel = params.get('skillLevel');
+  const skills = params.getAll('skills');
+  if (skills.length) loaded.skills = skills;
+  if (Object.keys(loaded).length) setFilters(loaded);
+}, []);
+
+// Sync to URL on change
+useEffect(() => {
+  const params = new URLSearchParams();
+  if (searchFilter.searchTerm) params.set('q', searchFilter.searchTerm);
+  if (filters.status) params.set('status', String(filters.status));
+  if (filters.category) params.set('category', String(filters.category));
+  if (filters.timeCommitment) params.set('time', String(filters.timeCommitment));
+  if (filters.skillLevel) params.set('skillLevel', String(filters.skillLevel));
+  if (Array.isArray(filters.skills)) filters.skills.forEach((s: string) => params.append('skills', s));
+  const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+  window.history.replaceState({}, '', newUrl);
+}, [searchFilter.searchTerm, filters]);
 ```
 
 ### **State Management**

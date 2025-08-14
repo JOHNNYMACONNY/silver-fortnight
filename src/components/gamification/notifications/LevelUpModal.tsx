@@ -68,7 +68,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   className={cn(
                     'absolute w-2 h-2 rounded-full',
                     i % 4 === 0 ? 'bg-yellow-400' :
-                    i % 4 === 1 ? 'bg-orange-500' :
+                    i % 4 === 1 ? 'bg-primary' :
                     i % 4 === 2 ? 'bg-purple-500' : 'bg-blue-500'
                   )}
                   initial={{
@@ -105,7 +105,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
             {...animations}
           >
             {/* Gradient border effect */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-yellow-400 via-orange-500 to-purple-600 p-[2px] -z-card-layer-1">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-yellow-400 via-primary to-purple-600 p-[2px] -z-card-layer-1">
               <div className="w-full h-full rounded-2xl bg-card" />
             </div>
             
@@ -123,7 +123,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
               <motion.h2
                 className={cn(
                   'text-3xl font-bold mb-2',
-                  'bg-gradient-to-r from-yellow-400 via-orange-500 to-purple-600 bg-clip-text text-transparent'
+                  'bg-gradient-to-r from-yellow-400 via-primary to-purple-600 bg-clip-text text-transparent'
                 )}
                 initial={isReducedMotion ? {} : { opacity: 0, y: 20 }}
                 animate={isReducedMotion ? {} : { opacity: 1, y: 0 }}
@@ -159,7 +159,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                 
                 {/* Arrow */}
                 <motion.div
-                  className="text-2xl text-orange-500"
+                  className="text-2xl text-primary"
                   initial={isReducedMotion ? {} : { x: -20, opacity: 0 }}
                   animate={isReducedMotion ? {} : { x: 0, opacity: 1 }}
                   transition={{ delay: 0.6 }}
@@ -191,8 +191,8 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                 <motion.div
                   className={cn(
                     'text-center p-4 rounded-lg',
-                    'bg-gradient-to-r from-orange-500/10 to-purple-600/10',
-                    'border border-orange-500/20'
+                    'bg-gradient-to-r from-primary/10 to-purple-600/10',
+                    'border border-primary/20'
                   )}
                   initial={isReducedMotion ? {} : { opacity: 0, y: 20 }}
                   animate={isReducedMotion ? {} : { opacity: 1, y: 0 }}
@@ -201,9 +201,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   <h3 className="text-xl font-bold mb-2 text-foreground">
                     {levelTier.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {levelTier.description}
-                  </p>
+                  {/* LevelTier has no description field in types; omit */}
                   
                   {notification.benefits && notification.benefits.length > 0 && (
                     <div className="mt-3">
@@ -230,9 +228,9 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                 onClick={onClose}
                 className={cn(
                   'w-full py-3 px-4 rounded-lg font-medium',
-                  'bg-gradient-to-r from-orange-500 to-purple-600',
+                  'bg-gradient-to-r from-primary to-purple-600',
                   'text-primary-foreground shadow-lg',
-                  'hover:from-orange-600 hover:to-purple-700',
+                  'hover:from-primary/80 hover:to-purple-700',
                   'transition-all duration-200',
                   'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
                 )}

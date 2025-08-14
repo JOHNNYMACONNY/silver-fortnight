@@ -12,8 +12,13 @@ jest.mock('../contexts/ToastContext', () => ({
   useToast: () => ({ addToast: jest.fn() }),
 }));
 
+// Mock business metrics
+jest.mock('../contexts/PerformanceContext', () => ({
+  useBusinessMetrics: () => ({ track: jest.fn() })
+}));
+
 // Mock services
-const challengesMock = [
+const mockChallenges = [
   {
     id: 'a1',
     title: 'Active One',
@@ -77,8 +82,8 @@ const challengesMock = [
 ];
 
 jest.mock('../services/challenges', () => ({
-  getChallenges: jest.fn().mockResolvedValue({ success: true, challenges: challengesMock }),
-  getUserChallenges: jest.fn().mockResolvedValue({ success: true, challenges: [challengesMock[2]] }),
+  getChallenges: jest.fn().mockResolvedValue({ success: true, challenges: mockChallenges }),
+  getUserChallenges: jest.fn().mockResolvedValue({ success: true, challenges: [mockChallenges[2]] }),
   onActiveChallenges: (cb: (items: any[]) => void) => { cb([]); return () => {}; },
   getRecommendedChallenges: jest.fn().mockResolvedValue({ success: true, challenges: [] }),
   joinChallenge: jest.fn().mockResolvedValue({ success: true }),
@@ -94,8 +99,8 @@ describe('ChallengesPage tabs', () => {
       </MemoryRouter>
     );
 
-    // Wait for initial render
-    await screen.findByText(/Challenges/i);
+    // Wait for initial render (header present)
+    await screen.findAllByText(/Challenges/i);
 
     // Click Active tab
     const activeTab = screen.getByRole('button', { name: /Active/i });
@@ -115,7 +120,7 @@ describe('ChallengesPage tabs', () => {
       </MemoryRouter>
     );
 
-    await screen.findByText(/Challenges/i);
+    await screen.findAllByText(/Challenges/i);
 
     // Click My Challenges tab
     const mineTab = screen.getByRole('button', { name: /My Challenges/i });

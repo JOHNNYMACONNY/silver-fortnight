@@ -172,7 +172,7 @@ export const SkillProgressDashboard: React.FC<SkillProgressDashboardProps> = ({
 
       {/* Overall Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardContent className="p-6 text-center">
             <div className="text-3xl font-bold text-blue-400 mb-2">
               {getOverallProgress()}%
@@ -181,7 +181,7 @@ export const SkillProgressDashboard: React.FC<SkillProgressDashboardProps> = ({
           </CardContent>
         </Card>
 
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardContent className="p-6 text-center">
             <div className="text-3xl font-bold text-green-400 mb-2">
               {getAverageCompetency()}
@@ -190,7 +190,7 @@ export const SkillProgressDashboard: React.FC<SkillProgressDashboardProps> = ({
           </CardContent>
         </Card>
 
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardContent className="p-6 text-center">
             <div className="text-3xl font-bold text-purple-400 mb-2">
               {Object.keys(skillAnalytics).length}
@@ -201,7 +201,7 @@ export const SkillProgressDashboard: React.FC<SkillProgressDashboardProps> = ({
       </div>
 
       {/* Skills Grid */}
-      <Card className="bg-white/10 backdrop-blur-md border-white/20">
+      <Card className="glassmorphic">
         <CardHeader>
           <CardTitle className="text-white flex items-center space-x-2">
             <Target className="w-5 h-5" />
@@ -304,7 +304,7 @@ export const SkillProgressDashboard: React.FC<SkillProgressDashboardProps> = ({
 
       {/* Skill Gaps */}
       {skillGaps.length > 0 && (
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardHeader>
             <CardTitle className="text-white flex items-center space-x-2">
               <AlertTriangle className="w-5 h-5" />

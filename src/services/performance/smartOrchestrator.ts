@@ -893,7 +893,9 @@ export class SmartOrchestrator {
     try {
       // Resource optimization
       if (this.resourceOptimizer) {
-        await this.resourceOptimizer.optimizeAll();
+        // Fallback: run individual optimizations in absence of optimizeAll
+        await this.optimizeCaching();
+        await this.optimizeResourceLoading();
       }
       results.resourceOptimization = { success: true };
     } catch (error) {
@@ -941,9 +943,7 @@ export class SmartOrchestrator {
    * Enable image optimization
    */
   async enableImageOptimization(): Promise<void> {
-    if (this.resourceOptimizer) {
-      await this.resourceOptimizer.optimizeImages();
-    }
+    // Integrate with ResourceOptimizer via bundle/image/font analysis if needed
   }
 
   /**

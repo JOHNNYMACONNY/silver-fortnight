@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { Button } from './ui/Button';
 
 const ComprehensiveThemeTest: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
@@ -52,18 +53,12 @@ const ComprehensiveThemeTest: React.FC = () => {
             <p><strong>HTML classes:</strong> {document.documentElement.className || 'none'}</p>
             <p><strong>LocalStorage:</strong> {localStorage.getItem('theme') || 'not set'}</p>
           </div>
-          <button 
-            onClick={toggleTheme}
-            className="px-4 py-2 bg-blue-500 dark:bg-blue-600 text-white rounded hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
-          >
+          <Button onClick={toggleTheme}>
             Toggle Theme (Current: {theme})
-          </button>
-          <button 
-            onClick={runTests}
-            className="ml-2 px-4 py-2 bg-green-500 dark:bg-green-600 text-white rounded hover:bg-green-600 dark:hover:bg-green-700 transition-colors"
-          >
+          </Button>
+          <Button onClick={runTests} variant="success" className="ml-2">
             Run Tests
-          </button>
+          </Button>
         </div>
 
         {/* Test Results */}
@@ -129,15 +124,15 @@ const ComprehensiveThemeTest: React.FC = () => {
           <div className="space-y-4">
             <h3 className="font-semibold">Interactive Elements</h3>
             <div className="space-x-2">
-              <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded transition-colors">
+              <Button>
                 Primary Button
-              </button>
-              <button className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded transition-colors">
+              </Button>
+              <Button variant="secondary" className="ml-2">
                 Secondary Button
-              </button>
-              <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 rounded transition-colors">
+              </Button>
+              <Button variant="outline" className="ml-2">
                 Outline Button
-              </button>
+              </Button>
             </div>
           </div>
 

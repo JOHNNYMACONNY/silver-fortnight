@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
-import { db } from '../firebase-config';
+import { getSyncFirebaseDb } from '../firebase-config';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 
 export const MessageTestPage: React.FC = () => {
@@ -20,8 +20,8 @@ export const MessageTestPage: React.FC = () => {
     console.log('Directly testing conversation:', conversationId);
 
     // Create a direct reference to the messages subcollection
-    const messagesRef = collection(db(), 'conversations', conversationId, 'messages');
-    const q = query(messagesRef, orderBy('createdAt', 'asc'));
+    const messagesRef = collection(getSyncFirebaseDb(), 'conversations', conversationId, 'messages');
+    const q = query(messagesRef as any, orderBy('createdAt', 'asc'));
 
     // Set up real-time listener
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -32,9 +32,10 @@ export const MessageTestPage: React.FC = () => {
         const messagesList: any[] = [];
 
         snapshot.forEach((doc) => {
+          const raw = doc.data();
           const messageData = {
             id: doc.id,
-            ...doc.data()
+            ...(raw && typeof raw === 'object' ? raw : {})
           };
           console.log('Direct test - found message:', doc.id, messageData);
           messagesList.push(messageData);
@@ -56,7 +57,7 @@ export const MessageTestPage: React.FC = () => {
 
     // Clean up listener on unmount
     return () => unsubscribe();
-  }, [currentUser, db]);
+  }, [currentUser]);
 
   // Format date
   const formatDate = (timestamp: any) => {

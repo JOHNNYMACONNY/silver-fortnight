@@ -58,31 +58,24 @@ export const GlassmorphicInput = forwardRef<HTMLInputElement, GlassmorphicInputP
     // Phase 6.1: Sophisticated input variants with advanced glassmorphism
     const inputVariants = {
       glass: `
-        backdrop-blur-sm bg-white/10 dark:bg-neutral-900/10
-        border border-white/20 dark:border-neutral-700/30
-        focus:bg-white/20 dark:focus:bg-neutral-900/20
-        focus:border-white/40 dark:focus:border-neutral-600/40
+        glassmorphic
+        border-glass
         shadow-sm focus:shadow-md
       `,
       'elevated-glass': `
-        backdrop-blur-md bg-white/20 dark:bg-neutral-900/20
-        border-2 border-white/30 dark:border-neutral-700/40
+        glassmorphic
+        border-strong border-2
         shadow-lg focus:shadow-xl
-        focus:bg-white/30 dark:focus:bg-neutral-900/30
-        focus:border-white/50 dark:focus:border-neutral-600/50
       `,
       'inset-glass': `
-        backdrop-blur-sm bg-white/5 dark:bg-neutral-900/5
-        border border-white/10 dark:border-neutral-700/20
+        glassmorphic
+        border-standard
         shadow-inset shadow-black/10 dark:shadow-white/5
-        focus:shadow-inset-lg focus:bg-white/15 dark:focus:bg-neutral-900/15
-        focus:border-white/30 dark:focus:border-neutral-600/30
+        focus:shadow-inset-lg
       `,
       'floating-glass': `
-        backdrop-blur-md bg-white/15 dark:bg-neutral-900/15
-        border border-white/25 dark:border-neutral-700/35
-        focus:bg-white/25 dark:focus:bg-neutral-900/25
-        focus:border-white/45 dark:focus:border-neutral-600/45
+        glassmorphic
+        border-glass
         shadow-md focus:shadow-lg
         transform transition-transform duration-200
         focus:scale-[1.02] hover:scale-[1.01]
@@ -96,13 +89,11 @@ export const GlassmorphicInput = forwardRef<HTMLInputElement, GlassmorphicInputP
     };
 
     const brandAccentClasses = {
-      orange: 'focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50',
-      blue: 'focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50',
-      purple: 'focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50',
+      orange: 'focus:ring-2 focus:ring-ring focus:border-ring',
+      blue: 'focus:ring-2 focus:ring-ring focus:border-ring',
+      purple: 'focus:ring-2 focus:ring-ring focus:border-ring',
       adaptive: `
-        focus:ring-2 focus:ring-gradient-to-r 
-        focus:from-orange-500/30 focus:via-blue-500/30 focus:to-purple-500/30
-        focus:border-gradient-to-r focus:from-orange-500/50 focus:via-blue-500/50 focus:to-purple-500/50
+        focus:ring-2 focus:ring-ring focus:border-ring
       `
     };
 

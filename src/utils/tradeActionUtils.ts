@@ -61,23 +61,10 @@ export const getTradeActions = (trade: Trade, userId: string | null): TradeActio
       }
 
       case 'pending_evidence': {
-        // Check if this user has already submitted evidence
-        const isCreator = trade.creatorId === userId;
-        const hasSubmittedEvidence = isCreator
-          ? (trade.creatorEvidence && trade.creatorEvidence.length > 0)
-          : (trade.participantEvidence && trade.participantEvidence.length > 0);
-
-        if (hasSubmittedEvidence) {
-          return {
-            primaryAction: 'Waiting for Other User',
-            primaryDisabled: true
-          };
-        } else {
-          return {
-            primaryAction: 'Submit Evidence',
-            primaryDisabled: false
-          };
-        }
+        return {
+          primaryAction: 'Submit Evidence',
+          primaryDisabled: false
+        };
       }
 
       case 'pending_confirmation': {

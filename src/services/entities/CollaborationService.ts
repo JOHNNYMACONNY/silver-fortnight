@@ -1,6 +1,5 @@
 import { where, orderBy, limit as limitQuery, QueryConstraint, Timestamp } from 'firebase/firestore';
 import { BaseService } from '../core/BaseService';
-import { collaborationConverter } from '../firestoreConverters';
 import { ServiceResult } from '../../types/ServiceError';
 import { CollaborationRoleData } from '../../types/collaboration';
 import { AppError, ErrorCode, ErrorSeverity } from '../../types/errors';
@@ -39,6 +38,8 @@ export interface Collaboration {
   collaborators?: string[];
   images?: string[];
   category?: string;
+  // Normalized skills index for server-side filtering (lowercased unique names)
+  skillsIndex?: string[];
 }
 
 export interface CollaborationFilters {
@@ -63,7 +64,7 @@ export interface CollaborationFilters {
  */
 export class CollaborationService extends BaseService<Collaboration> {
   constructor() {
-    super(COLLABORATIONS_COLLECTION, collaborationConverter);
+    super(COLLABORATIONS_COLLECTION);
   }
 
   /**
@@ -73,11 +74,21 @@ export class CollaborationService extends BaseService<Collaboration> {
     try {
       this.validateData(collaborationData, ['title', 'description', 'roles', 'creatorId', 'skillsRequired', 'maxParticipants']);
       
+      const computeSkillsIndex = (required: string[] = [], needed: string[] = []): string[] => {
+        const normalized = new Set<string>();
+        [...required, ...needed].forEach((s) => {
+          const name = (s || '').toString().trim().toLowerCase();
+          if (name) normalized.add(name);
+        });
+        return Array.from(normalized);
+      };
+
       const collaborationWithTimestamps = this.addTimestamps({
         ...collaborationData,
         status: 'open' as CollaborationStatus,
         participants: [],
-        collaborators: []
+        collaborators: [],
+        skillsIndex: computeSkillsIndex(collaborationData.skillsRequired, collaborationData.skillsNeeded)
       });
 
       return await this.create(collaborationWithTimestamps);
@@ -105,7 +116,24 @@ export class CollaborationService extends BaseService<Collaboration> {
    */
   async updateCollaboration(collaborationId: string, updates: Partial<Collaboration>): Promise<ServiceResult<Collaboration>> {
     try {
-      const updatesWithTimestamp = this.addTimestamps(updates, true);
+      let updatesWithTimestamp = this.addTimestamps(updates, true);
+
+      if (updates.skillsRequired !== undefined || updates.skillsNeeded !== undefined) {
+        const current = await this.read(collaborationId);
+        const currentCollab = current.data as Collaboration | undefined;
+        const required = updates.skillsRequired ?? currentCollab?.skillsRequired ?? [];
+        const needed = updates.skillsNeeded ?? currentCollab?.skillsNeeded ?? [];
+        const normalized = new Set<string>();
+        [...required, ...needed].forEach((s) => {
+          const name = (s || '').toString().trim().toLowerCase();
+          if (name) normalized.add(name);
+        });
+        updatesWithTimestamp = {
+          ...updatesWithTimestamp,
+          skillsIndex: Array.from(normalized)
+        };
+      }
+
       return await this.update(collaborationId, updatesWithTimestamp);
     } catch (error) {
       const appError = new AppError(

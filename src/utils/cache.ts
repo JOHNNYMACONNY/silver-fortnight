@@ -71,11 +71,11 @@ export class SimpleCache {
    * @returns Object with cache size and memory usage info
    */
   getStats(): { size: number; memoryUsage?: number } {
-    const stats = { size: this.cache.size };
+    const stats: { size: number; memoryUsage?: number } = { size: this.cache.size };
     
     // Add memory usage if available
-    if (typeof performance !== 'undefined' && performance.memory) {
-      stats.memoryUsage = performance.memory.usedJSHeapSize;
+    if (typeof performance !== 'undefined' && (performance as any).memory) {
+      stats.memoryUsage = (performance as any).memory.usedJSHeapSize as number;
     }
     
     return stats;

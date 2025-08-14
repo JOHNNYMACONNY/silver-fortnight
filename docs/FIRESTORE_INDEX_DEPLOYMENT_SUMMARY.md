@@ -2,7 +2,7 @@
 
 ## 🎉 Deployment Status: SUCCESSFUL
 
-**Date:** December 9, 2024  
+**Date:** August 12, 2025  
 **Project:** TradeYa (tradeya-45ede)  
 **Task:** Priority 2 Deployment Preparation - Firestore Index Deployment  
 **Status:** ✅ COMPLETE
@@ -12,9 +12,9 @@
 ## 📊 Deployment Results
 
 ### Index Configuration Summary
-- **Expected Indexes:** 17 (from firestore.indexes.json)
-- **Currently Deployed:** 34 total indexes
-- **Migration-Critical Indexes:** 7 configured and verified
+- **Configured Indexes:** updated with collaboration `skillsIndex` composites
+- **Currently Deployed:** up-to-date per latest deploy
+- **Migration-Critical Indexes:** Trades + Collaborations skills filters verified
 - **Firebase CLI Version:** 13.31.1
 - **Deployment Method:** Firebase CLI (`firebase deploy --only firestore:indexes`)
 
@@ -38,7 +38,9 @@
 - `userAchievements` - AchievementId/UnlockedAt (COLLECTION)
 - `userAchievements` - UserId/AchievementId (COLLECTION)
 
-#### 4. Collaboration Indexes (3 indexes)
+#### 4. Collaboration Indexes (updated)
+- `collaborations` - SkillsIndex/Status/CreatedAt (COLLECTION)
+- `collaborations` - SkillsIndex/Category/CreatedAt (COLLECTION)
 - `collaborations` - CreatorId/Status/UpdatedAt (COLLECTION)
 - `collaborations` - Status/RoleCount/FilledRoleCount/CreatedAt (COLLECTION)
 - `collaborations` - Status/Tags (COLLECTION)

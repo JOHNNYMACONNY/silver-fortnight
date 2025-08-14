@@ -96,6 +96,19 @@ graph TB
     style O fill:#FFB6C1
 ```
 
+### Testing Strategy (Updated)
+
+- Unit tests added for:
+  - Tier gating (block and success paths) in `challenges` service
+  - Role completion approve/reject flows and creator-only permissions
+  - Role abandonment/reopen flows and missing-role edge cases
+- Jest setup enhanced with Firestore `runTransaction` mock to support transactional service testing.
+
+### Type Safety (Updated)
+
+- Continued migration away from `any` in collaboration services; aligned `CollaborationRoleData` with completion fields (`assignedUserId`, `completionEvidence`, timestamps).
+- Firestore reads use safe shaping (`Object.assign({ id }, data)`), and spreading unknown data is avoided.
+
 ### Simplified Provider Architecture
 
 ```mermaid

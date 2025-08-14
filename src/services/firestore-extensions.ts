@@ -42,10 +42,10 @@ export const getConnections = async (userId: string): Promise<ServiceResult<Conn
     );
     
     const connectionDocs = await getDocs(userConnectionsQuery);
-    const connections = connectionDocs.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data() as Connection
-    }));
+    const connections = connectionDocs.docs.map(doc => {
+      const data = doc.data() as Record<string, unknown>;
+      return Object.assign({ id: doc.id }, data) as unknown as Connection;
+    });
     
     return { data: connections, error: null };
   } catch (error: any) {
@@ -133,11 +133,7 @@ export const getSentConnectionRequests = async (userId: string): Promise<Service
         connectedUserId: data.connectedUserId
       });
       
-      return {
-        id: doc.id,
-        ...data,
-        isSentByUser // Add this for filtering
-      };
+      return Object.assign({ id: doc.id }, data, { isSentByUser }) as any;
     }).filter(req => (req as any).isSentByUser); // Filter to only sent requests
     
     // Clean up the isSentByUser property before returning
@@ -344,7 +340,8 @@ export const getChallenge = async (challengeId: string): Promise<ServiceResult<C
     const db = getSyncFirebaseDb();
     const challengeDoc = await getDoc(doc(db, COLLECTIONS.CHALLENGES, challengeId));
     if (challengeDoc.exists()) {
-      return { data: { id: challengeDoc.id, ...challengeDoc.data() as Challenge }, error: null };
+      const data = challengeDoc.data() as Record<string, unknown>;
+      return { data: Object.assign({ id: challengeDoc.id }, data) as unknown as Challenge, error: null };
     } else {
       return { data: undefined, error: null };
     }

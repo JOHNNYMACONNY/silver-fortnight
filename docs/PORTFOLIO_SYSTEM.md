@@ -88,11 +88,13 @@ export interface User {
 
 ## Core Functionality
 
-### Firestore Integration Status
+### Firestore Integration Status (Updated)
 
-- Firestore-backed portfolio item retrieval service is now implemented (`getUserPortfolioItems`).
-- Service supports filtering by visibility, type, featured status, and category.
-- UI integration and automatic generation from trades/collaborations are next steps.
+- Firestore-backed portfolio item retrieval service is implemented (`getUserPortfolioItems`) with filtering by visibility, type, featured, and category.
+- Portfolio management services implemented: `updatePortfolioItemVisibility`, `updatePortfolioItemFeatured`, `updatePortfolioItemPinned`, `deletePortfolioItem`.
+- Collaboration role completion now triggers generation via `generateCollaborationPortfolioItem` with aligned types (`assignedUserId`, `completionEvidence`).
+- Trade completion generation is available via `generateTradePortfolioItem` and should be called from the trade completion workflow.
+- UI integration and full automation wiring are the next steps.
 
 ### Automatic Portfolio Generation
 

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, Zap, Database, Globe, TrendingUp, AlertTriangle } from 'lucide-react';
-import { rumService } from '../../services/performance/rumService';
-import { smartOrchestrator } from '../../services/performance/smartOrchestrator';
+import RUMService, { getRUMService } from '../../services/performance/rumService';
+import SmartOrchestrator, { createSmartOrchestrator } from '../../services/performance/smartOrchestrator';
 
 interface PerformanceMetrics {
   loadTime: number;
@@ -32,6 +32,7 @@ export const PerformanceDashboard: React.FC = () => {
   const [suggestions, setSuggestions] = useState<OptimizationSuggestion[]>([]);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationResults, setOptimizationResults] = useState<any>(null);
+  const orchestratorRef = useRef<SmartOrchestrator | null>(null);
 
   useEffect(() => {
     loadPerformanceData();
@@ -42,8 +43,12 @@ export const PerformanceDashboard: React.FC = () => {
   const loadPerformanceData = async () => {
     try {
       // Get current performance metrics
-      const currentMetrics = await rumService.getCurrentMetrics();
-      const orchestratorStats = await smartOrchestrator.getOptimizationStats();
+      const rum = getRUMService();
+      const currentMetrics = await (rum as any)?.getCurrentMetrics?.();
+      if (!orchestratorRef.current) {
+        orchestratorRef.current = await createSmartOrchestrator({}, rum || undefined);
+      }
+      const orchestratorStats = await orchestratorRef.current?.getOptimizationSummary();
       
       setMetrics({
         loadTime: currentMetrics?.loadTime || 0,
@@ -52,7 +57,7 @@ export const PerformanceDashboard: React.FC = () => {
         cls: currentMetrics?.cls || 0,
         fid: currentMetrics?.fid || 0,
         ttfb: currentMetrics?.ttfb || 0,
-        bundleSize: orchestratorStats?.resourceStats?.bundleSize || 0,
+        bundleSize: orchestratorStats?.resourceStats ? 0 : 0,
         cacheHitRate: orchestratorStats?.improvements?.cacheHitRate || 0,
         memoryUsage: orchestratorStats?.improvements?.memorySavings || 0,
         networkRequests: currentMetrics?.networkRequests || 0
@@ -127,8 +132,8 @@ export const PerformanceDashboard: React.FC = () => {
     setIsOptimizing(true);
     try {
       // Implement LCP optimizations
-      await smartOrchestrator.optimizeResourceLoading();
-      await smartOrchestrator.enableImageOptimization();
+      await orchestratorRef.current?.optimizeResourceLoading();
+      await orchestratorRef.current?.enableImageOptimization();
       setOptimizationResults({ type: 'lcp', success: true });
     } catch (error) {
       setOptimizationResults({ type: 'lcp', success: false, error });
@@ -141,7 +146,7 @@ export const PerformanceDashboard: React.FC = () => {
     setIsOptimizing(true);
     try {
       // Implement CLS optimizations
-      await smartOrchestrator.optimizeLayoutStability();
+      await orchestratorRef.current?.optimizeLayoutStability();
       setOptimizationResults({ type: 'cls', success: true });
     } catch (error) {
       setOptimizationResults({ type: 'cls', success: false, error });
@@ -154,7 +159,7 @@ export const PerformanceDashboard: React.FC = () => {
     setIsOptimizing(true);
     try {
       // Implement cache optimizations
-      await smartOrchestrator.optimizeCaching();
+      await orchestratorRef.current?.optimizeCaching();
       setOptimizationResults({ type: 'cache', success: true });
     } catch (error) {
       setOptimizationResults({ type: 'cache', success: false, error });
@@ -167,7 +172,7 @@ export const PerformanceDashboard: React.FC = () => {
     setIsOptimizing(true);
     try {
       // Implement bundle optimizations
-      await smartOrchestrator.optimizeBundleSize();
+      await orchestratorRef.current?.optimizeBundleSize();
       setOptimizationResults({ type: 'bundle', success: true });
     } catch (error) {
       setOptimizationResults({ type: 'bundle', success: false, error });
@@ -179,7 +184,7 @@ export const PerformanceDashboard: React.FC = () => {
   const runFullOptimization = async () => {
     setIsOptimizing(true);
     try {
-      const results = await smartOrchestrator.runFullOptimization();
+      const results = await orchestratorRef.current?.runFullOptimization();
       setOptimizationResults({ type: 'full', success: true, results });
       await loadPerformanceData(); // Refresh metrics
     } catch (error) {
@@ -322,7 +327,7 @@ export const PerformanceDashboard: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
-            <TrendingUp className="w-5 h-5 text-orange-600" />
+  <TrendingUp className="w-5 h-5 text-primary" />
             <div>
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Network Requests</h3>
               <p className="text-xl font-bold text-gray-900 dark:text-white">{metrics.networkRequests}</p>
@@ -386,8 +391,8 @@ export const PerformanceDashboard: React.FC = () => {
         <motion.div
           className={`p-4 rounded-lg ${
             optimizationResults.success 
-              ? 'bg-green-50 border border-green-200 dark:bg-green-900 dark:border-green-700' 
-              : 'bg-red-50 border border-red-200 dark:bg-red-900 dark:border-red-700'
+              ? 'bg-green-50 border border-success dark:bg-green-900' 
+              : 'bg-red-50 border border-error dark:bg-red-900'
           }`}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

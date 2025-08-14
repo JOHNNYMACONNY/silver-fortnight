@@ -162,7 +162,7 @@ const MicroAnimationsDemoPage: React.FC = () => {
                   >
                     <div className="text-4xl mb-4">🎯</div>
                     <h4 className="text-xl font-semibold mb-2">Interactive Card</h4>
-                    <p className="text-orange-100">Move your mouse to see the 3D effect</p>
+                    <p className="text-primary/20">Move your mouse to see the 3D effect</p>
                   </motion.div>
                 </motion.div>
               </Card>
@@ -230,7 +230,7 @@ const MicroAnimationsDemoPage: React.FC = () => {
                   <motion.button
                     onClick={handleButtonClick}
                     disabled={loading}
-                    className="px-6 py-3 bg-orange-500 text-white rounded-lg font-medium"
+                    className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ duration: 0.2 }}
@@ -274,7 +274,7 @@ const MicroAnimationsDemoPage: React.FC = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -50, scale: 0.8 }}
                     transition={{ duration: 0.3 }}
-                    className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50"
+                    className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-toast"
                   >
                     <div className="flex items-center space-x-2">
                       <span>✅</span>
@@ -289,8 +289,8 @@ const MicroAnimationsDemoPage: React.FC = () => {
                 <h3 className="text-xl font-semibold mb-6">Progress Indicators</h3>
                 <div className="space-y-4">
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <motion.div
-                      className="bg-orange-500 h-2 rounded-full"
+                   <motion.div
+                      className="bg-primary h-2 rounded-full"
                       initial={{ width: 0 }}
                       animate={{ width: "75%" }}
                       transition={{ duration: 2, ease: "easeOut" }}
@@ -312,8 +312,8 @@ const MicroAnimationsDemoPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <h4 className="font-medium">Transform-based (Optimized)</h4>
-                    <motion.div
-                      className="w-20 h-20 bg-orange-500 rounded-lg"
+                   <motion.div
+                      className="w-20 h-20 bg-primary rounded-lg"
                       animate={{ 
                         x: [0, 100, 0],
                         rotate: [0, 180, 360]
@@ -351,14 +351,13 @@ const MicroAnimationsDemoPage: React.FC = () => {
                     Animations respect user preferences for reduced motion
                   </p>
                   <motion.div
-                    className="w-32 h-32 bg-purple-500 rounded-lg"
+                    className="w-32 h-32 bg-purple-500 rounded-lg motion-reduce:animate-none"
                     animate={{ rotate: 360 }}
                     transition={{ 
                       duration: 2, 
                       repeat: Infinity,
                       ease: "linear"
                     }}
-                    className="motion-reduce:animate-none"
                   />
                 </div>
               </Card>
@@ -418,7 +417,7 @@ const MicroAnimationsDemoPage: React.FC = () => {
                   {['T', 'R', 'A', 'D', 'E', 'Y', 'A'].map((letter, index) => (
                     <motion.div
                       key={letter}
-                      className="w-12 h-12 bg-orange-500 text-white rounded-lg flex items-center justify-center font-bold text-xl"
+                      className="w-12 h-12 bg-primary text-primary-foreground rounded-lg flex items-center justify-center font-bold text-xl"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ 

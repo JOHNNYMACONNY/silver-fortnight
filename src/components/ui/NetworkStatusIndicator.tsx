@@ -70,7 +70,7 @@ const NetworkStatusIndicator: React.FC = () => {
 
   return (
     <div
-      className={`fixed bottom-4 left-4 z-50 p-3 rounded-lg shadow-lg transition-all duration-300 ${
+      className={`fixed bottom-4 left-4 z-toast p-3 rounded-lg shadow-lg transition-all duration-300 ${
         offline
           ? 'bg-red-500 text-white'
           : slowConnection

@@ -6,9 +6,9 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { cn } from '../../utils/cn';
-import { useTradeYaAnimation } from '../../hooks/useTradeYaAnimation';
+import { useTradeYaAnimation, type TradingContext } from '../../hooks/useTradeYaAnimation';
 import { useMobileAnimation } from '../../hooks/useMobileAnimation';
 
 // Skill level type
@@ -25,7 +25,7 @@ export interface AnimatedSkillBadgeProps {
   showIcon?: boolean;
   size?: "sm" | "md" | "lg";
   variant?: "default" | "outlined" | "filled";
-  tradingContext?: "proposal" | "negotiation" | "selection" | "display";
+  tradingContext?: TradingContext;
   onClick?: () => void;
   onHover?: (isHovered: boolean) => void;
   className?: string;
@@ -53,8 +53,8 @@ const SKILL_LEVEL_CONFIG = {
     label: 'Advanced',
   },
   expert: {
-    color: 'bg-orange-100 text-orange-800 border-orange-200',
-    darkColor: 'dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800',
+    color: 'bg-primary/10 text-primary border-primary/30',
+    darkColor: '',
     icon: '👑',
     label: 'Expert',
   },
@@ -97,7 +97,7 @@ export const AnimatedSkillBadge: React.FC<AnimatedSkillBadgeProps> = ({
   showIcon = true,
   size = "md",
   variant = "default",
-  tradingContext = "display",
+  tradingContext = "general",
   onClick,
   onHover,
   className = "",
@@ -123,8 +123,8 @@ export const AnimatedSkillBadge: React.FC<AnimatedSkillBadgeProps> = ({
   } = useMobileAnimation({
     type: "click",
     tradingContext,
-    hapticEnabled: tradingContext !== "display",
-    rippleEffect: tradingContext === "selection",
+    hapticEnabled: tradingContext !== "general",
+    rippleEffect: tradingContext !== "general",
     touchTarget: size === "sm" ? "standard" : "large",
   });
 
@@ -184,16 +184,18 @@ export const AnimatedSkillBadge: React.FC<AnimatedSkillBadgeProps> = ({
       case "outlined":
         return cn(
           'bg-transparent border-2',
-          `border-${level === 'beginner' ? 'green' : level === 'intermediate' ? 'blue' : level === 'advanced' ? 'purple' : 'orange'}-300`,
-          `text-${level === 'beginner' ? 'green' : level === 'intermediate' ? 'blue' : level === 'advanced' ? 'purple' : 'orange'}-700`,
-          `dark:border-${level === 'beginner' ? 'green' : level === 'intermediate' ? 'blue' : level === 'advanced' ? 'purple' : 'orange'}-600`,
-          `dark:text-${level === 'beginner' ? 'green' : level === 'intermediate' ? 'blue' : level === 'advanced' ? 'purple' : 'orange'}-300`
+          level === 'beginner' ? 'border-green-300 text-green-700 dark:border-green-600 dark:text-green-300'
+          : level === 'intermediate' ? 'border-blue-300 text-blue-700 dark:border-blue-600 dark:text-blue-300'
+          : level === 'advanced' ? 'border-purple-300 text-purple-700 dark:border-purple-600 dark:text-purple-300'
+          : 'border-primary/30 text-primary'
         );
       case "filled":
         return cn(
-          `bg-${level === 'beginner' ? 'green' : level === 'intermediate' ? 'blue' : level === 'advanced' ? 'purple' : 'orange'}-500`,
-          'text-white border-transparent',
-          `dark:bg-${level === 'beginner' ? 'green' : level === 'intermediate' ? 'blue' : level === 'advanced' ? 'purple' : 'orange'}-600`
+          level === 'beginner' ? 'bg-green-500'
+          : level === 'intermediate' ? 'bg-blue-500'
+          : level === 'advanced' ? 'bg-purple-500'
+          : 'bg-primary',
+          'text-white border-transparent'
         );
       default:
         return baseStyles;
@@ -201,7 +203,7 @@ export const AnimatedSkillBadge: React.FC<AnimatedSkillBadgeProps> = ({
   };
 
   // Animation variants
-  const badgeVariants = {
+  const badgeVariants: Variants = {
     initial: { scale: 1, opacity: 1 },
     hover: { 
       scale: 1.05, 
@@ -214,17 +216,16 @@ export const AnimatedSkillBadge: React.FC<AnimatedSkillBadgeProps> = ({
     },
     selected: {
       scale: 1.02,
-      boxShadow: "0 0 0 2px rgba(249, 115, 22, 0.5)",
+      boxShadow: "0 0 0 2px var(--tw-ring-color)",
       transition: { duration: 0.2, ease: "easeOut" }
     },
     highlighted: {
       scale: 1.1,
-      boxShadow: "0 4px 12px rgba(249, 115, 22, 0.3)",
       transition: { 
         duration: 0.3, 
         ease: "easeOut",
         repeat: Infinity,
-        repeatType: "reverse" as const,
+        repeatType: "reverse",
         repeatDelay: 1
       }
     },
@@ -256,7 +257,7 @@ export const AnimatedSkillBadge: React.FC<AnimatedSkillBadgeProps> = ({
         getVariantStyles(),
         
         // State styles
-        isSelected && "ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-gray-800",
+        isSelected && "ring-2 ring-ring ring-offset-2 dark:ring-offset-gray-800",
         isDisabled && "opacity-50 cursor-not-allowed",
         onClick && !isDisabled && "hover:shadow-md",
         
@@ -329,7 +330,7 @@ export const AnimatedSkillBadge: React.FC<AnimatedSkillBadgeProps> = ({
       <AnimatePresence>
         {isSelected && (
           <motion.div
-            className="w-2 h-2 bg-primary-500 rounded-full flex-shrink-0"
+            className="w-2 h-2 bg-primary rounded-full flex-shrink-0"
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
@@ -350,7 +351,7 @@ export const ProposalSkillBadge: React.FC<Omit<AnimatedSkillBadgeProps, 'trading
 );
 
 export const SelectionSkillBadge: React.FC<Omit<AnimatedSkillBadgeProps, 'tradingContext'>> = (props) => (
-  <AnimatedSkillBadge {...props} tradingContext="selection" variant="outlined" />
+  <AnimatedSkillBadge {...props} tradingContext="general" variant="outlined" />
 );
 
 export const NegotiationSkillBadge: React.FC<Omit<AnimatedSkillBadgeProps, 'tradingContext'>> = (props) => (

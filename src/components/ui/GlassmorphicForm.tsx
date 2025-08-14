@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { cn } from '../../utils/cn';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface GlassmorphicFormProps extends React.FormHTMLAttributes<HTMLFormElement> {
+interface GlassmorphicFormProps extends Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onDrag' | 'onDragEnd' | 'onDragStart'> {
   children: React.ReactNode;
   className?: string;
   
@@ -56,40 +56,24 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
 
   // Phase 6.1: Form variants with sophisticated glassmorphism
   const formVariants = {
-    standard: `
-      backdrop-blur-md bg-white/70 dark:bg-neutral-800/60
-      border border-white/20 dark:border-neutral-700/30
-      rounded-2xl p-6
-    `,
-    elevated: `
-      backdrop-blur-lg bg-white/80 dark:bg-neutral-800/70
-      border-2 border-white/30 dark:border-neutral-700/40
-      rounded-3xl p-8 shadow-2xl
-    `,
-    modal: `
-      backdrop-blur-xl bg-white/90 dark:bg-neutral-800/80
-      border border-white/40 dark:border-neutral-700/50
-      rounded-2xl p-8 shadow-beautiful
-    `,
-    stepped: `
-      backdrop-blur-md bg-white/75 dark:bg-neutral-800/65
-      border-l-4 border-gradient-to-b from-orange-500 to-blue-500
-      rounded-r-2xl pl-8 pr-6 py-6
-    `
+    standard: `glassmorphic rounded-2xl p-6`,
+    elevated: `glassmorphic rounded-3xl p-8 shadow-2xl`,
+    modal: `glassmorphic rounded-2xl p-8 shadow-beautiful`,
+    stepped: `glassmorphic rounded-r-2xl pl-8 pr-6 py-6 border-l-4 border-gradient-to-b from-orange-500 to-blue-500`
   };
 
   const blurClasses = {
-    sm: 'backdrop-blur-sm',
-    md: 'backdrop-blur-md', 
-    lg: 'backdrop-blur-lg',
-    xl: 'backdrop-blur-xl'
+    sm: '',
+    md: '', 
+    lg: '',
+    xl: ''
   };
 
   const brandAccentClasses = {
-    orange: 'ring-1 ring-orange-500/20 focus-within:ring-orange-500/40',
-    blue: 'ring-1 ring-blue-500/20 focus-within:ring-blue-500/40',
-    purple: 'ring-1 ring-purple-500/20 focus-within:ring-purple-500/40',
-    gradient: 'ring-1 ring-gradient-to-r from-orange-500/20 via-blue-500/20 to-purple-500/20'
+    orange: 'ring-1 ring-ring/20 focus-within:ring-ring/40',
+    blue: 'ring-1 ring-ring/20 focus-within:ring-ring/40',
+    purple: 'ring-1 ring-ring/20 focus-within:ring-ring/40',
+    gradient: 'ring-1 ring-gradient-to-r from-primary/20 via-secondary/20 to-accent/20'
   };
 
   const shadowClasses = {
@@ -99,8 +83,8 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
   };
 
   const borderClasses = {
-    'glass-borders': 'border border-white/20 dark:border-neutral-700/30',
-    'dual-borders': 'border-2 border-white/30 dark:border-neutral-700/40',
+    'glass-borders': 'border-glass',
+    'dual-borders': 'border-strong',
     'gradient-borders': 'border border-gradient-to-r from-orange-500/20 via-blue-500/20 to-purple-500/20'
   };
 
@@ -134,15 +118,15 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
   const renderFormState = useCallback(() => {
     if (isLoading) {
       return (
-        <div className="absolute inset-0 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-orange-500 border-t-transparent"></div>
+        <div className="absolute inset-0 glassmorphic rounded-2xl flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-ring border-t-transparent"></div>
         </div>
       );
     }
 
     if (isSubmitting) {
       return (
-        <div className="absolute inset-0 bg-white/60 dark:bg-neutral-800/60 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+        <div className="absolute inset-0 glassmorphic rounded-2xl flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-2"></div>
             <p className="text-sm text-gray-600 dark:text-gray-300">Submitting...</p>
@@ -179,12 +163,12 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
         className
       )}
       style={{ zIndex }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 as number, y: 20 as number }}
+      animate={{ opacity: 1 as number, y: 0 as number }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
-      {...props}
+      {...(props as any)}
     >
       {/* Multi-step progress indicator */}
       {renderStepProgress()}

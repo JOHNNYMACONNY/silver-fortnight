@@ -240,9 +240,9 @@ export const StepProgress: React.FC<StepProgressProps> = ({
             {/* Step indicator */}
             <div className={cn(
               'flex items-center justify-center rounded-full border-2 transition-all duration-200',
-              step.completed ? 'bg-green-500 border-green-500 text-white' :
+              step.completed ? 'bg-green-500 border-success text-white' :
               step.current ? 'bg-primary border-primary text-white' :
-              step.error ? 'bg-red-500 border-red-500 text-white' :
+              step.error ? 'bg-red-500 border-error text-white' :
               'bg-gray-200 border-gray-300 text-gray-500',
               orientation === 'horizontal' ? 'w-8 h-8 mb-2' : 'w-8 h-8 mr-3'
             )}>

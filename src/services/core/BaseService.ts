@@ -22,8 +22,8 @@ import {
   DocumentData,
   Query,
   CollectionReference,
-  Firestore,
-  FirestoreDataConverter
+   Firestore,
+   FirestoreDataConverter
 } from 'firebase/firestore';
 import { getSyncFirebaseDb } from '../../firebase-config';
 import { ServiceResult } from '../../types/ServiceError';
@@ -37,12 +37,38 @@ import { AppError, ErrorCode, ErrorSeverity } from '../../types/errors';
 export abstract class BaseService<T> {
   protected db: Firestore;
   protected collectionName: string;
-  protected converter?: FirestoreDataConverter<T>;
+  protected converter?: FirestoreDataConverter<T, DocumentData, DocumentData>;
 
-  constructor(collectionName: string, converter?: FirestoreDataConverter<T>) {
+  constructor(collectionName: string, converter?: FirestoreDataConverter<T, DocumentData, DocumentData>) {
     this.db = getSyncFirebaseDb();
     this.collectionName = collectionName;
     this.converter = converter;
+  }
+
+  /**
+   * Remove undefined values from an object recursively. Keeps nulls intact so callers
+   * can explicitly clear fields by setting them to null. Arrays are preserved as-is.
+   */
+  protected sanitizeData<D extends Record<string, any>>(data: D): D {
+    const sanitize = (value: any): any => {
+      if (value === undefined) return undefined;
+      if (value === null) return null;
+      if (Array.isArray(value)) return value;
+      if (typeof value === 'object') {
+        const result: Record<string, any> = {};
+        for (const [key, val] of Object.entries(value)) {
+          const sanitized = sanitize(val);
+          if (sanitized !== undefined) {
+            result[key] = sanitized;
+          }
+        }
+        return result as any;
+      }
+      return value;
+    };
+
+    const sanitizedRoot = sanitize(data);
+    return (sanitizedRoot ?? {}) as D;
   }
 
   /**
@@ -50,7 +76,7 @@ export abstract class BaseService<T> {
    */
   protected getCollection(): CollectionReference<T> {
     const collectionRef = collection(this.db, this.collectionName);
-    return this.converter ? collectionRef.withConverter(this.converter) : collectionRef as CollectionReference<T>;
+    return this.converter ? (collectionRef.withConverter(this.converter) as unknown as CollectionReference<T>) : (collectionRef as CollectionReference<T>);
   }
 
   /**
@@ -66,15 +92,16 @@ export abstract class BaseService<T> {
    */
   protected async create(data: Partial<T>, id?: string): Promise<ServiceResult<T>> {
     try {
+      const cleanData = this.sanitizeData(data as Record<string, any>);
       const collectionRef = this.getCollection();
       
       if (id) {
         const docRef = this.getDocRef(id);
-        await setDoc(docRef, data as T);
-        return { data: { ...data, id } as T, error: null };
+        await setDoc(docRef as any, cleanData as any);
+        return { data: { ...cleanData, id } as T, error: null };
       } else {
-        const docRef = await addDoc(collectionRef, data as T);
-        return { data: { ...data, id: docRef.id } as T, error: null };
+        const docRef = await addDoc(collectionRef as any, cleanData as any);
+        return { data: { ...cleanData, id: docRef.id } as T, error: null };
       }
     } catch (error) {
       const appError = new AppError(
@@ -123,8 +150,9 @@ export abstract class BaseService<T> {
    */
   protected async update(id: string, data: Partial<T>): Promise<ServiceResult<T>> {
     try {
+      const cleanData = this.sanitizeData(data as Record<string, any>);
       const docRef = this.getDocRef(id);
-      await updateDoc(docRef, data as any);
+      await updateDoc(docRef, cleanData as any);
       
       // Return updated document
       const updatedDoc = await this.read(id);
@@ -168,8 +196,8 @@ export abstract class BaseService<T> {
    */
   protected async list(
     constraints: QueryConstraint[] = [],
-    pagination?: { limit?: number; startAfter?: DocumentSnapshot }
-  ): Promise<ServiceResult<{ items: T[]; hasMore: boolean; lastDoc?: DocumentSnapshot }>> {
+    pagination?: { limit?: number; startAfter?: QueryDocumentSnapshot<T, DocumentData> | DocumentSnapshot<DocumentData, DocumentData, DocumentData> }
+  ): Promise<ServiceResult<{ items: T[]; hasMore: boolean; lastDoc?: QueryDocumentSnapshot<T, DocumentData> }>> {
     try {
       const collectionRef = this.getCollection();
       let queryRef: Query<T> = collectionRef;
@@ -181,7 +209,7 @@ export abstract class BaseService<T> {
 
       // Apply pagination
       if (pagination?.startAfter) {
-        queryRef = query(queryRef, startAfter(pagination.startAfter));
+        queryRef = query(queryRef, startAfter(pagination.startAfter as any));
       }
 
       if (pagination?.limit) {
@@ -226,19 +254,19 @@ export abstract class BaseService<T> {
           case 'create':
             if (operation.id && operation.data) {
               const docRef = this.getDocRef(operation.id);
-              batch.set(docRef, operation.data as T);
+              batch.set(docRef as any, this.sanitizeData(operation.data as Record<string, any>) as any);
             }
             break;
           case 'update':
             if (operation.id && operation.data) {
               const docRef = this.getDocRef(operation.id);
-              batch.update(docRef, operation.data as any);
+              batch.update(docRef as any, this.sanitizeData(operation.data as Record<string, any>) as any);
             }
             break;
           case 'delete':
             if (operation.id) {
               const docRef = this.getDocRef(operation.id);
-              batch.delete(docRef);
+              batch.delete(docRef as any);
             }
             break;
         }

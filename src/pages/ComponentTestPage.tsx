@@ -40,7 +40,7 @@ const ComponentTestPage: React.FC = () => {
         {/* Theme Toggle */}
         <section className="space-y-4">
           <h2 className="text-3xl font-bold text-text-primary">Theme Toggle</h2>
-          <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-6 shadow-glass">
+          <div className="glassmorphic p-6">
             <div className="flex items-center space-x-4">
               <ThemeToggle />
             </div>
@@ -50,28 +50,28 @@ const ComponentTestPage: React.FC = () => {
         {/* Buttons */}
         <section className="space-y-4">
           <h2 className="text-3xl font-bold text-text-primary">Buttons</h2>
-          <div className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 rounded-xl p-6 shadow-glass">
+          <div className="glassmorphic p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-text-primary">Variants</h3>
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="primary">Primary</Button>
+                  <Button variant="default">Primary</Button>
                   <Button variant="secondary">Secondary</Button>
-                  <Button variant="tertiary">Tertiary</Button>
+                  <Button variant="ghost">Tertiary</Button>
                   <Button variant="outline">Outline</Button>
                   <Button variant="ghost">Ghost</Button>
-                  <Button variant="danger">Danger</Button>
+                  <Button variant="destructive">Danger</Button>
                   <Button variant="success">Success</Button>
                 </div>
               </div>
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-text-primary">Sizes</h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Button size="xs">Extra Small</Button>
+                  <Button size="sm">Extra Small</Button>
                   <Button size="sm">Small</Button>
-                  <Button size="md">Medium</Button>
+                  <Button size="default">Medium</Button>
                   <Button size="lg">Large</Button>
-                  <Button size="xl">Extra Large</Button>
+                  <Button size="lg">Extra Large</Button>
                 </div>
               </div>
               <div className="space-y-2">
@@ -79,8 +79,8 @@ const ComponentTestPage: React.FC = () => {
                 <div className="flex flex-wrap gap-2">
                   <Button isLoading>Loading</Button>
                   <Button disabled>Disabled</Button>
-                  <Button rounded>Rounded</Button>
-                  <Button fullWidth>Full Width</Button>
+                  <Button className="rounded-full">Rounded</Button>
+                  <Button className="w-full">Full Width</Button>
                 </div>
               </div>
             </div>
@@ -91,13 +91,13 @@ const ComponentTestPage: React.FC = () => {
         <section className="space-y-4">
           <h2 className="text-3xl font-bold text-text-primary">Cards</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card variant="glass" className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 shadow-glass">
+            <Card variant="glass">
               <CardBody>
                 <p className="text-text-primary">Glassmorphic Card</p>
               </CardBody>
             </Card>
 
-            <Card variant="glass" className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 shadow-glass">
+            <Card variant="glass">
               <CardHeader>
                 <h3 className="text-xl font-semibold text-text-primary">Card with Header</h3>
               </CardHeader>
@@ -106,7 +106,7 @@ const ComponentTestPage: React.FC = () => {
               </CardBody>
             </Card>
 
-            <Card variant="glass" className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 shadow-glass">
+            <Card variant="glass">
               <CardHeader>
                 <h3 className="text-xl font-semibold text-text-primary">Elevated Card</h3>
               </CardHeader>
@@ -115,12 +115,12 @@ const ComponentTestPage: React.FC = () => {
               </CardBody>
               <CardFooter>
                 <div className="flex justify-end">
-                  <Button variant="primary" size="sm">Action</Button>
+                  <Button variant="default" size="sm">Action</Button>
                 </div>
               </CardFooter>
             </Card>
 
-            <Card variant="glass" className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 shadow-glass">
+            <Card variant="glass">
               <CardHeader>
                 <h3 className="text-xl font-semibold text-text-primary">Interactive Card</h3>
               </CardHeader>
@@ -129,7 +129,7 @@ const ComponentTestPage: React.FC = () => {
               </CardBody>
               <CardFooter>
                 <div className="flex justify-end">
-                  <Button variant="primary" size="sm">Action</Button>
+                  <Button variant="default" size="sm">Action</Button>
                 </div>
               </CardFooter>
             </Card>
@@ -140,55 +140,57 @@ const ComponentTestPage: React.FC = () => {
         <section className="space-y-4">
           <h2 className="text-3xl font-bold text-text-primary">Inputs</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input
-              label="Basic Input"
-              placeholder="Enter text here"
-            />
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">Basic Input</label>
+              <Input placeholder="Enter text here" />
+            </div>
 
-            <Input
-              label="With Helper Text"
-              placeholder="Enter text here"
-              helperText="This is some helper text"
-            />
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">With Helper Text</label>
+              <Input placeholder="Enter text here" />
+              <p className="mt-1 text-xs text-text-secondary">This is some helper text</p>
+            </div>
 
-            <Input
-              label="With Error"
-              placeholder="Enter text here"
-              error="This field is required"
-            />
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">With Error</label>
+              <Input placeholder="Enter text here" />
+              <p className="mt-1 text-xs text-error-500">This field is required</p>
+            </div>
 
-            <Input
-              label="With Left Icon"
-              placeholder="Search..."
-              leftIcon={
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              }
-            />
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">With Left Icon</label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </span>
+                <Input placeholder="Search..." className="pl-10" />
+              </div>
+            </div>
 
-            <Input
-              label="With Right Icon"
-              placeholder="Enter text here"
-              rightIcon={
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              }
-            />
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">With Right Icon</label>
+              <div className="relative">
+                <Input placeholder="Enter text here" className="pr-10" />
+                <span className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </span>
+              </div>
+            </div>
 
-            <Input
-              label="Disabled Input"
-              placeholder="This input is disabled"
-              disabled
-            />
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">Disabled Input</label>
+              <Input placeholder="This input is disabled" disabled />
+            </div>
 
-            <Input
-              label="Full Width Input"
-              placeholder="This input takes full width"
-              fullWidth
-            />
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">Full Width Input</label>
+              <Input placeholder="This input takes full width" className="w-full" />
+            </div>
           </div>
         </section>
 
@@ -212,8 +214,8 @@ const ComponentTestPage: React.FC = () => {
             <div>
               <h3 className="text-xl font-semibold text-text-primary">Regular Modal</h3>
               <div className="flex flex-wrap gap-2 mt-2">
-                <Button
-                  variant="primary"
+                  <Button
+                  variant="default"
                   size="lg"
                   onClick={() => {
                     console.log('Opening modal, current state:', !isModalOpen);
@@ -237,9 +239,9 @@ const ComponentTestPage: React.FC = () => {
                 title="Modal Title"
                 size="md"
                 footer={
-                  <div className="flex justify-end space-x-2">
-                    <Button variant="tertiary" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                    <Button variant="primary" onClick={() => setIsModalOpen(false)}>Confirm</Button>
+                 <div className="flex justify-end space-x-2">
+                    <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                    <Button variant="default" onClick={() => setIsModalOpen(false)}>Confirm</Button>
                   </div>
                 }
               >
@@ -257,10 +259,10 @@ const ComponentTestPage: React.FC = () => {
                       <li className="text-sm text-text-secondary">Prevents scrolling of the background</li>
                     </ul>
                   </div>
-                  <Input
-                    label="Sample Input"
-                    placeholder="Enter something..."
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-text-primary mb-1">Sample Input</label>
+                    <Input placeholder="Enter something..." />
+                  </div>
                 </div>
               </Modal>
             </div>
@@ -295,7 +297,7 @@ const ComponentTestPage: React.FC = () => {
                 <p>This is a very simple modal implementation without any fancy features.</p>
                 <div style={{ marginTop: '20px' }}>
                   <Button
-                    variant="primary"
+                    variant="default"
                     onClick={() => setIsSimpleModalOpen(false)}
                   >
                     Close
@@ -316,7 +318,7 @@ const ComponentTestPage: React.FC = () => {
             <Button onClick={() => handleShowToast('info')}>Info Toast</Button>
           </div>
           {showToast && (
-            <div className="fixed bottom-4 right-4 z-50">
+            <div className="fixed bottom-4 right-4 z-toast">
               <Toast
                 type={toastType}
                 message={`This is a ${toastType} toast message`}

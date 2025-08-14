@@ -71,7 +71,7 @@ const ErrorRecoveryDemo: React.FC = () => {
       'User service is temporarily unavailable',
       ErrorCode.SERVICE_UNAVAILABLE,
       ErrorSeverity.HIGH,
-      { component: 'ErrorRecoveryDemo', service: 'user-service' },
+      { component: 'ErrorRecoveryDemo', action: 'user-service' },
       'The user service is currently experiencing issues. Some features may be limited.',
       [
         {
@@ -101,7 +101,7 @@ const ErrorRecoveryDemo: React.FC = () => {
       [
         {
           label: 'Sign In',
-          action: () => window.location.href = '/login',
+          action: () => { window.location.href = '/login'; },
           primary: true
         },
         {
@@ -292,7 +292,7 @@ const ErrorRecoveryDemo: React.FC = () => {
               </button>
               <button
                 onClick={simulateServiceError}
-                className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
               >
                 Simulate Service Error
               </button>

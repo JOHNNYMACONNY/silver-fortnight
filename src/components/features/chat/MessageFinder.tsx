@@ -94,8 +94,8 @@ const MessageFinder: React.FC = () => {
                   const result = await fetchAllMessagesInConversation(conversationId);
                   if (result.found) {
                     setAllMessages({
-                      nestedMessages: result.nestedMessages || [],
-                      flatMessages: result.flatMessages || []
+                      nestedMessages: (result as any).nestedMessages || [],
+                      flatMessages: (result as any).flatMessages || []
                     });
                   } else {
                     setError('No messages found in this conversation');

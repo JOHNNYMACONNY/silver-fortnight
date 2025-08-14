@@ -1,0 +1,126 @@
+# Page snapshot
+
+```yaml
+- navigation:
+  - link "TradeYa Logo TradeYa":
+    - /url: /
+    - img "TradeYa Logo"
+    - text: TradeYa
+  - link "Trades":
+    - /url: /trades
+  - link "Collaborations":
+    - /url: /collaborations
+  - link "Directory":
+    - /url: /directory
+  - link "Challenges":
+    - /url: /challenges
+  - link "Portfolio":
+    - /url: /portfolio
+  - button "Search ⌘K"
+  - button "Switch to dark mode": Dark
+  - button "Notifications"
+  - button "Log In"
+  - button "Sign Up"
+- textbox "Type a command or search..."
+- text: ESC
+- button "Go to Home Navigate to the homepage"
+- button "Go to Trades Browse and manage trades"
+- button "Go to Collaborations Find teams and join projects"
+- button "Go to Directory Browse people and profiles"
+- button "Go to Challenges View available challenges"
+- button "Go to Portfolio View your portfolio"
+- button "Go to Profile Edit your profile"
+- button "Create New Trade Start a new trade proposal"
+- button "Start New Collaboration Create a team project"
+- button "Find Teams to Join Browse open collaboration opportunities"
+- button "Search Everything Open advanced search"
+- text: ↑↓ Navigate ↵ Select 11 commands
+- heading "Welcome to TradeYa" [level=1]
+- paragraph: Connect with others, exchange skills, and collaborate on exciting collaborations.
+- heading "Discover What's Possible" [level=2]
+- heading "Quick Actions" [level=3]
+- text: Popular
+- paragraph: Get started quickly with our most popular features.
+- link "Browse Trades →":
+  - /url: /trades
+- link "Find Collaborations →":
+  - /url: /collaborations
+- heading "Skill Trades" [level=3]
+- text: Active
+- paragraph: Exchange your skills with others in the community. Find the perfect match for your needs.
+- text: 1,247 Active Trades 892 Completed
+- link "Start Trading Skills →":
+  - /url: /trades
+- heading "Collaborations" [level=3]
+- text: Team
+- paragraph: Join collaborative efforts or start your own. Find team members with the skills you need.
+- text: Design Team - 3 members needed Mobile App - 2 developers Content Creation - Writers & Designers
+- link "Explore Collaborations →":
+  - /url: /collaborations
+- heading "Challenges" [level=3]
+- text: Rewards
+- paragraph: Participate in weekly and monthly challenges to showcase your skills and win rewards.
+- text: UI/UX Design Sprint Ends in 3 days
+- link "View Challenges →":
+  - /url: /challenges
+- heading "Community Stats" [level=3]
+- text: Live 5,892 Active Users 1,247 Skills Traded
+- heading "Recent Activity" [level=3]
+- text: "Real-time New trade: Web Dev for UI Design Joined: Mobile App Team Completed: UI/UX Design Sprint New user: Sarah Chen (Designer)"
+- link "Browse Community →":
+  - /url: /users
+- heading "More Ways to Connect" [level=2]
+- heading "User Directory" [level=3]
+- paragraph: Discover talented individuals in our community and connect with people who share your interests.
+- link "Browse Users →":
+  - /url: /users
+- heading "Messages" [level=3]
+- paragraph: Connect and communicate with other members through our integrated messaging system.
+- link "Open Messages →":
+  - /url: /messages
+- heading "Leaderboard" [level=3]
+- paragraph: See who's leading the community and get inspired by top performers.
+- link "View Leaderboard →":
+  - /url: /leaderboard
+- button "Open Dev Dashboard"
+- contentinfo:
+  - link "TradeYa Logo TradeYa":
+    - /url: /
+    - img "TradeYa Logo"
+    - text: TradeYa
+  - paragraph: Exchange skills and services with others in your community.
+  - heading "Resources" [level=3]
+  - list:
+    - listitem:
+      - link "Help Center":
+        - /url: /help
+    - listitem:
+      - link "Guides":
+        - /url: /uides
+    - listitem:
+      - link "Blog":
+        - /url: /blog
+  - heading "Company" [level=3]
+  - list:
+    - listitem:
+      - link "About":
+        - /url: /about
+    - listitem:
+      - link "Careers":
+        - /url: /careers
+    - listitem:
+      - link "Contact":
+        - /url: /contact
+  - heading "Legal" [level=3]
+  - list:
+    - listitem:
+      - link "Privacy Policy":
+        - /url: /privacy
+    - listitem:
+      - link "Terms of Service":
+        - /url: /terms
+    - listitem:
+      - link "Cookie Policy":
+        - /url: /cookies
+  - paragraph: "&copy: 2025 TradeYa. All rights reserved."
+```

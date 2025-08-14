@@ -13,6 +13,7 @@ interface EnhancedSearchBarProps {
   onSearch: (term: string, filters?: any) => void;
   onToggleFilters: () => void;
   hasActiveFilters: boolean;
+  activeFiltersCount?: number;
   resultsCount: number;
   isLoading?: boolean;
   placeholder?: string;
@@ -25,6 +26,7 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
   onSearch,
   onToggleFilters,
   hasActiveFilters,
+  activeFiltersCount = 0,
   resultsCount,
   isLoading = false,
   placeholder = "Search collaborations by title, description, or participants...",
@@ -46,22 +48,20 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Let page-level debounced effects react to searchTerm changes.
     if (searchTerm.trim()) {
-      onSearch(searchTerm.trim());
       setShowSuggestions(false);
     }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
     onSearchChange(suggestion);
-    onSearch(suggestion);
     setShowSuggestions(false);
     inputRef.current?.blur();
   };
 
   const clearSearch = () => {
     onSearchChange('');
-    onSearch('');
     inputRef.current?.focus();
   };
 
@@ -69,7 +69,7 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
     <div className={cn("relative", className)}>
       <Card 
         variant="glass"
-        tilt={true}
+        tilt={false}
         depth="lg"
         glow="subtle"
         glowColor="orange"
@@ -78,18 +78,18 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
         className="overflow-hidden border-0"
       >
         <CardContent className="p-0">
-          <form onSubmit={handleSubmit} className="relative">
+          <form onSubmit={handleSubmit} className="relative w-full">
             {/* Main Search Input */}
-            <div className="relative flex items-center">
+            <div className="relative flex items-center w-full">
               {/* Search Icon */}
-              <div className="absolute left-4 z-10">
+              <div className="absolute left-4 z-card-layer-1">
                 <motion.div
                   animate={isFocused ? { scale: 1.1 } : { scale: 1 }}
                   transition={{ duration: 0.2 }}
                 >
                   <Search className={cn(
                     "h-5 w-5 transition-colors duration-200",
-                    isFocused ? "text-orange-500" : "text-muted-foreground"
+                    isFocused ? "text-primary" : "text-muted-foreground"
                   )} />
                 </motion.div>
               </div>
@@ -111,9 +111,9 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
                 }}
                 placeholder={placeholder}
                 className={cn(
-                  "h-14 pl-12 pr-20 text-lg border-0 bg-transparent focus:ring-0 focus:border-0",
+                  "h-14 w-full pl-12 pr-20 text-lg border-0 bg-transparent focus:ring-0 focus:border-0",
                   "placeholder:text-muted-foreground/60",
-                  isFocused && "ring-2 ring-orange-500/20"
+                  isFocused && "ring-2 ring-primary/20"
                 )}
               />
 
@@ -141,33 +141,38 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
                 onClick={onToggleFilters}
                 className={cn(
                   "absolute right-2 h-10 w-10 rounded-full transition-all duration-200",
-                  hasActiveFilters && "bg-orange-500 text-white shadow-lg hover:bg-orange-600"
+                  hasActiveFilters && "bg-primary-500 text-white shadow-lg hover:bg-primary-600"
                 )}
+                aria-label={hasActiveFilters ? `${activeFiltersCount} filters active. Open filters` : 'Open filters'}
+                title={hasActiveFilters ? `${activeFiltersCount} filters active` : 'Open filters'}
               >
                 <Filter className="h-4 w-4" />
-                {hasActiveFilters && (
-                  <motion.div
-                    className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full border-2 border-background"
+                {hasActiveFilters && <span className="sr-only">{activeFiltersCount} filters active</span>}
+                {hasActiveFilters && activeFiltersCount > 0 && (
+                  <motion.span
+                    className="absolute -top-1 -right-1 min-w-[16px] min-h-[16px] px-1 rounded-full bg-background text-foreground text-[10px] leading-[16px] border border-border"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: 'spring', stiffness: 300 }}
-                  />
+                  >
+                    {Math.min(activeFiltersCount, 9)}
+                  </motion.span>
                 )}
               </Button>
             </div>
 
             {/* Search Suggestions */}
             <AnimatePresence>
-              {showSuggestions && isFocused && (
+              {showSuggestions && isFocused && searchTerm.trim().length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-full left-0 right-0 z-50 bg-card/95 border border-border/50 rounded-b-lg shadow-xl backdrop-blur-md"
+                  className="absolute top-full left-0 right-0 z-popover glassmorphic rounded-b-xl border-t-0"
                 >
                   <div className="p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <TrendingUp className="h-4 w-4 text-orange-500" />
+                      <TrendingUp className="h-4 w-4 text-primary" />
                       <span className="text-sm font-medium text-foreground">Popular searches</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -204,12 +209,12 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
           >
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-orange-500" />
+                <Sparkles className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium text-foreground">
                   {isLoading ? (
                     <span className="flex items-center gap-2">
                       <motion.div
-                        className="h-4 w-4 border-2 border-orange-500 border-t-transparent rounded-full"
+                        className="h-4 w-4 border-2 border-primary-500 border-t-transparent rounded-full"
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                       />
@@ -221,10 +226,10 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
                 </span>
               </div>
               
-              {hasActiveFilters && (
-                <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700/50">
+              {hasActiveFilters && activeFiltersCount > 0 && (
+                <Badge variant="secondary" className="bg-primary-100 text-primary-700 border-primary-200 dark:bg-primary-900/30 dark:text-primary-300 dark:border-primary-700/50">
                   <Filter className="h-3 w-3 mr-1" />
-                  Filters active
+                  {activeFiltersCount} filter{activeFiltersCount === 1 ? '' : 's'}
                 </Badge>
               )}
             </div>

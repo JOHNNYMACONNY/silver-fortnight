@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from '../AuthContext';
-import { markMessagesAsRead as markMessagesAsReadService } from '../services/firestore';
-import { Conversation } from '../services/firestore';
+import { markMessagesAsRead as markMessagesAsReadService } from '../services/chat/chatService';
+import type { ChatConversation as Conversation } from '../types/chat';
 
 /**
  * Custom hook for message operations with proper error handling

@@ -210,9 +210,17 @@ export const NotificationDropdown: React.FC = () => {
       </button>
       
       {/* Dropdown */}
-      {isOpen && (
-        <div className="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-card border border-border focus:outline-none z-50">
-          <div className="py-1">
+        {isOpen && (
+          <div
+            className={
+              "origin-top-right absolute right-0 mt-2 w-80 rounded-md focus:outline-none z-popover " +
+              // Glassmorphic surface aligned with navbar
+              "bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md navbar-gradient-border " +
+              // Enhanced shadow to match mobile menu aesthetic
+              "shadow-glass-lg"
+            }
+          >
+            <div className="py-1">
             {/* Header */}
             <div className="px-4 py-2 border-b border-border">
               <div className="flex justify-between items-center">
@@ -229,7 +237,7 @@ export const NotificationDropdown: React.FC = () => {
             </div>
             
             {/* Notification list */}
-            <div className="max-h-96 overflow-y-auto">
+              <div className="max-h-96 overflow-y-auto divide-y divide-border/60">
               {loading ? (
                 <div className="px-4 py-6 text-center">
                   <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary mb-2"></div>
@@ -242,27 +250,24 @@ export const NotificationDropdown: React.FC = () => {
               ) : (
                 <div>
                   {notifications.slice(0, 5).map((notification) => (
-                    <div
+                      <div
                       key={notification.id}
-                      className={`px-4 py-3 hover:bg-accent cursor-pointer ${
+                        className={`px-4 py-3.5 hover:bg-accent/50 cursor-pointer ${
                         !notification.read ? 'bg-primary/10' : ''
                       }`}
                       onClick={() => handleNotificationClick(notification)}
                     >
-                      <div className="flex items-start space-x-3">
-                        <div className="flex-shrink-0 text-muted-foreground">
-                          {getNotificationIcon(notification.type)}
+                        <div className="grid grid-cols-[auto,1fr,auto] gap-x-3 gap-y-1 items-start">
+                          <div className="text-muted-foreground mt-1">{getNotificationIcon(notification.type)}</div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium leading-6 text-foreground whitespace-normal break-words">{notification.title ?? 'Notification'}</p>
+                            {Boolean(notification.message) && (
+                              <p className="text-sm leading-6 text-muted-foreground whitespace-normal break-words">{notification.message}</p>
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground text-right">{formatTimestamp(notification.createdAt)}</div>
+                          {!notification.read && <div className="col-start-2 w-2 h-2 rounded-full bg-primary" />}
                         </div>
-                        <div className="flex-1">
-                          <p className="text-sm text-foreground">{notification.message}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatTimestamp(notification.createdAt)}
-                          </p>
-                        </div>
-                        {!notification.read && (
-                          <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
-                        )}
-                      </div>
                     </div>
                   ))}
                 </div>

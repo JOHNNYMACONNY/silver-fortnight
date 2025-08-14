@@ -1,9 +1,9 @@
 # TradeYa Layout System Architecture
 
-**Version:** 1.0  
-**Date:** December 16, 2024  
+**Version:** 1.1  
+**Date:** August 11, 2025  
 **Status:** Comprehensive Reference Guide  
-**Last Updated:** December 16, 2024
+**Last Updated:** August 11, 2025
 
 ---
 
@@ -229,6 +229,51 @@ export default {
   },
 }
 ```
+
+### 2.1 Tailwind v4 Integration and @theme Rules
+
+Tailwind is configured for v4 with the official Vite plugin and @theme blocks:
+
+- Vite plugin order (Tailwind before React):
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwind from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [tailwind(), react()],
+})
+```
+
+- PostCSS configuration:
+
+```js
+// postcss.config.cjs
+module.exports = {
+  plugins: {
+    '@tailwindcss/postcss': {},
+    autoprefixer: {},
+  },
+}
+```
+
+- CSS entry uses the v4 import and `@theme` blocks:
+
+```css
+/* src/index.css */
+@import "tailwindcss";
+
+@theme dark {
+  /* Only custom properties or @keyframes; no nested selectors */
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --border-divider: rgba(255, 255, 255, 0.08);
+}
+```
+
+Note: `@theme` blocks must not include `:root { ... }` or other selectors; otherwise the build fails.
 
 ### 3. Theme Utilities System
 
@@ -1480,6 +1525,71 @@ module.exports = {
 
 ---
 
+## Border System
+
+### 1. Tokenized Border Strategy
+
+To achieve consistent glassmorphic styling and reduce ad-hoc border colors, borders are standardized via CSS custom properties and Tailwind mappings.
+
+Tokens (defined in `src/index.css`):
+
+```css
+:root {
+  --border-default: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.16);
+  --border-divider: rgba(0, 0, 0, 0.06);
+  --border-success: rgba(34, 197, 94, 0.5);
+  --border-warning: rgba(245, 158, 11, 0.5);
+  --border-error: rgba(239, 68, 68, 0.5);
+}
+```
+
+Tailwind mappings (in `tailwind.config.ts`):
+
+```ts
+extend: {
+  colors: {
+    'border-default': 'var(--border-default)',
+    'border-strong': 'var(--border-strong)',
+    'border-divider': 'var(--border-divider)',
+    'border-success': 'var(--border-success)',
+    'border-warning': 'var(--border-warning)',
+    'border-error': 'var(--border-error)',
+    'glass-border': 'var(--color-glass-border)',
+  }
+}
+```
+
+Utilities (in `src/index.css`):
+
+```css
+@layer utilities {
+  .border-standard { border-width: 1px; border-color: var(--border-default); }
+  .border-strong { border-width: 1px; border-color: var(--border-strong); }
+  .border-glass { border-width: 1px; border-color: var(--color-glass-border); }
+  .border-divider { border-top-width: 1px; border-color: var(--border-divider); }
+  .border-success { border-color: var(--border-success); }
+  .border-warning { border-color: var(--border-warning); }
+  .border-error { border-color: var(--border-error); }
+}
+```
+
+Usage guidance:
+- Use `.border-glass` for glassmorphic surfaces (Cards, Dropdowns, Sheets, Modals)
+- Use `.border-standard` for general frames; `.border-strong` for emphasized frames
+- Use `.border-divider` for subtle separators (prefer `border-b border-divider`)
+- Use `.border-success|warning|error` for semantic borders; keep bg/text/rings as-is
+- Navbar edge uses `navbar-gradient-border` (keep scoped to nav)
+
+v4 note:
+- The `.glassmorphic` helper applies `border` and sets `border-color: var(--color-glass-border)` directly to comply with Tailwind v4 @apply constraints. Prefer `.border-glass` or `.glassmorphic` over raw `border-<color>` classes.
+
+Lint/tooling:
+- Run `node scripts/style-audit/borderAudit.ts` to flag raw `border-<color>` usages
+- Replace decorative borders with the utilities above to maintain consistency
+
+---
+
 ## Gotchas & Fragile Areas
 
 ### 1. ⚠️ Provider Chain Complexity
@@ -1603,7 +1713,25 @@ export const zIndex = {
 } as const;
 ```
 
-### 5. ⚠️ Responsive Breakpoint Dependencies
+### 5. ✅ Sticky Navbar Scroll Offsets
+
+**Problem:** Headings and sections can be hidden under the sticky navbar (`Navbar` is `sticky top-0`) when navigating via hash links or calling `element.scrollIntoView(...)`.
+
+**Global Fix:** We set safe-scroll offsets in `src/index.css` to account for the navbar height across breakpoints and devices:
+
+```css
+/* Keep in sync with Navbar heights */
+:root { --navbar-height: 4rem; }           /* desktop: h-16 */
+@media (max-width: 767px) {
+  :root { --navbar-height: 3.5rem; }      /* mobile: h-14 */
+}
+html { scroll-padding-top: calc(var(--navbar-height) + env(safe-area-inset-top, 0px)); }
+[id] { scroll-margin-top: calc(var(--navbar-height) + 0.5rem); }
+```
+
+**Maintenance:** If `Navbar` heights change, update `--navbar-height` values accordingly.
+
+### 6. ⚠️ Responsive Breakpoint Dependencies
 
 **Issue:** Tailwind breakpoints hardcoded throughout components.
 
@@ -1632,7 +1760,7 @@ export const breakpoints = {
 const gridClasses = `grid-cols-1 ${breakpoints.md}grid-cols-2 ${breakpoints.lg}grid-cols-3`;
 ```
 
-### 6. ⚠️ Animation Performance
+### 7. ⚠️ Animation Performance
 
 **Risk:** Too many simultaneous animations can cause jank.
 

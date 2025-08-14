@@ -77,9 +77,11 @@ export const ProfileImage = React.memo<ProfileImageProps>(({
   const isDev = process.env.NODE_ENV === 'development';
 
   // Common classes - memoized to prevent string concatenation on every render
-  const imageClasses = useMemo(() =>
-    [size, className]
-  );
+  const imageClasses = useMemo(() => {
+    const sizeClass = sizeClasses[size] || sizeClasses.md;
+    const baseClasses = 'rounded-full object-cover aspect-square flex-shrink-0';
+    return `${sizeClass} ${baseClasses} ${className}`.trim();
+  }, [size, className]);
 
   // Special handling for direct URLs - memoized to prevent recalculation
   const primaryImageUrl = useMemo(() => {
@@ -104,8 +106,8 @@ export const ProfileImage = React.memo<ProfileImageProps>(({
     } else {
       // Standard processing for Cloudinary URLs or public IDs
       return profilePicture
-        ? getProfileImageUrl(profilePicture)
-        : getProfileImageUrl(photoURL || generateAvatarUrl(displayName));
+        ? getProfileImageUrl(profilePicture, 200)
+        : getProfileImageUrl((photoURL as any) || generateAvatarUrl(displayName), 200);
     }
   }, [photoURL, profilePicture, displayName]);
 

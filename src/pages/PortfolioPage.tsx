@@ -165,7 +165,7 @@ const PortfolioPage: React.FC = () => {
           Your portfolio showcases your skills. Now find others to trade with!
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button asChild>
+          <Button asChild topic="trades">
             <a href="/trades">Browse Trades</a>
           </Button>
           <Button variant="outline" asChild>

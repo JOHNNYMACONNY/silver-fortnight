@@ -113,7 +113,7 @@ const ProfileImageWithUser: React.FC<ProfileImageWithUserProps> = React.memo(({
       <LazyImage
         src={JOHN_ROBERTS_IMAGE_URL}
         alt={user?.displayName || 'John Roberts'}
-        className={`rounded-full object-cover ${sizeMap[size]} ${className}`}
+        className={`rounded-full object-cover aspect-square flex-shrink-0 ${sizeMap[size]} ${className}`}
         onClick={onClick}
         loading="lazy"
         decoding="async"

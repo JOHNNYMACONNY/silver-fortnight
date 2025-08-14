@@ -264,13 +264,13 @@ export const ErrorRecoverySystem: React.FC<ErrorRecoverySystemProps> = ({
   const getSeverityColor = (severity: ErrorSeverity) => {
     switch (severity) {
       case ErrorSeverity.LOW:
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+        return 'text-yellow-600 bg-yellow-50 border-warning';
       case ErrorSeverity.MEDIUM:
-        return 'text-orange-600 bg-orange-50 border-orange-200';
+        return 'text-primary bg-primary/10 border-primary/30';
       case ErrorSeverity.HIGH:
-        return 'text-red-600 bg-red-50 border-red-200';
+        return 'text-red-600 bg-red-50 border-error';
       case ErrorSeverity.CRITICAL:
-        return 'text-red-800 bg-red-100 border-red-300';
+        return 'text-red-800 bg-red-100 border-error';
       default:
         return 'text-gray-600 bg-gray-50 border-gray-200';
     }

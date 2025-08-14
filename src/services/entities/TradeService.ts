@@ -1,6 +1,5 @@
 import { where, orderBy, limit as limitQuery, QueryConstraint, Timestamp } from 'firebase/firestore';
 import { BaseService } from '../core/BaseService';
-import { tradeConverter } from '../firestoreConverters';
 import { ServiceResult } from '../../types/ServiceError';
 import { AppError, ErrorCode, ErrorSeverity } from '../../types/errors';
 
@@ -43,6 +42,8 @@ export interface Trade {
   deliverables?: string;
   timeline?: string;
   compensation?: string;
+  // Normalized skills index for server-side filtering (lowercased unique names)
+  skillsIndex?: string[];
 }
 
 /**
@@ -50,7 +51,7 @@ export interface Trade {
  */
 export class TradeService extends BaseService<Trade> {
   constructor() {
-    super(TRADES_COLLECTION, tradeConverter);
+    super(TRADES_COLLECTION);
   }
 
   /**
@@ -60,9 +61,19 @@ export class TradeService extends BaseService<Trade> {
     try {
       this.validateData(tradeData, ['title', 'description', 'skillsOffered', 'skillsWanted', 'creatorId']);
       
+      const computeSkillsIndex = (offered: TradeSkill[] = [], wanted: TradeSkill[] = []): string[] => {
+        const normalized = new Set<string>();
+        [...offered, ...wanted].forEach((s) => {
+          const name = (s?.name || '').toString().trim().toLowerCase();
+          if (name) normalized.add(name);
+        });
+        return Array.from(normalized);
+      };
+
       const tradeWithTimestamps = this.addTimestamps({
         ...tradeData,
-        status: 'pending' as TradeStatus
+        status: 'pending' as TradeStatus,
+        skillsIndex: computeSkillsIndex(tradeData.skillsOffered, tradeData.skillsWanted)
       });
 
       return await this.create(tradeWithTimestamps);
@@ -90,7 +101,25 @@ export class TradeService extends BaseService<Trade> {
    */
   async updateTrade(tradeId: string, updates: Partial<Trade>): Promise<ServiceResult<Trade>> {
     try {
-      const updatesWithTimestamp = this.addTimestamps(updates, true);
+      let updatesWithTimestamp = this.addTimestamps(updates, true);
+
+      // If skills are being modified, recompute skillsIndex using latest data
+      if (updates.skillsOffered !== undefined || updates.skillsWanted !== undefined) {
+        const current = await this.read(tradeId);
+        const currentTrade = current.data as Trade | undefined;
+        const offered = updates.skillsOffered ?? currentTrade?.skillsOffered ?? [];
+        const wanted = updates.skillsWanted ?? currentTrade?.skillsWanted ?? [];
+        const normalized = new Set<string>();
+        [...offered, ...wanted].forEach((s) => {
+          const name = (s?.name || '').toString().trim().toLowerCase();
+          if (name) normalized.add(name);
+        });
+        updatesWithTimestamp = {
+          ...updatesWithTimestamp,
+          skillsIndex: Array.from(normalized)
+        };
+      }
+
       return await this.update(tradeId, updatesWithTimestamp);
     } catch (error) {
       const appError = new AppError(

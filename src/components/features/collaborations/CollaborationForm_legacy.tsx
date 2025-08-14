@@ -238,7 +238,8 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
             <Label>Collaboration Images</Label>
             <MultipleImageUploader
               onImagesChange={setImages}
-              initialImages={images}
+              initialImageUrls={images}
+              folder={`collaborations/${collaboration?.id || 'new'}`}
             />
           </div>
         </CardContent>

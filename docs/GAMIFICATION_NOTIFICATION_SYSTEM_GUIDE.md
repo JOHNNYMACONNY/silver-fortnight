@@ -1,12 +1,12 @@
 # TradeYa Gamification Notification System - Technical Guide
 
-**Version:** 2.0 (Phase 2A)  
-**Last Updated:** December 19, 2024  
+**Version:** 2.1 (Phase 2B.2)  
+**Last Updated:** December 20, 2024  
 **Status:** Production Ready  
 
 ## Overview
 
-The Gamification Notification System provides real-time visual feedback for user progression events in the TradeYa platform. This system delivers immediate notifications for XP gains, level-ups, and achievement unlocks with smooth animations and comprehensive user controls.
+The Gamification Notification System provides real-time visual feedback for user progression events in the TradeYa platform. This system delivers immediate notifications for XP gains, level-ups, achievement unlocks, and streak milestones with smooth animations and comprehensive user controls.
 
 ## Architecture Overview
 
@@ -171,6 +171,14 @@ interface AnimatedXPBarProps {
 - Glow effects on XP increase
 - Multiple size variants
 
+### Streak Milestone Toasts
+
+Purpose: Provide quick feedback when a user hits a streak milestone  
+Location: `src/components/gamification/notifications/NotificationContainer.tsx`
+
+Trigger: Created by `updateUserStreak()` via `createNotification` with type `streak_milestone` and displayed by the NotificationContainer.  
+Behavior: Small toast with a flame icon, milestone message, and a button to view the profile progress tab.
+
 ### NotificationPreferences
 
 **Purpose:** User settings for notification behavior  
@@ -263,6 +271,7 @@ const DEFAULT_PREFERENCES = {
   xpGainToasts: true,
   levelUpModals: true,
   achievementUnlockModals: true,
+  streakToasts: true,
   soundEffects: false,
   reducedMotion: false,
   batchNotifications: true,

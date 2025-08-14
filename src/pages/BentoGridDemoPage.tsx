@@ -74,7 +74,7 @@ const BentoGridDemoPage: React.FC = () => {
                   <p className="text-gray-600 dark:text-gray-300 mb-3">
                     This card automatically adjusts based on available space
                   </p>
-                  <Badge variant="primary">AutoFit</Badge>
+                  <Badge className="bg-blue-500/20 text-blue-300">AutoFit</Badge>
                 </Card>
               </BentoItem>
             ))}
@@ -105,7 +105,7 @@ const BentoGridDemoPage: React.FC = () => {
               <Card variant="glass" className={`${item.height} p-4`}>
                 <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
                 <p className="text-gray-600 dark:text-gray-300">{item.content}</p>
-                <Badge variant="accent" className="mt-2">Masonry</Badge>
+                <Badge className="mt-2 bg-purple-500/20 text-purple-300">Masonry</Badge>
               </Card>
             </BentoItem>
           ))}
@@ -133,7 +133,7 @@ const BentoGridDemoPage: React.FC = () => {
               <p className="text-gray-600 dark:text-gray-300">
                 Simple content with minimal styling
               </p>
-              <Badge variant="secondary">Simple</Badge>
+              <Badge className="bg-gray-500/20 text-gray-300">Simple</Badge>
             </Card>
           </BentoItem>
 
@@ -154,7 +154,7 @@ const BentoGridDemoPage: React.FC = () => {
                   <div className="text-sm text-gray-600 dark:text-gray-300">Users</div>
                 </div>
               </div>
-              <Badge variant="primary" className="mt-4">Stats</Badge>
+              <Badge className="mt-4 bg-blue-500/20 text-blue-300">Stats</Badge>
             </Card>
           </BentoItem>
 
@@ -168,8 +168,8 @@ const BentoGridDemoPage: React.FC = () => {
               <p className="text-gray-600 dark:text-gray-300 mb-4">
                 Premium content with enhanced styling and more padding
               </p>
-              <Button variant="primary" size="sm">Learn More</Button>
-              <Badge variant="accent" className="mt-4">Featured</Badge>
+              <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700">Learn More</Button>
+              <Badge className="mt-4 bg-purple-500/20 text-purple-300">Featured</Badge>
             </Card>
           </BentoItem>
         </BentoGrid>
@@ -191,7 +191,7 @@ const BentoGridDemoPage: React.FC = () => {
               <p className="text-gray-600 dark:text-gray-300">
                 Takes up 1/3 of the row width
               </p>
-              <Badge variant="secondary">Small</Badge>
+              <Badge className="bg-gray-500/20 text-gray-300">Small</Badge>
             </Card>
           </BentoItem>
 
@@ -202,8 +202,8 @@ const BentoGridDemoPage: React.FC = () => {
                 Takes up 2/3 of the row width with more content and enhanced styling
               </p>
               <div className="flex gap-2">
-                <Badge variant="primary">Large</Badge>
-                <Badge variant="accent">Featured</Badge>
+                <Badge className="bg-blue-500/20 text-blue-300">Large</Badge>
+                <Badge className="bg-purple-500/20 text-purple-300">Featured</Badge>
               </div>
             </Card>
           </BentoItem>
@@ -214,7 +214,7 @@ const BentoGridDemoPage: React.FC = () => {
               <p className="text-gray-600 dark:text-gray-300 mb-4">
                 This row is reversed, so this large item comes first
               </p>
-              <Badge variant="primary">Large</Badge>
+              <Badge className="bg-blue-500/20 text-blue-300">Large</Badge>
             </Card>
           </BentoItem>
 
@@ -224,7 +224,7 @@ const BentoGridDemoPage: React.FC = () => {
               <p className="text-gray-600 dark:text-gray-300">
                 Small item in the reversed row
               </p>
-              <Badge variant="secondary">Small</Badge>
+              <Badge className="bg-gray-500/20 text-gray-300">Small</Badge>
             </Card>
           </BentoItem>
         </BentoGrid>

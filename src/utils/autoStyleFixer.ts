@@ -233,14 +233,14 @@ export class AutoStyleFixer {
    * Apply fixes to specific component patterns
    */
   fixComponentPattern(code: string, componentType: 'card' | 'button' | 'form' | 'layout'): FixResult {
-    const categoryMap = {
-      card: ['glassmorphism', 'spacing'],
-      button: ['color', 'spacing'],
-      form: ['glassmorphism', 'layout', 'spacing'],
-      layout: ['layout', 'spacing'],
-    } as const;
+    const categoryMap: Record<string, ReadonlyArray<'spacing' | 'color' | 'typography' | 'layout' | 'glassmorphism'>> = {
+      card: ['glassmorphism', 'spacing'] as const,
+      button: ['color', 'spacing'] as const,
+      form: ['glassmorphism', 'layout', 'spacing'] as const,
+      layout: ['layout', 'spacing'] as const,
+    };
 
-    return this.applyFixes(code, categoryMap[componentType]);
+    return this.applyFixes(code, categoryMap[componentType] as Array<'spacing' | 'color' | 'typography' | 'layout' | 'glassmorphism'>);
   }
 
   /**

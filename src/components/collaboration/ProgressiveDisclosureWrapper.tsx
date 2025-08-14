@@ -165,7 +165,7 @@ export const ProgressiveDisclosureWrapper: React.FC<ProgressiveDisclosureWrapper
   }, [currentLevel, overriddenSections]);
 
   const renderLevelSelector = () => (
-    <Card className="bg-white/10 backdrop-blur-md border-white/20">
+    <Card className="glassmorphic">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-white flex items-center space-x-2">
@@ -238,15 +238,12 @@ export const ProgressiveDisclosureWrapper: React.FC<ProgressiveDisclosureWrapper
         className={cn(
           "transition-all duration-300",
           isOverridden && !isNormallyVisible 
-            ? "bg-yellow-500/10 backdrop-blur-md border-yellow-500/30" 
-            : "bg-white/10 backdrop-blur-md border-white/20"
+            ? "glassmorphic" 
+            : "glassmorphic"
         )}
       >
-        <CardHeader 
-          className="cursor-pointer"
-          onClick={() => toggleSectionExpansion(section.id)}
-        >
-          <div className="flex items-center justify-between">
+        <CardHeader className="cursor-pointer">
+          <div className="flex items-center justify-between" onClick={() => toggleSectionExpansion(section.id)}>
             <div className="flex items-center space-x-3">
               {section.icon && (
                 <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
@@ -319,7 +316,7 @@ export const ProgressiveDisclosureWrapper: React.FC<ProgressiveDisclosureWrapper
     if (hiddenSections.length === 0 || !allowLevelOverride) return null;
 
     return (
-      <Card className="bg-gray-500/10 backdrop-blur-md border-gray-500/30">
+      <Card className="glassmorphic">
         <CardHeader>
           <CardTitle className="text-gray-400 flex items-center space-x-2">
             <EyeOff className="w-5 h-5" />

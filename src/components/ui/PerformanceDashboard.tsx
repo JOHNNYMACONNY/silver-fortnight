@@ -54,8 +54,8 @@ export const PerformanceDashboard: React.FC = () => {
   const formatTime = (ms: number) => `${Math.round(ms)}ms`;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 max-w-sm">
-      <Card variant="glass" className="backdrop-blur-md">
+    <div className="fixed bottom-4 right-4 z-overlay max-w-sm">
+      <Card variant="glass" className="glassmorphic">
         <CardHeader>
           <h3 className="text-sm font-semibold text-foreground">
             Performance Monitor

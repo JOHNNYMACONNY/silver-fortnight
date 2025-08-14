@@ -149,7 +149,7 @@ const DesignSystemOverviewPage: React.FC = () => {
       case 'complete':
         return <CheckCircle className="w-5 h-5 text-green-500" />;
       case 'in-progress':
-        return <Clock className="w-5 h-5 text-orange-500" />;
+        return <Clock className="w-5 h-5 text-primary" />;
       default:
         return <Clock className="w-5 h-5 text-gray-500" />;
     }
@@ -160,7 +160,7 @@ const DesignSystemOverviewPage: React.FC = () => {
       case 'complete':
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'in-progress':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+        return 'bg-primary/10 text-primary';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
@@ -189,10 +189,10 @@ const DesignSystemOverviewPage: React.FC = () => {
               <div className="text-2xl font-bold text-green-600">2</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Completed</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">4</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">In Progress</div>
-            </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">4</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">In Progress</div>
+              </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">6</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Total Phases</div>

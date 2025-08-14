@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../AuthContext';
 import { Collaboration, COLLECTIONS, User } from '../../../services/firestore-exports';
 import { collaborationRoleService } from '../../../services/collaborationRoles';
-import { db, Timestamp } from '../../../firebase-config';
+import { getSyncFirebaseDb, Timestamp } from '../../../firebase-config';
 import { CollaborationRoleData, RoleState } from '../../../types/collaboration';
 import { doc, collection, runTransaction, getDocs } from 'firebase/firestore';
 import { logTransaction } from '../../../utils/transactionLogging';
@@ -154,7 +154,7 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
           participants: [currentUser.uid]
         };
 
-        const { id } = await runTransaction(db(), async (transaction) => {
+        const { id } = await runTransaction(getSyncFirebaseDb(), async (transaction) => {
           logTransaction({
             operation: 'createCollaboration',
             timestamp: Date.now(),
@@ -163,7 +163,7 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
           });
 
           // Create collaboration document
-          const collabRef = doc(collection(db(), COLLECTIONS.COLLABORATIONS));
+          const collabRef = doc(collection(getSyncFirebaseDb(), COLLECTIONS.COLLABORATIONS));
           transaction.set(collabRef, collaborationData);
 
           // Log collaboration creation
@@ -219,7 +219,7 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
         onSuccess(id);
       } else if (collaboration && collaboration.id) {
         // Now we're sure collaboration.id exists
-        await runTransaction(db(), async (transaction) => {
+        await runTransaction(getSyncFirebaseDb(), async (transaction) => {
           logTransaction({
             operation: 'updateCollaboration',
             timestamp: Date.now(),
@@ -232,7 +232,7 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
             throw new Error('Collaboration ID is missing');
           }
           
-          const collaborationRef = doc(db(), COLLECTIONS.COLLABORATIONS, collaboration.id);
+          const collaborationRef = doc(getSyncFirebaseDb(), COLLECTIONS.COLLABORATIONS, collaboration.id);
           const collaborationDoc = await transaction.get(collaborationRef);
           
           if (!collaborationDoc.exists()) {

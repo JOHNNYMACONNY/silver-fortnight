@@ -5,7 +5,7 @@
 
 export interface ResponsivenessIssue {
   type: 'error' | 'warning' | 'info';
-  category: 'touch-targets' | 'viewport' | 'layout' | 'performance' | 'accessibility';
+  category: 'touchTargets' | 'viewport' | 'layout' | 'performance' | 'accessibility';
   message: string;
   element?: HTMLElement;
   severity: 'critical' | 'serious' | 'moderate' | 'minor';
@@ -124,7 +124,7 @@ export class MobileResponsivenessTester {
         
         issues.push({
           type: minDimension < 32 ? 'error' : 'warning',
-          category: 'touch-targets',
+          category: 'touchTargets',
           message: `Touch target too small: ${Math.round(rect.width)}x${Math.round(rect.height)}px (minimum: ${minTouchTarget}x${minTouchTarget}px)`,
           element: htmlElement,
           severity: minDimension < 32 ? 'critical' : 'serious',
@@ -143,7 +143,7 @@ export class MobileResponsivenessTester {
         if (distance < 8) { // Minimum 8px spacing
           issues.push({
             type: 'warning',
-            category: 'touch-targets',
+            category: 'touchTargets',
             message: `Touch targets too close: ${Math.round(distance)}px spacing (minimum: 8px)`,
             element: htmlElement,
             severity: 'moderate',

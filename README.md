@@ -484,9 +484,14 @@ What changed
 - Standardized cards: `ChallengesPage` now uses shared `ChallengeCard` with footer CTAs (View/Join)
 - Tabs added: All / Active / My Challenges
 - Recommendations MVP: “Recommended for you” section powered by `getRecommendedChallenges`
+  - Now enriched using user’s recent categories and a difficulty band around their average
+  - Now excludes already-joined challenges in the returned results
 - UI hardening: Safe rendering for missing `difficulty` and `rewards.xp`
 - Detail page alignment: Uses `services/challenges.getChallenge` and shared types; normalizes `status`/`difficulty`
 - Dashboard: Mounted `ThreeTierProgressionUI`
+- Progression → Filters: `ThreeTierProgressionUI` tier clicks now navigate to `ChallengesPage?type=solo|trade|collaboration`; `ChallengesPage` applies the filter from the query param
+  - Added per‑tab empty‑states and a Clear filters control
+  - Challenge detail page now supports real joining and shows user progress with an “Ending soon” badge
 
 One-time maintenance
 - Normalize existing challenge docs:
@@ -498,6 +503,26 @@ npx tsx scripts/backfill-challenges.ts
 npm run firebase:indexes:verify
 npm run deploy:indexes
 ```
+
+Verify UI behavior
+```bash
+# Run targeted tests
+npx jest src/__tests__/ChallengesPageRender.test.tsx src/__tests__/ChallengesPageTabs.test.tsx src/__tests__/ChallengesPageEmptyAndClearFilters.test.tsx
+```
+
+Analytics (Challenges)
+- `challenge_recommendation_impressions`: count of recommended items shown
+- `challenge_joins`: total joins
+- `challenge_recommendation_joins`: joins originating from recommendations
+- `challenge_filters_zero_results`: filters produced zero results
+- `challenge_filters_cleared`: Clear filters action
+
+Indexes
+- Added composite index: `challenges (status ASC, endDate ASC)` for active challenges ordered by end date
+
+Seeding & E2E
+- Challenge seeding: `npx tsx scripts/seed-challenges.ts`
+- E2E (requires Playwright setup): `npx playwright test e2e/challenges-recommendations.spec.ts`
 
 ### Production Migration Complete (December 2025) ✅
 

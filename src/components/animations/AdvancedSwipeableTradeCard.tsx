@@ -80,7 +80,7 @@ export const AdvancedSwipeableTradeCard: React.FC<AdvancedSwipeableTradeCardProp
 
   // Mobile animation for feedback
   const { triggerHapticFeedback, isTouchDevice } = useMobileAnimation({
-    type: "swipe",
+    type: "hover",
     tradingContext: "negotiation",
     hapticEnabled: true,
   });
@@ -111,7 +111,7 @@ export const AdvancedSwipeableTradeCard: React.FC<AdvancedSwipeableTradeCardProp
   ];
 
   // Handle pan gesture
-  const handlePan = useCallback((event: any, info: PanInfo) => {
+  const handlePan = useCallback((event: unknown, info: PanInfo) => {
     if (disabled) return;
 
     const { offset, velocity } = info;
@@ -152,7 +152,7 @@ export const AdvancedSwipeableTradeCard: React.FC<AdvancedSwipeableTradeCardProp
   }, [disabled, actions, swipeStep, triggerHapticFeedback]);
 
   // Handle pan end
-  const handlePanEnd = useCallback((event: any, info: PanInfo) => {
+  const handlePanEnd = useCallback((event: unknown, info: PanInfo) => {
     if (!currentSwipeAction || disabled) return;
 
     const { offset } = info;
@@ -285,10 +285,10 @@ export const AdvancedSwipeableTradeCard: React.FC<AdvancedSwipeableTradeCardProp
       <motion.div
         ref={cardRef}
         className={cn(
-          "relative z-10 backdrop-blur-md bg-white/80 dark:bg-neutral-800/70 border border-white/20 dark:border-neutral-700/30 rounded-xl shadow-glass overflow-hidden",
+          "relative z-10 glassmorphic overflow-hidden",
           "transition-all duration-300",
           disabled && "opacity-50 pointer-events-none",
-          isLongPressing && "shadow-lg ring-2 ring-orange-500/50"
+          isLongPressing && "shadow-lg ring-2 ring-ring/50"
         )}
         drag={!disabled}
         dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
@@ -326,18 +326,18 @@ export const AdvancedSwipeableTradeCard: React.FC<AdvancedSwipeableTradeCardProp
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-500 dark:text-gray-400">Offers:</span>
               <AnimatedSkillBadge
-                skill={trade.offeredSkill}
+                skill={(trade as any).offeredSkills?.[0]?.skill ?? (trade as any).offeredSkills?.[0] ?? (trade as any).offeredSkill ?? 'Unknown'}
                 size="sm"
-                tradingContext="display"
+                tradingContext="general"
                 showLevel={false}
               />
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-500 dark:text-gray-400">Wants:</span>
               <AnimatedSkillBadge
-                skill={trade.requestedSkill}
+                skill={(trade as any).requestedSkills?.[0]?.skill ?? (trade as any).requestedSkills?.[0] ?? (trade as any).requestedSkill ?? 'Unknown'}
                 size="sm"
-                tradingContext="display"
+                tradingContext="general"
                 showLevel={false}
               />
             </div>

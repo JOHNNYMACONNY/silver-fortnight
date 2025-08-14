@@ -26,7 +26,7 @@ const JohnRobertsProfileImage: React.FC<{
     <LazyImage
       src={imageUrl}
       alt="John Roberts"
-      className={`rounded-full object-cover ${sizeClasses[size]} ${className}`}
+      className={`rounded-full object-cover aspect-square flex-shrink-0 ${sizeClasses[size]} ${className}`}
       onClick={onClick}
       loading="lazy"
       decoding="async"

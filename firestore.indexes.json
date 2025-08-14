@@ -1,6 +1,60 @@
 {
   "indexes": [
     {
+      "collectionGroup": "trades",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "skillsIndex", "arrayConfig": "CONTAINS"},
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "title", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "collaborations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "skillsIndex", "arrayConfig": "CONTAINS"},
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "collaborations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "skillsIndex", "arrayConfig": "CONTAINS"},
+        {"fieldPath": "category", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "trades",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "skillsIndex", "arrayConfig": "CONTAINS"},
+        {"fieldPath": "category", "order": "ASCENDING"},
+        {"fieldPath": "title", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "trades",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "skillsIndex", "arrayConfig": "CONTAINS"},
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "category", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "challenges",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "endDate", "order": "ASCENDING"}
+      ]
+    },
+    {
       "collectionGroup": "achievements",
       "queryScope": "COLLECTION",
       "fields": [
@@ -100,6 +154,15 @@
         {"fieldPath": "period", "order": "ASCENDING"},
         {"fieldPath": "totalXP", "order": "DESCENDING"},
         {"fieldPath": "createdAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "leaderboardStats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "period", "order": "ASCENDING"},
+        {"fieldPath": "userId", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "ASCENDING"}
       ]
     },
     {
@@ -322,25 +385,6 @@
       "fields": [
         {"fieldPath": "userId", "order": "ASCENDING"},
         {"fieldPath": "createdAt", "order": "DESCENDING"}
-      ]
-    },
-    {
-      "collectionId": "leaderboardStats",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {"fieldPath": "period", "order": "ASCENDING"},
-        {"fieldPath": "userId", "order": "ASCENDING"},
-        {"fieldPath": "createdAt", "order": "ASCENDING"},
-        {"fieldPath": "__name__", "order": "ASCENDING"}
-      ]
-    },
-    {
-      "collectionId": "leaderboardStats",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {"fieldPath": "period", "order": "ASCENDING"},
-        {"fieldPath": "createdAt", "order": "ASCENDING"},
-        {"fieldPath": "userId", "order": "ASCENDING"}
       ]
     }
   ],

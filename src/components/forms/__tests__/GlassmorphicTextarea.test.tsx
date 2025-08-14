@@ -38,7 +38,7 @@ describe('GlassmorphicTextarea', () => {
       
       const textarea = screen.getByPlaceholderText('Enter your message...');
       expect(textarea).toBeInTheDocument();
-      expect(textarea).toHaveClass('backdrop-blur-sm');
+      expect(textarea).toHaveClass('glassmorphic');
     });
 
     it('renders with label', () => {
@@ -68,15 +68,14 @@ describe('GlassmorphicTextarea', () => {
       render(<GlassmorphicTextarea {...defaultProps} />);
       
       const textarea = screen.getByPlaceholderText('Enter your message...');
-      expect(textarea).toHaveClass('backdrop-blur-sm');
-      expect(textarea).toHaveClass('bg-white/10');
+      expect(textarea).toHaveClass('glassmorphic');
     });
 
     it('applies elevated-glass variant styles', () => {
       render(<GlassmorphicTextarea {...defaultProps} variant="elevated-glass" />);
       
       const textarea = screen.getByPlaceholderText('Enter your message...');
-      expect(textarea).toHaveClass('backdrop-blur-md');
+      expect(textarea).toHaveClass('glassmorphic');
       expect(textarea).toHaveClass('shadow-lg');
     });
 
@@ -84,8 +83,8 @@ describe('GlassmorphicTextarea', () => {
       render(<GlassmorphicTextarea {...defaultProps} variant="inset-glass" />);
 
       const textarea = screen.getByPlaceholderText('Enter your message...');
+      expect(textarea).toHaveClass('glassmorphic');
       expect(textarea).toHaveClass('shadow-inner');
-      expect(textarea).toHaveClass('bg-white/5');
     });
   });
 
@@ -254,7 +253,7 @@ describe('GlassmorphicTextarea', () => {
       const textarea = screen.getByPlaceholderText('Enter your message...');
       await userEvent.click(textarea);
       
-      expect(textarea).toHaveClass('focus:ring-orange-500/30');
+      expect(textarea).toHaveClass('focus:ring-ring');
     });
 
     it('applies blue brand accent on focus', async () => {

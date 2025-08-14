@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
-import { db } from '../firebase-config';
+import { getSyncFirebaseDb } from '../firebase-config';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 
 interface TestResult {
@@ -27,7 +27,7 @@ export const SecurityTestPage: React.FC = () => {
       try {
         // Test 1: Access conversations collection
         try {
-          const conversationsRef = collection(db(), 'conversations');
+          const conversationsRef = collection(getSyncFirebaseDb(), 'conversations');
           const conversationsSnap = await getDocs(conversationsRef);
           testResults.push({
             name: 'Access conversations collection',
@@ -45,7 +45,7 @@ export const SecurityTestPage: React.FC = () => {
         // Test 2: Access specific conversation
         const conversationId = 'bcB1UuJ2VHwTXsTFG71g';
         try {
-          const conversationRef = doc(db(), 'conversations', conversationId);
+          const conversationRef = doc(getSyncFirebaseDb(), 'conversations', conversationId);
           const conversationSnap = await getDoc(conversationRef);
           testResults.push({
             name: `Access specific conversation (${conversationId})`,
@@ -64,7 +64,7 @@ export const SecurityTestPage: React.FC = () => {
 
         // Test 3: Access messages subcollection
         try {
-          const messagesRef = collection(db(), 'conversations', conversationId, 'messages');
+          const messagesRef = collection(getSyncFirebaseDb(), 'conversations', conversationId, 'messages');
           const messagesSnap = await getDocs(messagesRef);
           testResults.push({
             name: `Access messages subcollection (${conversationId}/messages)`,
@@ -81,7 +81,7 @@ export const SecurityTestPage: React.FC = () => {
 
         // Test 4: Access flat messages collection
         try {
-          const flatMessagesRef = collection(db(), 'messages');
+          const flatMessagesRef = collection(getSyncFirebaseDb(), 'messages');
           const flatMessagesSnap = await getDocs(flatMessagesRef);
           testResults.push({
             name: 'Access flat messages collection',
@@ -106,7 +106,7 @@ export const SecurityTestPage: React.FC = () => {
 
     runTests();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser, db]);
+  }, [currentUser]);
 
   if (!currentUser) {
     return (

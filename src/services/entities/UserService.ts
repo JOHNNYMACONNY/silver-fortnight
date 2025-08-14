@@ -1,8 +1,8 @@
 import { where, orderBy, limit as limitQuery, QueryConstraint } from 'firebase/firestore';
 import { BaseService } from '../core/BaseService';
-import { userConverter } from '../firestoreConverters';
 import { ServiceResult } from '../../types/ServiceError';
 import { CreateUserProfileData } from '../../firebase-config';
+import type { BannerData } from '../../utils/imageUtils';
 import { AppError, ErrorCode, ErrorSeverity } from '../../types/errors';
 
 // Collection name
@@ -20,12 +20,22 @@ export interface User {
   photoURL?: string;
   bio?: string;
   location?: string;
+  website?: string;
   skills?: any;
   reputationScore?: number;
   interests?: string;
   role?: UserRole;
   createdAt?: any;
   updatedAt?: any;
+  // Optional profile banner (Cloudinary publicId data or legacy string URL)
+  banner?: BannerData | string | null;
+  // Optional FX settings for banner overlay
+  bannerFx?: {
+    enable: boolean;
+    preset: 'ribbons' | 'aurora' | 'metaballs' | 'audio';
+    opacity: number;
+    blendMode: 'screen' | 'soft-light' | 'overlay' | 'plus-lighter';
+  };
 }
 
 /**
@@ -33,7 +43,7 @@ export interface User {
  */
 export class UserService extends BaseService<User> {
   constructor() {
-    super(USERS_COLLECTION, userConverter);
+    super(USERS_COLLECTION);
   }
 
   /**

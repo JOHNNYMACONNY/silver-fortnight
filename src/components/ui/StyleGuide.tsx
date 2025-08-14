@@ -26,7 +26,11 @@ export const StyleGuide: React.FC = () => {
           </p>
         </div>
 
-        <Tabs value="colors" className="w-full">
+        <Tabs
+          value="colors"
+          className="w-full"
+          onValueChange={() => {}} // Added to satisfy required prop
+        >
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="colors">Colors</TabsTrigger>
             <TabsTrigger value="typography">Typography</TabsTrigger>
@@ -38,7 +42,7 @@ export const StyleGuide: React.FC = () => {
 
           {/* Colors Tab */}
           <TabsContent value="colors" className="space-y-8">
-            <Card variant="glass" className="backdrop-blur-md bg-white/75 dark:bg-neutral-800/65 border border-white/20 dark:border-neutral-700/30 shadow-glass">
+            <Card variant="glass" className="glassmorphic">
               <CardHeader>
                 <CardTitle>Brand Colors</CardTitle>
               </CardHeader>

@@ -1,6 +1,7 @@
 import { Button } from '../Button';
 import type { Meta, StoryObj } from '@storybook/react';
 import { FaCheck, FaTimes } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 const meta: Meta<typeof Button> = {
   title: 'UI/Button',
@@ -73,3 +74,14 @@ export const RightIcon: Story = {
 };
 
 // Add more stories for edge cases or new variants as needed.
+
+export const AsChildSingleElement: Story = {
+  render: () => (
+    <Button asChild variant="ghost">
+      <Link to="/">
+        <FaCheck className="mr-2" />
+        Go Home
+      </Link>
+    </Button>
+  ),
+};

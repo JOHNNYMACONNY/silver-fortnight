@@ -230,26 +230,25 @@ export const mockFramerMotion = () => {
 
 // Mock intersection observer for animation testing
 export const mockIntersectionObserver = () => {
-  const mockIntersectionObserver = jest.fn();
-  mockIntersectionObserver.mockReturnValue({
-    observe: jest.fn(),
-    unobserve: jest.fn(),
-    disconnect: jest.fn(),
-  });
-  window.IntersectionObserver = mockIntersectionObserver;
-  return mockIntersectionObserver;
+  class IOShim {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  // Assign a constructor function to satisfy TypeScript
+  (window as any).IntersectionObserver = IOShim as any;
+  return IOShim as any;
 };
 
 // Mock resize observer for responsive testing
 export const mockResizeObserver = () => {
-  const mockResizeObserver = jest.fn();
-  mockResizeObserver.mockReturnValue({
-    observe: jest.fn(),
-    unobserve: jest.fn(),
-    disconnect: jest.fn(),
-  });
-  window.ResizeObserver = mockResizeObserver;
-  return mockResizeObserver;
+  class ROShim {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  (window as any).ResizeObserver = ROShim as any;
+  return ROShim as any;
 };
 
 // Mock CSS backdrop-filter support
@@ -301,15 +300,15 @@ export const mockTouchDevice = (isTouch: boolean = true) => {
 export const mockReducedMotion = (reduced: boolean = true) => {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: jest.fn().mockImplementation((query: string) => ({
+    value: (query: string) => ({
       matches: query === '(prefers-reduced-motion: reduce)' ? reduced : false,
       media: query,
       onchange: null,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
-    })),
+      addListener() {},
+      removeListener() {},
+      addEventListener() {},
+      removeEventListener() {},
+      dispatchEvent() { return false; },
+    }) as any,
   });
 };

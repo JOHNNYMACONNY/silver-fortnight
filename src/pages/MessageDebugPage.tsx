@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
-import { db } from '../firebase-config';
+import { getSyncFirebaseDb } from '../firebase-config';
 import { collection, query, where, orderBy, getDocs, doc, getDoc } from 'firebase/firestore';
 
 export const MessageDebugPage: React.FC = () => {
@@ -32,9 +32,9 @@ export const MessageDebugPage: React.FC = () => {
 
         // 1. Check for all conversations
         console.log('Checking for all conversations for user:', currentUser.uid);
-        const conversationsRef = collection(db(), 'conversations');
+        const conversationsRef = collection(getSyncFirebaseDb(), 'conversations');
         const conversationsQuery = query(
-          conversationsRef,
+          conversationsRef as any,
           where('participantIds', 'array-contains', currentUser.uid),
           orderBy('updatedAt', 'desc')
         );
@@ -42,8 +42,9 @@ export const MessageDebugPage: React.FC = () => {
         const conversationsSnapshot = await getDocs(conversationsQuery);
         console.log('Found conversations:', conversationsSnapshot.size);
 
-        conversationsSnapshot.forEach(doc => {
-          const data = { id: doc.id, ...doc.data() };
+          conversationsSnapshot.forEach(doc => {
+          const raw = doc.data();
+          const data = { id: doc.id, ...(raw && typeof raw === 'object' ? raw : {}) };
           console.log('Conversation:', doc.id, data);
           results.conversations.push(data);
         });
@@ -52,7 +53,7 @@ export const MessageDebugPage: React.FC = () => {
         const specificConversationId = 'bcB1UuJ2VHwTXsTFG71g';
         console.log('Checking for specific conversation:', specificConversationId);
         
-        const conversationRef = doc(db(), 'conversations', specificConversationId);
+        const conversationRef = doc(getSyncFirebaseDb(), 'conversations', specificConversationId);
         const conversationSnap = await getDoc(conversationRef);
         
         if (conversationSnap.exists()) {
@@ -61,21 +62,22 @@ export const MessageDebugPage: React.FC = () => {
           results.specificConversation = data;
           
           // 3. Check for nested messages
-          const nestedMessagesRef = collection(db(), 'conversations', specificConversationId, 'messages');
-          const nestedMessagesQuery = query(nestedMessagesRef, orderBy('createdAt', 'asc'));
+          const nestedMessagesRef = collection(getSyncFirebaseDb(), 'conversations', specificConversationId, 'messages');
+          const nestedMessagesQuery = query(nestedMessagesRef as any, orderBy('createdAt', 'asc'));
           const nestedMessagesSnap = await getDocs(nestedMessagesQuery);
           
           console.log('Nested messages count:', nestedMessagesSnap.size);
           nestedMessagesSnap.forEach(doc => {
-            const data = { id: doc.id, ...doc.data() };
+            const raw = doc.data();
+            const data = { id: doc.id, ...(raw && typeof raw === 'object' ? raw : {}) };
             console.log('Nested message:', doc.id, data);
             results.nestedMessages.push(data);
           });
           
           // 4. Check for flat messages
-          const flatMessagesRef = collection(db(), 'messages');
+          const flatMessagesRef = collection(getSyncFirebaseDb(), 'messages');
           const flatMessagesQuery = query(
-            flatMessagesRef,
+            flatMessagesRef as any,
             where('conversationId', '==', specificConversationId),
             orderBy('createdAt', 'asc')
           );
@@ -83,7 +85,8 @@ export const MessageDebugPage: React.FC = () => {
           
           console.log('Flat messages count:', flatMessagesSnap.size);
           flatMessagesSnap.forEach(doc => {
-            const data = { id: doc.id, ...doc.data() };
+            const raw = doc.data();
+            const data = { id: doc.id, ...(raw && typeof raw === 'object' ? raw : {}) };
             console.log('Flat message:', doc.id, data);
             results.flatMessages.push(data);
           });
@@ -101,7 +104,7 @@ export const MessageDebugPage: React.FC = () => {
     };
 
     fetchData();
-  }, [currentUser, db]);
+  }, [currentUser]);
 
   if (!currentUser) {
     return (

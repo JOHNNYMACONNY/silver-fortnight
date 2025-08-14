@@ -112,7 +112,7 @@ const UserCard: React.FC<UserCardProps> = ({
             </div>
           )}
 
-          {/* Skills section - standardized to match TradeCard pattern */}
+          {/* Skills section - styled to match ChallengeCard category pills (outlined, rounded, small) */}
           {user.skills && (
             <div className="mb-4">
               <div className="flex flex-wrap gap-1.5">
@@ -121,17 +121,19 @@ const UserCard: React.FC<UserCardProps> = ({
                     const parsedSkills = parseSkills(user.skills);
                     return (
                       <>
-                        {parsedSkills.slice(0, 3).map((skill, index) => (
-                          <SkillBadge
+                        {parsedSkills.slice(0, 4).map((skill, index) => (
+                          <Badge
                             key={`${user.id}-${skill.name}-${index}`}
-                            skill={skill.name}
-                            level={skill.level as any}
-                          />
+                            variant="outline"
+                            className="text-xs rounded-full px-3 py-1"
+                          >
+                            {skill.name}
+                          </Badge>
                         ))}
 
-                        {parsedSkills.length > 3 && (
+                        {parsedSkills.length > 4 && (
                           <Badge variant="outline" className="text-xs">
-                            +{parsedSkills.length - 3} more
+                            +{parsedSkills.length - 4} more
                           </Badge>
                         )}
                       </>

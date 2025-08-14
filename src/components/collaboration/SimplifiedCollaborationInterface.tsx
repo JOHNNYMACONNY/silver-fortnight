@@ -159,7 +159,7 @@ export const SimplifiedCollaborationInterface: React.FC<SimplifiedCollaborationI
   const renderCollaborationCard = (collaboration: SimpleCollaboration) => (
     <Card 
       key={collaboration.id}
-      className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all duration-300 cursor-pointer group"
+      className="glassmorphic transition-all duration-300 cursor-pointer group"
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
@@ -274,7 +274,7 @@ export const SimplifiedCollaborationInterface: React.FC<SimplifiedCollaborationI
             placeholder="Search projects by title, skills, or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white/10 border-white/20 text-white"
+            className="pl-10 glassmorphic"
           />
         </div>
         <div className="flex gap-2 overflow-x-auto">
@@ -349,7 +349,7 @@ export const SimplifiedCollaborationInterface: React.FC<SimplifiedCollaborationI
 
     return (
       <div className="max-w-2xl mx-auto">
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="glassmorphic">
           <CardHeader>
             <CardTitle className="text-white text-center">Create New Project</CardTitle>
           </CardHeader>

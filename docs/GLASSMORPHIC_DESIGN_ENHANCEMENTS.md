@@ -102,14 +102,15 @@ TradeYa has been enhanced with comprehensive glassmorphic design patterns to cre
 --glass-border: rgba(255, 255, 255, 0.1);
 ```
 
-### **Blur Intensity Levels**
+### **Canonical Surface Utility**
+Use the universal `glassmorphic` utility for all glass surfaces. Do not combine ad‑hoc `backdrop-blur-*`, `bg-white/*`, or `border-white/*` on surfaces.
+
 ```tsx
-const blurLevels = {
-  sm: 'backdrop-blur-sm',    // 4px blur
-  md: 'backdrop-blur-md',    // 8px blur
-  lg: 'backdrop-blur-lg',    // 12px blur
-  xl: 'backdrop-blur-xl'     // 16px blur
-};
+// Correct
+<div className="glassmorphic rounded-xl" />
+
+// Incorrect (legacy)
+<div className="backdrop-blur-md bg-white/75 border border-white/20 rounded-xl" />
 ```
 
 ### **Shadow System**
@@ -129,7 +130,7 @@ const blurLevels = {
 ### **Standard Glassmorphic Container**
 ```tsx
 const GlassmorphicContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="backdrop-blur-md bg-white/70 dark:bg-neutral-800/60 border border-white/20 dark:border-neutral-700/30 rounded-xl shadow-glass">
+  <div className="glassmorphic rounded-xl">
     {children}
   </div>
 );
@@ -148,11 +149,53 @@ const GlassmorphicBadge: React.FC<{ variant: string; children: React.ReactNode }
 );
 ```
 
+### **Exceptions (Approved Variants)**
+- **Navbar**: Keep the current, purpose-built style for readability and brand polish.
+  - Use `bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-XL|MD backdrop-saturate-150 bg-clip-padding navbar-gradient-border`.
+  - Do not add `rounded-*`, global `shadow-*`, or full borders from `glassmorphic`.
+  - Rationale: full-width bar with gradient bottom border and saturation behaves differently than generic glass cards.
+- **Overlays/Backdrops**: Use `bg-black/50 backdrop-blur-sm` for modal backdrops.
+- **Tiny accents (chips/badges/avatars)**: Avoid blur. If needed, use subtle backgrounds and tokenized borders.
+
+### **CI Guard (Quality Gate)**
+- A style audit runs in CI to prevent reintroducing ad‑hoc glass combos on surfaces.
+- Command: `npm run lint:glass`
+- Script: `scripts/style-audit-glass.ts` flags lines with `backdrop-blur-*` combined with `bg-white/*` or `border-white/*` outside approved exceptions (navbar and overlay backdrops).
+
+### **Menus & Popovers (Navbar Aligned)**
+```tsx
+// Apply to dropdown/popover surfaces to match navbar glass styling
+<DropdownMenuContent
+  className={cn(
+    'w-64',
+    'bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md navbar-gradient-border',
+    'shadow-glass-lg',
+    'motion-reduce:animate-none motion-reduce:transition-none'
+  )}
+  align="end"
+>
+  {/* content */}
+</DropdownMenuContent>
+```
+
+```tsx
+// Notification list item layout for readability
+<div className="grid grid-cols-[1fr,auto] gap-x-3 gap-y-1 px-4 py-3.5">
+  <div className="min-w-0">
+    <p className="text-sm font-medium leading-6 text-foreground whitespace-normal break-words">Title</p>
+    <p className="text-sm leading-6 text-muted-foreground whitespace-normal break-words">Body</p>
+  </div>
+  <div className="text-xs text-muted-foreground text-right self-start">2h ago</div>
+</div>
+```
+
+Add `divide-y divide-border/60` on lists to improve scanning and separation between items.
+
 ### **Modal with Glassmorphism**
 ```tsx
 const GlassmorphicModal: React.FC<{ isOpen: boolean; onClose: () => void; children: React.ReactNode }> = ({ isOpen, onClose, children }) => (
   <div className="fixed inset-0 z-navigation flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-    <div className="backdrop-blur-xl bg-white/90 dark:bg-neutral-800/90 border border-white/30 dark:border-neutral-700/40 rounded-xl shadow-2xl w-full max-w-md">
+    <div className="glassmorphic w-full max-w-md">
       {children}
     </div>
   </div>
@@ -219,7 +262,7 @@ const BrandGlassmorphicCard = ({ variant = 'orange' }) => {
 <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
 
 // ✅ New pattern
-<div className="backdrop-blur-md bg-white/70 dark:bg-neutral-800/60 border border-white/20 dark:border-neutral-700/30 rounded-xl">
+<div className="glassmorphic rounded-xl">
 ```
 
 #### **Step 2: Add Glassmorphic Shadows**

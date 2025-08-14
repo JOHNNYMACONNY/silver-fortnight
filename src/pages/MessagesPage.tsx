@@ -50,7 +50,9 @@ export const MessagesPage: React.FC = () => {
       <PerformanceMonitor pageName="MessagesPage" />
 
       <div className="flex flex-col space-y-6">
-        <h1 className="text-3xl font-bold text-foreground">Messages</h1>
+        <div className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5">
+          <h1 className="text-3xl font-bold text-foreground">Messages</h1>
+        </div>
 
         {/* Chat container with proper height calculation */}
         <div className="bg-card border border-border rounded-lg shadow-sm transition-all duration-200 overflow-hidden" 

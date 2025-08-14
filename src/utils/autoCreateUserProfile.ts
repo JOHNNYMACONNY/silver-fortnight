@@ -3,13 +3,15 @@
 // This will automatically create a Firestore user doc if missing after login/signup
 
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { firebaseAuth, firebaseDb } from '../firebase-config';
+import { getSyncFirebaseAuth, getSyncFirebaseDb } from '../firebase-config';
 import { logger } from './logging/logger';
 
 export async function autoCreateUserProfile() {
-  const user = firebaseAuth.currentUser;
+  const auth = getSyncFirebaseAuth();
+  const db = getSyncFirebaseDb();
+  const user = auth.currentUser;
   if (!user) return;
-  const userRef = doc(firebaseDb, 'users', user.uid);
+  const userRef = doc(db, 'users', user.uid);
   const userSnap = await getDoc(userRef);
   if (!userSnap.exists()) {
     await setDoc(userRef, {

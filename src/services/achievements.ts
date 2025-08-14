@@ -185,10 +185,11 @@ export const ACHIEVEMENTS: Achievement[] = [
  */
 export const initializeAchievements = async (): Promise<ServiceResponse<void>> => {
   try {
-    const batch = [];
+    const batch: Promise<any>[] = [];
     
     for (const achievement of ACHIEVEMENTS) {
-      const achievementRef = doc(db(), 'achievements', achievement.id);
+      const db = getSyncFirebaseDb();
+      const achievementRef = doc(db, 'achievements', achievement.id);
       batch.push(setDoc(achievementRef, achievement));
     }
 
@@ -208,13 +209,14 @@ export const checkAndUnlockAchievements = async (userId: string): Promise<Achiev
     const newAchievements: Achievement[] = [];
 
     // Get user's current achievements
+    const db = getSyncFirebaseDb();
     const userAchievementsQuery = query(
-      collection(db(), 'userAchievements'),
+      collection(db, 'userAchievements'),
       where('userId', '==', userId)
     );
     const userAchievementsSnap = await getDocs(userAchievementsQuery);
     const unlockedAchievementIds = new Set(
-      userAchievementsSnap.docs.map(doc => doc.data().achievementId)
+      userAchievementsSnap.docs.map(snap => (snap.data() as any).achievementId)
     );
 
     // Get user stats for checking conditions
@@ -249,9 +251,10 @@ export const unlockAchievement = async (
   achievement: Achievement
 ): Promise<ServiceResponse<void>> => {
   try {
-    await runTransaction(db(), async (transaction) => {
+    const db = getSyncFirebaseDb();
+    await runTransaction(db, async (transaction) => {
       // Create user achievement record
-      const userAchievementRef = doc(collection(db(), 'userAchievements'));
+      const userAchievementRef = doc(collection(db, 'userAchievements'));
       const userAchievement: UserAchievement = {
         id: userAchievementRef.id,
         userId,
@@ -292,12 +295,13 @@ export const unlockAchievement = async (
  */
 export const getUserAchievements = async (userId: string): Promise<ServiceResponse<UserAchievement[]>> => {
   try {
+    const db = getSyncFirebaseDb();
     const userAchievementsQuery = query(
-      collection(db(), 'userAchievements'),
+      collection(db, 'userAchievements'),
       where('userId', '==', userId)
     );
     const userAchievementsSnap = await getDocs(userAchievementsQuery);
-    const achievements = userAchievementsSnap.docs.map(doc => doc.data() as UserAchievement);
+    const achievements = userAchievementsSnap.docs.map(snap => snap.data() as UserAchievement);
 
     return { success: true, data: achievements };
   } catch (error: any) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback, memo } from 'react';
+import React, { useEffect, useRef, useCallback, memo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../utils/cn';
@@ -27,6 +27,8 @@ export const ModalComponent: React.FC<ModalProps> = ({
   closeOnEsc = true
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
+  const [shouldReduceMotion, setShouldReduceMotion] = useState<boolean>(false);
 
   // Size classes - memoized as a constant outside of render
   const sizeClasses = {
@@ -61,6 +63,61 @@ export const ModalComponent: React.FC<ModalProps> = ({
     e.stopPropagation();
   }, []);
 
+  // Focus helpers
+  const getFocusableElements = useCallback((container: HTMLElement | null): HTMLElement[] => {
+    if (!container) return [];
+    const selectors = [
+      'a[href]',
+      'button:not([disabled])',
+      'textarea:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])'
+    ].join(',');
+    return Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(
+      (el) => !el.hasAttribute('disabled') && !el.getAttribute('aria-hidden')
+    );
+  }, []);
+
+  const focusFirstElement = useCallback(() => {
+    const container = modalRef.current;
+    if (!container) return;
+    const focusableElements = getFocusableElements(container);
+    if (focusableElements.length > 0) {
+      focusableElements[0].focus();
+    } else {
+      container.focus();
+    }
+  }, [getFocusableElements]);
+
+  const handleFocusTrapKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key !== 'Tab') return;
+    const container = modalRef.current;
+    if (!container) return;
+    const focusable = getFocusableElements(container);
+    if (focusable.length === 0) {
+      e.preventDefault();
+      container.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const current = document.activeElement as HTMLElement | null;
+    if (e.shiftKey) {
+      // Shift+Tab
+      if (!current || current === first || !container.contains(current)) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      // Tab
+      if (!current || current === last || !container.contains(current)) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }, [getFocusableElements]);
+
   // Handle ESC key press
   useEffect(() => {
     if (isOpen) {
@@ -70,6 +127,42 @@ export const ModalComponent: React.FC<ModalProps> = ({
       };
     }
   }, [isOpen, handleKeyDown]);
+
+  // Setup reduced motion preference
+  useEffect(() => {
+    const query = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    const update = () => setShouldReduceMotion(query ? query.matches : false);
+    update();
+    if (query) {
+      try {
+        query.addEventListener('change', update);
+        return () => query.removeEventListener('change', update);
+      } catch {
+        // Safari fallback
+        query.addListener(update);
+        return () => query.removeListener(update);
+      }
+    }
+  }, []);
+
+  // Focus management: capture previously focused element, set initial focus, restore on close
+  useEffect(() => {
+    if (isOpen) {
+      previouslyFocusedElementRef.current = (document.activeElement as HTMLElement) || null;
+      // Defer to next frame to ensure modal content is mounted
+      const id = requestAnimationFrame(() => {
+        focusFirstElement();
+      });
+      return () => cancelAnimationFrame(id);
+    } else {
+      // Restore focus to the element that opened the modal
+      const prev = previouslyFocusedElementRef.current;
+      if (prev && typeof prev.focus === 'function') {
+        prev.focus();
+      }
+      previouslyFocusedElementRef.current = null;
+    }
+  }, [isOpen, focusFirstElement]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -91,35 +184,37 @@ export const ModalComponent: React.FC<ModalProps> = ({
         <>
           {/* Backdrop with fade animation */}
           <motion.div
-            className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-black bg-opacity-60"
+            className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-black bg-opacity-60 motion-reduce:animate-none motion-reduce:transition-none"
             onClick={handleBackdropClick}
             style={{ backdropFilter: 'blur(2px)' }}
             initial="hidden"
-            animate="visible"
-            exit="exit"
+            animate={shouldReduceMotion ? undefined : 'visible'}
+            exit={shouldReduceMotion ? undefined : 'exit'}
             variants={MOTION_VARIANTS.backdrop}
           >
             {/* Modal content with spring animation */}
             <Box
               ref={modalRef}
               className={cn(
-                'w-full rounded-lg overflow-hidden bg-card text-card-foreground shadow-lg @container',
+                'w-full rounded-lg overflow-hidden bg-card text-card-foreground shadow-lg @container border-glass',
                 sizeClasses[size]
               )}
               style={{ containerType: 'inline-size' }}
               onClick={handleModalClick}
+              onKeyDown={handleFocusTrapKeyDown}
               role="dialog"
               aria-modal="true"
               aria-labelledby={title ? "modal-title" : undefined}
+              tabIndex={-1}
             >
               <motion.div
-                initial="hidden"
-                animate="visible"
-                exit="exit"
+                initial={shouldReduceMotion ? undefined : 'hidden'}
+                animate={shouldReduceMotion ? undefined : 'visible'}
+                exit={shouldReduceMotion ? undefined : 'exit'}
                 variants={MOTION_VARIANTS.modal as import('framer-motion').Variants}
               >
                 {title && (
-                  <div className={cn('px-6 py-4 border-b border-border')}>
+                  <div className={cn('px-6 py-4 border-b border-divider')}>
                     <div className="flex items-center justify-between">
                       <h3 id="modal-title" className={cn('text-lg font-medium text-foreground')}>{title}</h3>
                       <motion.button
@@ -158,7 +253,7 @@ export const ModalComponent: React.FC<ModalProps> = ({
                 </div>
 
                 {footer && (
-                  <div className={cn('px-6 py-4 border-t border-border')}>
+                  <div className={cn('px-6 py-4 border-t border-divider')}>
                     {footer}
                   </div>
                 )}
