@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "src/todo/**/*.ts",
+    "src/todo/**/*.tsx",
+    "tests/todo/**/*.ts",
+    "tests/todo/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

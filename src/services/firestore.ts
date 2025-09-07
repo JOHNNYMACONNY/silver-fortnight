@@ -1,4 +1,4 @@
-import { getSyncFirebaseDb } from '../firebase-config';
+import { getSyncFirebaseDb, requireAuth } from '../firebase-config';
 import { 
   doc, 
   setDoc, 
@@ -781,6 +781,9 @@ export const getRelatedUserIds = async (
   opts?: { limit?: number }
 ): Promise<ServiceResult<{ ids: string[] }>> => {
   try {
+    // Require authentication for accessing user follows
+    requireAuth();
+
     const db = getSyncFirebaseDb();
     const followsCol = collection(db, 'userFollows');
     const constraints: QueryConstraint[] = [];
@@ -891,6 +894,9 @@ export const confirmTradeCompletion = async (
   userId: string
 ): Promise<ServiceResult<void>> => {
   try {
+    // Require authentication for creating messages
+    requireAuth();
+
     const db = getSyncFirebaseDb();
     const tradeRef = doc(db, COLLECTIONS.TRADES, tradeId).withConverter(tradeConverter);
     const tradeDoc = await getDoc(tradeRef);
@@ -1582,6 +1588,9 @@ export const createConversation = async (
   metadata?: { tradeId?: string; tradeName?: string; conversationType?: string; [key: string]: any }
 ): Promise<ServiceResult<string>> => {
   try {
+    // Require authentication for creating conversations
+    requireAuth();
+
     if (participants.length === 2) {
       const p1 = { id: participants[0].id, name: participants[0].name, avatar: participants[0].avatar };
       const p2 = { id: participants[1].id, name: participants[1].name, avatar: participants[1].avatar };
@@ -1634,6 +1643,9 @@ export const getUserNotifications = async (
   filters?: NotificationFilters
 ): Promise<ServiceResult<PaginatedResult<Notification>>> => {
   try {
+    // Require authentication for accessing notifications
+    requireAuth();
+
     const db = getSyncFirebaseDb();
     const notificationsCollection = collection(db, COLLECTIONS.NOTIFICATIONS).withConverter(notificationConverter);
     let notificationsQuery: Query<Notification> = query(notificationsCollection, where('userId', '==', userId));
@@ -1676,6 +1688,9 @@ export const getUserNotifications = async (
 
 export const getUnreadNotificationCount = async (userId: string): Promise<ServiceResult<number>> => {
   try {
+    // Require authentication for accessing notifications
+    requireAuth();
+
     const db = getSyncFirebaseDb();
     const notificationsCollection = collection(db, COLLECTIONS.NOTIFICATIONS);
     const q = query(

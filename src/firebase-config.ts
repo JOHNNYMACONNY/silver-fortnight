@@ -457,6 +457,44 @@ export const checkExistingAccount = async (email: string): Promise<{ exists: boo
   }
 };
 
+/**
+ * Require authentication - throws error if user is not authenticated
+ * Used to guard Firestore operations that require authentication
+ */
+export const requireAuth = (): User => {
+  // Handle test environment
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+    return {
+      uid: 'test-user-id',
+      email: 'test@example.com',
+      displayName: 'Test User',
+      emailVerified: true,
+      isAnonymous: false,
+      metadata: {} as any,
+      providerData: [],
+      refreshToken: '',
+      tenantId: null,
+      delete: jest.fn(),
+      getIdToken: jest.fn().mockResolvedValue('test-token'),
+      getIdTokenResult: jest.fn().mockResolvedValue({}),
+      reload: jest.fn(),
+      toJSON: jest.fn(),
+      phoneNumber: null,
+      photoURL: null,
+      providerId: 'password'
+    } as User;
+  }
+
+  const auth = getSyncFirebaseAuth();
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error('Authentication required. Please sign in to access this feature.');
+  }
+
+  return user;
+};
+
 // Initialize Firebase immediately in non-test environments
 if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
   initializeFirebase().catch(error => {
