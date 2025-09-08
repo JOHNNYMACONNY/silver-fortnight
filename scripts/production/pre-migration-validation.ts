@@ -10,7 +10,7 @@
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { collection, query, where, limit, getDocs, doc, getDoc } from 'firebase/firestore';
-import { db } from '../../src/firebase-config.js';
+import { initializeFirebase, getSyncFirebaseDb } from '../../src/firebase-config.js';
 import { performanceLogger } from '../../src/utils/performance/structuredLogger.js';
 import { migrationRegistry } from '../../src/services/migration/migrationRegistry.js';
 import { readFileSync, existsSync } from 'fs';
@@ -189,6 +189,7 @@ export class PreMigrationValidationService {
   private environment: 'staging' | 'production';
   private migrationVersion: string;
   private validationConfig: ValidationConfig;
+  private db: any;
 
   constructor(
     projectId: string,
@@ -198,6 +199,7 @@ export class PreMigrationValidationService {
     this.projectId = projectId;
     this.environment = environment;
     this.migrationVersion = migrationVersion;
+    this.db = getSyncFirebaseDb();
     this.validationConfig = this.loadValidationConfig();
   }
 
@@ -319,7 +321,7 @@ export class PreMigrationValidationService {
     try {
       // Initialize migration registry
       if (!migrationRegistry.isInitialized()) {
-        migrationRegistry.initialize(db);
+        migrationRegistry.initialize(this.db);
       }
 
       // Phase 1: Infrastructure Health Checks
@@ -403,7 +405,7 @@ export class PreMigrationValidationService {
       category: 'infrastructure',
       test: async () => {
         const startTime = Date.now();
-        const testQuery = query(collection(db, 'health-check'), limit(1));
+        const testQuery = query(collection(this.db, 'health-check'), limit(1));
         await getDocs(testQuery);
         const responseTime = Date.now() - startTime;
         
@@ -459,7 +461,7 @@ export class PreMigrationValidationService {
 
         for (const collectionName of collections) {
           try {
-            const sampleQuery = query(collection(db, collectionName), limit(10));
+            const sampleQuery = query(collection(this.db, collectionName), limit(10));
             const snapshot = await getDocs(sampleQuery);
             
             let validDocuments = 0;
@@ -552,7 +554,7 @@ export class PreMigrationValidationService {
         // Query latency test
         for (let i = 0; i < 5; i++) {
           const startTime = Date.now();
-          const q = query(collection(db, 'trades'), where('status', '==', 'active'), limit(10));
+          const q = query(collection(this.db, 'trades'), where('status', '==', 'active'), limit(10));
           await getDocs(q);
           benchmarks.push(Date.now() - startTime);
         }

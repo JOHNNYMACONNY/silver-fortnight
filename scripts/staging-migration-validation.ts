@@ -156,10 +156,11 @@ export class StagingMigrationValidator {
       return finalResults;
 
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       performanceLogger.error('monitoring', 'Staging validation failed', {
-        error: error.message,
+        error: errorMessage,
         step: 'validation-execution'
-      }, error);
+      }, error as Error);
 
       throw error;
     }
@@ -198,11 +199,12 @@ export class StagingMigrationValidator {
       };
 
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         passed: false,
         score: 0,
-        details: `Environment setup failed: ${error.message}`,
-        metrics: { error: error.message },
+        details: `Environment setup failed: ${errorMessage}`,
+        metrics: { error: errorMessage },
         recommendations: [
           'Review staging environment configuration',
           'Ensure Firebase project access',
@@ -250,7 +252,7 @@ export class StagingMigrationValidator {
     } catch (error) {
       return {
         passed: false,
-        details: `Staging requirements validation failed: ${error.message}`,
+        details: `Staging requirements validation failed: ${error instanceof Error ? error.message : String(error)}`,
         recommendations: ['Review staging environment setup', 'Check Firebase connectivity']
       };
     }
@@ -319,13 +321,14 @@ export class StagingMigrationValidator {
       };
 
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         passed: false,
         score: 0,
-        details: `Migration execution failed: ${error.message}`,
+        details: `Migration execution failed: ${errorMessage}`,
         metrics: {
           phases: phaseResults,
-          error: error.message,
+          error: errorMessage,
           failedAtPhase: phaseResults.length + 1
         },
         recommendations: [
@@ -384,7 +387,7 @@ export class StagingMigrationValidator {
         success: false,
         documentsProcessed: 0,
         timeMs: Date.now() - startTime,
-        error: error.message
+        error: error instanceof Error ? error.message : String(error)
       };
     }
   }
@@ -445,11 +448,12 @@ export class StagingMigrationValidator {
       };
 
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         passed: false,
         score: 0,
-        details: `Performance validation failed: ${error.message}`,
-        metrics: { error: error.message },
+        details: `Performance validation failed: ${errorMessage}`,
+        metrics: { error: errorMessage },
         recommendations: [
           'Review performance monitoring setup',
           'Check metrics collection',
@@ -508,11 +512,12 @@ export class StagingMigrationValidator {
       };
 
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         passed: false,
         score: 0,
-        details: `Data integrity validation failed: ${error.message}`,
-        metrics: { error: error.message },
+        details: `Data integrity validation failed: ${errorMessage}`,
+        metrics: { error: errorMessage },
         recommendations: [
           'Review data validation procedures',
           'Check database connectivity',
@@ -579,11 +584,12 @@ export class StagingMigrationValidator {
       };
 
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         passed: false,
         score: 0,
-        details: `Rollback validation failed: ${error.message}`,
-        metrics: { error: error.message },
+        details: `Rollback validation failed: ${errorMessage}`,
+        metrics: { error: errorMessage },
         recommendations: [
           'Review rollback script functionality',
           'Test emergency procedures manually',
@@ -641,11 +647,12 @@ export class StagingMigrationValidator {
       };
 
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         passed: false,
         score: 0,
-        details: `Application functionality validation failed: ${error.message}`,
-        metrics: { error: error.message },
+        details: `Application functionality validation failed: ${errorMessage}`,
+        metrics: { error: errorMessage },
         recommendations: [
           'Review application testing procedures',
           'Check component integration',

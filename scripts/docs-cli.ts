@@ -25,14 +25,14 @@ const CLI_CONFIG = {
 };
 
 // Document Templates
-const DOCUMENT_TEMPLATES = {
+const DOCUMENT_TEMPLATES: Record<string, { name: string; template: string }> = {
   'implementation-summary': {
     name: 'Implementation Summary',
     template: `# {FEATURE_NAME} Implementation Summary
 
-**Status:** 🟢 Complete | 🟡 In Progress | 🔴 Blocked  
-**Created:** {DATE}  
-**Last Updated:** {DATE}  
+**Status:** 🟢 Complete | 🟡 In Progress | 🔴 Blocked
+**Created:** {DATE}
+**Last Updated:** {DATE}
 **Implementation Phase:** {PHASE}
 
 ---
@@ -112,18 +112,18 @@ const DOCUMENT_TEMPLATES = {
 
 ---
 
-**Last Updated:** {DATE}  
+**Last Updated:** {DATE}
 **Maintained By:** TradeYa Development Team
 `
   },
-  
+
   'technical-guide': {
     name: 'Technical Guide',
     template: `# {GUIDE_TITLE}
 
-**Purpose:** {PURPOSE}  
-**Audience:** {AUDIENCE}  
-**Created:** {DATE}  
+**Purpose:** {PURPOSE}
+**Audience:** {AUDIENCE}
+**Created:** {DATE}
 **Last Updated:** {DATE}
 
 ---
@@ -210,18 +210,18 @@ const DOCUMENT_TEMPLATES = {
 
 ---
 
-**Last Updated:** {DATE}  
+**Last Updated:** {DATE}
 **Maintained By:** TradeYa Development Team
 `
   },
-  
+
   'firestore-guide': {
     name: 'Firestore Migration Guide',
     template: `# {MIGRATION_TITLE}
 
-**Migration Phase:** {PHASE}  
-**Priority:** 🔥 CRITICAL  
-**Created:** {DATE}  
+**Migration Phase:** {PHASE}
+**Priority:** 🔥 CRITICAL
+**Created:** {DATE}
 **Last Updated:** {DATE}
 
 ---
@@ -324,8 +324,8 @@ const DOCUMENT_TEMPLATES = {
 
 ---
 
-**🔥 FIRESTORE PRIORITY DOCUMENTATION**  
-**Last Updated:** {DATE}  
+**🔥 FIRESTORE PRIORITY DOCUMENTATION**
+**Last Updated:** {DATE}
 **Maintained By:** TradeYa Database Team
 `
   }

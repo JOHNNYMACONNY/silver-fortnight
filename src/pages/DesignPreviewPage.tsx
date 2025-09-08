@@ -4,7 +4,7 @@ import AnimatedHeading from '../components/ui/AnimatedHeading';
 import GradientMeshBackground from '../components/ui/GradientMeshBackground';
 import { BentoGrid, BentoItem } from '../components/ui/BentoGrid';
 import Card3D from '../components/ui/Card3D';
-import EnhancedInput from '../components/ui/EnhancedInput';
+import { Input } from '../components/ui/Input';
 import AnimatedList from '../components/ui/AnimatedList';
 import PageTransition from '../components/ui/PageTransition';
 import StateTransition, { UIState } from '../components/ui/StateTransition';
@@ -93,19 +93,15 @@ const DesignPreviewPage: React.FC = () => {
                 <div className="space-y-4">
                   <div>
                     <h4 className="text-lg font-medium text-foreground mb-2">Standard Input</h4>
-                    <EnhancedInput
-                      label="Username"
+                    <Input
                       placeholder="Enter your username"
-                      helperText="Standard input component"
                     />
                   </div>
 
                   <div>
                     <h4 className="text-lg font-medium text-foreground mb-2">Enhanced Input</h4>
-                    <EnhancedInput
-                      label="Username"
+                    <Input
                       placeholder="Enter your username"
-                      helperText="With animated focus and floating label"
                     />
                   </div>
                 </div>
@@ -117,27 +113,17 @@ const DesignPreviewPage: React.FC = () => {
                 </AnimatedHeading>
 
                 <div className="space-y-4">
-                  <EnhancedInput
-                    label="Email Address"
+                  <Input
                     placeholder="Enter your email"
-                    helperText="We'll never share your email"
-                    leftIcon={<EnvelopeIcon className="h-5 w-5" />}
                   />
 
-                  <EnhancedInput
-                    label="Password"
+                  <Input
                     type="password"
                     placeholder="Enter your password"
-                    error="Password must be at least 8 characters"
-                    leftIcon={<LockClosedIcon className="h-5 w-5" />}
                   />
 
-                  <EnhancedInput
-                    label="Username"
+                  <Input
                     placeholder="Enter your username"
-                    success={true}
-                    leftIcon={<UserIcon className="h-5 w-5" />}
-                    helperText="Username is available"
                   />
                 </div>
               </div>
@@ -150,23 +136,16 @@ const DesignPreviewPage: React.FC = () => {
                 </AnimatedHeading>
 
                 <div className="space-y-4">
-                  <EnhancedInput
-                    label="First Name"
+                  <Input
                     placeholder="Enter your first name"
-                    animateLabel={true}
                   />
 
-                  <EnhancedInput
-                    label="Last Name"
+                  <Input
                     placeholder="Enter your last name"
-                    animateLabel={true}
                   />
 
-                  <EnhancedInput
-                    label="Search"
+                  <Input
                     placeholder="Search for anything..."
-                    animateLabel={true}
-                    leftIcon={<MagnifyingGlassIcon className="h-5 w-5" />}
                   />
                 </div>
               </div>
@@ -179,29 +158,17 @@ const DesignPreviewPage: React.FC = () => {
                 <Card variant="glass">
                   <CardBody>
                     <div className="space-y-4">
-                      <EnhancedInput
-                        label="Full Name"
+                      <Input
                         placeholder="Enter your full name"
-                        animateLabel={true}
-                        leftIcon={<UserIcon className="h-5 w-5" />}
-                        fullWidth
                       />
 
-                      <EnhancedInput
-                        label="Email Address"
+                      <Input
                         placeholder="Enter your email"
-                        animateLabel={true}
-                        leftIcon={<EnvelopeIcon className="h-5 w-5" />}
-                        fullWidth
                       />
 
-                      <EnhancedInput
-                        label="Password"
+                      <Input
                         type="password"
                         placeholder="Enter your password"
-                        animateLabel={true}
-                        leftIcon={<LockClosedIcon className="h-5 w-5" />}
-                        fullWidth
                       />
 
                       <button className="w-full px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90">

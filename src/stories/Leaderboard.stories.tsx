@@ -25,7 +25,11 @@ export const GlobalTop: Story = {
 
 export const WithMyCircleToggle: Story = {
   name: 'Global with My Circle Toggle',
-  render: (args) => <Leaderboard {...args} />,
+  args: {
+    category: LeaderboardCategory.WEEKLY_XP,
+    period: LeaderboardPeriod.WEEKLY,
+    limit: 5,
+  },
 };
 
 

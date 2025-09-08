@@ -210,7 +210,7 @@ const config: Config = {
   randomize: false,
   
   // Collect coverage on failure
-  collectCoverageOnlyFrom: undefined,
+  // collectCoverageOnlyFrom: undefined, // Removed invalid option
   
   // Coverage path ignore patterns
   coveragePathIgnorePatterns: [

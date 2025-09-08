@@ -1,4 +1,4 @@
-import Tabs, { TabsList, TabsTrigger, TabsContent } from '../Tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../Tabs';
 import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 
@@ -48,6 +48,6 @@ export const WithDisabledTab: Story = {
 };
 
 export const NoTabs: Story = {
-  render: () => <Tabs></Tabs>,
+  render: () => <Tabs value="active"><TabsList><TabsTrigger value="active">Active</TabsTrigger></TabsList><TabsContent value="active">Content</TabsContent></Tabs>,
 };
 // Add more stories for edge cases or new variants as needed.

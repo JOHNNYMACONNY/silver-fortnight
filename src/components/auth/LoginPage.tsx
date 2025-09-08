@@ -5,7 +5,6 @@ import { rateLimiter } from '../../firebase-config';
 import { useToast } from '../../contexts/ToastContext';
 import { LockIcon, MailIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
-import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Alert, AlertDescription, AlertTitle } from '../ui/Alert';
 import Logo from '../ui/Logo';

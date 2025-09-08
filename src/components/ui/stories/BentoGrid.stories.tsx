@@ -1,4 +1,4 @@
-import BentoGrid from '../BentoGrid';
+import { BentoGrid } from '../BentoGrid';
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta<typeof BentoGrid> = {

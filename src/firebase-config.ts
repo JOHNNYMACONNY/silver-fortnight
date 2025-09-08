@@ -1,5 +1,5 @@
 import { FirebaseApp, initializeApp, getApps } from 'firebase/app';
-import { 
+import {
   Auth,
   getAuth,
   signInWithEmailAndPassword,
@@ -14,10 +14,25 @@ import {
 } from 'firebase/auth';
 import { Firestore, getFirestore, Timestamp, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage, FirebaseStorage, connectStorageEmulator } from 'firebase/storage';
+import {
+  collection,
+  doc,
+  getDocs,
+  addDoc,
+  updateDoc,
+  query,
+  where,
+  orderBy,
+  limit as limitQuery,
+  startAfter,
+  QueryConstraint,
+  DocumentData,
+  QueryDocumentSnapshot
+} from 'firebase/firestore';
 
 /**
  * ROBUST Firebase Configuration - Fixed Version
- * 
+ *
  * Addresses all critical issues causing hook.js:608 overrideMethod errors:
  * 1. Single initialization pattern
  * 2. Proper error handling without unsafe fallbacks
@@ -44,17 +59,17 @@ const getRequiredEnvVar = (name: string): string => {
 
     // Production/Development environment
     let value: string | undefined;
-    
+
     // Try Node.js environment variables first (for SSR/production scripts)
     if (typeof process !== 'undefined' && process.env) {
       value = process.env[name] || process.env[name.replace('VITE_', 'REACT_APP_')];
     }
-    
+
     // Try Vite environment variables (browser environment)
     if (!value && typeof import.meta !== 'undefined' && import.meta.env) {
       value = (import.meta.env as Record<string, string>)[name];
     }
-    
+
     if (!value) {
       console.error(`Missing required environment variable: ${name}`);
       console.error('Please ensure this variable is set in your .env file.');
@@ -63,7 +78,7 @@ const getRequiredEnvVar = (name: string): string => {
         `Please ensure this variable is set in your .env file or environment.`
       );
     }
-    
+
     return value;
   } catch (error) {
     console.error(`Environment variable error for ${name}:`, error);
@@ -82,12 +97,12 @@ const getFirebaseConfig = () => {
       messagingSenderId: getRequiredEnvVar('VITE_FIREBASE_MESSAGING_SENDER_ID'),
       appId: getRequiredEnvVar('VITE_FIREBASE_APP_ID')
     };
-    
+
     console.log('Firebase: Configuration loaded successfully', {
       projectId: config.projectId,
       authDomain: config.authDomain
     });
-    
+
     return config;
   } catch (error) {
     console.error('Firebase configuration error:', error);
@@ -114,22 +129,22 @@ const initializeFirebase = async (): Promise<void> => {
   if (initializationPromise) {
     return initializationPromise;
   }
-  
+
   // Throw previous error if initialization failed
   if (initializationError) {
     throw initializationError;
   }
-  
+
   // If already initialized, return immediately
   if (firebaseApp && firebaseAuth && firebaseDb && firebaseStorage) {
     console.log('Firebase: Already initialized, skipping');
     return;
   }
-  
+
   initializationPromise = (async () => {
     try {
       console.log('Firebase: Starting initialization...');
-      
+
       // Check if Firebase app already exists (prevents duplicate initialization)
       const existingApps = getApps();
       if (existingApps.length > 0) {
@@ -140,19 +155,19 @@ const initializeFirebase = async (): Promise<void> => {
         const config = getFirebaseConfig();
         firebaseApp = initializeApp(config);
       }
-      
+
       // Initialize services
       firebaseAuth = getAuth(firebaseApp);
       firebaseDb = getFirestore(firebaseApp);
       firebaseStorage = getStorage(firebaseApp);
-      
+
       // Connect to emulators in development if they're running
       if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
         try {
           // Only connect to emulators if they haven't been connected already
           if (process.env.VITE_USE_FIREBASE_EMULATORS === 'true') {
             console.log('Firebase: Connecting to emulators...');
-            
+
             // Connect emulators only once
             if (!(firebaseAuth as any)._delegate?._emulator) {
               connectAuthEmulator(firebaseAuth, 'http://localhost:9099');
@@ -168,16 +183,16 @@ const initializeFirebase = async (): Promise<void> => {
           console.warn('Firebase: Emulator connection failed (this is OK in production):', emulatorError);
         }
       }
-      
+
       console.log('Firebase: Initialization completed successfully');
-      
+
     } catch (error) {
       initializationError = error instanceof Error ? error : new Error('Firebase initialization failed');
       console.error('Firebase: Initialization failed:', initializationError);
       throw initializationError;
     }
   })();
-  
+
   return initializationPromise;
 };
 
@@ -199,17 +214,17 @@ const getFirebaseInstances = async () => {
       storage: {} as FirebaseStorage
     };
   }
-  
+
   // Initialize if not already done
   if (!firebaseApp || !firebaseAuth || !firebaseDb || !firebaseStorage) {
     await initializeFirebase();
   }
-  
+
   // Final validation
   if (!firebaseApp || !firebaseAuth || !firebaseDb || !firebaseStorage) {
     throw new Error('Firebase services failed to initialize properly');
   }
-  
+
   return {
     app: firebaseApp,
     auth: firebaseAuth,
@@ -227,7 +242,7 @@ const getSyncFirebaseAuth = (): Auth => {
       signOut: jest.fn(),
     } as unknown as Auth;
   }
-  
+
   if (!firebaseAuth) {
     throw new Error('Firebase Auth not initialized. Call initializeFirebase() first or ensure initialization completed.');
   }
@@ -238,7 +253,7 @@ const getSyncFirebaseDb = (): Firestore => {
   if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
     return {} as Firestore;
   }
-  
+
   if (!firebaseDb) {
     throw new Error('Firestore not initialized. Call initializeFirebase() first or ensure initialization completed.');
   }
@@ -249,7 +264,7 @@ const getSyncFirebaseStorage = (): FirebaseStorage => {
   if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
     return {} as FirebaseStorage;
   }
-  
+
   if (!firebaseStorage) {
     throw new Error('Firebase Storage not initialized. Call initializeFirebase() first or ensure initialization completed.');
   }
@@ -267,6 +282,9 @@ export {
 
 // Export initialized Firebase instances for use in other modules
 export { firebaseAuth, firebaseDb };
+
+// Export db alias for backward compatibility with existing imports
+export const db = firebaseDb;
 
 // Export the db instance as default export for backward compatibility
 export default getSyncFirebaseDb;
@@ -412,7 +430,7 @@ export const signInWithGoogle = async (): Promise<AuthResult<User>> => {
     const auth = getSyncFirebaseAuth();
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    
+
     try {
       const result = await signInWithPopup(auth, provider);
       return { user: result.user, error: null };
@@ -501,3 +519,106 @@ if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
     console.error('Failed to initialize Firebase on module load:', error);
   });
 }
+
+// Generic Firestore CRUD functions
+
+/**
+ * Generic function to get documents from a collection with optional constraints
+ */
+export const getDocuments = async (
+  collectionName: string,
+  constraints: Array<{ field: string; operator: string; value: any }> = [],
+  orderByField?: string,
+  orderDirection: 'asc' | 'desc' = 'desc',
+  limitCount?: number
+): Promise<{ data: DocumentData[] | null; error: { code: string; message: string } | null }> => {
+  try {
+    const db = getSyncFirebaseDb();
+    const collectionRef = collection(db, collectionName);
+
+    const queryConstraints: QueryConstraint[] = [];
+
+    // Add where constraints
+    constraints.forEach(constraint => {
+      queryConstraints.push(where(constraint.field, constraint.operator as any, constraint.value));
+    });
+
+    // Add ordering if specified
+    if (orderByField) {
+      queryConstraints.push(orderBy(orderByField, orderDirection));
+    }
+
+    // Add limit if specified
+    if (limitCount) {
+      queryConstraints.push(limitQuery(limitCount));
+    }
+
+    const q = query(collectionRef, ...queryConstraints);
+    const querySnapshot = await getDocs(q);
+
+    const documents = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...(doc.data() as DocumentData)
+    }));
+
+    return { data: documents, error: null };
+  } catch (error: any) {
+    console.error(`Error getting documents from ${collectionName}:`, error);
+    return {
+      data: null,
+      error: {
+        code: error.code || 'firestore/unknown-error',
+        message: error.message || `Failed to get documents from ${collectionName}`
+      }
+    };
+  }
+};
+
+/**
+ * Generic function to add a document to a collection
+ */
+export const addDocument = async (
+  collectionName: string,
+  data: DocumentData
+): Promise<{ data: string | null; error: { code: string; message: string } | null }> => {
+  try {
+    const db = getSyncFirebaseDb();
+    const collectionRef = collection(db, collectionName);
+    const docRef = await addDoc(collectionRef, data);
+    return { data: docRef.id, error: null };
+  } catch (error: any) {
+    console.error(`Error adding document to ${collectionName}:`, error);
+    return {
+      data: null,
+      error: {
+        code: error.code || 'firestore/unknown-error',
+        message: error.message || `Failed to add document to ${collectionName}`
+      }
+    };
+  }
+};
+
+/**
+ * Generic function to update a document in a collection
+ */
+export const updateDocument = async (
+  collectionName: string,
+  documentId: string,
+  updates: Partial<DocumentData>
+): Promise<{ data: null; error: { code: string; message: string } | null }> => {
+  try {
+    const db = getSyncFirebaseDb();
+    const docRef = doc(db, collectionName, documentId);
+    await updateDoc(docRef, updates);
+    return { data: null, error: null };
+  } catch (error: any) {
+    console.error(`Error updating document ${documentId} in ${collectionName}:`, error);
+    return {
+      data: null,
+      error: {
+        code: error.code || 'firestore/unknown-error',
+        message: error.message || `Failed to update document ${documentId} in ${collectionName}`
+      }
+    };
+  }
+};

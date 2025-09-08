@@ -1,9 +1,24 @@
 import '@testing-library/jest-dom';
-import { TextEncoder, TextDecoder } from 'util';
+import { TextEncoder } from 'util';
 
-// Add missing global APIs for test environment
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
+// Set up global TextEncoder for tests
+(global as any).TextEncoder = TextEncoder;
+
+// Custom TextDecoder mock compatible with browser interface
+class MockTextDecoder {
+  decode(input?: ArrayBuffer | ArrayBufferView | null): string {
+    if (!input) return '';
+    if (input instanceof ArrayBuffer) {
+      return new Uint8Array(input).reduce((acc, byte) => acc + String.fromCharCode(byte), '');
+    }
+    if (ArrayBuffer.isView(input)) {
+      return Array.from(input as Uint8Array).reduce((acc, byte) => acc + String.fromCharCode(byte), '');
+    }
+    return '';
+  }
+}
+
+(global as any).TextDecoder = MockTextDecoder;
 
 // Mock Firebase modules
 jest.mock('@firebase/rules-unit-testing', () => ({

@@ -23,11 +23,11 @@ export class TestUtils {
   /**
    * Mock Firebase Firestore data
    */
-  async mockFirestoreData(collection: string, data: any[]) {
-    await this.page.addInitScript((collectionName, documents) => {
+  async mockFirestoreData(collection: string, data: Record<string, unknown>[]) {
+    await this.page.addInitScript((args: { collectionName: string; documents: Record<string, unknown>[] }) => {
       // Mock Firestore data in localStorage for testing
-      window.localStorage.setItem(`mock:firestore:${collectionName}`, JSON.stringify(documents));
-    }, collection, data);
+      window.localStorage.setItem(`mock:firestore:${args.collectionName}`, JSON.stringify(args.documents));
+    }, { collectionName: collection, documents: data });
   }
 
   /**
@@ -133,23 +133,23 @@ export class TestUtils {
   /**
    * Test accessibility
    */
-  async checkAccessibility(selector?: string) {
+  async checkAccessibility() {
     // This would integrate with axe-core in a real implementation
-    const elements = selector ? this.page.locator(selector) : this.page.locator('body');
-    
+    // const elements = this.page.locator('body');
+
     // Check for basic accessibility attributes
     const interactiveElements = this.page.locator('button, a, input, select, textarea');
     const count = await interactiveElements.count();
-    
+
     for (let i = 0; i < count; i++) {
       const element = interactiveElements.nth(i);
       const tagName = await element.evaluate(el => el.tagName.toLowerCase());
-      
+
       if (tagName === 'button' || tagName === 'a') {
         // Check for accessible name
         const hasAriaLabel = await element.getAttribute('aria-label');
         const hasText = await element.textContent();
-        
+
         if (!hasAriaLabel && !hasText?.trim()) {
           throw new Error(`Interactive element missing accessible name: ${tagName}`);
         }
@@ -160,7 +160,8 @@ export class TestUtils {
   /**
    * Mock API responses
    */
-  async mockApiResponse(url: string, response: any, status = 200) {
+  async mockApiResponse(url: string, response: any, status = 200) { // eslint-disable-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await this.page.route(url, route => {
       route.fulfill({
         status,
@@ -250,11 +251,11 @@ export class TestUtils {
   /**
    * Test data persistence
    */
-  async testDataPersistence(dataKey: string, expectedValue: any) {
-    const storedValue = await this.page.evaluate((key) => {
+  async testDataPersistence(dataKey: string, expectedValue: unknown) {
+    const storedValue = await this.page.evaluate((key: string) => {
       return localStorage.getItem(key);
     }, dataKey);
-    
+
     expect(JSON.parse(storedValue || '{}')).toEqual(expectedValue);
   }
 
@@ -262,16 +263,16 @@ export class TestUtils {
    * Simulate network conditions
    */
   async simulateNetworkConditions(condition: 'slow' | 'offline' | 'fast') {
-    const conditions = {
-      slow: { downloadThroughput: 50000, uploadThroughput: 20000, latency: 500 },
-      offline: { downloadThroughput: 0, uploadThroughput: 0, latency: 0 },
-      fast: { downloadThroughput: 10000000, uploadThroughput: 5000000, latency: 20 }
-    };
-    
+    // const conditions = {
+    //   slow: { downloadThroughput: 50000, uploadThroughput: 20000, latency: 500 },
+    //   offline: { downloadThroughput: 0, uploadThroughput: 0, latency: 0 },
+    //   fast: { downloadThroughput: 10000000, uploadThroughput: 5000000, latency: 20 }
+    // };
+
     await this.page.context().setExtraHTTPHeaders({
       'Connection': condition === 'offline' ? 'close' : 'keep-alive'
     });
-    
+
     if (condition === 'offline') {
       await this.page.context().setOffline(true);
     } else {
@@ -291,12 +292,11 @@ export class TestUtils {
     
     // Wait for content to change
     await this.page.waitForFunction(
-      (selector, initial) => {
-        const element = document.querySelector(selector);
-        return element && element.textContent !== initial;
+      (arg: { selector: string; initial: string | null }) => {
+        const element = document.querySelector(arg.selector);
+        return element && element.textContent !== arg.initial;
       },
-      expectedChange,
-      initialContent,
+      { selector: expectedChange, initial: initialContent },
       { timeout: 10000 }
     );
   }

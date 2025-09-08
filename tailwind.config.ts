@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import containerQueries from "@tailwindcss/container-queries";
 
 const config = {
   safelist: [
@@ -367,8 +368,8 @@ const config = {
     },
   },
   plugins: [
-    require('@tailwindcss/container-queries'),
+    containerQueries,
   ],
-} satisfies Config & { safelist?: any };
+} satisfies Config & { safelist?: unknown[] };
 
 export default config;

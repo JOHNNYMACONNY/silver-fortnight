@@ -317,16 +317,16 @@ export class ProductionMigrationEngine {
         timestamp: Date.now(),
         type: 'system',
         severity: 'critical',
-        message: `Health check failed: ${error.message}`,
+        message: `Health check failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         context: { healthMetrics: this.progress.healthMetrics },
         retryable: false,
         retryCount: 0
       });
       
       performanceLogger.error('monitoring', 'Health check failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : 'Unknown error',
         healthMetrics: this.progress.healthMetrics
-      }, error);
+      }, error instanceof Error ? error : undefined);
     }
   }
 
@@ -387,8 +387,9 @@ export class ProductionMigrationEngine {
             savedAt: Timestamp.now()
           });
         } catch (firestoreError) {
+          const errorMessage = firestoreError instanceof Error ? firestoreError.message : 'Unknown error';
           performanceLogger.warn('monitoring', 'Failed to save progress to Firestore', {
-            error: firestoreError.message
+            error: errorMessage
           });
         }
       }
@@ -400,10 +401,11 @@ export class ProductionMigrationEngine {
       });
       
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       performanceLogger.error('monitoring', 'Failed to save migration progress', {
-        error: error.message,
+        error: errorMessage,
         path: this.progressPath
-      }, error);
+      }, error instanceof Error ? error : undefined);
     }
   }
 
@@ -466,10 +468,10 @@ export class ProductionMigrationEngine {
         timestamp: Date.now(),
         type: 'system',
         severity: 'critical',
-        message: `Migration failed: ${error.message}`,
+        message: `Migration failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         context: { 
           phase: this.progress.phase,
-          stack: error.stack 
+          stack: error instanceof Error ? error.stack : undefined
         },
         retryable: false,
         retryCount: 0
@@ -482,8 +484,8 @@ export class ProductionMigrationEngine {
       performanceLogger.error('monitoring', 'Production migration failed', {
         version: this.migrationPlan.version,
         phase: this.progress.phase,
-        error: error.message
-      }, error);
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }, error instanceof Error ? error : undefined);
 
       return { success: false, progress: this.progress, report };
     } finally {
@@ -514,8 +516,8 @@ export class ProductionMigrationEngine {
       performanceLogger.error('monitoring', `Failed migration phase: ${phase}`, {
         migrationVersion: this.migrationPlan.version,
         duration: Date.now() - startTime,
-        error: error.message
-      }, error);
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }, error instanceof Error ? error : undefined);
       throw error;
     }
   }
@@ -533,10 +535,11 @@ export class ProductionMigrationEngine {
       try {
         await this.runValidation(validation);
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         if (validation.critical) {
-          throw new Error(`Critical pre-migration validation failed: ${validation.name} - ${error.message}`);
+          throw new Error(`Critical pre-migration validation failed: ${validation.name} - ${errorMessage}`);
         } else {
-          this.addWarning(`Non-critical validation failed: ${validation.name} - ${error.message}`);
+          this.addWarning(`Non-critical validation failed: ${validation.name} - ${errorMessage}`);
         }
       }
     }
@@ -555,10 +558,11 @@ export class ProductionMigrationEngine {
       try {
         await this.runValidation(validation);
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         if (validation.critical) {
-          throw new Error(`Critical post-migration validation failed: ${validation.name} - ${error.message}`);
+          throw new Error(`Critical post-migration validation failed: ${validation.name} - ${errorMessage}`);
         } else {
-          this.addWarning(`Non-critical validation failed: ${validation.name} - ${error.message}`);
+          this.addWarning(`Non-critical validation failed: ${validation.name} - ${errorMessage}`);
         }
       }
     }
@@ -592,12 +596,13 @@ export class ProductionMigrationEngine {
       });
       
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       performanceLogger.error('monitoring', `Validation failed: ${validation.name}`, {
         type: validation.type,
         duration: Date.now() - startTime,
-        error: error.message,
+        error: errorMessage,
         parameters: validation.parameters
-      }, error);
+      }, error instanceof Error ? error : undefined);
       throw error;
     }
   }
@@ -742,12 +747,13 @@ export class ProductionMigrationEngine {
       });
 
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.addError({
         id: `collection-${collectionConfig.name}-${Date.now()}`,
         timestamp: Date.now(),
         type: 'data',
         severity: 'high',
-        message: `Collection migration failed: ${error.message}`,
+        message: `Collection migration failed: ${errorMessage}`,
         context: { 
           collection: collectionConfig.name,
           progress: this.progress.collections[collectionConfig.name]
@@ -802,13 +808,14 @@ export class ProductionMigrationEngine {
               processed++;
 
             } catch (error) {
+              const errorMessage = error instanceof Error ? error.message : 'Unknown error';
               failed++;
               this.addError({
                 id: `doc-${docSnapshot.id}-${Date.now()}`,
                 timestamp: Date.now(),
                 type: 'data',
                 severity: 'medium',
-                message: `Document processing failed: ${error.message}`,
+                message: `Document processing failed: ${errorMessage}`,
                 context: { 
                   documentId: docSnapshot.id,
                   collection: collectionConfig.name,
@@ -942,7 +949,7 @@ export class ProductionMigrationEngine {
 
       case 'array_deduplicate':
         if (Array.isArray(value)) {
-          return [...new Set(value)];
+          return Array.from(new Set(value));
         }
         return value;
 
@@ -1002,12 +1009,13 @@ export class ProductionMigrationEngine {
       try {
         return await operation();
       } catch (error) {
-        lastError = error;
+        lastError = error instanceof Error ? error : new Error('Unknown error');
         
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         performanceLogger.warn('monitoring', `Operation failed, retrying (${attempt}/${maxRetries})`, {
           context,
           attempt,
-          error: error.message
+          error: errorMessage
         });
 
         if (attempt < maxRetries) {
@@ -1134,8 +1142,9 @@ export class ProductionMigrationEngine {
         collections: this.migrationPlan.collections.map(c => c.name)
       });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       performanceLogger.warn('monitoring', 'Failed to update migration registry', {
-        error: error.message
+        error: errorMessage
       });
     }
   }
@@ -1196,8 +1205,9 @@ export class ProductionMigrationEngine {
         summary: report.summary
       });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       performanceLogger.warn('monitoring', 'Failed to save migration report', {
-        error: error.message
+        error: errorMessage
       });
     }
 

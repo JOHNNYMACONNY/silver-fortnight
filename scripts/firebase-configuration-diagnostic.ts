@@ -42,7 +42,7 @@ const loadEnvFile = () => {
       
       console.log(chalk.green('✅ Environment variables loaded from .env file'));
     } catch (error) {
-      console.warn(chalk.yellow('⚠️  Failed to load .env file:', error));
+      console.warn(chalk.yellow('⚠️  Failed to load .env file:', error instanceof Error ? error.message : error));
     }
   } else {
     console.warn(chalk.yellow('⚠️  No .env file found at:', envPath));
@@ -224,8 +224,8 @@ class FirebaseConfigDiagnostic {
     ];
     
     console.log('Checking for required environment variables...');
-    const missingVars = [];
-    const foundVars = [];
+    const missingVars: string[] = [];
+    const foundVars: string[] = [];
     
     requiredVars.forEach(varName => {
       const hasVar = !!process.env[varName];

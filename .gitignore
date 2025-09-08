@@ -52,6 +52,7 @@ logs/
 *token*
 .npmrc
 .yarnrc
+.roo/mcp.json
 firebase-adminsdk.json
 google-services.json
 firebase-debug.log

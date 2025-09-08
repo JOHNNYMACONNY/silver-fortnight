@@ -29,7 +29,7 @@ import {
   setDoc,
   updateDoc
 } from 'firebase/firestore';
-import { db } from '../src/firebase-config';
+import { initializeFirebase, getSyncFirebaseDb } from '../src/firebase-config';
 import { migrationRegistry } from '../src/services/migration/migrationRegistry';
 import { TradeCompatibilityService } from '../src/services/migration/tradeCompatibility';
 import { ChatCompatibilityService } from '../src/services/migration/chatCompatibility';
@@ -88,10 +88,12 @@ export class SchemaMigrationService {
   private migrationStatus: MigrationStatus;
   private isDryRun: boolean;
   private projectId: string;
+  private db: any;
   
   constructor(projectId: string = 'tradeya-45ede', isDryRun: boolean = false) {
     this.projectId = projectId;
     this.isDryRun = isDryRun;
+    this.db = getSyncFirebaseDb();
     this.migrationStatus = {
       phase: 'validation',
       startTime: new Date(),
@@ -158,9 +160,9 @@ export class SchemaMigrationService {
       return { success, results, validationResults, finalReport };
       
     } catch (error) {
-      console.error('\n❌ Migration failed:', error);
+      const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
       this.migrationStatus.phase = 'failed';
-      this.migrationStatus.errors.push(error.message);
+      this.migrationStatus.errors.push(errorMessage);
       
       const finalReport = await this.generateMigrationReport(results, validationResults);
       return { success: false, results, validationResults, finalReport };
@@ -175,7 +177,7 @@ export class SchemaMigrationService {
     
     // Check if migration registry is initialized
     if (!migrationRegistry.isInitialized()) {
-      migrationRegistry.initialize(db);
+      migrationRegistry.initialize(this.db);
     }
     
     // Validate compatibility services
@@ -204,7 +206,7 @@ export class SchemaMigrationService {
         name: 'Trades by creator and status',
         test: async () => {
           const q = query(
-            collection(db, 'trades'),
+            collection(this.db, 'trades'),
             where('participants.creator', '==', 'test-user'),
             where('status', '==', 'active'),
             orderBy('createdAt', 'desc'),
@@ -217,7 +219,7 @@ export class SchemaMigrationService {
         name: 'Conversations by participant',
         test: async () => {
           const q = query(
-            collection(db, 'conversations'),
+            collection(this.db, 'conversations'),
             where('participantIds', 'array-contains', 'test-user'),
             orderBy('updatedAt', 'desc'),
             limit(1)
@@ -239,11 +241,12 @@ export class SchemaMigrationService {
           console.warn(`  ⚠️  Query took ${duration}ms - index may still be building`);
         }
       } catch (error) {
-        if (error.message.includes('index')) {
-          throw new Error(`Index not ready for ${indexTest.name}: ${error.message}`);
+        const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
+        if (errorMessage.includes('index')) {
+          throw new Error(`Index not ready for ${indexTest.name}: ${errorMessage}`);
         }
         // Other errors are acceptable for validation (no data, etc.)
-        console.log(`  ⚠️  ${indexTest.name}: ${error.message} (acceptable for validation)`);
+        console.log(`  ⚠️  ${indexTest.name}: ${errorMessage} (acceptable for validation)`);
       }
     }
   }
@@ -256,15 +259,16 @@ export class SchemaMigrationService {
     
     try {
       // Try to read a single document from each collection
-      const tradesQuery = query(collection(db, 'trades'), limit(1));
+      const tradesQuery = query(collection(this.db, 'trades'), limit(1));
       await getDocs(tradesQuery);
       
-      const conversationsQuery = query(collection(db, 'conversations'), limit(1));
+      const conversationsQuery = query(collection(this.db, 'conversations'), limit(1));
       await getDocs(conversationsQuery);
       
       console.log('✅ Firestore connection verified');
     } catch (error) {
-      throw new Error(`Firestore connection failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
+      throw new Error(`Firestore connection failed: ${errorMessage}`);
     }
   }
 
@@ -276,7 +280,7 @@ export class SchemaMigrationService {
     
     try {
       // Create migration status document
-      const migrationDocRef = doc(db, 'migrations', `schema-migration-${Date.now()}`);
+      const migrationDocRef = doc(this.db, 'migrations', `schema-migration-${Date.now()}`);
       
       if (!this.isDryRun) {
         await setDoc(migrationDocRef, {
@@ -293,7 +297,8 @@ export class SchemaMigrationService {
       
       console.log('✅ Migration monitoring initialized');
     } catch (error) {
-      console.warn('⚠️  Failed to initialize monitoring:', error.message);
+      const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
+      console.warn('⚠️  Failed to initialize monitoring:', errorMessage);
       // Continue migration even if monitoring setup fails
     }
   }
@@ -317,7 +322,7 @@ export class SchemaMigrationService {
     
     try {
       // Get total document count
-      const totalSnapshot = await getDocs(collection(db, 'trades'));
+      const totalSnapshot = await getDocs(collection(this.db, 'trades'));
       result.totalDocuments = totalSnapshot.size;
       
       console.log(`📊 Found ${result.totalDocuments} trades to migrate`);
@@ -339,9 +344,9 @@ export class SchemaMigrationService {
         
         // Query next batch
         let q = query(
-          collection(db, 'trades'),
+          collection(this.db, 'trades'),
           orderBy('createdAt'),
-          limit(this.BATCH_SIZE)
+          limit(SchemaMigrationService.BATCH_SIZE)
         );
         
         if (lastDoc) {
@@ -373,7 +378,8 @@ export class SchemaMigrationService {
       
     } catch (error) {
       console.error('❌ Trades migration failed:', error);
-      result.errors.push({ id: 'TRADES_MIGRATION_FATAL', error: error.message, timestamp: new Date() });
+      const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
+      result.errors.push({ id: 'TRADES_MIGRATION_FATAL', error: errorMessage, timestamp: new Date() });
     }
     
     result.endTime = new Date();
@@ -395,8 +401,8 @@ export class SchemaMigrationService {
   private async processTradeBatch(
     docs: any[], 
     batchNumber: number
-  ): Promise<{ migrated: number; failed: number; skipped: number; errors: any[] }> {
-    const batchResult = { migrated: 0, failed: 0, skipped: 0, errors: [] };
+  ): Promise<{ migrated: number; failed: number; skipped: number; errors: Array<{ id: string; error: string; timestamp: Date }> }> {
+    const batchResult: { migrated: number; failed: number; skipped: number; errors: Array<{ id: string; error: string; timestamp: Date }> } = { migrated: 0, failed: 0, skipped: 0, errors: [] };
     
     if (this.isDryRun) {
       // In dry run, just validate the data transformation
@@ -407,18 +413,19 @@ export class SchemaMigrationService {
           console.log(`  🧪 [DRY RUN] Would migrate trade ${docSnapshot.id}`);
           batchResult.migrated++;
         } catch (error) {
-          console.error(`  ❌ [DRY RUN] Error transforming trade ${docSnapshot.id}:`, error.message);
+          const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
+          console.error(`  ❌ [DRY RUN] Error transforming trade ${docSnapshot.id}:`, errorMessage);
           batchResult.failed++;
-          batchResult.errors.push({ id: docSnapshot.id, error: error.message, timestamp: new Date() });
+          batchResult.errors.push({ id: docSnapshot.id, error: errorMessage, timestamp: new Date() });
         }
       });
       return batchResult;
     }
     
     // Real migration with retry logic
-    for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
+    for (let attempt = 1; attempt <= SchemaMigrationService.MAX_RETRIES; attempt++) {
       try {
-        const batch = writeBatch(db);
+        const batch = writeBatch(this.db);
         
         docs.forEach((docSnapshot) => {
           try {
@@ -443,9 +450,9 @@ export class SchemaMigrationService {
             
             batchResult.migrated++;
           } catch (error) {
-            console.error(`  ❌ Error transforming trade ${docSnapshot.id}:`, error.message);
+            console.error(`  ❌ Error transforming trade ${docSnapshot.id}:`, (error instanceof Error ? error.message : "Unknown error"));
             batchResult.failed++;
-            batchResult.errors.push({ id: docSnapshot.id, error: error.message, timestamp: new Date() });
+            batchResult.errors.push({ id: docSnapshot.id, error: (error instanceof Error ? error.message : "Unknown error"), timestamp: new Date() });
           }
         });
         
@@ -456,19 +463,19 @@ export class SchemaMigrationService {
         break; // Success, exit retry loop
         
       } catch (error) {
-        console.error(`  ⚠️  Batch ${batchNumber} attempt ${attempt} failed:`, error.message);
+        console.error(`  ⚠️  Batch ${batchNumber} attempt ${attempt} failed:`, (error instanceof Error ? error.message : "Unknown error"));
         
-        if (attempt === this.MAX_RETRIES) {
+        if (attempt === SchemaMigrationService.MAX_RETRIES) {
           docs.forEach(doc => {
             batchResult.failed++;
             batchResult.errors.push({ 
               id: doc.id, 
-              error: `Batch commit failed after ${this.MAX_RETRIES} attempts: ${error.message}`, 
+              error: `Batch commit failed after ${SchemaMigrationService.MAX_RETRIES} attempts: ${(error instanceof Error ? error.message : "Unknown error")}`, 
               timestamp: new Date() 
             });
           });
         } else {
-          await this.delay(this.RETRY_DELAY * attempt);
+          await this.delay(SchemaMigrationService.RETRY_DELAY * attempt);
         }
       }
     }
@@ -521,7 +528,7 @@ export class SchemaMigrationService {
     
     try {
       // Get total document count
-      const totalSnapshot = await getDocs(collection(db, 'conversations'));
+      const totalSnapshot = await getDocs(collection(this.db, 'conversations'));
       result.totalDocuments = totalSnapshot.size;
       
       console.log(`📊 Found ${result.totalDocuments} conversations to migrate`);
@@ -543,9 +550,9 @@ export class SchemaMigrationService {
         
         // Query next batch
         let q = query(
-          collection(db, 'conversations'),
+          collection(this.db, 'conversations'),
           orderBy('createdAt'),
-          limit(this.BATCH_SIZE)
+          limit(SchemaMigrationService.BATCH_SIZE)
         );
         
         if (lastDoc) {
@@ -577,7 +584,7 @@ export class SchemaMigrationService {
       
     } catch (error) {
       console.error('❌ Conversations migration failed:', error);
-      result.errors.push({ id: 'CONVERSATIONS_MIGRATION_FATAL', error: error.message, timestamp: new Date() });
+      result.errors.push({ id: 'CONVERSATIONS_MIGRATION_FATAL', error: (error instanceof Error ? error.message : "Unknown error"), timestamp: new Date() });
     }
     
     result.endTime = new Date();
@@ -599,8 +606,8 @@ export class SchemaMigrationService {
   private async processConversationBatch(
     docs: any[], 
     batchNumber: number
-  ): Promise<{ migrated: number; failed: number; skipped: number; errors: any[] }> {
-    const batchResult = { migrated: 0, failed: 0, skipped: 0, errors: [] };
+  ): Promise<{ migrated: number; failed: number; skipped: number; errors: Array<{ id: string; error: string; timestamp: Date }> }> {
+    const batchResult: { migrated: number; failed: number; skipped: number; errors: Array<{ id: string; error: string; timestamp: Date }> } = { migrated: 0, failed: 0, skipped: 0, errors: [] };
     
     if (this.isDryRun) {
       // In dry run, just validate the data transformation
@@ -611,18 +618,18 @@ export class SchemaMigrationService {
           console.log(`  🧪 [DRY RUN] Would migrate conversation ${docSnapshot.id}`);
           batchResult.migrated++;
         } catch (error) {
-          console.error(`  ❌ [DRY RUN] Error transforming conversation ${docSnapshot.id}:`, error.message);
+          console.error(`  ❌ [DRY RUN] Error transforming conversation ${docSnapshot.id}:`, (error instanceof Error ? error.message : "Unknown error"));
           batchResult.failed++;
-          batchResult.errors.push({ id: docSnapshot.id, error: error.message, timestamp: new Date() });
+          batchResult.errors.push({ id: docSnapshot.id, error: (error instanceof Error ? error.message : "Unknown error"), timestamp: new Date() });
         }
       });
       return batchResult;
     }
     
     // Real migration with retry logic
-    for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
+    for (let attempt = 1; attempt <= SchemaMigrationService.MAX_RETRIES; attempt++) {
       try {
-        const batch = writeBatch(db);
+        const batch = writeBatch(this.db);
         
         docs.forEach((docSnapshot) => {
           try {
@@ -647,9 +654,9 @@ export class SchemaMigrationService {
             
             batchResult.migrated++;
           } catch (error) {
-            console.error(`  ❌ Error transforming conversation ${docSnapshot.id}:`, error.message);
+            console.error(`  ❌ Error transforming conversation ${docSnapshot.id}:`, (error instanceof Error ? error.message : "Unknown error"));
             batchResult.failed++;
-            batchResult.errors.push({ id: docSnapshot.id, error: error.message, timestamp: new Date() });
+            batchResult.errors.push({ id: docSnapshot.id, error: (error instanceof Error ? error.message : "Unknown error"), timestamp: new Date() });
           }
         });
         
@@ -660,19 +667,19 @@ export class SchemaMigrationService {
         break; // Success, exit retry loop
         
       } catch (error) {
-        console.error(`  ⚠️  Batch ${batchNumber} attempt ${attempt} failed:`, error.message);
+        console.error(`  ⚠️  Batch ${batchNumber} attempt ${attempt} failed:`, (error instanceof Error ? error.message : "Unknown error"));
         
-        if (attempt === this.MAX_RETRIES) {
+        if (attempt === SchemaMigrationService.MAX_RETRIES) {
           docs.forEach(doc => {
             batchResult.failed++;
             batchResult.errors.push({ 
               id: doc.id, 
-              error: `Batch commit failed after ${this.MAX_RETRIES} attempts: ${error.message}`, 
+              error: `Batch commit failed after ${SchemaMigrationService.MAX_RETRIES} attempts: ${(error instanceof Error ? error.message : "Unknown error")}`, 
               timestamp: new Date() 
             });
           });
         } else {
-          await this.delay(this.RETRY_DELAY * attempt);
+          await this.delay(SchemaMigrationService.RETRY_DELAY * attempt);
         }
       }
     }
@@ -717,9 +724,9 @@ export class SchemaMigrationService {
     try {
       // Sample migrated documents for validation
       const q = query(
-        collection(db, collectionName),
+        collection(this.db, collectionName),
         where('schemaVersion', '==', '2.0'),
-        limit(this.VALIDATION_SAMPLE_SIZE)
+        limit(SchemaMigrationService.VALIDATION_SAMPLE_SIZE)
       );
       
       const snapshot = await getDocs(q);
@@ -744,7 +751,7 @@ export class SchemaMigrationService {
           result.invalidDocuments++;
           result.dataIntegrityIssues.push({
             id: doc.id,
-            issue: `Validation error: ${error.message}`
+            issue: `Validation error: ${(error instanceof Error ? error.message : "Unknown error")}`
           });
         }
       }
@@ -753,7 +760,7 @@ export class SchemaMigrationService {
       console.error(`❌ Validation failed for ${collectionName}:`, error);
       result.dataIntegrityIssues.push({
         id: 'VALIDATION_FATAL',
-        issue: error.message
+        issue: (error instanceof Error ? error.message : "Unknown error")
       });
     }
     
@@ -883,7 +890,7 @@ export class SchemaMigrationService {
       migrationResults: results,
       validationResults,
       status: this.migrationStatus,
-      recommendations: []
+      recommendations: [] as string[]
     };
     
     // Calculate success rate
@@ -923,14 +930,14 @@ export class SchemaMigrationService {
     // Save report to file or database if not dry run
     if (!this.isDryRun) {
       try {
-        const reportDocRef = doc(db, 'migration-reports', `schema-migration-${Date.now()}`);
+        const reportDocRef = doc(this.db, 'migration-reports', `schema-migration-${Date.now()}`);
         await setDoc(reportDocRef, {
           ...report,
           createdAt: serverTimestamp()
         });
         console.log('📁 Migration report saved to Firestore');
       } catch (error) {
-        console.warn('⚠️  Failed to save migration report:', error.message);
+        console.warn('⚠️  Failed to save migration report:', (error instanceof Error ? error.message : "Unknown error"));
       }
     }
     
@@ -1009,5 +1016,3 @@ async function runMigration() {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   runMigration();
 }
-
-export { SchemaMigrationService };

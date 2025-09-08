@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import EnhancedInput from '../components/ui/EnhancedInput';
+import { Input } from '../components/ui/Input';
 import { motion } from 'framer-motion';
 import { Card } from '../components/ui/Card';
 import { MailIcon, LockIcon, CheckIcon } from 'lucide-react';
@@ -147,53 +147,31 @@ export const SignUpPage: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="space-y-6"
         >
-          <EnhancedInput
+          <Input
             id="email"
             type="email"
-            label="Email"
             value={email}
             onChange={handleEmailChange}
-            fullWidth
             required
-            glassmorphism
-            leftIcon={<MailIcon className="h-5 w-5" />}
-            error={emailValid === false ? "Please enter a valid email address" : undefined}
-            success={emailValid === true}
             placeholder="Enter your email"
-            animateLabel
           />
 
-          <EnhancedInput
+          <Input
             id="password"
             type="password"
-            label="Password"
             value={password}
             onChange={handlePasswordChange}
-            fullWidth
             required
-            glassmorphism
-            leftIcon={<LockIcon className="h-5 w-5" />}
-            error={passwordValid === false ? "Password must be at least 8 characters" : undefined}
-            success={passwordValid === true}
             placeholder="Enter your password"
-            animateLabel
-            helperText="Password must be at least 8 characters long"
           />
 
-          <EnhancedInput
+          <Input
             id="confirmPassword"
             type="password"
-            label="Confirm Password"
             value={confirmPassword}
             onChange={handleConfirmPasswordChange}
-            fullWidth
             required
-            glassmorphism
-            leftIcon={<CheckIcon className="h-5 w-5" />}
-            error={passwordsMatch === false ? "Passwords do not match" : undefined}
-            success={passwordsMatch === true}
             placeholder="Confirm your password"
-            animateLabel
           />
 
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>

@@ -1,3 +1,4 @@
+
 {
   "mcpServers": {
     "github.com/upstash/context7-mcp": {
@@ -12,7 +13,7 @@
         "get-library-docs"
       ],
       "env": {
-        "GEMINI_API_KEY": "AIzaSyBoyYD_qUcvrBiwWk9hAn76NRbTM1t_Jv4"
+        "GEMINI_API_KEY": "${GEMINI_API_KEY}"
       },
       "alwaysAllow": [
         "resolve-library-id",
@@ -38,7 +39,7 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "/Users/johnroberts/Documents/TradeYa Exp",
+        "/Users/johnroberts/Documents/TradeYa Exp/TradeYa Exp/TradeYa Exp",
         "."
       ],
       "disabled": false,
@@ -55,7 +56,7 @@
         "create_file",
         "attempt_completion",
         "edit_file",
-        "rea",
+        "read_file",
         "apply_diff",
         "str_replace"
       ]
@@ -71,7 +72,7 @@
         "brave_web_search"
       ],
       "env": {
-        "BRAVE_API_KEY": "BSAwZ5R7QGiKOeR4CZO_ZCBXPFXt0Tg"
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
       }
     },
     "github.com/modelcontextprotocol/servers/tree/main/src/brave-search": {
@@ -85,7 +86,7 @@
         "brave_web_search"
       ],
       "env": {
-        "BRAVE_API_KEY": "BSAwZ5R7QGiKOeR4CZO_ZCBXPFXt0Tg"
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
       }
     },
     "memory": {
@@ -167,7 +168,7 @@
         "firecrawl_generate_llmstxt"
       ],
       "env": {
-        "FIRECRAWL_API_KEY": "fc-a2e2cce830ec45729c82c58b953dbb39"
+        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
       }
     },
     "github.com/modelcontextprotocol/servers/tree/main/src/puppeteer": {
@@ -208,7 +209,7 @@
         "21st_magic_component_builder"
       ],
       "env": {
-        "TWENTY_FIRST_API_KEY": "3e6e7301818ecc47e5ec2e1b831ae86d0d15eb955ffbd4c867ef4e1f4e7d93b7"
+        "TWENTY_FIRST_API_KEY": "${TWENTY_FIRST_API_KEY}"
       },
       "alwaysAllow": [
         "21st_magic_component_builder",

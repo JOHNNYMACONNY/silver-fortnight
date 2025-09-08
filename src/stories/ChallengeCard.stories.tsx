@@ -73,7 +73,7 @@ export const UnlockedTrade: Story = {
         lastUpdated: { toDate: () => new Date() }
       }
     });
-    return <ChallengeCard {...args} />;
+    return <ChallengeCard challenge={args.challenge} />;
   },
   args: {
     challenge: { ...baseChallenge, type: ChallengeType.TRADE },

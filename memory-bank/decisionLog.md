@@ -158,3 +158,18 @@ This file records architectural and implementation decisions using a list format
 - Progressive enhancement with CSS gradient fallbacks
 
 [2025-06-17 16:44:39] - Created focused TRADEYA_DYNAMIC_BACKGROUND_PHASE_1_PLAN.md removing all typography modernization and concentrating solely on background visual effects
+
+## Decision: Conditional Husky Installation for Vercel Deployment Compatibility
+
+**Rationale:** Vercel build environment excludes .git directory via .vercelignore, causing "fatal: not in a git directory" error when prepare script runs "husky install". This blocks deployment despite security work being complete. Need to maintain husky functionality for local development while allowing Vercel builds to succeed.
+
+**Implementation Details:**
+
+- Modified package.json prepare script to conditionally run husky install only when in git repository
+- Used `git rev-parse --git-dir > /dev/null 2>&1 && husky install || echo 'Skipping husky install - not in git repo'`
+- Preserves security:init script execution in all environments
+- Maintains husky pre-commit hooks for local development
+- Allows clean Vercel builds without git repository access
+- No breaking changes to existing functionality
+
+[2025-09-07 05:04:06] - Conditional husky installation implemented for Vercel deployment compatibility

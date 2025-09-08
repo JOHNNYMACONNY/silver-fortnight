@@ -5,10 +5,9 @@
  */
 
 import React, { Suspense, lazy, useEffect, useState } from 'react';
-import { Navigate, Route, Routes, Link, Router } from 'react-router-dom';
+import { Navigate, Route, Routes, Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { NotificationsProvider } from './contexts/NotificationsContext';
-import { useToast } from './contexts/ToastContext';
 import { RouteErrorBoundary } from './components/ui/ErrorBoundary';
 import EnhancedErrorBoundary from './components/ui/EnhancedErrorBoundary';
 import { errorService } from './services/errorService';
@@ -149,9 +148,9 @@ function App() {
         <RoutePreloader />
 
         <Suspense fallback={<LoadingFallback size="md" message="Loading…" />}>
-        <Routes>
+          <Routes>
             <Route path="/" element={<RouteErrorBoundary><HomePage /></RouteErrorBoundary>} />
-          <Route path="/trades" element={<RouteErrorBoundary><TradesPage /></RouteErrorBoundary>} />
+            <Route path="/trades" element={<RouteErrorBoundary><TradesPage /></RouteErrorBoundary>} />
         <Route path="/trades/:tradeId" element={<RouteErrorBoundary><TradeDetailPage /></RouteErrorBoundary>} />
         <Route path="/projects" element={<RouteErrorBoundary><CollaborationsPage /></RouteErrorBoundary>} />
         <Route path="/collaborations" element={<RouteErrorBoundary><CollaborationsPage /></RouteErrorBoundary>} />
@@ -259,6 +258,6 @@ function App() {
     </NotificationsProvider>
     </EnhancedErrorBoundary>
   );
-};
+}
 
 export default App;

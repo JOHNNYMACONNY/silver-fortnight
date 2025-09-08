@@ -35,10 +35,32 @@ export default tseslint.config(
     },
   },
   {
-    files: ["**/*.{ts,tsx}"],
+    files: ["src/**/*.{ts,tsx}"],
     languageOptions: {
       parserOptions: {
-        project: "./tsconfig.json",
+        project: "./tsconfig.app.json",
+      },
+    },
+    rules: {
+      "@typescript-eslint/no-explicit-any": "error",
+    },
+  },
+  {
+    files: ["vite.config.ts", "tailwind.config.ts", "jest.config.ts", "playwright.config.ts"],
+    languageOptions: {
+      parserOptions: {
+        project: false,
+      },
+    },
+    rules: {
+      "@typescript-eslint/no-explicit-any": "error",
+    },
+  },
+  {
+    files: ["functions/**/*.{ts,tsx}", "e2e/**/*.{ts,tsx}", ".storybook/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"],
+    languageOptions: {
+      parserOptions: {
+        project: false,
       },
     },
     rules: {

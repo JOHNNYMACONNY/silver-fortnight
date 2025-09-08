@@ -18,6 +18,7 @@ const mockAuthContextValue: AuthContextType = {
     email: 'storybook@example.com',
     displayName: 'Storybook User',
   } as any,
+  userProfile: null,
   loading: false,
   error: null,
   isAdmin: true,

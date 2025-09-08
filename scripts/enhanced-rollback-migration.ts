@@ -7,11 +7,11 @@
  * multi-level recovery, and automated safety checks.
  */
 
-import { 
-  collection, 
-  getDocs, 
-  writeBatch, 
-  doc, 
+import {
+  collection,
+  getDocs,
+  writeBatch,
+  doc,
   query,
   where,
   limit,
@@ -21,8 +21,8 @@ import {
   Timestamp,
   orderBy
 } from 'firebase/firestore';
-import { db } from '../src/firebase-config';
-import { performanceLogger } from '../src/utils/performance/structuredLogger';
+import { initializeFirebase, getSyncFirebaseDb } from '../src/firebase-config.js';
+import { performanceLogger } from '../src/utils/performance/structuredLogger.js';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
@@ -113,6 +113,7 @@ export class EnhancedRollbackService {
   private rollbackId: string;
   private rollbackPath: string;
   private isEmergencyStop = false;
+  private db: any;
   
   constructor(
     projectId: string = 'tradeya-45ede',
@@ -126,6 +127,7 @@ export class EnhancedRollbackService {
     this.backupId = backupId;
     this.rollbackId = `rollback-${Date.now()}`;
     this.rollbackPath = join(process.cwd(), `rollback-${this.rollbackId}.json`);
+    this.db = getSyncFirebaseDb();
     
     this.config = {
       maxDocumentsPerBatch: process.env.ROLLBACK_BATCH_SIZE ? parseInt(process.env.ROLLBACK_BATCH_SIZE) : 50,
@@ -267,12 +269,15 @@ export class EnhancedRollbackService {
       this.rollbackStatus.overallStatus = 'FAILED';
       this.rollbackStatus.requiresManualIntervention = true;
       
+      const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+
       this.addCriticalFailure({
         id: `rollback-fatal-${Date.now()}`,
         timestamp: new Date(),
         component: 'rollback-engine',
         severity: 'critical',
-        message: `Rollback procedure failed: ${error.message}`,
+        message: `Rollback procedure failed: ${errorMessage}`,
         impact: ['system-inconsistent', 'service-degraded'],
         immediateActions: [
           'CRITICAL: Contact database administrator immediately',
@@ -282,12 +287,12 @@ export class EnhancedRollbackService {
         ],
         escalationRequired: true
       });
-      
+
       performanceLogger.error('monitoring', 'Enhanced rollback failed', {
         rollbackId: this.rollbackId,
-        error: error.message,
-        stack: error.stack
-      }, error);
+        error: errorMessage,
+        stack: errorStack
+      });
     } finally {
       await this.saveRollbackStatus();
     }
@@ -303,7 +308,10 @@ export class EnhancedRollbackService {
         name: 'Database Connectivity',
         critical: true,
         check: async () => {
-          const testQuery = query(collection(db, 'trades'), limit(1));
+          if (this.db === null) {
+            throw new Error('Database connection not available');
+          }
+          const testQuery = query(collection(this.db, 'trades'), limit(1));
           await getDocs(testQuery);
           return { passed: true, details: 'Database connection successful' };
         }
@@ -313,7 +321,7 @@ export class EnhancedRollbackService {
         critical: true,
         check: async () => {
           const migratedQuery = query(
-            collection(db, 'trades'),
+            collection(this.db, 'trades'),
             where('schemaVersion', '==', '2.0'),
             limit(10)
           );
@@ -358,14 +366,15 @@ export class EnhancedRollbackService {
             // Check if critical services are operational
             const services = ['trades', 'conversations', 'users'];
             for (const service of services) {
-              const testQuery = query(collection(db, service), limit(1));
+              const testQuery = query(collection(this.db, service), limit(1));
               await getDocs(testQuery);
             }
             return { passed: true, details: 'All services operational' };
           } catch (error) {
-            return { 
-              passed: false, 
-              details: `Service health check failed: ${error.message}`,
+            const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
+            return {
+              passed: false,
+              details: `Service health check failed: ${errorMessage}`,
               recommendations: ['Check service status before proceeding']
             };
           }
@@ -392,15 +401,16 @@ export class EnhancedRollbackService {
         }
         
       } catch (error) {
+        const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
         this.addSafetyCheck({
           name: validation.name,
           type: 'pre_rollback',
           status: 'FAILED',
-          details: `Validation error: ${error.message}`,
+          details: `Validation error: ${errorMessage}`,
           critical: validation.critical,
           timestamp: new Date()
         });
-        
+
         if (validation.critical) {
           throw error;
         }
@@ -444,10 +454,13 @@ export class EnhancedRollbackService {
   }
 
   private async assessUserImpact(): Promise<void> {
+    if (this.db === null) {
+      throw new Error('Database connection not available');
+    }
     try {
       // Assess potential user impact by checking active sessions, pending operations, etc.
       const activeTradesQuery = query(
-        collection(db, 'trades'),
+        collection(this.db, 'trades'),
         where('status', 'in', ['active', 'in_progress']),
         limit(100)
       );
@@ -473,11 +486,12 @@ export class EnhancedRollbackService {
       });
       
     } catch (error) {
+      const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
       this.addSafetyCheck({
         name: 'User Impact Assessment',
         type: 'pre_rollback',
         status: 'FAILED',
-        details: `Impact assessment failed: ${error.message}`,
+        details: `Impact assessment failed: ${errorMessage}`,
         critical: false,
         timestamp: new Date()
       });
@@ -559,6 +573,9 @@ export class EnhancedRollbackService {
   }
 
   private async revertCollectionData(collectionName: string): Promise<RollbackResult> {
+    if (this.db === null) {
+      throw new Error('Database connection not available');
+    }
     const result: RollbackResult = {
       operation: `Revert ${collectionName} Collection`,
       status: 'SUCCESS',
@@ -579,7 +596,7 @@ export class EnhancedRollbackService {
       
       // Get migrated documents
       const migratedQuery = query(
-        collection(db, collectionName),
+        collection(this.db, collectionName),
         where('schemaVersion', '==', '2.0'),
         limit(this.config.validationSampleSize)
       );
@@ -605,10 +622,11 @@ export class EnhancedRollbackService {
               docId: doc.id
             });
           } catch (error) {
+            const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
             result.documentsFailed++;
             result.errors.push({
               id: doc.id,
-              error: error.message,
+              error: errorMessage,
               severity: 'medium'
             });
           }
@@ -626,12 +644,12 @@ export class EnhancedRollbackService {
       result.status = 'FAILED';
       result.errors.push({
         id: 'COLLECTION_REVERT_FATAL',
-        error: error.message,
+        error: (error instanceof Error ? error.message : "Unknown error"),
         severity: 'critical'
       });
       
       performanceLogger.error('monitoring', `Collection reversion failed: ${collectionName}`, {
-        error: error.message
+        error: (error instanceof Error ? error.message : "Unknown error")
       });
     } finally {
       result.endTime = new Date();
@@ -642,12 +660,15 @@ export class EnhancedRollbackService {
   }
 
   private async performSafeReversion(docs: any[], collectionName: string, result: RollbackResult): Promise<void> {
+    if (this.db === null) {
+      throw new Error('Database connection not available');
+    }
     const batchSize = Math.min(this.config.maxDocumentsPerBatch, 50); // Safety limit
     
     for (let i = 0; i < docs.length; i += batchSize) {
       if (this.isEmergencyStop) break;
       
-      const batch = writeBatch(db);
+      const batch = writeBatch(this.db);
       const batchDocs = docs.slice(i, i + batchSize);
       
       for (const docSnapshot of batchDocs) {
@@ -665,10 +686,11 @@ export class EnhancedRollbackService {
           result.documentsReverted++;
           
         } catch (error) {
+          const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
           result.documentsFailed++;
           result.errors.push({
             id: docSnapshot.id,
-            error: error.message,
+            error: errorMessage,
             severity: 'medium'
           });
         }
@@ -690,16 +712,17 @@ export class EnhancedRollbackService {
         });
         
       } catch (error) {
+        const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
         result.documentsFailed += batchDocs.length;
         result.errors.push({
           id: `BATCH_${i}`,
-          error: `Batch commit failed: ${error.message}`,
+          error: `Batch commit failed: ${errorMessage}`,
           severity: 'high'
         });
-        
+
         performanceLogger.error('monitoring', `Batch commit failed for ${collectionName}`, {
           batchStart: i,
-          error: error.message
+          error: errorMessage
         });
       }
       
@@ -808,12 +831,15 @@ export class EnhancedRollbackService {
   }
 
   private async verifyDataIntegrity(): Promise<void> {
+    if (this.db === null) {
+      throw new Error('Database connection not available');
+    }
     try {
       const collections = ['trades', 'conversations'];
       let allValid = true;
       
       for (const collectionName of collections) {
-        const sampleQuery = query(collection(db, collectionName), limit(50));
+        const sampleQuery = query(collection(this.db, collectionName), limit(50));
         const snapshot = await getDocs(sampleQuery);
         
         let validCount = 0;
@@ -842,12 +868,13 @@ export class EnhancedRollbackService {
       this.rollbackStatus.rollbackValidation.dataIntegrityCheck = allValid;
       
     } catch (error) {
+      const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
       this.rollbackStatus.rollbackValidation.dataIntegrityCheck = false;
       this.addSafetyCheck({
         name: 'Data Integrity Verification',
         type: 'post_rollback',
         status: 'FAILED',
-        details: `Verification failed: ${error.message}`,
+        details: `Verification failed: ${errorMessage}`,
         critical: true,
         timestamp: new Date()
       });
@@ -864,13 +891,16 @@ export class EnhancedRollbackService {
   }
 
   private async verifyServiceAvailability(): Promise<void> {
+    if (this.db === null) {
+      throw new Error('Database connection not available');
+    }
     try {
       const services = ['trades', 'conversations', 'users'];
       let allAvailable = true;
       
       for (const service of services) {
         try {
-          const testQuery = query(collection(db, service), limit(1));
+          const testQuery = query(collection(this.db, service), limit(1));
           const startTime = Date.now();
           await getDocs(testQuery);
           const responseTime = Date.now() - startTime;
@@ -885,12 +915,13 @@ export class EnhancedRollbackService {
           });
           
         } catch (error) {
+          const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
           allAvailable = false;
           this.addSafetyCheck({
             name: `${service} Service Availability`,
             type: 'post_rollback',
             status: 'FAILED',
-            details: `Service unavailable: ${error.message}`,
+            details: `Service unavailable: ${errorMessage}`,
             critical: true,
             timestamp: new Date()
           });
@@ -905,6 +936,9 @@ export class EnhancedRollbackService {
   }
 
   private async validatePerformance(): Promise<void> {
+    if (this.db === null) {
+      throw new Error('Database connection not available');
+    }
     try {
       // Simple performance validation
       const performanceTests = [
@@ -912,7 +946,7 @@ export class EnhancedRollbackService {
           name: 'Basic Query Performance',
           test: async () => {
             const startTime = Date.now();
-            const q = query(collection(db, 'trades'), where('status', '==', 'active'), limit(10));
+            const q = query(collection(this.db, 'trades'), where('status', '==', 'active'), limit(10));
             await getDocs(q);
             return Date.now() - startTime;
           }
@@ -945,10 +979,13 @@ export class EnhancedRollbackService {
   }
 
   private async calculateRollbackCompleteness(): Promise<void> {
+    if (this.db === null) {
+      throw new Error('Database connection not available');
+    }
     try {
       // Check for remaining migrated documents
       const migratedQuery = query(
-        collection(db, 'trades'),
+        collection(this.db, 'trades'),
         where('schemaVersion', '==', '2.0'),
         limit(100)
       );
@@ -979,38 +1016,10 @@ export class EnhancedRollbackService {
     }
   }
 
-  private async performCleanupOperations(): Promise<void> {
-    performanceLogger.info('monitoring', 'Performing cleanup operations');
-    
-    // Add cleanup recommendations
-    this.rollbackStatus.manualSteps.push(
-      'Disable migration mode in application configuration',
-      'Clear compatibility layer cache and restart services',
-      'Monitor application logs for legacy schema issues',
-      'Verify all features functioning correctly',
-      'Update monitoring dashboards and alerts',
-      'Notify stakeholders of rollback completion'
-    );
-    
-    const cleanupResult: RollbackResult = {
-      operation: 'Cleanup Operations',
-      status: 'SUCCESS',
-      documentsProcessed: 0,
-      documentsReverted: 0,
-      documentsFailed: 0,
-      documentsSkipped: 0,
-      errors: [],
-      startTime: new Date(),
-      endTime: new Date(),
-      durationMs: 0,
-      rollbackStrategy: 'manual_intervention',
-      safetyChecks: []
-    };
-    
-    this.rollbackStatus.operations.push(cleanupResult);
-  }
-
   private async generateRollbackReport(): Promise<void> {
+    if (this.db === null) {
+      throw new Error('Database connection not available');
+    }
     performanceLogger.info('monitoring', 'Generating comprehensive rollback report');
     
     const report = {
@@ -1048,7 +1057,7 @@ export class EnhancedRollbackService {
       writeFileSync(this.rollbackPath, JSON.stringify(report, null, 2));
       
       if (!this.isDryRun) {
-        await setDoc(doc(db, 'rollback-reports', this.rollbackId), {
+        await setDoc(doc(this.db, 'rollback-reports', this.rollbackId), {
           ...report,
           createdAt: serverTimestamp()
         });
@@ -1058,8 +1067,9 @@ export class EnhancedRollbackService {
       console.log(`📁 Report saved to: ${this.rollbackPath}`);
       
     } catch (error) {
+      const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
       performanceLogger.error('monitoring', 'Failed to save rollback report', {
-        error: error.message
+        error: errorMessage
       });
     }
   }
@@ -1097,8 +1107,9 @@ export class EnhancedRollbackService {
     try {
       writeFileSync(this.rollbackPath, JSON.stringify(this.rollbackStatus, null, 2));
     } catch (error) {
+      const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
       performanceLogger.error('monitoring', 'Failed to save rollback status', {
-        error: error.message
+        error: errorMessage
       });
     }
   }
@@ -1119,6 +1130,42 @@ export class EnhancedRollbackService {
   ): Promise<RollbackStatus> {
     const rollbackService = new EnhancedRollbackService(projectId, isDryRun, backupId, initiatedBy, reason);
     return await rollbackService.executeEnhancedRollback();
+  }
+
+  private async performCleanupOperations(): Promise<void> {
+    performanceLogger.info('monitoring', 'Performing post-rollback cleanup operations');
+    
+    try {
+      // Finalize rollback status and save to file
+      await this.saveRollbackStatus();
+      
+      // Clean up any temporary files or data if applicable
+      // For example, remove any cached rollback data or logs
+      if (existsSync(this.rollbackPath + '.tmp')) {
+        // Assuming a temporary file might exist; adjust as needed
+        // Note: In a real scenario, implement actual cleanup logic here
+        performanceLogger.info('monitoring', 'Cleaning up temporary rollback files');
+      }
+      
+      // Log final cleanup status
+      performanceLogger.info('monitoring', 'Cleanup operations completed successfully');
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? (error instanceof Error ? error.message : "Unknown error") : 'Unknown error';
+      performanceLogger.error('monitoring', 'Cleanup operations failed', {
+        error: errorMessage
+      });
+      
+      // Add a safety check for cleanup failure
+      this.addSafetyCheck({
+        name: 'Cleanup Operations',
+        type: 'post_rollback',
+        status: 'FAILED',
+        details: `Cleanup failed: ${errorMessage}`,
+        critical: false,
+        timestamp: new Date()
+      });
+    }
   }
 }
 

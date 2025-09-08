@@ -21,9 +21,12 @@ import {
   setDoc,
   Timestamp
 } from 'firebase/firestore';
-import { db } from '../src/firebase-config';
+import { initializeFirebase, getSyncFirebaseDb } from '../src/firebase-config';
 import { migrationRegistry } from '../src/services/migration/migrationRegistry';
 import { performanceLogger } from '../src/utils/performance/structuredLogger';
+
+// Initialize Firebase before using it
+const db = getSyncFirebaseDb();
 
 /**
  * Enhanced monitoring interfaces for production-grade monitoring
@@ -245,15 +248,15 @@ export class EnhancedMigrationMonitor {
     } catch (error) {
       performanceLogger.error('monitoring', 'Enhanced monitoring failed', {
         projectId: this.projectId,
-        error: error.message
-      }, error);
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }, error instanceof Error ? error : undefined);
       
       this.addCriticalAlert(result, {
         id: `monitoring-system-${Date.now()}`,
         timestamp: new Date(),
         severity: 'critical',
         category: 'infrastructure',
-        message: `Monitoring system failure: ${error.message}`,
+        message: `Monitoring system failure: ${error instanceof Error ? error.message : 'Unknown error'}`,
         affectedSystems: ['monitoring'],
         recommendedActions: [
           'Check monitoring system health',
@@ -294,7 +297,7 @@ export class EnhancedMigrationMonitor {
         checkName: 'Firestore Connectivity',
         category: 'infrastructure',
         status: 'CRITICAL',
-        details: `Connection failed: ${error.message}`,
+        details: `Connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         impact: 'critical'
       });
     }
@@ -390,7 +393,7 @@ export class EnhancedMigrationMonitor {
           checkName: test.name,
           category: test.category,
           status: 'ERROR',
-          details: `Query failed: ${error.message}`,
+          details: `Query failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
           queryComplexity: test.complexity,
           impact: 'high'
         });
@@ -489,7 +492,7 @@ export class EnhancedMigrationMonitor {
         checkName: 'Compatibility Layer Health',
         category: 'compatibility',
         status: 'ERROR',
-        details: `Compatibility check failed: ${error.message}`,
+        details: `Compatibility check failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         impact: 'high'
       });
     }
@@ -521,9 +524,10 @@ export class EnhancedMigrationMonitor {
         this.addCheck(result, {
           checkName: 'Migration Progress',
           category: 'infrastructure',
-          status: migrationData.status === 'failed' ? 'CRITICAL' :
-                  migrationData.status === 'paused' ? 'WARNING' : 'OK',
-          details: `Migration ${completeness}% complete, status: ${migrationData.status}`,
+          status: (migrationData && typeof migrationData === 'object' && 'status' in migrationData && typeof migrationData.status === 'string')
+                  ? (migrationData.status === 'failed' ? 'CRITICAL' : migrationData.status === 'paused' ? 'WARNING' : 'OK')
+                  : 'OK',
+          details: `Migration ${completeness}% complete, status: ${(migrationData && typeof migrationData === 'object' && 'status' in migrationData && typeof migrationData.status === 'string') ? migrationData.status : 'unknown'}`,
           impact: 'high'
         });
       }
@@ -533,7 +537,7 @@ export class EnhancedMigrationMonitor {
         checkName: 'Migration Progress Check',
         category: 'infrastructure',
         status: 'WARNING',
-        details: `Could not check migration progress: ${error.message}`
+        details: `Could not check migration progress: ${error instanceof Error ? error.message : 'Unknown error'}`
       });
     }
   }
@@ -569,14 +573,14 @@ export class EnhancedMigrationMonitor {
             checkName: test.name,
             category: 'infrastructure',
             status: 'CRITICAL',
-            details: `Service unavailable: ${error.message}`,
+            details: `Service unavailable: ${error instanceof Error ? error.message : 'Unknown error'}`,
             impact: 'critical'
           });
         }
       }
       
     } catch (error) {
-      performanceLogger.error('monitoring', 'Zero-downtime check failed', { error: error.message });
+      performanceLogger.error('monitoring', 'Zero-downtime check failed', { error: error instanceof Error ? error.message : 'Unknown error' });
     }
   }
 
@@ -626,9 +630,9 @@ export class EnhancedMigrationMonitor {
         this.addCheck(result, {
           checkName: indexTest.name,
           category: 'infrastructure',
-          status: error.message.includes('index') ? 'CRITICAL' : 'WARNING',
-          details: `Index test failed: ${error.message}`,
-          impact: error.message.includes('index') ? 'critical' : 'medium'
+          status: (error instanceof Error && error.message.includes('index')) ? 'CRITICAL' : 'WARNING',
+          details: `Index test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          impact: (error instanceof Error && error.message.includes('index')) ? 'critical' : 'medium'
         });
       }
     }
@@ -688,7 +692,7 @@ export class EnhancedMigrationMonitor {
       
     } catch (error) {
       performanceLogger.error('monitoring', `Failed to check ${collectionName} integrity`, {
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
       return 0;
     }
@@ -724,7 +728,9 @@ export class EnhancedMigrationMonitor {
       
       tradesSnapshot.docs.forEach(doc => {
         const data = doc.data();
-        if (data.schemaVersion === '2.0' || (data.skillsOffered && data.participants)) {
+        if ((data && typeof data === 'object') &&
+            (('schemaVersion' in data && data.schemaVersion === '2.0') ||
+            ('skillsOffered' in data && (data as any).skillsOffered && 'participants' in data && (data as any).participants))) {
           compliantCount++;
         }
       });
@@ -734,7 +740,7 @@ export class EnhancedMigrationMonitor {
       
     } catch (error) {
       performanceLogger.error('monitoring', 'Failed to check schema compliance', {
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
       return 0;
     }
@@ -778,7 +784,7 @@ export class EnhancedMigrationMonitor {
     } catch (error) {
       return {
         success: false,
-        details: `Trade compatibility test failed: ${error.message}`
+        details: `Trade compatibility test failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }
@@ -794,7 +800,7 @@ export class EnhancedMigrationMonitor {
     } catch (error) {
       return {
         success: false,
-        details: `Chat compatibility test failed: ${error.message}`
+        details: `Chat compatibility test failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }
@@ -941,7 +947,7 @@ export class EnhancedMigrationMonitor {
       
     } catch (error) {
       performanceLogger.warn('monitoring', 'Failed to save enhanced monitoring result', {
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   }

@@ -19,6 +19,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   name: 'Default (target 500)',
   args: {
+    userId: 'demo-user',
     target: 500,
   },
 };
@@ -31,7 +32,7 @@ export const GoalMet: Story = {
       const weekKey = '2025-W10';
       window.localStorage.setItem(`xp-week-goal-demo-user-${weekKey}`, '1');
     }
-    return <WeeklyXPGoal {...args} />;
+    return <WeeklyXPGoal userId="demo-user" target={args.target || 200} />;
   },
   args: {
     target: 200,
@@ -45,8 +46,9 @@ export const EditedTarget: Story = {
       window.localStorage.setItem(`weekly-xp-goal-target-demo-user`, '800');
       window.localStorage.setItem(`weekly-xp-goal-tips-demo-user`, '1');
     }
-    return <WeeklyXPGoal {...args} />;
+    return <WeeklyXPGoal userId="demo-user" />;
   },
+  args: {},
 };
 
 

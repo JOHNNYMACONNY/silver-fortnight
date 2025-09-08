@@ -26,7 +26,7 @@
       ]
     }
   ],
-  "buildCommand": "npm run vercel-build",
+  "buildCommand": "npm run build:force",
   "outputDirectory": "dist",
   "framework": "vite",
   "github": {

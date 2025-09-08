@@ -8,18 +8,19 @@
  */
 
 import { 
-  collection, 
-  getDocs, 
-  writeBatch, 
-  doc, 
-  query,
-  where,
-  limit,
-  serverTimestamp,
-  setDoc,
-  deleteField
-} from 'firebase/firestore';
-import { db } from '../src/firebase-config';
+  // Remove modular SDK imports that don't exist in firebase-admin
+  // collection, 
+  // getDocs, 
+  // writeBatch, 
+  // doc, 
+  // query,
+  // where,
+  // limit,
+  FieldValue,
+  getFirestore,
+  Firestore
+} from 'firebase-admin/firestore';
+import { initializeApp, getApps } from 'firebase-admin/app';
 import { fileURLToPath } from 'url';
 
 /**
@@ -58,6 +59,7 @@ export class RollbackService {
   private isDryRun: boolean;
   private projectId: string;
   private backupId?: string;
+  private db: Firestore; // Add private db property
   
   constructor(
     projectId: string = 'tradeya-45ede',
@@ -76,6 +78,15 @@ export class RollbackService {
       backupRequired: !backupId,
       manualSteps: []
     };
+
+    // Initialize Firebase app and Firestore if not already done
+    if (getApps().length === 0) {
+      initializeApp({
+        projectId: this.projectId,
+        // Add other config if needed, e.g., credential: admin.credential.cert(serviceAccountKey)
+      });
+    }
+    this.db = getFirestore(); // Fix: Use getFirestore() to get the instance
   }
 
   /**
@@ -159,21 +170,17 @@ export class RollbackService {
     
     try {
       // Check for migrated documents
-      const migratedTradesQuery = query(
-        collection(db, 'trades'),
-        where('schemaVersion', '==', '2.0'),
-        limit(10)
-      );
+      const migratedTradesQuery = this.db.collection('trades') // Fix: Use instance method
+        .where('schemaVersion', '==', '2.0')
+        .limit(10);
       
-      const migratedConversationsQuery = query(
-        collection(db, 'conversations'),
-        where('schemaVersion', '==', '2.0'),
-        limit(10)
-      );
+      const migratedConversationsQuery = this.db.collection('conversations') // Fix: Use instance method
+        .where('schemaVersion', '==', '2.0')
+        .limit(10);
       
       const [migratedTrades, migratedConversations] = await Promise.all([
-        getDocs(migratedTradesQuery),
-        getDocs(migratedConversationsQuery)
+        migratedTradesQuery.get(), // Fix: Use .get() instead of getDocs
+        migratedConversationsQuery.get() // Fix: Use .get() instead of getDocs
       ]);
       
       validationResult.documentsProcessed = migratedTrades.size + migratedConversations.size;
@@ -187,8 +194,8 @@ export class RollbackService {
       }
       
       // Validate Firestore connection
-      const testQuery = query(collection(db, 'trades'), limit(1));
-      await getDocs(testQuery);
+      const testQuery = this.db.collection('trades').limit(1); // Fix: Use instance method
+      await testQuery.get(); // Fix: Use .get()
       
       console.log('✅ Firestore connection validated');
       
@@ -201,8 +208,9 @@ export class RollbackService {
       
     } catch (error) {
       validationResult.status = 'FAILED';
-      validationResult.errors.push({ id: 'VALIDATION_ERROR', error: error.message });
-      throw new Error(`Rollback validation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      validationResult.errors.push({ id: 'VALIDATION_ERROR', error: errorMessage });
+      throw new Error(`Rollback validation failed: ${errorMessage}`);
     } finally {
       validationResult.endTime = new Date();
       validationResult.durationMs = validationResult.endTime.getTime() - validationResult.startTime.getTime();
@@ -252,13 +260,11 @@ export class RollbackService {
     
     try {
       // Get migrated trades
-      const migratedTradesQuery = query(
-        collection(db, 'trades'),
-        where('schemaVersion', '==', '2.0'),
-        limit(1000) // Process in chunks
-      );
+      const migratedTradesQuery = this.db.collection('trades') // Fix: Use instance method
+        .where('schemaVersion', '==', '2.0')
+        .limit(1000); // Process in chunks
       
-      const snapshot = await getDocs(migratedTradesQuery);
+      const snapshot = await migratedTradesQuery.get(); // Fix: Use .get()
       result.documentsProcessed = snapshot.size;
       
       console.log(`📊 Processing ${result.documentsProcessed} migrated trades...`);
@@ -278,13 +284,14 @@ export class RollbackService {
             console.log(`  🧪 [DRY RUN] Would revert trade ${doc.id}`);
           } catch (error) {
             result.documentsFailed++;
-            result.errors.push({ id: doc.id, error: error.message });
-            console.error(`  ❌ [DRY RUN] Error reverting trade ${doc.id}:`, error.message);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            result.errors.push({ id: doc.id, error: errorMessage });
+            console.error(`  ❌ [DRY RUN] Error reverting trade ${doc.id}:`, errorMessage);
           }
         });
       } else {
         // Real reversion
-        const batch = writeBatch(db);
+        const batch = this.db.batch(); // Fix: Use db.batch() instead of writeBatch
         let batchCount = 0;
         
         snapshot.docs.forEach(docSnapshot => {
@@ -303,8 +310,9 @@ export class RollbackService {
             }
           } catch (error) {
             result.documentsFailed++;
-            result.errors.push({ id: docSnapshot.id, error: error.message });
-            console.error(`  ❌ Error reverting trade ${docSnapshot.id}:`, error.message);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            result.errors.push({ id: docSnapshot.id, error: errorMessage });
+            console.error(`  ❌ Error reverting trade ${docSnapshot.id}:`, errorMessage);
           }
         });
         
@@ -317,7 +325,8 @@ export class RollbackService {
       
     } catch (error) {
       result.status = 'FAILED';
-      result.errors.push({ id: 'TRADES_REVERT_FATAL', error: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      result.errors.push({ id: 'TRADES_REVERT_FATAL', error: errorMessage });
       console.error('❌ Trades reversion failed:', error);
     } finally {
       result.endTime = new Date();
@@ -351,13 +360,11 @@ export class RollbackService {
     
     try {
       // Get migrated conversations
-      const migratedConversationsQuery = query(
-        collection(db, 'conversations'),
-        where('schemaVersion', '==', '2.0'),
-        limit(1000)
-      );
+      const migratedConversationsQuery = this.db.collection('conversations') // Fix: Use instance method
+        .where('schemaVersion', '==', '2.0')
+        .limit(1000);
       
-      const snapshot = await getDocs(migratedConversationsQuery);
+      const snapshot = await migratedConversationsQuery.get(); // Fix: Use .get()
       result.documentsProcessed = snapshot.size;
       
       console.log(`📊 Processing ${result.documentsProcessed} migrated conversations...`);
@@ -377,13 +384,14 @@ export class RollbackService {
             console.log(`  🧪 [DRY RUN] Would revert conversation ${doc.id}`);
           } catch (error) {
             result.documentsFailed++;
-            result.errors.push({ id: doc.id, error: error.message });
-            console.error(`  ❌ [DRY RUN] Error reverting conversation ${doc.id}:`, error.message);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            result.errors.push({ id: doc.id, error: errorMessage });
+            console.error(`  ❌ [DRY RUN] Error reverting conversation ${doc.id}:`, errorMessage);
           }
         });
       } else {
         // Real reversion
-        const batch = writeBatch(db);
+        const batch = this.db.batch(); // Fix: Use db.batch()
         
         snapshot.docs.forEach(docSnapshot => {
           try {
@@ -394,8 +402,9 @@ export class RollbackService {
             result.documentsReverted++;
           } catch (error) {
             result.documentsFailed++;
-            result.errors.push({ id: docSnapshot.id, error: error.message });
-            console.error(`  ❌ Error reverting conversation ${docSnapshot.id}:`, error.message);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            result.errors.push({ id: docSnapshot.id, error: errorMessage });
+            console.error(`  ❌ Error reverting conversation ${docSnapshot.id}:`, errorMessage);
           }
         });
         
@@ -408,7 +417,8 @@ export class RollbackService {
       
     } catch (error) {
       result.status = 'FAILED';
-      result.errors.push({ id: 'CONVERSATIONS_REVERT_FATAL', error: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      result.errors.push({ id: 'CONVERSATIONS_REVERT_FATAL', error: errorMessage });
       console.error('❌ Conversations reversion failed:', error);
     } finally {
       result.endTime = new Date();
@@ -434,23 +444,23 @@ export class RollbackService {
       participantId: data.participantId_legacy || data.participants?.participant,
       
       // Remove new schema fields
-      skillsOffered: deleteField(),
-      skillsWanted: deleteField(),
-      participants: deleteField(),
+      skillsOffered: FieldValue.delete(),  // Fixed: Use FieldValue.delete()
+      skillsWanted: FieldValue.delete(),   // Fixed: Use FieldValue.delete()
+      participants: FieldValue.delete(),   // Fixed: Use FieldValue.delete()
       
       // Remove migration metadata
-      schemaVersion: deleteField(),
-      migratedAt: deleteField(),
-      migrationBatch: deleteField(),
-      migrationAttempt: deleteField(),
-      offeredSkills_legacy: deleteField(),
-      requestedSkills_legacy: deleteField(),
-      creatorId_legacy: deleteField(),
-      participantId_legacy: deleteField(),
-      compatibilityLayerUsed: deleteField(),
+      schemaVersion: FieldValue.delete(),  // Fixed: Use FieldValue.delete()
+      migratedAt: FieldValue.delete(),     // Fixed: Use FieldValue.delete()
+      migrationBatch: FieldValue.delete(), // Fixed: Use FieldValue.delete()
+      migrationAttempt: FieldValue.delete(), // Fixed: Use FieldValue.delete()
+      offeredSkills_legacy: FieldValue.delete(), // Fixed: Use FieldValue.delete()
+      requestedSkills_legacy: FieldValue.delete(), // Fixed: Use FieldValue.delete()
+      creatorId_legacy: FieldValue.delete(), // Fixed: Use FieldValue.delete()
+      participantId_legacy: FieldValue.delete(), // Fixed: Use FieldValue.delete()
+      compatibilityLayerUsed: FieldValue.delete(), // Fixed: Use FieldValue.delete()
       
       // Add rollback metadata
-      rolledBackAt: serverTimestamp(),
+      rolledBackAt: FieldValue.serverTimestamp(),
       rollbackReason: 'Emergency rollback procedure',
       previousSchemaVersion: '2.0'
     };
@@ -478,18 +488,18 @@ export class RollbackService {
       participants: participants || [],
       
       // Remove new schema fields
-      participantIds: deleteField(),
+      participantIds: FieldValue.delete(), // Fixed: Use FieldValue.delete()
       
       // Remove migration metadata
-      schemaVersion: deleteField(),
-      migratedAt: deleteField(),
-      migrationBatch: deleteField(),
-      migrationAttempt: deleteField(),
-      participants_legacy: deleteField(),
-      compatibilityLayerUsed: deleteField(),
+      schemaVersion: FieldValue.delete(),  // Fixed: Use FieldValue.delete()
+      migratedAt: FieldValue.delete(),     // Fixed: Use FieldValue.delete()
+      migrationBatch: FieldValue.delete(), // Fixed: Use FieldValue.delete()
+      migrationAttempt: FieldValue.delete(), // Fixed: Use FieldValue.delete()
+      participants_legacy: FieldValue.delete(), // Fixed: Use FieldValue.delete()
+      compatibilityLayerUsed: FieldValue.delete(), // Fixed: Use FieldValue.delete()
       
       // Add rollback metadata
-      rolledBackAt: serverTimestamp(),
+      rolledBackAt: FieldValue.serverTimestamp(),
       rollbackReason: 'Emergency rollback procedure',
       previousSchemaVersion: '2.0'
     };
@@ -530,7 +540,8 @@ export class RollbackService {
       
     } catch (error) {
       cleanupResult.status = 'FAILED';
-      cleanupResult.errors.push({ id: 'CLEANUP_ERROR', error: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      cleanupResult.errors.push({ id: 'CLEANUP_ERROR', error: errorMessage });
       console.error('❌ Cleanup operations failed:', error);
     } finally {
       cleanupResult.endTime = new Date();
@@ -586,14 +597,15 @@ export class RollbackService {
     // Save report if not dry run
     if (!this.isDryRun) {
       try {
-        const reportDocRef = doc(db, 'rollback-reports', `emergency-rollback-${Date.now()}`);
-        await setDoc(reportDocRef, {
+        const reportDocRef = this.db.collection('rollback-reports').doc(`emergency-rollback-${Date.now()}`);
+        await reportDocRef.set({
           ...report,
-          createdAt: serverTimestamp()
+          createdAt: FieldValue.serverTimestamp()
         });
         console.log('📁 Rollback report saved to Firestore');
       } catch (error) {
-        console.warn('⚠️  Failed to save rollback report:', error.message);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.warn('⚠️  Failed to save rollback report:', errorMessage);
       }
     }
   }
@@ -664,5 +676,3 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       process.exit(1);
     });
 }
-
-export { RollbackService };

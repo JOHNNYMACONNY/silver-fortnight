@@ -1,10 +1,27 @@
 import '@testing-library/jest-dom';
 import 'jest-extended';
-import { TextEncoder, TextDecoder } from 'util';
 
 // Set up global polyfills before any other imports
+import { TextEncoder } from 'util';
+
+// Set up global TextEncoder for tests
 (global as any).TextEncoder = TextEncoder;
-(global as any).TextDecoder = TextDecoder;
+
+// Custom TextDecoder mock compatible with browser interface
+class MockTextDecoder {
+  decode(input?: ArrayBuffer | ArrayBufferView | null): string {
+    if (!input) return '';
+    if (input instanceof ArrayBuffer) {
+      return new Uint8Array(input).reduce((acc, byte) => acc + String.fromCharCode(byte), '');
+    }
+    if (ArrayBuffer.isView(input)) {
+      return Array.from(input as Uint8Array).reduce((acc, byte) => acc + String.fromCharCode(byte), '');
+    }
+    return '';
+  }
+}
+
+(global as any).TextDecoder = MockTextDecoder;
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {

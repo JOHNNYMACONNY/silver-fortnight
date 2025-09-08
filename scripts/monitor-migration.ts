@@ -19,9 +19,10 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { fileURLToPath } from 'url';
-import { db } from '../src/firebase-config';
+import { initializeFirebase, getSyncFirebaseDb } from '../src/firebase-config';
 import { migrationRegistry } from '../src/services/migration/migrationRegistry';
 import { performanceLogger } from '../src/utils/performance/structuredLogger';
+import { normalizeTradeData } from '../src/services/migration/tradeCompatibility';
 
 /**
  * Enhanced monitoring interfaces for production-grade monitoring
@@ -127,6 +128,7 @@ interface TrendAnalysis {
 export class MigrationMonitor {
   private projectId: string;
   private monitoringHistory: MonitoringResult[] = [];
+  private db: any = null;
   
   constructor(projectId: string = 'tradeya-45ede') {
     this.projectId = projectId;
@@ -138,30 +140,88 @@ export class MigrationMonitor {
   async runMonitoringChecks(): Promise<MonitoringResult> {
     console.log('\n📊 Starting post-migration monitoring checks...');
     
+    // Initialize Firebase if not already initialized
+    await initializeFirebase();
+    this.db = getSyncFirebaseDb();
+    
     const result: MonitoringResult = {
       timestamp: new Date(),
       projectId: this.projectId,
+      environment: 'production',
       checks: [],
       summary: {
         totalChecks: 0,
         successfulChecks: 0,
         warnings: 0,
         errors: 0,
+        criticalIssues: 0,
         averageResponseTime: 0,
-        overallStatus: 'HEALTHY'
+        overallStatus: 'HEALTHY',
+        healthScore: 100,
+        lastUpdate: new Date()
       },
       dataIntegrityResults: {
         tradesIntegrity: 0,
         conversationsIntegrity: 0,
-        schemaComplianceRate: 0
+        schemaComplianceRate: 0,
+        dataConsistencyScore: 0,
+        orphanedRecords: 0,
+        duplicateRecords: 0,
+        corruptedDocuments: 0,
+        migrationCompleteness: 0
       },
-      recommendations: []
+      performanceMetrics: {
+        queryLatencyP95: 0,
+        queryLatencyP99: 0,
+        throughputQPS: 0,
+        errorRate: 0,
+        indexEfficiency: 0,
+        memoryUsage: 0,
+        connectionPoolUtilization: 0,
+        cacheHitRate: 0
+      },
+      alertThresholds: {
+        responseTime: { warning: 1000, critical: 5000 },
+        errorRate: { warning: 0.05, critical: 0.1 },
+        integrityScore: { warning: 95, critical: 90 },
+        throughput: { warning: 10, critical: 5 }
+      },
+      recommendations: [],
+      criticalAlerts: [],
+      trends: {
+        responseTimeTrend: 'stable',
+        errorRateTrend: 'stable',
+        throughputTrend: 'stable',
+        periodComparison: {
+          current: {
+            queryLatencyP95: 0,
+            queryLatencyP99: 0,
+            throughputQPS: 0,
+            errorRate: 0,
+            indexEfficiency: 0,
+            memoryUsage: 0,
+            connectionPoolUtilization: 0,
+            cacheHitRate: 0
+          },
+          previous: {
+            queryLatencyP95: 0,
+            queryLatencyP99: 0,
+            throughputQPS: 0,
+            errorRate: 0,
+            indexEfficiency: 0,
+            memoryUsage: 0,
+            connectionPoolUtilization: 0,
+            cacheHitRate: 0
+          },
+          percentageChange: {}
+        }
+      }
     };
     
     try {
       // Initialize migration registry for monitoring
       if (!migrationRegistry.isInitialized()) {
-        migrationRegistry.initialize(db);
+        migrationRegistry.initialize(this.db);
       }
       
       // 1. Index Performance Tests
@@ -190,10 +250,12 @@ export class MigrationMonitor {
       
     } catch (error) {
       console.error('❌ Monitoring failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       result.checks.push({
         checkName: 'MONITORING_SYSTEM',
+        category: 'infrastructure',
         status: 'ERROR',
-        details: `Monitoring system error: ${error.message}`
+        details: `Monitoring system error: ${errorMessage}`
       });
       result.summary.overallStatus = 'CRITICAL';
     }
@@ -216,7 +278,7 @@ export class MigrationMonitor {
         complexity: 'MEDIUM' as const,
         test: async () => {
           const q = query(
-            collection(db, 'trades'),
+            collection(this.db, 'trades'),
             where('participants.creator', '==', 'test-user'),
             where('status', '==', 'active'),
             orderBy('createdAt', 'desc'),
@@ -230,7 +292,7 @@ export class MigrationMonitor {
         complexity: 'MEDIUM' as const,
         test: async () => {
           const q = query(
-            collection(db, 'trades'),
+            collection(this.db, 'trades'),
             where('participants.participant', '==', 'test-user'),
             where('status', '==', 'active'),
             orderBy('createdAt', 'desc'),
@@ -244,7 +306,7 @@ export class MigrationMonitor {
         complexity: 'HIGH' as const,
         test: async () => {
           const q = query(
-            collection(db, 'trades'),
+            collection(this.db, 'trades'),
             where('skillsOffered', 'array-contains-any', ['React', 'JavaScript']),
             where('status', '==', 'active'),
             limit(10)
@@ -257,7 +319,7 @@ export class MigrationMonitor {
         complexity: 'MEDIUM' as const,
         test: async () => {
           const q = query(
-            collection(db, 'conversations'),
+            collection(this.db, 'conversations'),
             where('participantIds', 'array-contains', 'test-user'),
             orderBy('updatedAt', 'desc'),
             limit(10)
@@ -270,7 +332,7 @@ export class MigrationMonitor {
         complexity: 'LOW' as const,
         test: async () => {
           const q = query(
-            collection(db, 'trades'),
+            collection(this.db, 'trades'),
             where('status', '==', 'active'),
             limit(5)
           );
@@ -299,6 +361,7 @@ export class MigrationMonitor {
         
         result.checks.push({
           checkName: indexTest.name,
+          category: 'performance',
           status,
           details,
           responseTimeMs: responseTime,
@@ -310,7 +373,7 @@ export class MigrationMonitor {
         console.log(`  ${status === 'OK' ? '✅' : status === 'WARNING' ? '⚠️' : '❌'} ${indexTest.name}: ${responseTime}ms`);
         
       } catch (error) {
-        const errorMessage = error.message;
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         let status: 'WARNING' | 'ERROR' = 'ERROR';
         
         if (errorMessage.includes('index')) {
@@ -324,6 +387,7 @@ export class MigrationMonitor {
         
         result.checks.push({
           checkName: indexTest.name,
+          category: 'performance',
           status,
           details: `Query failed: ${errorMessage}`,
           queryComplexity: indexTest.complexity,
@@ -355,6 +419,7 @@ export class MigrationMonitor {
         
         result.checks.push({
           checkName: 'Trade Compatibility Service',
+          category: 'compatibility',
           status: 'OK',
           details: `Retrieved ${trades.length} trades in ${responseTime}ms`,
           responseTimeMs: responseTime,
@@ -364,12 +429,14 @@ export class MigrationMonitor {
         console.log(`  ✅ Trade compatibility service: ${trades.length} trades in ${responseTime}ms`);
         
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         result.checks.push({
           checkName: 'Trade Compatibility Service',
+          category: 'compatibility',
           status: 'ERROR',
-          details: `Trade query failed: ${error.message}`
+          details: `Trade query failed: ${errorMessage}`
         });
-        console.log(`  ❌ Trade compatibility service failed: ${error.message}`);
+        console.log(`  ❌ Trade compatibility service failed: ${errorMessage}`);
       }
       
       // Test chat queries through compatibility layer
@@ -380,6 +447,7 @@ export class MigrationMonitor {
         
         result.checks.push({
           checkName: 'Chat Compatibility Service',
+          category: 'compatibility',
           status: 'OK',
           details: `Retrieved ${conversations.length} conversations in ${responseTime}ms`,
           responseTimeMs: responseTime,
@@ -389,19 +457,23 @@ export class MigrationMonitor {
         console.log(`  ✅ Chat compatibility service: ${conversations.length} conversations`);
         
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         result.checks.push({
           checkName: 'Chat Compatibility Service',
+          category: 'compatibility',
           status: 'ERROR',
-          details: `Chat query failed: ${error.message}`
+          details: `Chat query failed: ${errorMessage}`
         });
-        console.log(`  ❌ Chat compatibility service failed: ${error.message}`);
+        console.log(`  ❌ Chat compatibility service failed: ${errorMessage}`);
       }
       
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       result.checks.push({
         checkName: 'Query Functionality Test',
+        category: 'compatibility',
         status: 'ERROR',
-        details: `Functionality test failed: ${error.message}`
+        details: `Functionality test failed: ${errorMessage}`
       });
     }
   }
@@ -419,6 +491,7 @@ export class MigrationMonitor {
       
       result.checks.push({
         checkName: 'Trades Data Integrity',
+        category: 'integrity',
         status: tradesIntegrity > 95 ? 'OK' : tradesIntegrity > 90 ? 'WARNING' : 'ERROR',
         details: `${tradesIntegrity}% of trades have valid data structure`
       });
@@ -429,6 +502,7 @@ export class MigrationMonitor {
       
       result.checks.push({
         checkName: 'Conversations Data Integrity',
+        category: 'integrity',
         status: conversationsIntegrity > 95 ? 'OK' : conversationsIntegrity > 90 ? 'WARNING' : 'ERROR',
         details: `${conversationsIntegrity}% of conversations have valid data structure`
       });
@@ -437,10 +511,12 @@ export class MigrationMonitor {
       console.log(`  📊 Conversations integrity: ${conversationsIntegrity}%`);
       
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       result.checks.push({
         checkName: 'Data Integrity Validation',
+        category: 'integrity',
         status: 'ERROR',
-        details: `Data integrity check failed: ${error.message}`
+        details: `Data integrity check failed: ${errorMessage}`
       });
     }
   }
@@ -454,13 +530,13 @@ export class MigrationMonitor {
     try {
       // Check for migrated documents
       const migratedTradesQuery = query(
-        collection(db, 'trades'),
+        collection(this.db, 'trades'),
         where('schemaVersion', '==', '2.0'),
         limit(100)
       );
       
       const totalTradesQuery = query(
-        collection(db, 'trades'),
+        collection(this.db, 'trades'),
         limit(100)
       );
       
@@ -477,6 +553,7 @@ export class MigrationMonitor {
       
       result.checks.push({
         checkName: 'Schema Compliance',
+        category: 'integrity',
         status: complianceRate > 95 ? 'OK' : complianceRate > 80 ? 'WARNING' : 'ERROR',
         details: `${complianceRate}% of documents use new schema (${migratedTrades.size}/${totalTrades.size} checked)`
       });
@@ -484,10 +561,12 @@ export class MigrationMonitor {
       console.log(`  📋 Schema compliance: ${complianceRate}%`);
       
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       result.checks.push({
         checkName: 'Schema Compliance Check',
+        category: 'integrity',
         status: 'ERROR',
-        details: `Schema compliance check failed: ${error.message}`
+        details: `Schema compliance check failed: ${errorMessage}`
       });
     }
   }
@@ -517,7 +596,7 @@ export class MigrationMonitor {
       
       // Test normalization 100 times
       for (let i = 0; i < 100; i++) {
-        migrationRegistry.trades.constructor.normalizeTradeData(sampleTradeData);
+        normalizeTradeData(sampleTradeData);
       }
       
       const normalizationTime = Date.now() - startTime;
@@ -525,6 +604,7 @@ export class MigrationMonitor {
       
       result.checks.push({
         checkName: 'Data Normalization Performance',
+        category: 'performance',
         status: avgNormalizationTime < 5 ? 'OK' : avgNormalizationTime < 10 ? 'WARNING' : 'ERROR',
         details: `Average normalization time: ${avgNormalizationTime.toFixed(2)}ms per document`,
         responseTimeMs: avgNormalizationTime
@@ -533,10 +613,12 @@ export class MigrationMonitor {
       console.log(`  ⚡ Normalization performance: ${avgNormalizationTime.toFixed(2)}ms per document`);
       
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       result.checks.push({
         checkName: 'Compatibility Layer Performance',
+        category: 'performance',
         status: 'ERROR',
-        details: `Performance test failed: ${error.message}`
+        details: `Performance test failed: ${errorMessage}`
       });
     }
   }
@@ -546,7 +628,7 @@ export class MigrationMonitor {
    */
   private async checkTradesIntegrity(): Promise<number> {
     try {
-      const q = query(collection(db, 'trades'), limit(50));
+      const q = query(collection(this.db, 'trades'), limit(50));
       const snapshot = await getDocs(q);
       
       if (snapshot.empty) return 100; // No data to validate
@@ -554,7 +636,7 @@ export class MigrationMonitor {
       let validCount = 0;
       
       snapshot.docs.forEach(doc => {
-        const data = doc.data();
+        const data = doc.data() as any;
         
         // Check for required fields in new schema
         const hasNewSchemaFields = 
@@ -580,7 +662,7 @@ export class MigrationMonitor {
    */
   private async checkConversationsIntegrity(): Promise<number> {
     try {
-      const q = query(collection(db, 'conversations'), limit(50));
+      const q = query(collection(this.db, 'conversations'), limit(50));
       const snapshot = await getDocs(q);
       
       if (snapshot.empty) return 100; // No data to validate
@@ -588,7 +670,7 @@ export class MigrationMonitor {
       let validCount = 0;
       
       snapshot.docs.forEach(doc => {
-        const data = doc.data();
+        const data = doc.data() as any;
         
         // Check for required fields in new schema
         const hasNewSchemaFields = 
@@ -683,14 +765,15 @@ export class MigrationMonitor {
    */
   private async saveMonitoringResult(result: MonitoringResult): Promise<void> {
     try {
-      const docRef = doc(db, 'monitoring-results', `migration-monitor-${Date.now()}`);
+      const docRef = doc(this.db, 'monitoring-results', `migration-monitor-${Date.now()}`);
       await setDoc(docRef, {
         ...result,
         createdAt: serverTimestamp()
       });
       console.log('📁 Monitoring result saved to Firestore');
     } catch (error) {
-      console.warn('⚠️  Failed to save monitoring result:', error.message);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.warn('⚠️  Failed to save monitoring result:', errorMessage);
     }
   }
 
@@ -763,5 +846,3 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       process.exit(1);
     });
 }
-
-export { MigrationMonitor };

@@ -668,4 +668,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(console.error);
 }
 
-export { DocumentationMaintainer, DocumentMetadata, ArchivalAnalysis };
+export type { DocumentMetadata, ArchivalAnalysis };
+export { DocumentationMaintainer };

@@ -1,3 +1,59 @@
+export interface PhasedDeploymentConfig {
+  phase1: {
+    percentage: number;
+    duration: number;
+    criteria: string[];
+  };
+  phase2: {
+    percentage: number;
+    duration: number;
+    criteria: string[];
+  };
+  phase3: {
+    percentage: number;
+    duration: number;
+    criteria: string[];
+  };
+  automaticPromotion: boolean;
+  manualApprovalRequired: boolean;
+}
+
+export interface RollbackTrigger {
+  name: string;
+  condition: string;
+  threshold: number;
+  automatic: boolean;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+}
+
+export interface DataValidationConfig {
+  preDeployment: string[];
+  postDeployment: string[];
+  continuousValidation: string[];
+  sampleSize: number;
+  validationTimeout: number;
+}
+
+export interface CompatibilityLayerConfig {
+  enabled: boolean;
+  fallbackStrategy: string;
+  gracePeriod: number;
+  monitoring: boolean;
+}
+
+export interface EmergencyProcedure {
+  name: string;
+  trigger: string;
+  steps: string[];
+  contacts: string[];
+  escalationTime: number;
+}
+
+/**
+ * TradeYa Production Migration Configuration
+ * Generated: 2025-06-12T15:17:02.044Z
+ * Environment: production
+ */
 /**
  * TradeYa Production Migration Configuration
  * Generated: 2025-06-12T15:17:02.044Z
