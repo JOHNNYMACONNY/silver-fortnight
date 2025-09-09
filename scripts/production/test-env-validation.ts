@@ -59,7 +59,7 @@ async function testEnvironmentValidation() {
             console.log(`      🔒 Security features: ${securityFeatures}`);
           }
         } catch (error) {
-          console.log(`      ❌ JSON parsing failed: ${error.message}`);
+          console.log(`      ❌ JSON parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }
     });
@@ -99,8 +99,8 @@ async function testEnvironmentValidation() {
     process.exit(overallSuccess ? 0 : 1);
 
   } catch (error) {
-    console.error('\n💥 Test failed with error:', error.message);
-    console.error('Stack:', error.stack);
+    console.error('\n💥 Test failed with error:', error instanceof Error ? error.message : 'Unknown error');
+    console.error('Stack:', error instanceof Error ? error.stack : 'No stack trace available');
     process.exit(1);
   }
 }

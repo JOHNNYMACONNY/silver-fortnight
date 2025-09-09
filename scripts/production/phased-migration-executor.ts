@@ -309,8 +309,8 @@ export class PhasedMigrationExecutor {
     } catch (error) {
       performanceLogger.error('monitoring', 'Phased migration failed', {
         migrationId: this.migrationPlan.migrationId,
-        error: error.message
-      }, error);
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }, error instanceof Error ? error : new Error('Unknown error'));
 
       this.status.overallStatus = 'FAILED';
       await this.addAlert({
@@ -318,7 +318,7 @@ export class PhasedMigrationExecutor {
         timestamp: new Date(),
         severity: 'CRITICAL',
         category: 'system',
-        message: `Migration failed: ${error.message}`,
+        message: `Migration failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         acknowledged: false
       });
 
@@ -387,11 +387,11 @@ export class PhasedMigrationExecutor {
 
       performanceLogger.error('monitoring', `Phase ${phase.phaseNumber} failed`, {
         phaseName: phase.name,
-        error: error.message
-      }, error);
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }, error instanceof Error ? error : new Error('Unknown error'));
 
       // Check if automatic rollback should be triggered
-      const shouldRollback = await this.shouldTriggerRollback(phase, error.message);
+      const shouldRollback = await this.shouldTriggerRollback(phase, error instanceof Error ? error.message : 'Unknown error');
       
       if (shouldRollback) {
         await this.executePhaseRollback(phase);
@@ -466,7 +466,7 @@ export class PhasedMigrationExecutor {
       } catch (error) {
         performanceLogger.error('monitoring', 'Phase monitoring error', {
           phase: phase.phaseNumber,
-          error: error.message
+          error: error instanceof Error ? error.message : 'Unknown error'
         });
       }
     }, phase.monitoringInterval);
@@ -612,12 +612,12 @@ export class PhasedMigrationExecutor {
 
     } catch (error) {
       rollbackEvent.success = false;
-      rollbackEvent.reason = `Rollback failed: ${error.message}`;
+      rollbackEvent.reason = `Rollback failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
       this.status.rollbackHistory.push(rollbackEvent);
       
       performanceLogger.error('monitoring', `Rollback failed for phase ${phase.phaseNumber}`, {
-        error: error.message
-      }, error);
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }, error instanceof Error ? error : new Error('Unknown error'));
     }
   }
 
@@ -647,7 +647,7 @@ export class PhasedMigrationExecutor {
       
     } catch (error) {
       performanceLogger.error('monitoring', 'Failed to update health metrics', {
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   }
@@ -780,7 +780,7 @@ export class PhasedMigrationExecutor {
       writeFileSync(this.statusPath, JSON.stringify(this.status, null, 2));
     } catch (error) {
       performanceLogger.error('monitoring', 'Failed to save migration status', {
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   }
@@ -972,7 +972,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     try {
       migrationPlan = JSON.parse(readFileSync(configPath, 'utf-8'));
     } catch (error) {
-      console.error(`❌ Error: Failed to load config from ${configPath}: ${error.message}`);
+      console.error(`❌ Error: Failed to load config from ${configPath}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       process.exit(1);
     }
   } else {

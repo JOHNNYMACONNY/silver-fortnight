@@ -10,7 +10,7 @@
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { collection, query, where, limit, getDocs, doc, setDoc, serverTimestamp, orderBy } from 'firebase/firestore';
-import { db } from '../../src/firebase-config';
+import { getSyncFirebaseDb } from '../../src/firebase-config';
 import { performanceLogger } from '../../src/utils/performance/structuredLogger';
 import { EnhancedMigrationMonitor } from '../enhanced-migration-monitor';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
@@ -256,9 +256,11 @@ export class ProductionMonitoringService {
       performanceLogger.info('monitoring', 'Production monitoring started successfully');
 
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
       performanceLogger.error('monitoring', 'Failed to start production monitoring', {
-        error: error.message
-      }, error);
+        error: errorMessage
+      }, error instanceof Error ? error : undefined);
       throw error;
     }
   }
@@ -318,17 +320,19 @@ export class ProductionMonitoringService {
       });
 
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
       performanceLogger.error('monitoring', 'Monitoring cycle failed', {
-        error: error.message
-      }, error);
+        error: errorMessage
+      }, error instanceof Error ? error : undefined);
 
       await this.sendAlert({
         id: `monitoring-cycle-error-${Date.now()}`,
         timestamp: new Date(),
         level: 'error',
         source: 'monitoring-system',
-        message: `Monitoring cycle failed: ${error.message}`,
-        details: { error: error.message, stack: error.stack },
+        message: `Monitoring cycle failed: ${errorMessage}`,
+        details: { error: errorMessage, stack: errorStack },
         acknowledged: false,
         escalationLevel: 0
       });
@@ -421,7 +425,7 @@ export class ProductionMonitoringService {
     try {
       // Test database response time
       const startTime = Date.now();
-      await getDocs(query(collection(db, 'trades'), limit(1)));
+      await getDocs(query(collection(getSyncFirebaseDb(), 'trades'), limit(1)));
       const queryLatency = Date.now() - startTime;
 
       return {
@@ -439,8 +443,9 @@ export class ProductionMonitoringService {
         documentCount: 10000 // This would be actual count
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       performanceLogger.error('monitoring', 'Failed to collect database metrics', {
-        error: error.message
+        error: errorMessage
       });
       
       // Return degraded metrics
@@ -465,7 +470,7 @@ export class ProductionMonitoringService {
     try {
       // Check for active migration
       const migrationQuery = query(
-        collection(db, 'phased-migration-status'),
+        collection(getSyncFirebaseDb(), 'phased-migration-status'),
         where('overallStatus', 'in', ['RUNNING', 'PAUSED']),
         orderBy('startTime', 'desc'),
         limit(1)
@@ -474,7 +479,14 @@ export class ProductionMonitoringService {
       const migrationSnapshot = await getDocs(migrationQuery);
       
       if (!migrationSnapshot.empty) {
-        const migrationData = migrationSnapshot.docs[0].data();
+        const migrationData = migrationSnapshot.docs[0].data() as {
+          currentPhase?: number;
+          overallProgress?: number;
+          documentsProcessed?: number;
+          successRate?: number;
+          rollbackHistory?: any[];
+          estimatedCompletion?: any;
+        };
         
         return {
           phase: migrationData.currentPhase || 0,
@@ -486,8 +498,9 @@ export class ProductionMonitoringService {
         };
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       performanceLogger.warn('monitoring', 'Could not collect migration metrics', {
-        error: error.message
+        error: errorMessage
       });
     }
 
@@ -665,9 +678,10 @@ export class ProductionMonitoringService {
       try {
         await this.sendNotification(channel, alert);
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         performanceLogger.error('monitoring', `Failed to send notification via ${channel.type}`, {
           channel: channel.name,
-          error: error.message
+          error: errorMessage
         });
       }
     }
@@ -777,7 +791,7 @@ export class ProductionMonitoringService {
 
     } catch (error) {
       performanceLogger.error('monitoring', `Health check failed: ${healthCheck.name}`, {
-        error: error.message,
+        error: error instanceof Error ? error.message : 'Unknown error',
         type: healthCheck.type
       });
 
@@ -790,7 +804,7 @@ export class ProductionMonitoringService {
           message: `Health check failed: ${healthCheck.name}`,
           details: {
             healthCheck: healthCheck.name,
-            error: error.message,
+            error: error instanceof Error ? error.message : 'Unknown error',
             type: healthCheck.type
           },
           acknowledged: false,
@@ -802,7 +816,7 @@ export class ProductionMonitoringService {
 
   private async checkDatabase(): Promise<boolean> {
     try {
-      await getDocs(query(collection(db, 'health-check'), limit(1)));
+      await getDocs(query(collection(getSyncFirebaseDb(), 'health-check'), limit(1)));
       return true;
     } catch (error) {
       return false;
@@ -867,8 +881,9 @@ export class ProductionMonitoringService {
     try {
       writeFileSync(this.dashboardPath, JSON.stringify(data, null, 2));
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       performanceLogger.error('monitoring', 'Failed to save dashboard data', {
-        error: error.message
+        error: errorMessage
       });
     }
   }
@@ -1055,7 +1070,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     try {
       config = JSON.parse(readFileSync(configPath, 'utf-8'));
     } catch (error) {
-      console.error(`❌ Error: Failed to load config from ${configPath}: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`❌ Error: Failed to load config from ${configPath}: ${errorMessage}`);
       process.exit(1);
     }
   } else {

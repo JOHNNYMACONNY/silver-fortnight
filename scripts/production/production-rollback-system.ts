@@ -10,7 +10,7 @@
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { collection, query, where, limit, getDocs, writeBatch, doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../src/firebase-config';
+import { getSyncFirebaseDb } from '../../src/firebase-config';
 import { performanceLogger } from '../../src/utils/performance/structuredLogger';
 import { ProductionMonitoringService } from './production-monitoring';
 import { PRODUCTION_CONFIG } from './production-deployment-config';
@@ -502,10 +502,10 @@ export class ProductionRollbackSystem {
         } catch (error) {
           stepResult.status = 'FAILED';
           stepResult.endTime = new Date();
-          stepResult.error = error.message;
+          stepResult.error = error instanceof Error ? error.message : 'Unknown error';
           execution.metrics.errorCount++;
           
-          console.error(`❌ Step ${step.step} failed: ${error.message}`);
+          console.error(`❌ Step ${step.step} failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
           
           if (step.emergencyStop) {
             execution.status = 'FAILED';
@@ -542,12 +542,12 @@ export class ProductionRollbackSystem {
       execution.metrics.timeElapsed = execution.endTime.getTime() - execution.startTime.getTime();
       
       console.error('\n💥 ROLLBACK FAILED');
-      console.error(`Error: ${error.message}`);
+      console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       
       performanceLogger.error('monitoring', 'Emergency rollback failed', {
         executionId: execution.id,
-        error: error.message
-      }, error);
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }, error instanceof Error ? error : new Error('Unknown error'));
     }
 
     await this.saveExecutionStatus(execution);
@@ -656,7 +656,7 @@ export class ProductionRollbackSystem {
   // Validation implementations
   private async validateDatabaseConnectivity(): Promise<boolean> {
     try {
-      const testQuery = query(collection(db, 'health-check'), limit(1));
+      const testQuery = query(collection(getSyncFirebaseDb(), 'health-check'), limit(1));
       await getDocs(testQuery);
       return true;
     } catch (error) {

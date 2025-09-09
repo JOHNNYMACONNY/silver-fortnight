@@ -126,3 +126,6 @@ pentest-report.pdf
 audit-report.json
 
 *storybook.log
+
+# Local Netlify folder
+.netlify

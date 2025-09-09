@@ -294,26 +294,26 @@ export class ProductionDeploymentExecutor {
       this.execution.metrics.errorCount++;
 
       this.log('ERROR', this.execution.currentPhase, 'Production deployment failed', {
-        error: error.message,
-        stack: error.stack
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace available'
       });
 
       console.error('\n💥 PRODUCTION DEPLOYMENT FAILED');
-      console.error(`Error: ${error.message}`);
+      console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
 
       // Trigger rollback if systems are available
       if (this.rollbackSystem && this.execution.phases.some(p => p.name === 'Phased Migration Execution' && p.status === 'COMPLETED')) {
         console.log('\n🔄 Triggering emergency rollback...');
         try {
           const rollback = await this.rollbackSystem.executeEmergencyRollback(
-            `Deployment failure: ${error.message}`,
+            `Deployment failure: ${error instanceof Error ? error.message : 'Unknown error'}`,
             'deployment-executor'
           );
           this.execution.rollbackExecution = rollback.id;
           this.execution.status = 'ROLLED_BACK';
           this.execution.metrics.rollbacksTriggered++;
         } catch (rollbackError) {
-          console.error('💥 Rollback failed:', rollbackError.message);
+          console.error('💥 Rollback failed:', rollbackError instanceof Error ? rollbackError.message : 'Unknown error');
         }
       }
     } finally {
@@ -354,10 +354,10 @@ export class ProductionDeploymentExecutor {
     } catch (error) {
       phase.status = 'FAILED';
       phase.endTime = new Date();
-      phase.error = error.message;
+      phase.error = error instanceof Error ? error.message : 'Unknown error';
 
-      this.log('ERROR', phaseName, `Phase failed`, { error: error.message });
-      console.error(`❌ ${phaseName} failed: ${error.message}`);
+      this.log('ERROR', phaseName, `Phase failed`, { error: error instanceof Error ? error.message : 'Unknown error' });
+      console.error(`❌ ${phaseName} failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
 
       throw error;
     }
@@ -456,7 +456,7 @@ export class ProductionDeploymentExecutor {
 
       this.log('INFO', 'CLEANUP', 'Cleanup completed');
     } catch (error) {
-      this.log('ERROR', 'CLEANUP', 'Cleanup failed', { error: error.message });
+      this.log('ERROR', 'CLEANUP', 'Cleanup failed', { error: error instanceof Error ? error.message : 'Unknown error' });
     }
   }
 
@@ -471,11 +471,23 @@ export class ProductionDeploymentExecutor {
 
     this.execution.logs.push(logEntry);
     
-    performanceLogger[level.toLowerCase()](
-      'deployment',
-      `[${phase}] ${message}`,
-      details
-    );
+    const logMethod = level.toLowerCase();
+    switch (logMethod) {
+      case 'info':
+        performanceLogger.info('monitoring', `[${phase}] ${message}`, details);
+        break;
+      case 'warn':
+        performanceLogger.warn('monitoring', `[${phase}] ${message}`, details);
+        break;
+      case 'error':
+        performanceLogger.error('monitoring', `[${phase}] ${message}`, undefined, details);
+        break;
+      case 'debug':
+        performanceLogger.debug('monitoring', `[${phase}] ${message}`, details);
+        break;
+      default:
+        performanceLogger.info('monitoring', `[${phase}] ${message}`, details);
+    }
   }
 
   private async saveDeploymentStatus(): Promise<void> {
@@ -483,7 +495,7 @@ export class ProductionDeploymentExecutor {
       writeFileSync(this.deploymentPath, JSON.stringify(this.execution, null, 2));
       console.log(`📁 Deployment status saved: ${this.deploymentPath}`);
     } catch (error) {
-      console.error('Failed to save deployment status:', error.message);
+      console.error('Failed to save deployment status:', error instanceof Error ? error.message : 'Unknown error');
     }
   }
 

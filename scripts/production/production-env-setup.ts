@@ -540,15 +540,15 @@ export class ProductionEnvironmentSetup {
 
     } catch (error) {
       performanceLogger.error('monitoring', 'Production environment setup failed', {
-        error: error.message
-      }, error);
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }, error instanceof Error ? error : new Error('Unknown error'));
 
       return {
         success: false,
         configPath: this.configPath,
         validationResults,
         recommendations: [
-          `Critical setup failure: ${error.message}`,
+          `Critical setup failure: ${error instanceof Error ? error.message : 'Unknown error'}`,
           'Review environment configuration and try again'
         ]
       };
@@ -634,7 +634,7 @@ export class ProductionEnvironmentSetup {
       return {
         name: 'Firebase Configuration',
         passed: false,
-        details: `Firebase validation failed: ${error.message}`,
+        details: `Firebase validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         recommendations: [
           'Check Firebase credentials and project access',
           'Verify network connectivity to Firebase'
@@ -670,7 +670,7 @@ export class ProductionEnvironmentSetup {
     } catch (error) {
       return {
         success: false,
-        message: `Failed to validate Firestore indexes: ${error.message}`
+        message: `Failed to validate Firestore indexes: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }
