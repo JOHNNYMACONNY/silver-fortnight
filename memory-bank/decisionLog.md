@@ -173,3 +173,5 @@ This file records architectural and implementation decisions using a list format
 - No breaking changes to existing functionality
 
 [2025-09-07 05:04:06] - Conditional husky installation implemented for Vercel deployment compatibility
+
+[2025-09-09 02:51:59] - Tightened Firestore rules: modified [`firestore.rules`](firestore.rules:1) to restrict /users reads to owner/admin/public and validate payloads on create/update; fixed operator-precedence bug for /trades update/delete; restricted /conversations reads to participants.
