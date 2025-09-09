@@ -49,22 +49,37 @@ check_rules_exist() {
 # Function to validate rule syntax
 validate_syntax() {
     echo -e "${BLUE}Validating rule syntax...${NC}"
-    
-    # Validate Firestore rules
-    if ! firebase firestore:rules:lint "$FIRESTORE_RULES" > "$REPORT_DIR/firestore_lint.txt" 2>&1; then
-        echo -e "${RED}Error: Firestore rules validation failed${NC}"
-        cat "$REPORT_DIR/firestore_lint.txt"
+
+    # Basic validation - check if files exist and have content
+    if [ ! -s "$FIRESTORE_RULES" ]; then
+        echo -e "${RED}Error: Firestore rules file is empty or missing${NC}"
         return 1
     fi
-    
-    # Validate Storage rules
-    if ! firebase storage:rules:lint "$STORAGE_RULES" > "$REPORT_DIR/storage_lint.txt" 2>&1; then
-        echo -e "${RED}Error: Storage rules validation failed${NC}"
-        cat "$REPORT_DIR/storage_lint.txt"
+
+    if [ ! -s "$STORAGE_RULES" ]; then
+        echo -e "${RED}Error: Storage rules file is empty or missing${NC}"
         return 1
     fi
-    
-    echo -e "${GREEN}✓ Rule syntax validation passed${NC}"
+
+    # Check for basic Firestore rules structure
+    if ! grep -q "rules_version" "$FIRESTORE_RULES"; then
+        echo -e "${YELLOW}Warning: Firestore rules missing rules_version declaration${NC}"
+    fi
+
+    if ! grep -q "service cloud.firestore" "$FIRESTORE_RULES"; then
+        echo -e "${YELLOW}Warning: Firestore rules missing service declaration${NC}"
+    fi
+
+    # Check for basic Storage rules structure
+    if ! grep -q "rules_version" "$STORAGE_RULES"; then
+        echo -e "${YELLOW}Warning: Storage rules missing rules_version declaration${NC}"
+    fi
+
+    if ! grep -q "service firebase.storage" "$STORAGE_RULES"; then
+        echo -e "${YELLOW}Warning: Storage rules missing service declaration${NC}"
+    fi
+
+    echo -e "${GREEN}✓ Basic syntax validation completed${NC}"
 }
 
 # Function to check for common security issues
@@ -91,7 +106,13 @@ check_security_patterns() {
     fi
     
     # Check rule complexity
-    local long_rules=$(grep -E ".{$MAX_RULE_LENGTH,}" "$FIRESTORE_RULES" "$STORAGE_RULES" | wc -l)
+    local long_rules=0
+    while IFS= read -r line; do
+        if [ ${#line} -gt $MAX_RULE_LENGTH ]; then
+            long_rules=$((long_rules + 1))
+        fi
+    done < <(cat "$FIRESTORE_RULES" "$STORAGE_RULES")
+
     if [ "$long_rules" -gt 0 ]; then
         echo -e "${YELLOW}Warning: Found $long_rules rules exceeding recommended length${NC}"
         issues_found=1

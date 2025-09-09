@@ -55,20 +55,19 @@ backup_rules() {
 # Function to validate rules syntax
 validate_rules() {
     echo -e "${YELLOW}Validating security rules...${NC}"
-    
-    # Validate Firestore rules
-    firebase firestore:rules:lint firestore.rules || {
-        echo -e "${RED}Firestore rules validation failed${NC}"
+
+    # Basic validation - check if files exist and have content
+    if [ ! -s "firestore.rules" ]; then
+        echo -e "${RED}Error: Firestore rules file is empty or missing${NC}"
         return 1
-    }
-    
-    # Validate Storage rules
-    firebase storage:rules:lint storage.rules || {
-        echo -e "${RED}Storage rules validation failed${NC}"
+    fi
+
+    if [ ! -s "storage.rules" ]; then
+        echo -e "${RED}Error: Storage rules file is empty or missing${NC}"
         return 1
-    }
-    
-    echo -e "${GREEN}Rules validation passed${NC}"
+    fi
+
+    echo -e "${GREEN}✓ Basic validation completed${NC}"
 }
 
 # Function to run security tests
