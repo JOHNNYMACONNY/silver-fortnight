@@ -68,7 +68,8 @@ service firebase.storage {
 
     // Public assets
     match /public/{fileName} {
-      allow read: if true;
+  // Allow reads for authenticated users or when the object is explicitly marked public
+  allow read: if isAuthenticated() || (resource.metadata != null && resource.metadata.public == 'true');
       allow write: if isAdmin() &&
         isValidContentType(request.resource.contentType) &&
         isValidFileSize(request.resource.size, 10 * 1024 * 1024); // 10MB limit
