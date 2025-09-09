@@ -1,6 +1,9 @@
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+import * as functions from 'firebase-functions';
 import { activateScheduledChallenges, completeExpiredChallenges, scheduleRecurringChallenges } from './challengesScheduler';
 import * as admin from 'firebase-admin';
+
+// Use the scheduler from firebase-functions
+const { onSchedule } = functions.scheduler;
 
 // Initialize Firebase Admin
 admin.initializeApp();
@@ -47,7 +50,7 @@ const createNotification = async (data: NotificationData): Promise<void> => {
 };
 
 // Cloud Function to check for pending confirmations and send reminders
-export const checkPendingConfirmations = onSchedule('every 24 hours', async (event) => {
+export const checkPendingConfirmations = onSchedule('every 24 hours', async (event: any) => {
     console.log('Starting pending confirmations check...');
     
     try {
@@ -148,7 +151,7 @@ export const checkPendingConfirmations = onSchedule('every 24 hours', async (eve
   });
 
 // Cloud Function to auto-complete pending trades
-export const autoCompletePendingTrades = onSchedule('every 24 hours', async (event) => {
+export const autoCompletePendingTrades = onSchedule('every 24 hours', async (event: any) => {
     console.log('Starting auto-completion check...');
 
     try {
