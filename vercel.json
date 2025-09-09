@@ -26,7 +26,7 @@
       ]
     }
   ],
-  "buildCommand": "npm run build:force",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
   "github": {
