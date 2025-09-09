@@ -55,7 +55,7 @@
     "security:check": "./scripts/check-security-rules.sh",
     "security:audit": "npm audit --production && npm run security:validate",
     "security:report": "./scripts/validate-security.sh --report-only",
-    "prepare": "npm run security:init && (node -e \"if (process.env.CI || process.env.VERCEL || process.env.VERCEL_ENV || process.env.NETLIFY || process.env.GITHUB_ACTIONS || process.env.GITLAB_CI || process.env.BUILDKITE || process.env.CIRCLECI) { console.log('Skipping husky install - CI/CD environment detected'); process.exit(0); } else { console.log('Development environment detected - setting up husky'); process.exit(1); }\") || husky install",
+  "prepare": "npm run security:init && (git rev-parse --git-dir > /dev/null 2>&1 && command -v husky > /dev/null 2>&1 && husky install || echo 'Skipping husky install - not in a git repo or husky missing')",
     "precommit": "lint-staged && npm run security:check",
     "firebase:emulators": "firebase emulators:start --only firestore,storage",
     "firebase:deploy:rules": "npm run security:validate && npm run security:deploy",
