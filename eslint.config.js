@@ -86,8 +86,13 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/utils/__tests__/**/*.js', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
+    // Tests and __tests__ directories should not use the project's tsconfig for
+    // typed linting to avoid "file not included in project" parsing errors.
+    files: ['src/**/__tests__/**/*.{ts,tsx,js}', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
     languageOptions: {
+      parserOptions: {
+        project: false,
+      },
       globals: {
         ...globals.jest,
       },

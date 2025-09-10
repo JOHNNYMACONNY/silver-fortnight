@@ -22,7 +22,7 @@ import {
 import { ServiceResponse } from '../types/services';
 import { awardXP } from './gamification';
 
-const db = getSyncFirebaseDb;
+const db = getSyncFirebaseDb();
 
 // Tier unlock requirements
 const TIER_REQUIREMENTS: Record<string, TierRequirement> = {
@@ -45,7 +45,7 @@ const TIER_REQUIREMENTS: Record<string, TierRequirement> = {
  */
 export const getUserThreeTierProgress = async (userId: string): Promise<ServiceResponse<ThreeTierProgress>> => {
   try {
-    const progressRef = doc(db(), 'threeTierProgress', userId);
+    const progressRef = doc(db, 'threeTierProgress', userId);
     const progressDoc = await getDoc(progressRef);
 
     if (!progressDoc.exists()) {
@@ -83,9 +83,9 @@ export const updateProgressionOnChallengeCompletion = async (
   skillsImproved: string[] = []
 ): Promise<ServiceResponse<ThreeTierProgress>> => {
   try {
-    const progressRef = doc(db(), 'threeTierProgress', userId);
+    const progressRef = doc(db, 'threeTierProgress', userId);
     
-    return await runTransaction(db(), async (transaction) => {
+    return await runTransaction(db, async (transaction) => {
       const progressDoc = await transaction.get(progressRef);
       let progress: ThreeTierProgress;
 

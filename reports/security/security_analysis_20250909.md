@@ -1,5 +1,5 @@
 # Firebase Security Rules Analysis Report
-Generated: 2025-09-09 02:53:32
+Generated: 2025-09-09 16:58:28
 
 ## Rule Files
 - Firestore Rules:      393 lines
@@ -8,9 +8,12 @@ Generated: 2025-09-09 02:53:32
 ## Validation Results
 ### Firestore Rules
 ```
-No lint output produced in this run.
+
+Authentication checks: 57
+Data validation checks: 43
+Custom validation functions: 5
 ```
 ### Storage Rules
 ```
-No lint output produced in this run.
+
 ```

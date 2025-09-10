@@ -18,7 +18,7 @@ import { SkillLevel, UserSkill } from '../types/gamification';
 import { awardXP } from './gamification';
 import { XPSource } from '../types/gamification';
 
-const db = getSyncFirebaseDb;
+const db = getSyncFirebaseDb();
 
 // Skill Assessment Types
 export interface SkillAssessment {
@@ -120,7 +120,7 @@ export const createSkillAssessment = async (
     };
 
     // Save assessment
-    const assessmentRef = doc(db(), 'skillAssessments', assessmentId);
+    const assessmentRef = doc(db, 'skillAssessments', assessmentId);
     await setDoc(assessmentRef, fullAssessment);
 
     // Update user skill record
@@ -158,7 +158,7 @@ export const getUserSkillAssessments = async (
   skillName?: string
 ): Promise<ServiceResponse<SkillAssessment[]>> => {
   try {
-    const assessmentsRef = collection(db(), 'skillAssessments');
+    const assessmentsRef = collection(db, 'skillAssessments');
     let q = query(
       assessmentsRef,
       where('userId', '==', userId),
@@ -195,7 +195,7 @@ const updateUserSkill = async (
 ): Promise<void> => {
   try {
     const skillId = `${userId}_${skillName.toLowerCase().replace(/\s+/g, '_')}`;
-    const skillRef = doc(db(), 'userSkills', skillId);
+    const skillRef = doc(db, 'userSkills', skillId);
     
     const skillDoc = await getDoc(skillRef);
     const currentXP = SKILL_LEVEL_REQUIREMENTS[level].xp;
@@ -261,7 +261,7 @@ export const getSkillProgressAnalytics = async (
     
     // Get user's actual XP for this skill
     const skillId = `${userId}_${skillName.toLowerCase().replace(/\s+/g, '_')}`;
-    const skillRef = doc(db(), 'userSkills', skillId);
+    const skillRef = doc(db, 'userSkills', skillId);
     const skillDoc = await getDoc(skillRef);
     const userXP = skillDoc.exists() ? (skillDoc.data() as UserSkill).xp : 0;
 

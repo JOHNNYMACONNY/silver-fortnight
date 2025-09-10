@@ -217,7 +217,7 @@ export class CollaborationService extends BaseService<Collaboration> {
    */
   async searchCollaborations(filters: CollaborationFilters, limit: number = 20): Promise<ServiceResult<Collaboration[]>> {
     try {
-      let constraints: QueryConstraint[] = [
+      const constraints: QueryConstraint[] = [
         orderBy('createdAt', 'desc'),
         limitQuery(limit)
       ];

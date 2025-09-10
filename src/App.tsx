@@ -69,7 +69,7 @@ import SimpleTailwindTest from './components/SimpleTailwindTest';
 import ComprehensiveThemeTest from './components/ComprehensiveThemeTest';
 
 // Import pages that we've created
-import ProfilePage from './pages/ProfilePage';
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 import { TradesPage } from './pages/TradesPage';
 import { TradeDetailPage } from './pages/TradeDetailPage';
 import PortfolioPage from './pages/PortfolioPage';

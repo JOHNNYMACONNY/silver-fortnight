@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock Firebase Auth
-const mockAuth = {
+const mockAuth: any = {
   currentUser: null,
   signInWithEmailAndPassword: jest.fn(),
   createUserWithEmailAndPassword: jest.fn(),
@@ -47,9 +47,10 @@ jest.mock('framer-motion', () => {
 import { AuthProvider, useAuth } from '../../AuthContext';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 
-const mockSignIn = signInWithEmailAndPassword as jest.MockedFunction<typeof signInWithEmailAndPassword>;
-const mockSignUp = createUserWithEmailAndPassword as jest.MockedFunction<typeof createUserWithEmailAndPassword>;
-const mockSignOut = signOut as jest.MockedFunction<typeof signOut>;
+// Relax the typed mocks to avoid strict Auth parameter typing in tests
+const mockSignIn = signInWithEmailAndPassword as jest.MockedFunction<any>;
+const mockSignUp = createUserWithEmailAndPassword as jest.MockedFunction<any>;
+const mockSignOut = signOut as jest.MockedFunction<any>;
 
 // Test components
 const LoginForm: React.FC = () => {
@@ -369,7 +370,7 @@ describe('Authentication Flow Integration Tests', () => {
       let authStateCallback: ((user: any) => void) | null = null;
 
       // Mock onAuthStateChanged
-      mockAuth.onAuthStateChanged.mockImplementation((callback) => {
+      mockAuth.onAuthStateChanged.mockImplementation((callback: any) => {
         authStateCallback = callback;
         return jest.fn(); // unsubscribe function
       });

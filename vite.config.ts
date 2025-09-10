@@ -35,11 +35,32 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
     rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          ui: ['@radix-ui/react-slot', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu']
+        output: {
+        manualChunks(id: string) {
+          if (!id) return undefined;
+          // vendor packages
+          if (id.includes('node_modules')) {
+            if (id.includes('@radix-ui/react-icons')) return 'radix-icons';
+            if (id.includes('tailwind-merge')) return 'tailwind-merge';
+            if (id.includes('framer-motion') || id.includes('motion-dom')) return 'vendor';
+            if (id.includes('react-router-dom')) return 'router';
+            if (id.includes('firebase')) return 'firebase';
+          }
+
+          // local heavy modules: performance utilities
+          if (id.includes('/src/services/performance/') || id.includes('/src/utils/performance/')) {
+            return 'performance';
+          }
+
+          // split heavy pages into their own chunks
+          if (id.includes('/src/pages/ProfilePage')) return 'profile-page';
+          if (id.includes('/src/pages/TradeDetailPage')) return 'trade-detail-page';
+
+          // group gamification UI components into their own chunk
+          if (id.includes('/src/components/gamification/')) return 'gamification';
+
+          // default: let Rollup decide
+          return undefined;
         }
       }
     }

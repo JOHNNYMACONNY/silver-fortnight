@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 // Mocks
@@ -26,12 +26,16 @@ describe('ChallengeCalendarPage', () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => expect(screen.getByText(/Challenge Calendar/i)).toBeInTheDocument());
+    // wait for the page title heading
+    await screen.findByRole('heading', { name: /Challenge Calendar/i });
 
-    expect(screen.getByText(/Daily/i)).toBeInTheDocument();
-    expect(screen.getByText(/Weekly/i)).toBeInTheDocument();
-    expect(screen.getByText(/Daily A/i)).toBeInTheDocument();
-    expect(screen.getByText(/Weekly A/i)).toBeInTheDocument();
+    // ensure we match the actual section headings (h2) and not paragraph text
+    await screen.findByRole('heading', { name: /Daily/i, level: 2 });
+    await screen.findByRole('heading', { name: /Weekly/i, level: 2 });
+
+    // wait for items to appear
+    await screen.findByText(/Daily A/i);
+    await screen.findByText(/Weekly A/i);
   });
 });
 

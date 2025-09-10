@@ -1,1 +1,4 @@
-No lint output produced in this run.
+
+Authentication checks: 57
+Data validation checks: 43
+Custom validation functions: 5

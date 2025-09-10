@@ -23,6 +23,10 @@ MIN_REQUIRED_CHECKS=3 # Minimum number of security checks per rule
 # Create reports directory
 mkdir -p "$REPORT_DIR"
 
+# Initialize lint output files (overwrite any previous)
+echo "" > "$REPORT_DIR/firestore_lint.txt"
+echo "" > "$REPORT_DIR/storage_lint.txt"
+
 # Function to check rule file existence
 check_rules_exist() {
     local missing_files=0
@@ -53,30 +57,36 @@ validate_syntax() {
     # Basic validation - check if files exist and have content
     if [ ! -s "$FIRESTORE_RULES" ]; then
         echo -e "${RED}Error: Firestore rules file is empty or missing${NC}"
+    echo "ERROR: Firestore rules file is empty or missing" >> "$REPORT_DIR/firestore_lint.txt"
         return 1
     fi
 
     if [ ! -s "$STORAGE_RULES" ]; then
         echo -e "${RED}Error: Storage rules file is empty or missing${NC}"
+    echo "ERROR: Storage rules file is empty or missing" >> "$REPORT_DIR/storage_lint.txt"
         return 1
     fi
 
     # Check for basic Firestore rules structure
     if ! grep -q "rules_version" "$FIRESTORE_RULES"; then
         echo -e "${YELLOW}Warning: Firestore rules missing rules_version declaration${NC}"
+    echo "Warning: Firestore rules missing rules_version declaration" >> "$REPORT_DIR/firestore_lint.txt"
     fi
 
     if ! grep -q "service cloud.firestore" "$FIRESTORE_RULES"; then
         echo -e "${YELLOW}Warning: Firestore rules missing service declaration${NC}"
+    echo "Warning: Firestore rules missing service declaration" >> "$REPORT_DIR/firestore_lint.txt"
     fi
 
     # Check for basic Storage rules structure
     if ! grep -q "rules_version" "$STORAGE_RULES"; then
         echo -e "${YELLOW}Warning: Storage rules missing rules_version declaration${NC}"
+    echo "Warning: Storage rules missing rules_version declaration" >> "$REPORT_DIR/storage_lint.txt"
     fi
 
     if ! grep -q "service firebase.storage" "$STORAGE_RULES"; then
         echo -e "${YELLOW}Warning: Storage rules missing service declaration${NC}"
+    echo "Warning: Storage rules missing service declaration" >> "$REPORT_DIR/storage_lint.txt"
     fi
 
     echo -e "${GREEN}✓ Basic syntax validation completed${NC}"
@@ -90,18 +100,22 @@ check_security_patterns() {
     # Check for overly permissive rules
     if grep -E "allow (read|write|create|update|delete): if true" "$FIRESTORE_RULES" "$STORAGE_RULES"; then
         echo -e "${RED}Warning: Found overly permissive rules${NC}"
+    echo "Warning: Found overly permissive rules" >> "$REPORT_DIR/firestore_lint.txt"
+    echo "Warning: Found overly permissive rules" >> "$REPORT_DIR/storage_lint.txt"
         issues_found=1
     fi
     
     # Check for missing authentication checks
     if ! grep -q "request.auth != null" "$FIRESTORE_RULES"; then
         echo -e "${RED}Warning: No authentication checks found in Firestore rules${NC}"
+    echo "Warning: No authentication checks found in Firestore rules" >> "$REPORT_DIR/firestore_lint.txt"
         issues_found=1
     fi
     
     # Check for resource access validations
     if ! grep -q "resource.data" "$FIRESTORE_RULES"; then
         echo -e "${YELLOW}Warning: No resource data validation found${NC}"
+    echo "Warning: No resource data validation found" >> "$REPORT_DIR/firestore_lint.txt"
         issues_found=1
     fi
     
@@ -115,6 +129,8 @@ check_security_patterns() {
 
     if [ "$long_rules" -gt 0 ]; then
         echo -e "${YELLOW}Warning: Found $long_rules rules exceeding recommended length${NC}"
+    echo "Warning: Found $long_rules rules exceeding recommended length" >> "$REPORT_DIR/firestore_lint.txt"
+    echo "Warning: Found $long_rules rules exceeding recommended length" >> "$REPORT_DIR/storage_lint.txt"
         issues_found=1
     fi
     
@@ -138,6 +154,11 @@ analyze_coverage() {
     echo "- Authentication checks: $auth_checks"
     echo "- Data validation checks: $data_checks"
     echo "- Custom validation functions: $validation_checks"
+
+    # Write coverage summary to lint file for inclusion in report
+    echo "Authentication checks: $auth_checks" >> "$REPORT_DIR/firestore_lint.txt"
+    echo "Data validation checks: $data_checks" >> "$REPORT_DIR/firestore_lint.txt"
+    echo "Custom validation functions: $validation_checks" >> "$REPORT_DIR/firestore_lint.txt"
     
     # Check minimum requirements
     local total_checks=$((auth_checks + data_checks + validation_checks))
