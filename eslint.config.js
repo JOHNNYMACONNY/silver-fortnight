@@ -100,7 +100,9 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
       'no-undef': 'off', 
-      '@typescript-eslint/no-unused-vars': ['warn', { varsIgnorePattern: '^(module|require|__dirname)$' }],
+  '@typescript-eslint/no-unused-vars': ['warn', { varsIgnorePattern: '^(module|require|__dirname)$' }],
+  // Tests frequently use mocks and relaxed typing; allow `any` in tests
+  '@typescript-eslint/no-explicit-any': 'off',
     },
   }
 );
