@@ -392,7 +392,8 @@ describe('Authentication Flow Integration Tests', () => {
       };
 
       if (authStateCallback) {
-        authStateCallback(mockUser);
+        // Cast to any to avoid TS inferring a never-callable type
+        (authStateCallback as any)(mockUser);
       }
 
       await waitFor(() => {
@@ -401,7 +402,8 @@ describe('Authentication Flow Integration Tests', () => {
 
       // Simulate user logout
       if (authStateCallback) {
-        authStateCallback(null);
+        // Cast to any to avoid TS inferring a never-callable type
+        (authStateCallback as any)(null);
       }
 
       await waitFor(() => {

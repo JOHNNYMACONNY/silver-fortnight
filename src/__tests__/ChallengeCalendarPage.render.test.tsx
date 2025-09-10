@@ -33,9 +33,9 @@ describe('ChallengeCalendarPage', () => {
     await screen.findByRole('heading', { name: /Daily/i, level: 2 });
     await screen.findByRole('heading', { name: /Weekly/i, level: 2 });
 
-    // wait for items to appear
-    await screen.findByText(/Daily A/i);
-    await screen.findByText(/Weekly A/i);
+    // wait for items to appear - target the link role to avoid matching hidden aria-live text
+    await screen.findByRole('link', { name: /Daily A/i });
+    await screen.findByRole('link', { name: /Weekly A/i });
   });
 });
 

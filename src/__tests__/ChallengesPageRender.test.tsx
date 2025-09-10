@@ -2,6 +2,21 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
+// Add mock for firebase config so getSyncFirebaseDb exists during module initialization
+jest.mock('../firebase_config', () => ({
+  getSyncFirebaseDb: jest.fn(() => ({
+    // minimal RTDB-like API surface used by services that call getSyncFirebaseDb()
+    ref: jest.fn(() => ({
+      on: jest.fn(),
+      off: jest.fn(),
+      once: jest.fn().mockResolvedValue({ val: () => null }),
+      set: jest.fn().mockResolvedValue(undefined),
+      update: jest.fn().mockResolvedValue(undefined),
+      remove: jest.fn().mockResolvedValue(undefined),
+    })),
+  })),
+}));
+
 // Mock auth context
 jest.mock('../AuthContext', () => ({
   useAuth: () => ({ currentUser: { uid: 'test-user' }, loading: false }),
@@ -76,7 +91,7 @@ jest.mock('../services/challenges', () => ({
   joinChallenge: jest.fn().mockResolvedValue({ success: true }),
 }));
 
-import ChallengesPage from '../pages/ChallengesPage';
+import { ChallengesPage } from '../pages/ChallengesPage';
 
 describe('ChallengesPage', () => {
   it('renders without crashing and shows header and recommendations', async () => {
@@ -95,5 +110,3 @@ describe('ChallengesPage', () => {
     expect(screen.getByText(/Recommended Challenge/i)).toBeInTheDocument();
   });
 });
-
-

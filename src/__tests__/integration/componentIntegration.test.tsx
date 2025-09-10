@@ -75,12 +75,16 @@ import { ChallengeCreationForm } from '../../components/challenges/ChallengeCrea
 import { ThreeTierProgressionUI } from '../../components/challenges/ThreeTierProgressionUI';
 import { SimplifiedCollaborationInterface } from '../../components/collaboration/SimplifiedCollaborationInterface';
 import { useAuth } from '../../AuthContext';
-import { createChallenge, getThreeTierProgression } from '../../services/challenges';
+import { createChallenge } from '../../services/challenges';
 import { getCollaborations } from '../../services/collaboration';
 
+// Retrieve mocked-only export safely (avoids TS error if module isn't typed to export it)
+const mockChallenges = jest.requireMock('../../services/challenges') as Record<string, jest.Mock>;
+const getThreeTierProgression = (mockChallenges.getThreeTierProgression ?? jest.fn()) as jest.Mock;
+
 const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-const mockCreateChallenge = createChallenge as jest.MockedFunction<typeof createChallenge>;
-const mockGetThreeTierProgression = getThreeTierProgression as jest.MockedFunction<typeof getThreeTierProgression>;
+const mockCreateChallenge = createChallenge as jest.MockedFunction<any>;
+const mockGetThreeTierProgression = getThreeTierProgression as jest.MockedFunction<any>;
 const mockGetCollaborations = getCollaborations as jest.MockedFunction<typeof getCollaborations>;
 
 // Test wrapper component
