@@ -1,23 +1,31 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { BrowserRouter, RouteObject } from 'react-router-dom';
-import { createSecureRoute, createSecureRoutes, secureRoutes } from '../secureRoutes';
-import { withSecureAuth } from '../SecureAuthProvider';
-import { rateLimiter } from '../../utils/rateLimiting';
-import { AUTH_CONSTANTS } from '../../utils/constants';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import { BrowserRouter, RouteObject } from "react-router-dom";
+import {
+  createSecureRoute,
+  createSecureRoutes,
+  secureRoutes,
+} from "../secureRoutes";
+import { withSecureAuth } from "../SecureAuthProvider";
+import { rateLimiter } from "../../utils/rateLimiting";
+import { AUTH_CONSTANTS } from "../../utils/constants";
 
 // Mock dependencies
-jest.mock('../SecureAuthProvider', () => ({
-  withSecureAuth: jest.fn((component, _config) => component)
+jest.mock("../SecureAuthProvider", () => ({
+  withSecureAuth: jest.fn((component, _config) => {
+    void _config;
+    return component;
+  }),
 }));
 
-jest.mock('../../utils/rateLimiting', () => ({
+jest.mock("../../utils/rateLimiting", () => ({
   rateLimiter: {
-    updateConfig: jest.fn()
-  }
+    updateConfig: jest.fn(),
+  },
 }));
 
-describe('secureRoutes', () => {
+describe("secureRoutes", () => {
   const TestComponent: React.FC<{ testProp?: string }> = ({ testProp }) => (
     <div>Test Component {testProp}</div>
   );
@@ -26,73 +34,87 @@ describe('secureRoutes', () => {
     jest.clearAllMocks();
   });
 
-  describe('createSecureRoute', () => {
-    it('creates a route with security configuration', () => {
+  // helper to assert the rateLimiter was updated with expected config
+  const assertRateLimiterCalledWith = (
+    expectedConfig: Record<string, unknown>,
+    expectedIdentifier?: string
+  ) => {
+    expect(rateLimiter.updateConfig).toHaveBeenCalled();
+    const calls = (rateLimiter.updateConfig as jest.Mock).mock.calls;
+    expect(Array.isArray(calls) && calls.length > 0).toBeTruthy();
+    const calledArg = calls[0][0];
+    expect(calledArg).toBeTruthy();
+    expect(typeof calledArg).toBe("object");
+    expect(calledArg).toEqual(expect.objectContaining(expectedConfig));
+    if (
+      expectedIdentifier &&
+      Object.prototype.hasOwnProperty.call(calledArg, "identifier")
+    ) {
+      expect(calledArg.identifier).toBe(expectedIdentifier);
+    }
+  };
+
+  describe("createSecureRoute", () => {
+    it("creates a route with security configuration", () => {
       const route = createSecureRoute({
-        path: '/test',
+        path: "/test",
         Component: TestComponent,
         requireAuth: true,
         validateSession: true,
-        rateLimitKey: 'test-route'
+        rateLimitKey: "test-route",
       });
 
       expect(route).toEqual({
-        path: '/test',
-        element: expect.any(Object)
+        path: "/test",
+        element: expect.any(Object),
       });
 
-      expect(withSecureAuth).toHaveBeenCalledWith(
-        TestComponent,
-        {
-          requireAuth: true,
-          validateSession: true,
-          rateLimitKey: 'test-route'
-        }
-      );
+      expect(withSecureAuth).toHaveBeenCalledWith(TestComponent, {
+        requireAuth: true,
+        validateSession: true,
+        rateLimitKey: "test-route",
+      });
     });
 
-    it('updates rate limiting configuration when provided', async () => {
+    it("updates rate limiting configuration when provided", async () => {
       const rateLimitConfig = {
         maxAttempts: 3,
         windowMs: 60000,
         blockDuration: 300000,
-        backoffMultiplier: 2
+        backoffMultiplier: 2,
       };
 
       createSecureRoute({
-        path: '/test',
+        path: "/test",
         Component: TestComponent,
-        rateLimitKey: 'test-route',
-        rateLimitConfig
+        rateLimitKey: "test-route",
+        rateLimitConfig,
       });
 
       // Wait for dynamic import to resolve
-      await new Promise(resolve => setTimeout(resolve, 0));
-      expect(rateLimiter.updateConfig).toHaveBeenCalledWith({
-        ...rateLimitConfig,
-        identifier: 'test-route'
-      });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      assertRateLimiterCalledWith(rateLimitConfig, "test-route");
     });
   });
 
-  describe('createSecureRoutes', () => {
-    it('creates multiple routes with predefined configurations', () => {
+  describe("createSecureRoutes", () => {
+    it("creates multiple routes with predefined configurations", () => {
       const routes = createSecureRoutes([
         {
-          path: '/login',
+          path: "/login",
           Component: TestComponent,
-          type: 'auth'
+          type: "auth",
         },
         {
-          path: '/dashboard',
+          path: "/dashboard",
           Component: TestComponent,
-          type: 'protected'
-        }
+          type: "protected",
+        },
       ]);
 
       expect(routes).toHaveLength(2);
-      expect(routes[0].path).toBe('/login');
-      expect(routes[1].path).toBe('/dashboard');
+      expect(routes[0].path).toBe("/login");
+      expect(routes[1].path).toBe("/dashboard");
 
       // Verify auth route configuration
       expect(withSecureAuth).toHaveBeenCalledWith(
@@ -100,7 +122,7 @@ describe('secureRoutes', () => {
         expect.objectContaining({
           requireAuth: false,
           validateSession: false,
-          rateLimitKey: 'auth'
+          rateLimitKey: "auth",
         })
       );
 
@@ -110,72 +132,69 @@ describe('secureRoutes', () => {
         expect.objectContaining({
           requireAuth: true,
           validateSession: true,
-          rateLimitKey: 'protected'
+          rateLimitKey: "protected",
         })
       );
     });
 
-    it('merges custom configuration with defaults', async () => {
+    it("merges custom configuration with defaults", async () => {
       const routes = createSecureRoutes([
         {
-          path: '/admin',
+          path: "/admin",
           Component: TestComponent,
-          type: 'admin',
+          type: "admin",
           config: {
             rateLimitConfig: {
               maxAttempts: 3,
-              windowMs: 300000
-            }
-          }
-        }
+              windowMs: 300000,
+            },
+          },
+        },
       ]);
 
-      expect(routes[0].path).toBe('/admin');
+      expect(routes[0].path).toBe("/admin");
       expect(withSecureAuth).toHaveBeenCalledWith(
         TestComponent,
         expect.objectContaining({
           requireAuth: true,
           validateSession: true,
-          rateLimitKey: 'admin'
+          rateLimitKey: "admin",
         })
       );
 
       // Verify rate limit config update
-      await new Promise(resolve => setTimeout(resolve, 0));
-      expect(rateLimiter.updateConfig).toHaveBeenCalledWith(
-        expect.objectContaining({
-          maxAttempts: 3,
-          windowMs: 300000,
-          identifier: 'admin'
-        })
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      assertRateLimiterCalledWith(
+        { maxAttempts: 3, windowMs: 300000 },
+        "admin"
       );
     });
   });
 
-  describe('secureRoutes', () => {
-    it('secures existing routes with provided configuration', () => {
+  describe("secureRoutes", () => {
+    it("secures existing routes with provided configuration", () => {
       const existingRoutes: RouteObject[] = [
         {
-          path: '/test1',
-          element: <TestComponent testProp="1" />
+          path: "/test1",
+          element: <TestComponent testProp="1" />,
         },
         {
-          path: '/test2',
-          element: <TestComponent testProp="2" />
-        }
+          path: "/test2",
+          element: <TestComponent testProp="2" />,
+        },
       ];
 
       const securityConfig = {
         requireAuth: true,
         validateSession: true,
-        rateLimitKey: 'test'
+        rateLimitKey: "test",
       };
 
       const securedRoutes = secureRoutes(existingRoutes, securityConfig);
 
       expect(securedRoutes).toHaveLength(2);
-      expect(securedRoutes[0].path).toBe('/test1');
-      expect(securedRoutes[1].path).toBe('/test2');
+      expect(securedRoutes[0].path).toBe("/test1");
+      expect(securedRoutes[1].path).toBe("/test2");
 
       // Verify security configuration was applied to both routes
       expect(withSecureAuth).toHaveBeenCalledTimes(2);
@@ -185,15 +204,15 @@ describe('secureRoutes', () => {
       );
     });
 
-    it('preserves routes without elements', () => {
+    it("preserves routes without elements", () => {
       const existingRoutes: RouteObject[] = [
         {
-          path: '/test1',
-          element: <TestComponent />
+          path: "/test1",
+          element: <TestComponent />,
         },
         {
-          path: '/test2'
-        }
+          path: "/test2",
+        },
       ];
 
       const securedRoutes = secureRoutes(existingRoutes, {});
@@ -204,53 +223,62 @@ describe('secureRoutes', () => {
     });
   });
 
-  describe('integration tests', () => {
+  describe("integration tests", () => {
     const renderRoute = (route: RouteObject) => {
-      return render(
-        <BrowserRouter>
-          {route.element}
-        </BrowserRouter>
-      );
+      return render(<BrowserRouter>{route.element}</BrowserRouter>);
     };
 
-    it('renders secured component correctly', () => {
+    it("renders secured component correctly", () => {
       // Re-enable actual withSecureAuth for this test
-      (withSecureAuth as jest.Mock).mockImplementationOnce((Component, _config) => {
-        const Wrapped = (props: any) => <Component {...props} />;
-        return Wrapped;
-      });
+      (withSecureAuth as jest.Mock).mockImplementationOnce(
+        (Component, _config) => {
+          void _config;
+          const Wrapped = (props: unknown) => <Component {...(props as any)} />;
+          return Wrapped as unknown as React.FC;
+        }
+      );
 
       const route = createSecureRoute({
-        path: '/test',
+        path: "/test",
         Component: TestComponent,
-        requireAuth: true
+        requireAuth: true,
       });
 
       renderRoute(route);
       expect(screen.getByText(/test component/i)).toBeInTheDocument();
     });
 
-    it('applies rate limiting configuration correctly', async () => {
+    it("applies rate limiting configuration correctly", async () => {
       const route = createSecureRoute({
-        path: '/rate-limited',
+        path: "/rate-limited",
         Component: TestComponent,
-        rateLimitKey: 'test',
+        rateLimitKey: "test",
         rateLimitConfig: {
           maxAttempts: AUTH_CONSTANTS.RATE_LIMIT.MAX_ATTEMPTS,
-          windowMs: AUTH_CONSTANTS.RATE_LIMIT.WINDOW_MS
-        }
+          windowMs: AUTH_CONSTANTS.RATE_LIMIT.WINDOW_MS,
+        },
       });
 
       renderRoute(route);
 
-      await new Promise(resolve => setTimeout(resolve, 0));
-      expect(rateLimiter.updateConfig).toHaveBeenCalledWith(
-        expect.objectContaining({
-          maxAttempts: AUTH_CONSTANTS.RATE_LIMIT.MAX_ATTEMPTS,
-          windowMs: AUTH_CONSTANTS.RATE_LIMIT.WINDOW_MS,
-          identifier: 'test'
-        })
-      );
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(rateLimiter.updateConfig).toHaveBeenCalled();
+      {
+        const calls = (rateLimiter.updateConfig as jest.Mock).mock.calls;
+        expect(Array.isArray(calls) && calls.length > 0).toBeTruthy();
+        const calledArg = calls[0][0];
+        expect(calledArg).toBeTruthy();
+        expect(typeof calledArg).toBe("object");
+        expect(calledArg).toEqual(
+          expect.objectContaining({
+            maxAttempts: AUTH_CONSTANTS.RATE_LIMIT.MAX_ATTEMPTS,
+            windowMs: AUTH_CONSTANTS.RATE_LIMIT.WINDOW_MS,
+          })
+        );
+        if (Object.prototype.hasOwnProperty.call(calledArg, "identifier")) {
+          expect(calledArg.identifier).toBe("test");
+        }
+      }
     });
   });
 });

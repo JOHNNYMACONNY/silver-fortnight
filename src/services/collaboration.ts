@@ -7,7 +7,7 @@ export type Collaboration = {
   status?: string;
   participants?: string[];
   createdAt?: Date;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 export type ServiceResponse<T> = {
@@ -16,29 +16,41 @@ export type ServiceResponse<T> = {
   error?: string | null;
 };
 
-export async function getCollaborations(userId?: string): Promise<ServiceResponse<Collaboration[]>> {
+export const getCollaborations = async (
+  userId?: string
+): Promise<ServiceResponse<Collaboration[]>> => {
+  // Use the param to avoid "defined but never used" lints in some CI/pre-commit checks.
+  if (userId) {
+    void userId;
+  }
+
   // Minimal stub implementation; tests will mock this.
   return Promise.resolve({
     success: true,
     data: [],
     error: null,
   });
-}
+};
 
-export async function createCollaboration(payload: Partial<Collaboration>): Promise<ServiceResponse<Collaboration>> {
+export const createCollaboration = async (
+  payload: Partial<Collaboration>
+): Promise<ServiceResponse<Collaboration>> => {
   // Minimal stub implementation; tests will mock this.
   return Promise.resolve({
     success: true,
-    data: { id: 'mock-collab-id', ...payload } as Collaboration,
+    data: { id: "mock-collab-id", ...payload } as Collaboration,
     error: null,
   });
-}
+};
 
-export async function updateCollaborationStatus(collabId: string, status: string): Promise<ServiceResponse<Collaboration>> {
+export const updateCollaborationStatus = async (
+  collabId: string,
+  status: string
+): Promise<ServiceResponse<Collaboration>> => {
   // Minimal stub implementation; tests will mock this.
   return Promise.resolve({
     success: true,
     data: { id: collabId, status } as Collaboration,
     error: null,
   });
-}
+};

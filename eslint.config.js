@@ -57,6 +57,18 @@ export default tseslint.config(
     },
   },
   {
+    // Storybook stories often live outside the main tsconfig; avoid typed linting errors
+    files: ["src/stories/**/*.{ts,tsx}", "src/**/*.stories.{ts,tsx}"],
+    languageOptions: {
+      parserOptions: {
+        project: false,
+      },
+    },
+    rules: {
+      // keep default rules but avoid noisy typed-linting failures
+    },
+  },
+  {
     files: ["functions/**/*.{ts,tsx}", "e2e/**/*.{ts,tsx}", ".storybook/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"],
     languageOptions: {
       parserOptions: {
@@ -103,6 +115,43 @@ export default tseslint.config(
   '@typescript-eslint/no-unused-vars': ['warn', { varsIgnorePattern: '^(module|require|__dirname)$' }],
   // Tests frequently use mocks and relaxed typing; allow `any` in tests
   '@typescript-eslint/no-explicit-any': 'off',
+    },
+  }
+  ,
+  {
+    // Conservative: relax `no-explicit-any` to warnings for large utility/type folders
+    files: [
+      "src/utils/**/*.{ts,tsx,js,jsx}",
+      "src/types/**/*.{ts,tsx}",
+      "src/todo/**/*.{ts,tsx,js,jsx}",
+    ],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'warn',
+    },
+  },
+  {
+    // Allow `any` in mocks, generated files, and tooling scripts used for migrations/tests
+    files: [
+      "src/**/__mocks__/**/*.{ts,tsx,js,jsx}",
+      "src/**/__tests__/**/*.{ts,tsx,js,jsx}",
+      "src/**/*.test.{ts,tsx,js,jsx}",
+      "scripts/**/*.{ts,js}",
+      "dev-setup.js",
+    ],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
+  {
+    // Enforce strictness in application-facing code
+    files: [
+      "src/components/**/*.{ts,tsx}",
+      "src/services/**/*.{ts,tsx}",
+      "src/auth/**/*.{ts,tsx}",
+      "src/pages/**/*.{ts,tsx}",
+    ],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'error',
     },
   }
 );
