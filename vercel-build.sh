@@ -12,7 +12,7 @@ if [ "$VERCEL" = "1" ] || [ "$CI" = "true" ]; then
     # Install dependencies without running prepare script
     npm ci --ignore-scripts
     
-    # Run only essential build steps
+    # Run only essential build steps for the main app (exclude functions)
     echo "🔨 Running build process..."
     npm run build
     

@@ -45,17 +45,14 @@
   },
   "include": [
     "src/**/*",
-    "scripts/**/*",
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.js",
-    "**/*.jsx"
+    "scripts/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "build",
     "coverage",
+    "functions/**/*",
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",
