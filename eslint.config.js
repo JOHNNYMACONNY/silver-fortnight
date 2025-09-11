@@ -5,7 +5,7 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
-import globals from 'globals';
+// import globals from 'globals';
 import { FlatCompat } from '@eslint/eslintrc';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -47,8 +47,26 @@ export default tseslint.config(
     },
     languageOptions: {
       globals: {
-        ...globals.browser,
-        ...globals.node,
+        // Browser globals
+        window: 'readonly',
+        document: 'readonly',
+        console: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        fetch: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        // Node globals
+        process: 'readonly',
+        Buffer: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        global: 'readonly',
+        module: 'readonly',
+        require: 'readonly',
+        exports: 'readonly',
       },
     },
     rules: {
@@ -88,7 +106,16 @@ export default tseslint.config(
         project: false,
       },
       globals: {
-        ...globals.jest,
+        // Jest globals
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        jest: 'readonly',
       },
     },
     rules: {
