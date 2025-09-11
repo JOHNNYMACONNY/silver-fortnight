@@ -50,14 +50,14 @@ if [ ! -d ".git/hooks" ]; then
     echo "Created .git/hooks directory"
 fi
 
-# Initialize husky if not already done
-if [ ! -d ".husky" ]; then
+# Initialize husky if not already done (skip in CI)
+if [ "$VERCEL" != "1" ] && [ "$CI" != "true" ] && [ ! -d ".husky" ]; then
     npx husky install
     echo "Initialized husky"
 fi
 
-# Ensure the pre-commit hook is properly linked
-if [ ! -f ".git/hooks/pre-commit" ]; then
+# Ensure the pre-commit hook is properly linked (skip in CI)
+if [ "$VERCEL" != "1" ] && [ "$CI" != "true" ] && [ ! -f ".git/hooks/pre-commit" ]; then
     npx husky add .husky/pre-commit "npm run pre-commit"
     echo "Added pre-commit hook"
 fi
