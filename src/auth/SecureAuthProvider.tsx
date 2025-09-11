@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react';
 import { AuthProvider, useAuth } from '../AuthContext';
-import { tokenValidator } from '../utils/tokenUtils';
+import { tokenValidator } from '../utils/tokenUtils.ts';
 import { rateLimiter } from '../utils/rateLimiting';
 import { securityMonitor } from '../services/securityMonitoring';
 import { User } from 'firebase/auth';

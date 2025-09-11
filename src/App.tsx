@@ -76,7 +76,7 @@ import PortfolioPage from './pages/PortfolioPage';
 import LoginPage from './components/auth/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import { SignUpPage } from './pages/SignUpPage';
-import { PasswordResetPage } from './pages/PasswordResetPage';
+import { PasswordResetPage } from './pages/PasswordResetPage.tsx';
 import { NotificationsPage } from './pages/NotificationsPage';
 
 // Import Evidence Test Page
