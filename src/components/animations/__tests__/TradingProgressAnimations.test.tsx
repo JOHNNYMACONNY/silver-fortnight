@@ -16,20 +16,24 @@ jest.mock('../../../hooks/useTradeYaAnimation', () => ({
   })),
 }));
 
-// Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: any) => {
-      const React = require('react');
-      return React.createElement('div', props, children);
-    },
-    circle: ({ children, ...props }: any) => {
-      const React = require('react');
-      return React.createElement('circle', props, children);
-    },
-  },
-  AnimatePresence: ({ children }: any) => children,
-}));
+// Mock framer-motion with a hoist-safe factory that strips animation props
+jest.mock('framer-motion', () => {
+  const React = require('react');
+  const STRIP_KEYS = ['initial','animate','exit','transition','variants','layout','layoutId','drag'];
+  const STRIP_PREFIXES = ['while','onPan','onDrag'];
+  const stripFramerProps = (props = {}) => {
+    const out: any = {};
+    Object.keys(props || {}).forEach((k) => {
+      if (STRIP_KEYS.includes(k)) return;
+      if (STRIP_PREFIXES.some(p => k.startsWith(p))) return;
+      out[k] = (props as any)[k];
+    });
+    return out;
+  };
+  const make = (tag: any) => (props: any) => React.createElement(String(tag), stripFramerProps(props), props.children);
+  const motion = { div: make('div'), circle: make('circle') };
+  return { __esModule: true, motion, AnimatePresence: (props: any) => React.createElement(React.Fragment, null, props.children) };
+});
 
 describe('TradingProgressAnimation', () => {
   const mockSteps: TradingStepData[] = [

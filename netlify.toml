@@ -1,6 +1,17 @@
+[[redirects]]
+  from = "/sw-enhanced.js"
+  to = "/sw-enhanced.js"
+  status = 200
+  force = true
+
+[[headers]]
+  for = "/sw-enhanced.js"
+  [headers.values]
+    Content-Type = "application/javascript"
+
 [build]
   command = "npm run build"
-  publish = "dist"
+  publish = "public"
 
 [[redirects]]
   from = "/*"

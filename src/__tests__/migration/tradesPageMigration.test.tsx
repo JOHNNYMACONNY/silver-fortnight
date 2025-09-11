@@ -5,6 +5,14 @@
  * Validates real-world migration scenarios and compatibility layer functionality.
  */
 
+// Ensure firebase_config getSyncFirebaseDb is mocked before other imports
+jest.mock('../../firebase_config', () => ({
+  getSyncFirebaseDb: () => ({
+    collection: jest.fn(() => ({ get: jest.fn().mockResolvedValue({ docs: [] }) })),
+    doc: jest.fn(() => ({ get: jest.fn().mockResolvedValue({ exists: true, data: () => ({}) }) })),
+  }),
+}));
+
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { TradesPage } from '../../pages/TradesPage';
@@ -18,19 +26,26 @@ import { MemoryRouter } from 'react-router-dom';
 jest.mock('../../services/firestore');
 jest.mock('framer-motion', () => {
   const React = require('react');
+
+  const stripFramerProps = (props = {}) => {
+    const out = {};
+    Object.keys(props || {}).forEach((k) => {
+      if (/^(initial|animate|exit|transition|variants|layoutId|layout$|layout[A-Z].*|drag|while|onPan|onDrag)/.test(k)) return;
+      out[k] = props[k];
+    });
+    return out;
+  };
+
+  const make = (tag) => ({ children, ...props }) => React.createElement(String(tag), stripFramerProps(props), children);
+
+  const motion = new Proxy({}, {
+    get: (_target, prop) => make(prop)
+  });
+
   return {
     __esModule: true,
-    ...Object.fromEntries(
-      ['motion', 'AnimatePresence', 'AnimateSharedLayout', 'LayoutGroup'].map((k) => [k, ({ children, ...props }) => React.createElement('div', props, children)])
-    ),
-    // For motion.div, etc.
-    motion: new Proxy({}, {
-      get: () => ({
-        // Return a passthrough component for any motion element
-        // eslint-disable-next-line react/display-name
-        default: ({ children, ...props }) => React.createElement('div', props, children)
-      })
-    })
+    motion,
+    AnimatePresence: ({ children }) => React.createElement(React.Fragment, null, children),
   };
 });
 jest.mock('../../contexts/PerformanceContext', () => ({
@@ -198,6 +213,11 @@ jest.mock('firebase/firestore', () => {
     where: jest.fn((fieldPath, opStr, value) => ({ fieldPath, opStr, value })),
     orderBy: jest.fn((fieldPath, directionStr) => ({ fieldPath, directionStr })),
     limit: jest.fn((n) => n),
+    onSnapshot: jest.fn((q, cb) => {
+      // Immediately invoke callback with empty snapshot-like object
+      Promise.resolve().then(() => cb({ docs: [] }));
+      return () => {};
+    }),
     Firestore: jest.fn(),
     DocumentData: jest.fn(),
     QueryConstraint: jest.fn(),

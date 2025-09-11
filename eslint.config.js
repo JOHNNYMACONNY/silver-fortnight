@@ -18,23 +18,46 @@ const compat = new FlatCompat({
 });
 
 export default tseslint.config(
-  js.configs.recommended,
-  ...tseslint.configs.recommended,
-  ...compat.config(storybook.configs.recommended),
   {
-    ignores: ["dist", "node_modules", ".DS_Store", "coverage", "storybook-static", "jest-html-reporters-attach"],
-  },
-  {
+    // 1. Base configuration for all files
+    ignores: [
+      "dist", 
+      "node_modules", 
+      ".DS_Store", 
+      "coverage", 
+      "storybook-static", 
+      "jest-html-reporters-attach",
+      "playwright-report",
+      "**/*.cjs",
+      "coverage-scripts",
+      "coverage/staging-migration",
+      "reports/security",
+      "coverage/migration-html-report",
+      "debug-test.js",
+      "fixCreatedAt.js",
+      "create-sample-data.js",
+      "create-test-notifications.js",
+      "debug-leaderboard.js",
+      "debug-notifications.js",
+    ],
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+      "storybook": storybook,
+    },
     languageOptions: {
       globals: {
-        ...Object.fromEntries(
-          Object.entries(globals.browser).map(([key, value]) => [key.trim(), value])
-        ),
+        ...globals.browser,
         ...globals.node,
-      }
+      },
     },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      "react-refresh/only-export-components": "warn",
+    }
   },
   {
+    // 2. Stricter rules for application source code
     files: ["src/**/*.{ts,tsx}"],
     languageOptions: {
       parserOptions: {
@@ -42,65 +65,24 @@ export default tseslint.config(
       },
     },
     rules: {
-      "@typescript-eslint/no-explicit-any": "error",
+      '@typescript-eslint/no-explicit-any': 'error',
     },
   },
   {
-    files: ["vite.config.ts", "tailwind.config.ts", "jest.config.ts", "playwright.config.ts"],
+    // 3. Relaxed rules for configuration files
+    files: ["*.config.{js,ts}", "scripts/**/*.{js,ts}", "dev-setup.js"],
     languageOptions: {
       parserOptions: {
         project: false,
       },
     },
     rules: {
-      "@typescript-eslint/no-explicit-any": "error",
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
   {
-    // Storybook stories often live outside the main tsconfig; avoid typed linting errors
-    files: ["src/stories/**/*.{ts,tsx}", "src/**/*.stories.{ts,tsx}"],
-    languageOptions: {
-      parserOptions: {
-        project: false,
-      },
-    },
-    rules: {
-      // keep default rules but avoid noisy typed-linting failures
-    },
-  },
-  {
-    files: ["functions/**/*.{ts,tsx}", "e2e/**/*.{ts,tsx}", ".storybook/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"],
-    languageOptions: {
-      parserOptions: {
-        project: false,
-      },
-    },
-    rules: {
-      "@typescript-eslint/no-explicit-any": "error",
-    },
-  },
-  {
-    files: ["**/*.{js,jsx,ts,tsx}"],
-    plugins: {
-      "react-hooks": reactHooks,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-    },
-  },
-  {
-    files: ["**/*.{js,jsx,ts,tsx}"],
-    plugins: {
-      "react-refresh": reactRefresh,
-    },
-    rules: {
-      "react-refresh/only-export-components": "warn",
-    },
-  },
-  {
-    // Tests and __tests__ directories should not use the project's tsconfig for
-    // typed linting to avoid "file not included in project" parsing errors.
-    files: ['src/**/__tests__/**/*.{ts,tsx,js}', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
+    // 4. Relaxed rules for tests
+    files: ['src/**/__tests__/**/*.{ts,tsx,js}', 'src/**/*.test.{ts,tsx,js,jsx}', 'e2e/**/*.test.ts'],
     languageOptions: {
       parserOptions: {
         project: false,
@@ -110,48 +92,15 @@ export default tseslint.config(
       },
     },
     rules: {
-      '@typescript-eslint/no-require-imports': 'off',
-      'no-undef': 'off', 
-  '@typescript-eslint/no-unused-vars': ['warn', { varsIgnorePattern: '^(module|require|__dirname)$' }],
-  // Tests frequently use mocks and relaxed typing; allow `any` in tests
-  '@typescript-eslint/no-explicit-any': 'off',
-    },
-  }
-  ,
-  {
-    // Conservative: relax `no-explicit-any` to warnings for large utility/type folders
-    files: [
-      "src/utils/**/*.{ts,tsx,js,jsx}",
-      "src/types/**/*.{ts,tsx}",
-      "src/todo/**/*.{ts,tsx,js,jsx}",
-    ],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'warn',
-    },
-  },
-  {
-    // Allow `any` in mocks, generated files, and tooling scripts used for migrations/tests
-    files: [
-      "src/**/__mocks__/**/*.{ts,tsx,js,jsx}",
-      "src/**/__tests__/**/*.{ts,tsx,js,jsx}",
-      "src/**/*.test.{ts,tsx,js,jsx}",
-      "scripts/**/*.{ts,js}",
-      "dev-setup.js",
-    ],
-    rules: {
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
   {
-    // Enforce strictness in application-facing code
-    files: [
-      "src/components/**/*.{ts,tsx}",
-      "src/services/**/*.{ts,tsx}",
-      "src/auth/**/*.{ts,tsx}",
-      "src/pages/**/*.{ts,tsx}",
-    ],
+    // 5. Relaxed rules for Storybook files
+    files: ["src/**/*.stories.{ts,tsx}", ".storybook/**/*.{ts,tsx}"],
     rules: {
-      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      ...storybook.configs.recommended.overrides[0].rules,
     },
   }
 );

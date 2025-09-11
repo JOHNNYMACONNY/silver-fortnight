@@ -28,7 +28,11 @@ export enum ErrorCode {
   // System Errors
   SERVER_ERROR = 'SERVER_ERROR',
   DATABASE_ERROR = 'DATABASE_ERROR',
+  // Cache / Storage Errors
+  CACHE_ERROR = 'CACHE_ERROR',
+  STORAGE_ERROR = 'STORAGE_ERROR',
   SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
+  SERVICE_WORKER_ERROR = 'SERVICE_WORKER_ERROR',
   
   // UI/UX Errors
   COMPONENT_ERROR = 'COMPONENT_ERROR',
@@ -119,6 +123,9 @@ export class AppError extends Error {
       [ErrorCode.INSUFFICIENT_PERMISSIONS]: 'You don\'t have sufficient permissions for this action.',
       [ErrorCode.SERVER_ERROR]: 'Server error occurred. Please try again later.',
       [ErrorCode.DATABASE_ERROR]: 'Database error occurred. Please try again later.',
+  [ErrorCode.CACHE_ERROR]: 'Cached data appears to be corrupted. Clearing cache may help.',
+  [ErrorCode.STORAGE_ERROR]: 'Storage access error. Please clear storage or try again.',
+  [ErrorCode.SERVICE_WORKER_ERROR]: 'Service worker encountered an error. Try refreshing the service worker.',
       [ErrorCode.SERVICE_UNAVAILABLE]: 'Service is temporarily unavailable. Please try again later.',
       [ErrorCode.COMPONENT_ERROR]: 'Component error occurred. Please refresh the page.',
       [ErrorCode.RENDER_ERROR]: 'Rendering error occurred. Please refresh the page.',

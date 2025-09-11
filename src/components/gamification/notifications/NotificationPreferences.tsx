@@ -84,7 +84,7 @@ export const NotificationPreferences: React.FC<NotificationPreferencesProps> = (
   return (
     <div className={cn('space-y-6', className)}>
       <div>
-        <h3 className="text-lg font-semibold mb-2 text-foreground">
+        <h3 id="notification-preferences-title" className="text-lg font-semibold mb-2 text-foreground">
           Notification Preferences
         </h3>
         <p className="text-sm text-muted-foreground">
@@ -136,7 +136,7 @@ export const NotificationPreferences: React.FC<NotificationPreferencesProps> = (
             <div className="flex items-start space-x-3">
               <span className="text-2xl">{item.icon}</span>
               <div>
-                <h4 className="font-medium text-foreground">
+                <h4 id={`toggle-${item.key}`} className="font-medium text-foreground">
                   {item.title}
                 </h4>
                 <p className="text-sm text-muted-foreground">

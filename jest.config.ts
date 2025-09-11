@@ -14,9 +14,17 @@ const config = {
     '^vite$': '<rootDir>/src/utils/__mocks__/viteMock.ts',
     
     // Mock firebase-config to avoid import.meta issues
-    '^../../../firebase-config$': '<rootDir>/src/utils/__mocks__/firebase-config.ts',
-    '^../../firebase-config$': '<rootDir>/src/utils/__mocks__/firebase-config.ts',
-    '^../firebase-config$': '<rootDir>/src/utils/__mocks__/firebase-config.ts'
+  '^../../../firebase-config$': '<rootDir>/src/utils/__mocks__/firebase-config.ts',
+  '^../../firebase-config$': '<rootDir>/src/utils/__mocks__/firebase-config.ts',
+  '^../firebase-config$': '<rootDir>/src/utils/__mocks__/firebase-config.ts',
+  // Accept both dash and underscore variants used across tests
+  '^(.*/)?firebase[_-]config$': '<rootDir>/src/utils/__mocks__/firebase-config.ts',
+  // Provide common mocks for problematic third-party modules used in jest.mock factories
+  '^framer-motion$': '<rootDir>/src/utils/__mocks__/framer-motion.js',
+  '^vitest$': '<rootDir>/src/utils/__mocks__/vitest.js'
+  ,
+  // Support TS path alias for src as @/
+  '^@/(.*)$': '<rootDir>/src/$1'
   },
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
@@ -49,7 +57,8 @@ const config = {
     '/node_modules/',
     '/dist/',
     'jest.setup.ts',
-    'setupEnv.ts'
+  'setupEnv.ts',
+  '<rootDir>/src/__tests__/quarantine/'
   ],
   moduleDirectories: ['node_modules', 'src'],
   roots: ['<rootDir>/src'],

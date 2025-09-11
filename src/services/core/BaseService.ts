@@ -25,7 +25,7 @@ import {
    Firestore,
    FirestoreDataConverter
 } from 'firebase/firestore';
-import { getSyncFirebaseDb } from '../../firebase-config';
+import * as firebaseConfig from '../../firebase-config';
 import { ServiceResult } from '../../types/ServiceError';
 import { errorService } from '../errorService';
 import { AppError, ErrorCode, ErrorSeverity } from '../../types/errors';
@@ -40,7 +40,17 @@ export abstract class BaseService<T> {
   protected converter?: FirestoreDataConverter<T, DocumentData, DocumentData>;
 
   constructor(collectionName: string, converter?: FirestoreDataConverter<T, DocumentData, DocumentData>) {
-    this.db = getSyncFirebaseDb();
+    // Support both ESM and CommonJS interop for firebase config used in tests.
+    // Prefer named getSyncFirebaseDb, otherwise try default/db aliases provided by the CJS fallback.
+    const getDb =
+      (firebaseConfig as any).getSyncFirebaseDb ||
+      (firebaseConfig as any).getSyncFirebaseDb?.default ||
+      (firebaseConfig as any).default ||
+      (firebaseConfig as any).db ||
+      (() => {
+        throw new Error('getSyncFirebaseDb not available from firebase-config');
+      });
+    this.db = typeof getDb === 'function' ? getDb() : getDb;
     this.collectionName = collectionName;
     this.converter = converter;
   }

@@ -7,29 +7,12 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BrowserRouter } from "react-router-dom";
 
-// Mock Firebase Auth
-const mockAuth: Partial<Record<string, unknown>> = {
-  currentUser: null,
-  signInWithEmailAndPassword: jest.fn(),
-  createUserWithEmailAndPassword: jest.fn(),
-  signOut: jest.fn(),
-  onAuthStateChanged: jest.fn(),
-  updateProfile: jest.fn(),
-};
-
-jest.mock("../../firebase-config", () => ({
-  auth: mockAuth,
-  db: {},
-}));
-
-// Mock Firebase Auth functions
-jest.mock("firebase/auth", () => ({
-  signInWithEmailAndPassword: jest.fn(),
-  createUserWithEmailAndPassword: jest.fn(),
-  signOut: jest.fn(),
-  onAuthStateChanged: jest.fn(),
-  updateProfile: jest.fn(),
-}));
+// Use the centralized mock. Assumes the mock file is in the correct `__mocks__` directory.
+jest.mock("../../firebase-config");
+// We need to get the mockAuth object from the mock we just created.
+// The actual implementation of this will depend on your __mocks__/firebase-config.ts file.
+// Assuming it exports a mockAuth object and a way to control onAuthStateChanged.
+import { getSyncFirebaseAuth } from "../../firebase-config";
 
 // Mock framer-motion
 jest.mock("framer-motion", () => {
@@ -57,22 +40,25 @@ jest.mock("framer-motion", () => {
 
 // Import components after mocks
 import { AuthProvider, useAuth } from "../../AuthContext";
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-} from "firebase/auth";
+import * as AuthFunctions from "firebase/auth";
 
+// Let's get a handle on the mock auth object and the auth state callback
+const mockAuth = getSyncFirebaseAuth();
+let authStateCallback: ((user: unknown) => void) | null = null;
+
+// Set up the mock for onAuthStateChanged once. Tests will trigger this.
+if (mockAuth && typeof mockAuth.onAuthStateChanged === "function") {
+  (mockAuth.onAuthStateChanged as jest.Mock).mockImplementation((callback) => {
+    authStateCallback = callback;
+    return () => {
+      authStateCallback = null;
+    }; // Return an unsubscribe function
+  });
+}
 // Relax the typed mocks to avoid strict Auth parameter typing in tests
-const mockSignIn = signInWithEmailAndPassword as jest.MockedFunction<
-  (...args: unknown[]) => Promise<unknown>
->;
-const mockSignUp = createUserWithEmailAndPassword as jest.MockedFunction<
-  (...args: unknown[]) => Promise<unknown>
->;
-const mockSignOut = signOut as jest.MockedFunction<
-  (...args: unknown[]) => Promise<unknown>
->;
+const mockSignIn = AuthFunctions.signInWithEmailAndPassword as jest.Mock;
+const mockSignUp = AuthFunctions.createUserWithEmailAndPassword as jest.Mock;
+const mockSignOut = AuthFunctions.signOut as jest.Mock;
 
 // Test components
 const LoginForm: React.FC = () => {
@@ -84,7 +70,7 @@ const LoginForm: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await mockSignIn(mockAuth, email, password);
+      await mockSignIn(mockAuth, email, password); // Pass mockAuth instance
     } catch {
       setError("Login failed");
     }
@@ -126,7 +112,7 @@ const SignUpForm: React.FC = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await mockSignUp(mockAuth, email, password);
+      await mockSignUp(mockAuth, email, password); // Pass mockAuth instance
     } catch {
       setError("Sign up failed");
     }
@@ -183,8 +169,8 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 describe("Authentication Flow Integration Tests", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockAuth.currentUser = null;
+    jest.clearAllMocks(); // This clears all mocks, including onAuthStateChanged implementation
+    (mockAuth as any).currentUser = null;
   });
 
   describe("Login Flow", () => {
@@ -223,10 +209,9 @@ describe("Authentication Flow Integration Tests", () => {
         "password123"
       );
 
-      // Simulate auth state change
-      mockAuth.currentUser = mockUser;
-
+      // Simulate auth state change by invoking the callback
       await waitFor(() => {
+        if (authStateCallback) authStateCallback(mockUser);
         expect(
           screen.getByText("Welcome, test@example.com!")
         ).toBeInTheDocument();
@@ -295,10 +280,9 @@ describe("Authentication Flow Integration Tests", () => {
         "newpassword123"
       );
 
-      // Simulate auth state change
-      mockAuth.currentUser = mockUser;
-
+      // Simulate auth state change by invoking the callback
       await waitFor(() => {
+        if (authStateCallback) authStateCallback(mockUser);
         expect(
           screen.getByText("Account created for newuser@example.com!")
         ).toBeInTheDocument();
@@ -343,7 +327,7 @@ describe("Authentication Flow Integration Tests", () => {
       };
 
       // Start with authenticated user
-      mockAuth.currentUser = mockUser;
+      (mockAuth as any).currentUser = mockUser;
       mockSignOut.mockResolvedValue(undefined);
 
       render(
@@ -362,10 +346,9 @@ describe("Authentication Flow Integration Tests", () => {
 
       expect(mockSignOut).toHaveBeenCalledWith(mockAuth);
 
-      // Simulate auth state change
-      mockAuth.currentUser = null;
-
+      // Simulate auth state change for logout
       await waitFor(() => {
+        if (authStateCallback) authStateCallback(null);
         expect(screen.getByText("Please log in")).toBeInTheDocument();
       });
     });
@@ -380,7 +363,7 @@ describe("Authentication Flow Integration Tests", () => {
       };
 
       // Start with authenticated user
-      mockAuth.currentUser = mockUser;
+      (mockAuth as any).currentUser = mockUser;
 
       const { rerender } = render(
         <TestWrapper>
@@ -403,18 +386,8 @@ describe("Authentication Flow Integration Tests", () => {
     });
 
     it("should handle authentication state changes", async () => {
-      let authStateCallback: ((user: unknown) => void) | null = null;
-
       // Mock onAuthStateChanged
-      const onAuthMock = mockAuth.onAuthStateChanged as unknown as
-        | jest.Mock
-        | undefined;
-      if (onAuthMock) {
-        onAuthMock.mockImplementation((callback: (u: unknown) => void) => {
-          authStateCallback = callback;
-          return jest.fn(); // unsubscribe function
-        });
-      }
+      (mockAuth as any).currentUser = null;
 
       render(
         <TestWrapper>
@@ -433,7 +406,7 @@ describe("Authentication Flow Integration Tests", () => {
       };
 
       if (authStateCallback) {
-        (authStateCallback as (u: unknown) => void)(mockUser as unknown);
+        authStateCallback(mockUser);
       }
 
       await waitFor(() => {
@@ -444,7 +417,7 @@ describe("Authentication Flow Integration Tests", () => {
 
       // Simulate user logout
       if (authStateCallback) {
-        (authStateCallback as (u: unknown) => void)(null as unknown);
+        authStateCallback(null);
       }
 
       await waitFor(() => {
@@ -464,7 +437,7 @@ describe("Authentication Flow Integration Tests", () => {
     };
 
     it("should redirect unauthenticated users", () => {
-      mockAuth.currentUser = null;
+      (mockAuth as any).currentUser = null;
 
       render(
         <TestWrapper>
@@ -484,7 +457,7 @@ describe("Authentication Flow Integration Tests", () => {
         displayName: "Test User",
       };
 
-      mockAuth.currentUser = mockUser;
+      (mockAuth as any).currentUser = mockUser;
 
       render(
         <TestWrapper>

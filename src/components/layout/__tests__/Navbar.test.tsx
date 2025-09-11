@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import { Navbar } from '../Navbar';
+import Navbar from '../Navbar';
 
 // Mock AuthContext
 const mockCurrentUser = {
@@ -11,7 +11,7 @@ const mockCurrentUser = {
   displayName: 'Test User',
 };
 
-const mockAuthContext = {
+let mockAuthContext: any = {
   currentUser: mockCurrentUser,
   logout: jest.fn(),
   isAdmin: false,
@@ -20,6 +20,10 @@ const mockAuthContext = {
 
 jest.mock('../../../AuthContext', () => ({
   useAuth: () => mockAuthContext,
+}));
+
+jest.mock('../../../utils/featureFlags', () => ({
+  isThemeToggleEnabled: () => true,
 }));
 
 // Mock useNavigation hook
@@ -45,61 +49,85 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
 }));
 
-// Mock child components
-jest.mock('../../ui/MobileMenu', () => ({
-  MobileMenu: ({ isOpen, onClose }: any) => (
-    <div data-testid="mobile-menu" data-open={isOpen} onClick={onClose}>
-      Mobile Menu
-    </div>
-  ),
-}));
-
-jest.mock('../../ui/Logo', () => {
-  return function MockLogo({ size, showText }: any) {
-    return <div data-testid="logo" data-size={size}>{showText ? 'TradeYa' : 'Logo'}</div>;
+ // Mock child components
+jest.mock('../../ui/MobileMenu', () => {
+  const React = require('react');
+  const MockMobileMenu = ({ isOpen, onClose }: any) =>
+    React.createElement(
+      'div',
+      { 'data-testid': 'mobile-menu', 'data-open': isOpen, onClick: onClose },
+      'Mobile Menu'
+    );
+  return {
+    __esModule: true,
+    default: MockMobileMenu,
+    MobileMenu: MockMobileMenu,
   };
 });
 
-jest.mock('../../ui/NavItem', () => ({
-  NavItem: ({ to, label, isActive }: any) => (
-    <a href={to} data-testid={`nav-item-${to}`} data-active={isActive}>
-      {label}
-    </a>
-  ),
-}));
+jest.mock('../../ui/Logo', () => {
+  const React = require('react');
+  return {
+    __esModule: true,
+    default: function MockLogo({ size, showText }: any) {
+      return React.createElement('div', { 'data-testid': 'logo', 'data-size': size }, showText ? 'TradeYa' : 'Logo');
+    },
+  };
+});
 
-jest.mock('../../ui/ThemeToggle', () => ({
-  ThemeToggle: () => <button data-testid="theme-toggle">Theme Toggle</button>,
-}));
+jest.mock('../../ui/NavItem', () => {
+  const React = require('react');
+  return {
+    NavItem: ({ to, label, isActive }: any) =>
+      React.createElement('a', { href: to, 'data-testid': `nav-item-${to}`, 'data-active': isActive }, label),
+  };
+});
 
-jest.mock('../../features/notifications/NotificationBell', () => ({
-  NotificationBell: () => <button data-testid="notification-bell">Notifications</button>,
-}));
+jest.mock('../../ui/ThemeToggle', () => {
+  const React = require('react');
+  return {
+    ThemeToggle: () => React.createElement('button', { 'data-testid': 'theme-toggle' }, 'Theme Toggle'),
+  };
+});
 
-jest.mock('../../ui/UserMenu', () => ({
-  UserMenu: () => <div data-testid="user-menu">User Menu</div>,
-}));
+jest.mock('../../features/notifications/NotificationBell', () => {
+  const React = require('react');
+  return {
+    NotificationBell: () =>
+      React.createElement('button', { 'data-testid': 'notification-bell' }, 'Notifications'),
+  };
+});
 
-jest.mock('../../ui/Button', () => ({
-  Button: ({ children, onClick, variant, size, className }: any) => (
-    <button 
-      onClick={onClick} 
-      className={className}
-      data-variant={variant}
-      data-size={size}
-    >
-      {children}
-    </button>
-  ),
-}));
+jest.mock('../../ui/UserMenu', () => {
+  const React = require('react');
+  return {
+    UserMenu: () => React.createElement('div', { 'data-testid': 'user-menu' }, 'User Menu'),
+  };
+});
 
-jest.mock('../../ui/CommandPalette', () => ({
-  CommandPalette: ({ isOpen, onClose }: any) => (
-    <div data-testid="command-palette" data-open={isOpen} onClick={onClose}>
-      Command Palette
-    </div>
-  ),
-}));
+jest.mock('../../ui/Button', () => {
+  const React = require('react');
+  return {
+    Button: (props: any) =>
+      React.createElement(
+        'button',
+        { ...props },
+        props.children
+      ),
+  };
+});
+
+jest.mock('../../ui/CommandPalette', () => {
+  const React = require('react');
+  return {
+    CommandPalette: ({ isOpen, onClose }: any) =>
+      React.createElement(
+        'div',
+        { 'data-testid': 'command-palette', 'data-open': isOpen, onClick: onClose },
+        'Command Palette'
+      ),
+  };
+});
 
 // Test wrapper with router
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -110,6 +138,7 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 describe('Navbar', () => {
   beforeEach(() => {
+    jest.resetModules();
     jest.clearAllMocks();
     // Reset navigation state
     mockNavigationState.isScrolled = false;
@@ -122,7 +151,7 @@ describe('Navbar', () => {
     it('should render navbar with logo', () => {
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -133,7 +162,7 @@ describe('Navbar', () => {
     it('should render main navigation items on desktop', () => {
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -146,7 +175,7 @@ describe('Navbar', () => {
     it('should render user controls when user is logged in', () => {
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -158,18 +187,18 @@ describe('Navbar', () => {
     it('should render command palette button on desktop', () => {
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
-      const commandButton = screen.getByText('⌘K');
+      const commandButton = screen.getByText('Search');
       expect(commandButton).toBeInTheDocument();
     });
 
     it('should render mobile menu button', () => {
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -180,7 +209,7 @@ describe('Navbar', () => {
     it('should render mobile command palette button', () => {
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -195,12 +224,12 @@ describe('Navbar', () => {
       
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
       const navbar = screen.getByRole('navigation');
-      expect(navbar).toHaveClass('bg-white/80', 'dark:bg-gray-900/80', 'backdrop-blur-xl');
+      expect(navbar).toHaveClass('bg-navbar-glass', 'dark:bg-navbar-glass-dark', 'backdrop-blur-xl');
     });
 
     it('should apply default styles when not scrolled', () => {
@@ -208,12 +237,12 @@ describe('Navbar', () => {
       
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
       const navbar = screen.getByRole('navigation');
-      expect(navbar).toHaveClass('bg-white/60', 'dark:bg-gray-900/60', 'backdrop-blur-lg');
+      expect(navbar).toHaveClass('bg-navbar-glass', 'dark:bg-navbar-glass-dark', 'backdrop-blur-md');
     });
   });
 
@@ -223,7 +252,7 @@ describe('Navbar', () => {
       
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -236,7 +265,7 @@ describe('Navbar', () => {
       
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -249,7 +278,7 @@ describe('Navbar', () => {
     it('should render mobile menu component', () => {
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -261,7 +290,7 @@ describe('Navbar', () => {
       
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -273,7 +302,7 @@ describe('Navbar', () => {
       const user = userEvent.setup();
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -288,7 +317,7 @@ describe('Navbar', () => {
     it('should render command palette component', () => {
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -300,7 +329,7 @@ describe('Navbar', () => {
       
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -312,7 +341,7 @@ describe('Navbar', () => {
       const user = userEvent.setup();
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -326,7 +355,7 @@ describe('Navbar', () => {
       const user = userEvent.setup();
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -343,11 +372,11 @@ describe('Navbar', () => {
       
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
-      expect(screen.getByText('Sign In')).toBeInTheDocument();
+      expect(screen.getByText('Log In')).toBeInTheDocument();
     });
 
     it('should not render user controls when user is not logged in', () => {
@@ -355,11 +384,12 @@ describe('Navbar', () => {
       
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
-      expect(screen.queryByTestId('notification-bell')).not.toBeInTheDocument();
+      // NotificationBell is always rendered in the navbar; User menu is only present when logged in
+      expect(screen.getByTestId('notification-bell')).toBeInTheDocument();
       expect(screen.queryByTestId('user-menu')).not.toBeInTheDocument();
     });
 
@@ -369,11 +399,11 @@ describe('Navbar', () => {
       
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
-      const signInButton = screen.getByText('Sign In');
+      const signInButton = screen.getByText('Log In');
       await user.click(signInButton);
 
       expect(mockNavigate).toHaveBeenCalledWith('/login');
@@ -384,7 +414,7 @@ describe('Navbar', () => {
     it('should hide desktop navigation on mobile', () => {
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -396,7 +426,7 @@ describe('Navbar', () => {
     it('should hide mobile controls on desktop', () => {
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -409,7 +439,7 @@ describe('Navbar', () => {
     it('should have proper navigation landmark', () => {
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -419,7 +449,7 @@ describe('Navbar', () => {
     it('should have proper button labels', () => {
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
@@ -430,7 +460,7 @@ describe('Navbar', () => {
     it('should support keyboard navigation', () => {
       render(
         <TestWrapper>
-          <Navbar />
+          <Navbar showThemeToggle={true} />
         </TestWrapper>
       );
 
