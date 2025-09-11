@@ -24,7 +24,6 @@
       ]
     }
   ],
-  "buildCommand": "./vercel-build.sh",
   "outputDirectory": "dist",
   "framework": "vite",
   "github": { "silent": true }

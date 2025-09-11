@@ -16,7 +16,7 @@
     "seed:challenges": "npx tsx scripts/seed-challenges.ts",
     "playwright:install": "npx playwright install --with-deps",
     "dev": "vite",
-    "build": "npm run assets:optimize && npm run assets:cleanup && vite build",
+    "build": "if [ \"$VERCEL\" = \"1\" ] || [ \"$CI\" = \"true\" ]; then ./vercel-build.sh; else npm run assets:optimize && npm run assets:cleanup && vite build; fi",
     "assets:optimize": "node scripts/optimize-assets.cjs",
     "assets:cleanup": "node scripts/cleanup-assets.cjs",
     "assets:clean": "rm -rf public/icons public/images/optimized public/assets",
