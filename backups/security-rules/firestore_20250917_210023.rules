@@ -1,0 +1,394 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function hasRole(role) {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny([role]);
+    }
+    
+    function isAdmin() {
+      return hasRole('admin');
+    }
+
+    function isModerator() {
+      return hasRole('moderator') || isAdmin();
+    }
+    
+    function isValidTimestamp(ts) {
+      return ts is timestamp && 
+        ts.date() <= request.time.date();
+    }
+
+    function validateUserData(data) {
+      return data.size() <= 1000000 && // 1MB limit
+             data.name is string &&
+             data.email is string &&
+             data.createdAt is timestamp &&
+             (!('roles' in data) || isAdmin());
+    }
+
+    function validateTradeData(data) {
+      return data.creatorId == request.auth.uid &&
+             data.createdAt is timestamp &&
+             data.status in ['pending', 'active', 'completed', 'cancelled'] &&
+             data.participantIds is list &&
+             data.participantIds.size() >= 2 &&
+             data.participantIds.size() <= 10;
+    }
+
+    function validateTradeUpdate(old, new) {
+      let validTransitions = {
+        'pending': ['active', 'cancelled'],
+        'active': ['completed', 'cancelled'],
+        'completed': [],
+        'cancelled': []
+      };
+      return old.creatorId == new.creatorId &&
+             old.participantIds == new.participantIds &&
+             new.status in validTransitions[old.status];
+    }
+
+    function isTradeParticipant(trade) {
+      return (
+        (trade.data.participantIds is list && trade.data.participantIds.hasAny([request.auth.uid])) ||
+        (trade.data.participants is map && (
+          (trade.data.participants.creator == request.auth.uid) ||
+          (trade.data.participants.participant == request.auth.uid)
+        ))
+      );
+    }
+
+    function isParticipant(data) {
+      return (
+        (data.participantIds is list && data.participantIds.hasAny([request.auth.uid])) ||
+        (data.participants is map && (
+          (data.participants.creator == request.auth.uid) ||
+          (data.participants.participant == request.auth.uid)
+        )) ||
+        (data.participants is list && data.participants.size() > 0 &&
+          data.participants.map('id').hasAny([request.auth.uid])
+        )
+      );
+    }
+
+    // User profiles
+    match /users/{userId} {
+      // Restrict profile reads to owner/admin or explicitly public profiles.
+      // Validate payloads on create/update to avoid clients writing sensitive fields.
+      allow read: if (resource.data != null && resource.data.public == true) || isOwner(userId) || isAdmin();
+      allow create: if request.auth.uid == userId && validateUserData(request.resource.data);
+      allow update: if ( (request.auth.uid == userId && validateUserData(request.resource.data)) || isAdmin();
+      allow delete: if isAdmin();
+
+      // Private user data (e.g., settings, sensitive info)
+      match /private/{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Connections subcollection - user connections/friendships
+      match /connections/{connectionId} {
+        allow read: if isAuthenticated() && (
+          userId == request.auth.uid || // User can read their own connections
+          isAdmin()
+        );
+        allow create: if isAuthenticated() && (
+          userId == request.auth.uid && // User can create connections in their own subcollection
+          request.resource.data.userId == request.auth.uid // User must be the initiator
+        );
+        allow update: if isAuthenticated() && (
+          userId == request.auth.uid || // User can update connections in their own subcollection
+          resource.data.connectedUserId == request.auth.uid || // Connected user can update (accept/reject)
+          isAdmin()
+        );
+        allow delete: if isAuthenticated() && (
+          userId == request.auth.uid || // User can delete connections in their own subcollection
+          resource.data.connectedUserId == request.auth.uid || // Connected user can delete
+          isAdmin()
+        );
+      }
+    }
+
+    // Trade records
+    match /trades/{tradeId} {
+      // Require authentication to read trade records by default. Public trades can set a `visibility` field = 'public'
+      allow read: if isAuthenticated() || (resource.data != null && resource.data.visibility == 'public');
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.creatorId;
+      // Ensure correct operator precedence: either the authenticated creator OR an admin may update/delete
+      allow update, delete: if (isAuthenticated() && request.auth.uid == resource.data.creatorId) || isAdmin();
+
+      // Proposals subcollection
+      match /proposals/{proposalId} {
+  // Proposals should be visible to authenticated users or explicitly public
+  allow read: if isAuthenticated() || (resource.data != null && resource.data.visibility == 'public');
+        allow create: if isAuthenticated();
+        allow update, delete: if false;
+      }
+
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && isParticipant(get(/databases/$(database)/documents/trades/$(tradeId)).data);
+        allow create: if isAuthenticated() && isParticipant(get(/databases/$(database)/documents/trades/$(tradeId)).data);
+        allow update, delete: if false;
+      }
+
+      // Evidence subcollection
+      match /evidence/{evidenceId} {
+        allow read: if isAuthenticated() && isParticipant(get(/databases/$(database)/documents/trades/$(tradeId)).data);
+        allow create: if isAuthenticated() && request.resource.data.uploaderId == request.auth.uid;
+        allow delete: if isModerator();
+      }
+    }
+
+    // Conversations (legacy chat data)
+    match /conversations/{conversationId} {
+      // Restrict conversation document reads to participants only (avoid exposing metadata to all authenticated users)
+      allow read: if isAuthenticated() && isParticipant(resource.data);
+      // Only participants can update or delete the conversation
+      allow update, delete: if isAuthenticated() && isParticipant(resource.data);
+      // Any authenticated user can create a conversation
+      allow create: if isAuthenticated();
+
+      // Messages subcollection
+      match /messages/{messageId} {
+        // Only participants can read or create messages
+        allow read, create: if isAuthenticated() && isParticipant(get(/databases/$(database)/documents/conversations/$(conversationId)).data);
+        // Messages are immutable
+        allow update, delete: if false;
+      }
+    }
+
+    // Flat messages collection (for direct queries)
+    match /messages/{messageId} {
+      allow read, create: if isAuthenticated() &&
+        resource.data.conversationId != null &&
+        exists(/databases/$(database)/documents/conversations/$(resource.data.conversationId)) &&
+        get(/databases/$(database)/documents/conversations/$(resource.data.conversationId)).data.participantIds.hasAny([request.auth.uid]);
+      allow update, delete: if false; // Messages are immutable
+    }
+
+    // System settings
+    match /settings/{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Audit logs
+    match /audit/{logId} {
+      allow read: if isModerator();
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Audit logs are immutable
+    }
+
+    // Rate limiting
+    match /ratelimits/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if false; // Only managed by server
+    }
+
+    // Migration progress tracking
+    match /migration-progress/{migrationId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Migration system collections (for migration scripts with service account)
+    match /migration-system/{document=**} {
+      allow read, write: if false; // Only accessible via service account
+    }
+
+    // Migration audit logs
+    match /migration-audit/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Audit logs are immutable
+    }
+
+    // Collaborations
+    match /collaborations/{collaborationId} {
+      // Require authentication to read collaborations by default; allow explicit public flag
+      allow read: if isAuthenticated() || (resource.data != null && resource.data.public == true);
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && (resource.data.creatorId == request.auth.uid || isAdmin());
+
+      // Roles subcollection
+      match /roles/{roleId} {
+  // Roles are visible to authenticated users or explicitly public
+  allow read: if isAuthenticated() || (resource.data != null && resource.data.public == true);
+        allow create, delete: if isAuthenticated() && (get(/databases/$(database)/documents/collaborations/$(collaborationId)).data.creatorId == request.auth.uid || isAdmin());
+        allow update: if isAuthenticated() && (
+          get(/databases/$(database)/documents/collaborations/$(collaborationId)).data.creatorId == request.auth.uid ||
+          isAdmin() ||
+          (resource.data.participantId == request.auth.uid)
+        );
+
+        // Applications subcollection
+        match /applications/{applicationId} {
+          allow read: if isAuthenticated() && (
+            get(/databases/$(database)/documents/collaborations/$(collaborationId)).data.creatorId == request.auth.uid ||
+            resource.data.applicantId == request.auth.uid ||
+            isAdmin()
+          );
+          allow create: if isAuthenticated() && request.resource.data.applicantId == request.auth.uid;
+          allow update: if isAuthenticated() && (
+            resource.data.applicantId == request.auth.uid ||
+            get(/databases/$(database)/documents/collaborations/$(collaborationId)).data.creatorId == request.auth.uid ||
+            isAdmin()
+          );
+          allow delete: if isAuthenticated() && resource.data.applicantId == request.auth.uid && resource.data.status == 'pending';
+        }
+      }
+
+      // Messages subcollection
+      match /messages/{messageId} {
+  // Collaboration messages should be visible to authenticated users or to explicitly public messages
+  allow read: if isAuthenticated() || (resource.data != null && resource.data.public == true);
+        allow create: if isAuthenticated();
+        allow update, delete: if false;
+      }
+
+      // Completion requests subcollection
+      match /completionRequests/{requestId} {
+        allow read: if isAuthenticated() && (
+          get(/databases/$(database)/documents/collaborations/$(collaborationId)).data.creatorId == request.auth.uid ||
+          resource.data.requesterId == request.auth.uid ||
+          isAdmin()
+        );
+        allow create: if isAuthenticated() && request.resource.data.requesterId == request.auth.uid;
+        allow update, delete: if false;
+      }
+    }
+
+    // Challenges
+    match /challenges/{challengeId} {
+      // Allow authenticated users to read challenges; allow public flag for anonymous access
+      allow read: if isAuthenticated() || (resource.data != null && resource.data.public == true);
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && (resource.data.creatorId == request.auth.uid || isAdmin());
+    }
+
+    // Notifications
+    match /notifications/{notificationId} {
+      // Only the owner (userId) or an admin can read
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      // Only the owner or admin can create
+      allow create: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid || isAdmin()
+      );
+      // Only the owner or admin can update/delete
+      allow update, delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+    }
+
+    // User XP Collection - for gamification (readable by all authenticated users for leaderboards)
+    match /userXP/{userId} {
+      allow read: if isAuthenticated(); // Allow reading for leaderboards
+      allow create, update: if isAuthenticated() && (
+        userId == request.auth.uid || isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // XP Transactions Collection - for tracking XP history
+    match /xpTransactions/{transactionId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow create: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow update, delete: if isAdmin();
+    }
+
+    // Connections Collection - for user connections/friendships
+    match /connections/{connectionId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.connectedUserId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid
+      );
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.connectedUserId == request.auth.uid ||
+        isAdmin()
+      );
+      allow delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.connectedUserId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+
+    // User Follows Collection - for leaderboard following
+    match /userFollows/{followId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (
+        request.resource.data.followerId == request.auth.uid
+      );
+      allow update, delete: if isAuthenticated() && (
+        resource.data.followerId == request.auth.uid || isAdmin()
+      );
+    }
+
+    // Leaderboards Collection - for leaderboard data (read-only for users)
+    match /leaderboards/{leaderboardId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Leaderboard Stats Collection - for time-period specific leaderboard data
+    match /leaderboardStats/{statId} {
+      allow read: if isAuthenticated(); // Allow all authenticated users to read leaderboard stats
+      allow create, update: if isAdmin(); // Only admins and system can write
+      allow delete: if isAdmin();
+    }
+
+    // User Stats Collection - for trade counts, collaboration ratings, etc.
+    match /userStats/{userId} {
+      allow read: if isAuthenticated(); // Allow reading for leaderboards
+      allow create, update: if isAuthenticated() && (
+        userId == request.auth.uid || isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // User Streaks Collection - for login/challenge/skill streaks
+    // Document IDs are formatted as `${userId}_${type}` so we can authorize via path variable
+    match /userStreaks/{streakId} {
+      // Only the owner of the streak can read or write their own streak documents
+      allow read, create, update: if isAuthenticated() && streakId.matches('^' + request.auth.uid + '_.*$');
+      // Do not allow deletes from client
+      allow delete: if false;
+    }
+
+    // Social Stats Collection - for social features and leaderboard appearances
+    match /socialStats/{userId} {
+      allow read: if isAuthenticated(); // Allow reading for social features
+      allow create, update: if isAuthenticated() && (
+        userId == request.auth.uid || isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Performance Metrics Collection - for RUM data collection
+    match /performance_metrics/{metricId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+  }
+}

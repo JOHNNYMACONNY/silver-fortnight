@@ -1,0 +1,96 @@
+# Firebase Security Rules Validation Report
+Generated: Wed Sep 17 09:00:25 PM UTC 2025
+
+## Validation Results
+
+### Syntax Validation
+No lint output produced in this run.
+No lint output produced in this run.
+
+### Security Tests
+
+> test:security
+> npm run security:test
+
+
+> security:test
+> npx jest --config jest.config.security.cjs
+
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /workspace/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+PASS security src/__tests__/firebase-security.test.ts
+  Firebase Security Rules
+    User Profiles
+      ✓ allows users to read their own profile
+      ✓ prevents users from reading other profiles without permission
+      ✓ allows users to update their own profile (1 ms)
+      ✓ prevents users from updating other profiles
+    Trade Records
+      ✓ allows trade participants to read their trades
+      ✓ prevents non-participants from reading trades
+    Storage Rules
+      Profile Images
+        ✓ allows users to upload their own profile image
+        ✓ prevents users from uploading to other profiles
+        ✓ enforces file size limits (1 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       9 passed, 9 total
+Snapshots:   0 total
+Time:        0.395 s, estimated 1 s
+Ran all test suites.
+
+### Coverage Analysis
+
+> test:security
+> npm run security:test --coverage
+
+
+> security:test
+> npx jest --config jest.config.security.cjs
+
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /workspace/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+PASS security src/__tests__/firebase-security.test.ts
+  Firebase Security Rules
+    User Profiles
+      ✓ allows users to read their own profile
+      ✓ prevents users from reading other profiles without permission
+      ✓ allows users to update their own profile
+      ✓ prevents users from updating other profiles (1 ms)
+    Trade Records
+      ✓ allows trade participants to read their trades
+      ✓ prevents non-participants from reading trades
+    Storage Rules
+      Profile Images
+        ✓ allows users to upload their own profile image
+        ✓ prevents users from uploading to other profiles
+        ✓ enforces file size limits
+
+Test Suites: 1 passed, 1 total
+Tests:       9 passed, 9 total
+Snapshots:   0 total
+Time:        0.358 s, estimated 1 s
+Ran all test suites.
+
+### Security Issues
+npm error could not determine executable to run
+npm error A complete log of this run can be found in: /home/ubuntu/.npm/_logs/2025-09-17T21_00_25_226Z-debug-0.log
+
+Suggested actions:
+- Install gitleaks locally (brew install gitleaks) or download the binary from https://github.com/zricethezav/gitleaks/releases
+- Or add a supported wrapper to devDependencies so CI can run the scanner
+
+## Recommendations

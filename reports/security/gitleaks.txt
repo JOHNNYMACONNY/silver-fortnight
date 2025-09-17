@@ -1,5 +1,5 @@
 npm error could not determine executable to run
-npm error A complete log of this run can be found in: /Users/johnroberts/.npm/_logs/2025-09-09T10_33_15_973Z-debug-0.log
+npm error A complete log of this run can be found in: /home/ubuntu/.npm/_logs/2025-09-17T21_00_25_226Z-debug-0.log
 
 Suggested actions:
 - Install gitleaks locally (brew install gitleaks) or download the binary from https://github.com/zricethezav/gitleaks/releases
