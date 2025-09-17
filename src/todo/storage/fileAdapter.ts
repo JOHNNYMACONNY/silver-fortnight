@@ -138,7 +138,6 @@ export class FileStorageAdapter implements IStorageAdapter {
   }
 
   // Optional cleanup (nothing persistent to close here)
-  // eslint-disable-next-line @typescript-eslint/require-await
   async dispose(): Promise<void> {
     // No persistent handles. Attempt to remove stale tmp if exists.
     await safeUnlink(this.tmpPath);
