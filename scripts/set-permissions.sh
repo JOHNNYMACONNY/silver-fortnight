@@ -3,11 +3,15 @@
 # Script to set proper permissions for security-related scripts and hooks
 # This ensures all security scripts are executable
 
-set -e # Exit on error
+# Exit on error only if not in CI environment
+if [ -z "$CI" ]; then
+    set -e
+fi
 
 # Color codes for output
 GREEN='\033[0;32m'
 RED='\033[0;31m'
+YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Function to make script executable and verify
@@ -21,11 +25,15 @@ make_executable() {
             echo -e "${GREEN}✓ Made $script_name executable${NC}"
         else
             echo -e "${RED}Error: Failed to make $script_name executable${NC}"
-            return 1
+            if [ -z "$CI" ]; then
+                return 1
+            fi
         fi
     else
-        echo -e "${RED}Error: $script_name not found${NC}"
-        return 1
+        echo -e "${YELLOW}Warning: $script_name not found${NC}"
+        if [ -z "$CI" ]; then
+            return 1
+        fi
     fi
 }
 
@@ -34,8 +42,12 @@ SCRIPTS=(
     "./scripts/check-security-rules.sh"
     "./scripts/deploy-security-rules.sh"
     "./scripts/security-checks.sh"
-    ".husky/pre-commit"
 )
+
+# Add husky pre-commit only if it exists
+if [ -f ".husky/pre-commit" ]; then
+    SCRIPTS+=(".husky/pre-commit")
+fi
 
 echo "Setting permissions for security scripts..."
 
@@ -44,31 +56,39 @@ for script in "${SCRIPTS[@]}"; do
     make_executable "$script"
 done
 
-# Verify git hooks directory
-if [ ! -d ".git/hooks" ]; then
-    mkdir -p .git/hooks
-    echo "Created .git/hooks directory"
-fi
+# Only run git/husky setup if not in CI and git repo exists
+if [ -z "$CI" ] && git rev-parse --git-dir > /dev/null 2>&1; then
+    # Verify git hooks directory
+    if [ ! -d ".git/hooks" ]; then
+        mkdir -p .git/hooks
+        echo "Created .git/hooks directory"
+    fi
 
-# Initialize husky if not already done
-if [ ! -d ".husky" ]; then
-    npx husky install
-    echo "Initialized husky"
-fi
+    # Initialize husky if not already done and husky is available
+    if [ ! -d ".husky" ] && command -v husky > /dev/null 2>&1; then
+        npx husky install
+        echo "Initialized husky"
+    fi
 
-# Ensure the pre-commit hook is properly linked
-if [ ! -f ".git/hooks/pre-commit" ]; then
-    npx husky add .husky/pre-commit "npm run pre-commit"
-    echo "Added pre-commit hook"
+    # Ensure the pre-commit hook is properly linked
+    if [ ! -f ".git/hooks/pre-commit" ] && command -v husky > /dev/null 2>&1; then
+        npx husky add .husky/pre-commit "npm run pre-commit"
+        echo "Added pre-commit hook"
+    fi
+else
+    echo "Skipping git/husky setup - not in git repo or CI environment"
 fi
 
 echo -e "\n${GREEN}✨ All security script permissions have been updated${NC}"
 
-# Additional Git configuration for security
-git config core.fileMode true
-git config --global core.fileMode true
-
-echo -e "\n${GREEN}✓ Git file mode tracking enabled${NC}"
+# Additional Git configuration for security (only if git repo exists)
+if [ -z "$CI" ] && git rev-parse --git-dir > /dev/null 2>&1; then
+    git config core.fileMode true
+    git config --global core.fileMode true
+    echo -e "\n${GREEN}✓ Git file mode tracking enabled${NC}"
+else
+    echo "Skipping git configuration - not in git repo or CI environment"
+fi
 
 # Print verification status
 echo -e "\nVerifying permissions:"

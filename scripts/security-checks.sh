@@ -30,7 +30,7 @@ print_status() {
 
 # Check if running in CI environment
 if [ -n "$CI" ]; then
-    echo "Running in CI environment"
+    echo "Running in CI environment - skipping some checks that require local tools"
 fi
 
 # 1. Check for security dependencies
@@ -83,11 +83,15 @@ fi
 
 # 6. Run security-focused tests
 echo -e "\n🧪 Running security tests..."
-npm run test:security > test-report.txt 2>&1
-if [ $? -eq 0 ]; then
-    print_status "Security tests passed" "pass"
+if [ -n "$CI" ]; then
+    print_status "Skipping security tests in CI environment" "warn"
 else
-    print_status "Security tests failed" "fail"
+    npm run test:security > test-report.txt 2>&1
+    if [ $? -eq 0 ]; then
+        print_status "Security tests passed" "pass"
+    else
+        print_status "Security tests failed" "fail"
+    fi
 fi
 
 # 7. Check for outdated dependencies

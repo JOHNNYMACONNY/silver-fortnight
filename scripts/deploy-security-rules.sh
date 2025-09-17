@@ -104,6 +104,13 @@ deploy_rules() {
 
 # Main deployment process
 main() {
+    # Skip in CI environments where Firebase tools might not be available
+    if [ -n "$CI" ] && [ -z "$FIREBASE_TOKEN" ]; then
+        echo "Skipping Firebase security rules deployment in CI environment"
+        echo "Firebase tools and project configuration not available in build environment"
+        exit 0
+    fi
+    
     echo "Starting security rules deployment process..."
     
     # Check if in CI environment
