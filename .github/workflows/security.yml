@@ -107,9 +107,11 @@ jobs:
 
       - name: Detect Secrets
         uses: gitleaks/gitleaks-action@v2
+        with:
+            config-path: .gitleaks.toml
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}}
 
   compliance:
     name: Compliance Checks
