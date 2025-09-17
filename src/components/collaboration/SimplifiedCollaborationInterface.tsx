@@ -58,6 +58,7 @@ export const SimplifiedCollaborationInterface: React.FC<SimplifiedCollaborationI
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [collaborations, setCollaborations] = useState<SimpleCollaboration[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
 
   // Mock data for demonstration
   useEffect(() => {
@@ -325,7 +326,6 @@ export const SimplifiedCollaborationInterface: React.FC<SimplifiedCollaborationI
   );
 
   const renderCreateView = () => {
-    const [showWizard, setShowWizard] = useState(false);
 
     if (showWizard) {
       return (

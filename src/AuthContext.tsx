@@ -70,7 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const { data: profile } = await getUserProfile(user.uid);
           setUserProfile(profile || null);
           // Update login streak on session restore
-          try { await markLoginDay(user.uid); } catch (e) { /* non-blocking */ }
+          try { await markLoginDay(user.uid); } catch { /* non-blocking */ }
         } else {
           setUserProfile(null);
         }
@@ -105,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUserProfile(profile || null);
       await autoCreateUserProfile(); // Ensure Firestore user doc exists
       // Update login streak on successful sign-in
-      try { await markLoginDay(result.user.uid); } catch (e) { /* non-blocking */ }
+      try { await markLoginDay(result.user.uid); } catch { /* non-blocking */ }
       console.log('AuthProvider: Email sign in successful');
     } catch (err) {
       console.error('AuthProvider: Email sign in error', err);
@@ -130,7 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUserProfile(profile || null);
       await autoCreateUserProfile(); // Ensure Firestore user doc exists
       // Update login streak on successful Google sign-in
-      try { await markLoginDay(result.user.uid); } catch (e) { /* non-blocking */ }
+      try { await markLoginDay(result.user.uid); } catch { /* non-blocking */ }
       console.log('AuthProvider: Google sign in successful');
     } catch (err) {
       console.error('AuthProvider: Google sign in error', err);
