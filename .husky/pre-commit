@@ -73,6 +73,3 @@ if [ "$TYPESCRIPT_FILES" -gt 0 ]; then
 fi
 
 echo "✅ All pre-commit checks passed!"
-npm run precommit
-npm run pre-commit
-npm run pre-commit

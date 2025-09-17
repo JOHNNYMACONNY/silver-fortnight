@@ -3,6 +3,12 @@
 # Script to set proper permissions for security-related scripts and hooks
 # This ensures all security scripts are executable
 
+# Skip in CI/deployment environments
+if [ "$CI" = "true" ] || [ "$VERCEL" = "1" ] || [ "$NETLIFY" = "true" ]; then
+    echo "Skipping permission setup in CI/deployment environment"
+    exit 0
+fi
+
 set -e # Exit on error
 
 # Color codes for output
