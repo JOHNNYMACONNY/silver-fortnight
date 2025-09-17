@@ -13,9 +13,9 @@ jobs:
     name: Security Checks
     runs-on: ubuntu-latest
     permissions:
-      security-events: write
-      actions: read
+      issues: write
       contents: read
+      security-events: write
 
     steps:
       - name: Checkout repository
@@ -160,7 +160,8 @@ jobs:
     needs: [security, dependency-review, secret-detection, compliance]
     runs-on: ubuntu-latest
     if: failure()
-
+    permissions:
+      issues: write
     steps:
       - name: Send Notification
         uses: actions/github-script@v6
