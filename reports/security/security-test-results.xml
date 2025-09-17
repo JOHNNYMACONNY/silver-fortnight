@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="9" failures="0" errors="0" time="1.35">
-  <testsuite name="Firebase Security Rules" errors="0" failures="0" skipped="0" timestamp="2025-09-09T10:33:14" time="0.966" tests="9">
+<testsuites name="jest tests" tests="9" failures="0" errors="0" time="0.628">
+  <testsuite name="Firebase Security Rules" errors="0" failures="0" skipped="0" timestamp="2025-09-17T23:17:45" time="0.337" tests="9">
     <testcase classname="Firebase Security Rules › User Profiles" name="allows users to read their own profile" time="0.001">
     </testcase>
     <testcase classname="Firebase Security Rules › User Profiles" name="prevents users from reading other profiles without permission" time="0.001">
     </testcase>
-    <testcase classname="Firebase Security Rules › User Profiles" name="allows users to update their own profile" time="0.001">
+    <testcase classname="Firebase Security Rules › User Profiles" name="allows users to update their own profile" time="0">
     </testcase>
-    <testcase classname="Firebase Security Rules › User Profiles" name="prevents users from updating other profiles" time="0.001">
+    <testcase classname="Firebase Security Rules › User Profiles" name="prevents users from updating other profiles" time="0">
     </testcase>
     <testcase classname="Firebase Security Rules › Trade Records" name="allows trade participants to read their trades" time="0.001">
     </testcase>
-    <testcase classname="Firebase Security Rules › Trade Records" name="prevents non-participants from reading trades" time="0.001">
+    <testcase classname="Firebase Security Rules › Trade Records" name="prevents non-participants from reading trades" time="0">
     </testcase>
-    <testcase classname="Firebase Security Rules › Storage Rules › Profile Images" name="allows users to upload their own profile image" time="0.001">
+    <testcase classname="Firebase Security Rules › Storage Rules › Profile Images" name="allows users to upload their own profile image" time="0">
     </testcase>
     <testcase classname="Firebase Security Rules › Storage Rules › Profile Images" name="prevents users from uploading to other profiles" time="0">
     </testcase>

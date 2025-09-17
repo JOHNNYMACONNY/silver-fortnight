@@ -715,7 +715,7 @@ export const getRecommendedChallenges = async (userId: string): Promise<Challeng
     // Heuristic: prefer categories the user recently engaged with
     const recent = await getUserChallenges(userId, [UserChallengeStatus.ACTIVE, UserChallengeStatus.COMPLETED]);
     const preferredCategories = new Set<ChallengeCategory>();
-    let difficultyTally: Record<string, number> = { beginner: 0, intermediate: 0, advanced: 0, expert: 0 };
+    const difficultyTally: Record<string, number> = { beginner: 0, intermediate: 0, advanced: 0, expert: 0 };
 
     if (recent.success && recent.challenges?.length) {
       for (const c of recent.challenges) {
