@@ -18,6 +18,13 @@
 .DS_Store
 .env
 .env.local
+
+# deployment
+security-audit.txt
+eslint-report.txt
+test-report.txt
+outdated-report.txt
+security-report.md
 .env.development
 .env.test
 .env.production

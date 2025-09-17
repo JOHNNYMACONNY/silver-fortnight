@@ -31,5 +31,9 @@
   "framework": "vite",
   "github": {
     "silent": true
+  },
+  "installCommand": "npm ci --ignore-scripts && npm run build",
+  "env": {
+    "VERCEL": "1"
   }
 }
