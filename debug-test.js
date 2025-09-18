@@ -1,4 +1,5 @@
 // Simple debug test to check if basic React testing is working
+const React = require('react');
 const { render, screen } = require('@testing-library/react');
 require('@testing-library/jest-dom');
 
@@ -19,7 +20,6 @@ jest.mock('./src/services/roleApplications', () => ({
   submitRoleApplication: jest.fn().mockResolvedValue({ success: true, data: {} }),
 }));
 
-const React = require('react');
 
 // Simple test component
 function TestComponent() {

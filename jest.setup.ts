@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import "@testing-library/jest-dom";
 import { TextEncoder } from "util";
 
@@ -84,11 +85,14 @@ jest.doMock("@firebase/rules-unit-testing", () => {
 
   return impl;
 });
-const rulesTesting = jest.requireMock("@firebase/rules-unit-testing") as {
-  initializeTestEnvironment: jest.Mock;
-  assertSucceeds: jest.Mock;
-  assertFails: jest.Mock;
-};
+// Define precise typing for the mocked rules-unit-testing API
+interface RulesTestingMocks {
+  initializeTestEnvironment: jest.Mock<Promise<typeof mockTestEnv>, []>;
+  assertSucceeds: jest.Mock<Promise<unknown>, [Promise<unknown>]>;
+  assertFails: jest.Mock<Promise<void>, [Promise<unknown>]>;
+}
+
+const rulesTesting = jest.requireMock("@firebase/rules-unit-testing") as RulesTestingMocks;
 
 jest.mock("firebase/firestore", () => ({
   doc: jest.fn(),
