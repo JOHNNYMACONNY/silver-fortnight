@@ -1,29 +1,24 @@
 {
-  "totalAssets": 1658,
+  "totalAssets": 1715,
   "byType": {
     "other": {
-      "count": 16,
-      "totalSize": 34671
+      "count": 15,
+      "totalSize": 28523
     },
     "configs": {
       "count": 5,
-      "totalSize": 755444
+      "totalSize": 802203
     },
     "icons": {
       "count": 1,
-      "totalSize": 2789
+      "totalSize": 2800
     },
     "images": {
-      "count": 1636,
-      "totalSize": 81676119
+      "count": 1694,
+      "totalSize": 84334380
     }
   },
   "structure": {
-    ".DS_Store": {
-      "type": "file",
-      "category": "other",
-      "size": "6 KB"
-    },
     "_headers": {
       "type": "file",
       "category": "other",
@@ -37,7 +32,7 @@
     "asset-report.json": {
       "type": "file",
       "category": "configs",
-      "size": "732.6 KB"
+      "size": "778.27 KB"
     },
     "assets": "directory",
     "assets/css": "directory",
@@ -70,7 +65,7 @@
     "favicon.ico": {
       "type": "file",
       "category": "icons",
-      "size": "2.72 KB"
+      "size": "2.73 KB"
     },
     "favicon.png": {
       "type": "file",
@@ -81,12 +76,12 @@
     "icons/favicon-144x144.png": {
       "type": "file",
       "category": "images",
-      "size": "8.66 KB"
+      "size": "8.37 KB"
     },
     "icons/favicon-16x16.png": {
       "type": "file",
       "category": "images",
-      "size": "865 Bytes"
+      "size": "882 Bytes"
     },
     "icons/favicon-192x192.png": {
       "type": "file",
@@ -101,22 +96,22 @@
     "icons/favicon-32x32.png": {
       "type": "file",
       "category": "images",
-      "size": "1.9 KB"
+      "size": "1.89 KB"
     },
     "icons/favicon-48x48.png": {
       "type": "file",
       "category": "images",
-      "size": "2.67 KB"
+      "size": "2.71 KB"
     },
     "icons/favicon-512x512.png": {
       "type": "file",
       "category": "images",
-      "size": "76.23 KB"
+      "size": "76.24 KB"
     },
     "icons/favicon-96x96.png": {
       "type": "file",
       "category": "images",
-      "size": "5.34 KB"
+      "size": "5.39 KB"
     },
     "icons/optimized": "directory",
     "icons/optimized/optimized": "directory",
@@ -743,7 +738,7 @@
     "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-16x16.png": {
       "type": "file",
       "category": "images",
-      "size": "474 Bytes"
+      "size": "476 Bytes"
     },
     "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-192x192.png": {
       "type": "file",
@@ -2098,6 +2093,88 @@
       "category": "images",
       "size": "453 Bytes"
     },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-192x192.png": {
+      "type": "file",
+      "category": "images",
+      "size": "7.23 KB"
+    },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-256x256.png": {
+      "type": "file",
+      "category": "images",
+      "size": "12.54 KB"
+    },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-32x32.png": {
+      "type": "file",
+      "category": "images",
+      "size": "764 Bytes"
+    },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-48x48.png": {
+      "type": "file",
+      "category": "images",
+      "size": "1.22 KB"
+    },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-512x512.png": {
+      "type": "file",
+      "category": "images",
+      "size": "37.75 KB"
+    },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-96x96.png": {
+      "type": "file",
+      "category": "images",
+      "size": "2.88 KB"
+    },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-144x144.png": {
+      "type": "file",
+      "category": "images",
+      "size": "4.78 KB"
+    },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-16x16.png": {
+      "type": "file",
+      "category": "images",
+      "size": "453 Bytes"
+    },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-192x192.png": {
+      "type": "file",
+      "category": "images",
+      "size": "7.23 KB"
+    },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-256x256.png": {
+      "type": "file",
+      "category": "images",
+      "size": "12.54 KB"
+    },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-32x32.png": {
+      "type": "file",
+      "category": "images",
+      "size": "764 Bytes"
+    },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-48x48.png": {
+      "type": "file",
+      "category": "images",
+      "size": "1.22 KB"
+    },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-512x512.png": {
+      "type": "file",
+      "category": "images",
+      "size": "37.75 KB"
+    },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-96x96.png": {
+      "type": "file",
+      "category": "images",
+      "size": "2.88 KB"
+    },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-144x144.png": {
+      "type": "file",
+      "category": "images",
+      "size": "4.78 KB"
+    },
+    "icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-16x16.png": {
+      "type": "file",
+      "category": "images",
+      "size": "453 Bytes"
+    },
     "images": "directory",
     "images/logos": "directory",
     "images/optimized": "directory",
@@ -2150,6 +2227,18 @@
     "images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
     "images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
     "images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
+    "images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
+    "images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
+    "images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/tradeya-logo.png": {
+      "type": "file",
+      "category": "images",
+      "size": "111.95 KB"
+    },
+    "images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/tradeya-logo.png": {
+      "type": "file",
+      "category": "images",
+      "size": "111.95 KB"
+    },
     "images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/tradeya-logo.png": {
       "type": "file",
       "category": "images",
@@ -2517,7 +2606,7 @@
     "optimized/icons/optimized/optimized/favicon-16x16.png": {
       "type": "file",
       "category": "images",
-      "size": "651 Bytes"
+      "size": "652 Bytes"
     },
     "optimized/icons/optimized/optimized/favicon-192x192.png": {
       "type": "file",
@@ -4845,6 +4934,88 @@
       "category": "images",
       "size": "2.92 KB"
     },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-144x144.png": {
+      "type": "file",
+      "category": "images",
+      "size": "4.75 KB"
+    },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-16x16.png": {
+      "type": "file",
+      "category": "images",
+      "size": "442 Bytes"
+    },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-192x192.png": {
+      "type": "file",
+      "category": "images",
+      "size": "7.87 KB"
+    },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-256x256.png": {
+      "type": "file",
+      "category": "images",
+      "size": "11.95 KB"
+    },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-32x32.png": {
+      "type": "file",
+      "category": "images",
+      "size": "775 Bytes"
+    },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-48x48.png": {
+      "type": "file",
+      "category": "images",
+      "size": "1.16 KB"
+    },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-512x512.png": {
+      "type": "file",
+      "category": "images",
+      "size": "36.19 KB"
+    },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-96x96.png": {
+      "type": "file",
+      "category": "images",
+      "size": "2.92 KB"
+    },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-144x144.png": {
+      "type": "file",
+      "category": "images",
+      "size": "4.75 KB"
+    },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-16x16.png": {
+      "type": "file",
+      "category": "images",
+      "size": "442 Bytes"
+    },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-192x192.png": {
+      "type": "file",
+      "category": "images",
+      "size": "7.87 KB"
+    },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-256x256.png": {
+      "type": "file",
+      "category": "images",
+      "size": "11.95 KB"
+    },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-32x32.png": {
+      "type": "file",
+      "category": "images",
+      "size": "775 Bytes"
+    },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-48x48.png": {
+      "type": "file",
+      "category": "images",
+      "size": "1.16 KB"
+    },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-512x512.png": {
+      "type": "file",
+      "category": "images",
+      "size": "36.19 KB"
+    },
+    "optimized/icons/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon-96x96.png": {
+      "type": "file",
+      "category": "images",
+      "size": "2.92 KB"
+    },
     "optimized/images": "directory",
     "optimized/images/optimized": "directory",
     "optimized/images/optimized/optimized": "directory",
@@ -4904,6 +5075,18 @@
     "optimized/images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
     "optimized/images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
     "optimized/images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
+    "optimized/images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
+    "optimized/images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
+    "optimized/images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/tradeya-logo.png": {
+      "type": "file",
+      "category": "images",
+      "size": "118.73 KB"
+    },
+    "optimized/images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/tradeya-logo.png": {
+      "type": "file",
+      "category": "images",
+      "size": "118.73 KB"
+    },
     "optimized/images/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/tradeya-logo.png": {
       "type": "file",
       "category": "images",
@@ -5607,6 +5790,18 @@
       "category": "images",
       "size": "111.95 KB"
     },
+    "optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
+    "optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon.png": {
+      "type": "file",
+      "category": "images",
+      "size": "111.95 KB"
+    },
+    "optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
+    "optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/favicon.png": {
+      "type": "file",
+      "category": "images",
+      "size": "111.95 KB"
+    },
     "react-test.html": {
       "type": "file",
       "category": "other",
@@ -5917,7 +6112,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "635.43 KB"
+      "size": "635.44 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -5948,7 +6143,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.47 KB"
+      "size": "637.46 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6010,7 +6205,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "635.72 KB"
+      "size": "635.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6041,7 +6236,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.07 KB"
+      "size": "637.14 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6072,7 +6267,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "631.6 KB"
+      "size": "631.66 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6103,7 +6298,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "629.75 KB"
+      "size": "629.81 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6134,7 +6329,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "622.63 KB"
+      "size": "622.67 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6165,7 +6360,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "639.78 KB"
+      "size": "639.85 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6196,7 +6391,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6227,7 +6422,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6258,7 +6453,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6289,7 +6484,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6320,7 +6515,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6351,7 +6546,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6382,7 +6577,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6413,7 +6608,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6444,7 +6639,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6475,7 +6670,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6506,7 +6701,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6537,7 +6732,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6568,7 +6763,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6599,7 +6794,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6630,7 +6825,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6661,7 +6856,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6692,7 +6887,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6723,7 +6918,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6754,7 +6949,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6785,7 +6980,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6816,7 +7011,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6847,7 +7042,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6878,7 +7073,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6909,7 +7104,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6940,7 +7135,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -6971,7 +7166,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7002,7 +7197,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7033,7 +7228,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7064,7 +7259,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7095,7 +7290,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7126,7 +7321,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7157,7 +7352,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7188,7 +7383,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7219,7 +7414,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7250,7 +7445,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7281,7 +7476,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7312,7 +7507,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7343,7 +7538,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7374,7 +7569,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7405,7 +7600,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7436,7 +7631,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
       "type": "file",
       "category": "images",
-      "size": "637.71 KB"
+      "size": "637.8 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
       "type": "file",
@@ -7457,6 +7652,108 @@
       "type": "file",
       "category": "images",
       "size": "28.85 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/accessibility.png": {
+      "type": "file",
+      "category": "images",
+      "size": "26.98 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
+      "type": "file",
+      "category": "images",
+      "size": "637.8 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
+      "type": "file",
+      "category": "images",
+      "size": "3.91 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/context.png": {
+      "type": "file",
+      "category": "images",
+      "size": "5.52 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/docs.png": {
+      "type": "file",
+      "category": "images",
+      "size": "20.06 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/figma-plugin.png": {
+      "type": "file",
+      "category": "images",
+      "size": "28.85 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized": "directory",
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/accessibility.png": {
+      "type": "file",
+      "category": "images",
+      "size": "26.98 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/addon-library.png": {
+      "type": "file",
+      "category": "images",
+      "size": "637.8 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/assets.png": {
+      "type": "file",
+      "category": "images",
+      "size": "3.91 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/context.png": {
+      "type": "file",
+      "category": "images",
+      "size": "5.52 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/docs.png": {
+      "type": "file",
+      "category": "images",
+      "size": "20.06 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/figma-plugin.png": {
+      "type": "file",
+      "category": "images",
+      "size": "28.85 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/share.png": {
+      "type": "file",
+      "category": "images",
+      "size": "28.02 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/styling.png": {
+      "type": "file",
+      "category": "images",
+      "size": "6.13 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/testing.png": {
+      "type": "file",
+      "category": "images",
+      "size": "32.08 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/theming.png": {
+      "type": "file",
+      "category": "images",
+      "size": "32.88 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/share.png": {
+      "type": "file",
+      "category": "images",
+      "size": "28.02 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/styling.png": {
+      "type": "file",
+      "category": "images",
+      "size": "6.13 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/testing.png": {
+      "type": "file",
+      "category": "images",
+      "size": "32.08 KB"
+    },
+    "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/theming.png": {
+      "type": "file",
+      "category": "images",
+      "size": "32.88 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/optimized/share.png": {
       "type": "file",
@@ -8556,7 +8853,7 @@
     "src/stories/assets/optimized/optimized/optimized/optimized/theming.png": {
       "type": "file",
       "category": "images",
-      "size": "32.88 KB"
+      "size": "30.45 KB"
     },
     "src/stories/assets/optimized/optimized/optimized/share.png": {
       "type": "file",
@@ -8576,7 +8873,7 @@
     "src/stories/assets/optimized/optimized/optimized/theming.png": {
       "type": "file",
       "category": "images",
-      "size": "35.8 KB"
+      "size": "33.37 KB"
     },
     "src/stories/assets/optimized/optimized/share.png": {
       "type": "file",
@@ -8591,7 +8888,7 @@
     "src/stories/assets/optimized/optimized/testing.png": {
       "type": "file",
       "category": "images",
-      "size": "36.74 KB"
+      "size": "36.73 KB"
     },
     "src/stories/assets/optimized/optimized/theming.png": {
       "type": "file",
@@ -8611,7 +8908,7 @@
     "src/stories/assets/optimized/testing.png": {
       "type": "file",
       "category": "images",
-      "size": "37.3 KB"
+      "size": "37.29 KB"
     },
     "src/stories/assets/optimized/theming.png": {
       "type": "file",

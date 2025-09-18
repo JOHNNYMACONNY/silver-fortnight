@@ -109,7 +109,7 @@ export const discoverChallenges = async (
     const userContext = await buildUserContext(userId);
     
     // Build base query
-    let challengesQuery = collection(db(), 'challenges');
+    const challengesQuery = collection(db(), 'challenges');
     const constraints: any[] = [];
 
     // Apply filters

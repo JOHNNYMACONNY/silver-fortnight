@@ -365,7 +365,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
       let uploadedPublicId: string | undefined;
       if (avatarFile) {
         // Try dedicated profile preset first
-        let res = await uploadProfileImage(avatarFile);
+        const res = await uploadProfileImage(avatarFile);
         if (res.error) {
           // Fallback to generic upload preset (portfolio) in the same folder
           const retry = await uploadImage(avatarFile, 'users/profiles');

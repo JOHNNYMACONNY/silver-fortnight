@@ -274,7 +274,7 @@ export class AdvancedCodeSplittingService {
     });
 
     // Track time spent on pages
-    let pageStartTime = Date.now();
+    const pageStartTime = Date.now();
     window.addEventListener('beforeunload', () => {
       const timeSpent = Date.now() - pageStartTime;
       this.trackTimeSpent(window.location.pathname, timeSpent);

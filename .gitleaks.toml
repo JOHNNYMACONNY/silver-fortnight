@@ -5,12 +5,18 @@
 title = "Firebase Security GitLeaks Configuration"
 
 [allowlist]
+description = "Global Allowlist"
 paths = [
     '''node_modules''',
     '''dist''',
     '''coverage''',
     '''(.*?)(jpg|gif|doc|pdf|bin)$''',
-    '''package-lock.json$'''
+    '''package-lock.json$''',
+    '''jest\.config\.js$''',
+    '''package\.json$''',
+    '''tsconfig\.json$''',
+    '''README\.md$''',
+    '''CHANGELOG\.md$'''
 ]
 
 # Whitelist test files that might contain mock credentials
@@ -129,12 +135,3 @@ paths = [
     '''.*test\.ts$'''
 ]
 
-[allowlist]
-description = "Global Allowlist"
-paths = [
-    '''jest\.config\.js$''',
-    '''package\.json$''',
-    '''tsconfig\.json$''',
-    '''README\.md$''',
-    '''CHANGELOG\.md$'''
-]
