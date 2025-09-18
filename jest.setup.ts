@@ -61,28 +61,34 @@ const mockTestEnv = {
 (global as unknown as { testEnv?: unknown }).testEnv = mockTestEnv;
 
 // Mock Firebase testing module and wire its functions to the mock implementation
-jest.mock("@firebase/rules-unit-testing", () => ({
-  initializeTestEnvironment: jest.fn(),
-  assertSucceeds: jest.fn(),
-  assertFails: jest.fn(),
-}));
+// Use doMock (non-hoisted) so the mock factory runs at runtime after `mockTestEnv` is defined.
+// This avoids "Cannot access 'mockTestEnv' before initialization" when Jest hoists jest.mock calls.
+jest.doMock("@firebase/rules-unit-testing", () => {
+  const impl = {
+    initializeTestEnvironment: jest.fn(),
+    assertSucceeds: jest.fn(),
+    assertFails: jest.fn(),
+  };
+
+  // Wire the mocks to the already-initialized mockTestEnv
+  impl.initializeTestEnvironment.mockResolvedValue(mockTestEnv);
+  impl.assertSucceeds.mockImplementation(async (p: Promise<unknown>) => await p);
+  impl.assertFails.mockImplementation(async (p: Promise<unknown>) => {
+    try {
+      await p;
+      throw new Error("Operation allowed");
+    } catch {
+      return;
+    }
+  });
+
+  return impl;
+});
 const rulesTesting = jest.requireMock("@firebase/rules-unit-testing") as {
   initializeTestEnvironment: jest.Mock;
   assertSucceeds: jest.Mock;
   assertFails: jest.Mock;
 };
-rulesTesting.initializeTestEnvironment.mockResolvedValue(mockTestEnv);
-rulesTesting.assertSucceeds.mockImplementation(
-  async (p: Promise<unknown>) => await p
-);
-rulesTesting.assertFails.mockImplementation(async (p: Promise<unknown>) => {
-  try {
-    await p;
-    throw new Error("Operation allowed");
-  } catch {
-    return;
-  }
-});
 
 jest.mock("firebase/firestore", () => ({
   doc: jest.fn(),
