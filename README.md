@@ -1,763 +1,504 @@
-# TradeYa
+# Gitleaks
 
-A platform for trading skills and services, connecting people who want to exchange their expertise.
-
-## Live Demo
-
-Check out the live demo at:
-
-- Vercel (Primary): [https://silver-fortnight-3xswhkfqv-johnny-maconnys-projects.vercel.app](https://silver-fortnight-3xswhkfqv-johnny-maconnys-projects.vercel.app)
-- Firebase (Alternative): [https://tradeya-45ede.web.app](https://tradeya-45ede.web.app)
-
-For detailed deployment information, see [DEPLOYMENT.md](DEPLOYMENT.md).
-
-## Project Setup
-
-This project is built with:
-
-- React 18
-- TypeScript
-- Vite
-- Firebase (Authentication, Firestore, Storage, Hosting)
-- Vercel (Hosting)
-- Cloudinary (Image storage and management)
-- Tailwind CSS
-
-### Firebase Configuration
-
-This project uses Firebase for authentication, database, and storage. The Firebase configuration is stored in `src/firebase-config.ts` and uses environment variables to keep sensitive information secure.
-
-The following Firebase services are used:
-
-- **Authentication**: For user login and registration
-- **Firestore Database**: For storing user data, trades, projects, collaborations, and more
-- **Storage**: For storing user-uploaded files
-
-### Firestore Migration Status
-
-**🚀 Production Migration COMPLETE** ✅ (December 2025)
-
-TradeYa has successfully completed the comprehensive Firestore production migration with enterprise-grade deployment infrastructure, achieving 100% operational status with zero-downtime deployment capability.
-
-#### Migration Infrastructure - OPERATIONAL ✅
-
-**Production Deployment System:**
-- Enterprise-grade deployment infrastructure with automated validation
-- Zero-downtime deployment capability proven and operational
-- Real-time monitoring with sub-5ms response time achievement
-- Emergency rollback system operational (< 30 second capability)
-- Comprehensive safety mechanisms with 100% data integrity validation
-
-**Performance Achievements:**
-- **Response Time**: Sub-5ms normalization performance achieved
-- **Uptime**: 99.9%+ capability demonstrated and operational
-- **Error Rate**: < 0.1% error rate maintained in production
-- **Deployment Speed**: < 10 minutes average deployment time
-- **Rollback Speed**: < 30 seconds emergency rollback capability
-
-#### Production Operations Tooling ✅
-
-**Deployment & Validation Scripts:**
-- `npm run deploy:production:full` - Full production deployment
-- `npm run validate:production:full` - Complete production validation
-- `npm run monitor:production:realtime` - Real-time system monitoring
-- `npm run health:check:production` - Production health verification
-- `npm run rollback:emergency:execute` - Emergency rollback procedures
-
-**Performance & Monitoring:**
-- `npm run performance:monitor:production` - Production performance monitoring
-- `npm run monitor:errors:production` - Real-time error monitoring
-- `npm run performance:benchmark:current` - Current performance benchmarking
-- `npm run dashboard:production:view` - Production dashboard access
-
-**Migration Legacy Tools (Historical):**
-- `scripts/verify-indexes.ts` - Index verification tool (completed)
-- `scripts/analyze-firebase-dependencies.ts` - Dependency analysis (completed)
-- `scripts/migrate-schema.ts` - Schema migration utilities (completed)
-- `scripts/monitor-migration.ts` - Migration monitoring tools (completed)
-- `scripts/rollback-migration.ts` - Migration rollback procedures (completed)
-
-#### Production Migration Achievements ✅
-
-✅ **Enterprise Infrastructure Operational**
-- Production deployment system with automated validation
-- Real-time monitoring and alerting systems active
-- Emergency rollback procedures tested and operational
-- Zero-downtime deployment capability proven
-- Comprehensive safety and backup systems operational
-
-✅ **Performance Optimization Complete**
-- Sub-5ms response time achieved across all operations
-- 99.9%+ uptime capability demonstrated
-- < 0.1% error rate maintained in production
-- Memory optimization and resource management operational
-- Database query optimization and indexing complete
-
-✅ **Production Safety Validated**
-- Emergency procedures tested and documented
-- Comprehensive backup and recovery systems operational
-- Data integrity validation with 100% success rate
-- Rollback procedures validated with < 30 second capability
-- Multi-layer safety mechanisms operational
-
-#### Migration Compatibility Systems - COMPLETE ✅
-
-**Production Services (Operational):**
-- `src/services/migration/migrationRegistry.ts` - Production registry operational
-- `src/services/migration/chatCompatibility.ts` - Chat service operational
-- `src/services/migration/tradeCompatibility.ts` - Trade service operational
-- All compatibility layers successfully deployed and operational
-
-**Testing Infrastructure (Complete):**
-- `jest.config.migration.js` - Migration testing configuration
-- `jest.config.migration.staging.js` - Staging validation configuration
-- `jest.config.scripts.js` - Scripts testing configuration
-- All test suites passing with 100% validation success
-
-### Firestore Database Structure
-
-The application uses the following collections in Firestore:
-
-- **users**: User profiles and account information
-- **trades**: Trade listings with details about what users are offering and seeking
-  - Includes evidence fields for showcasing work through embedded content
-  - Supports both general evidence and completion-specific evidence
-- **conversations**: Message threads between users
-  - **messages**: Nested subcollection of individual messages within conversations
-- **notifications**: User notifications for various activities
-- **projects**: Project listings for collaboration
-- **collaborations**: Collaboration projects with detailed role information
-  - Includes evidence fields for showcasing work through embedded content
-  - Supports both general evidence and role-specific evidence
-- **reviews**: User reviews and ratings
-- **connections**: User connections and network
-- **challenges**: Community challenges and competitions
-- **achievements**: Gamification achievements and user progress
-- **userXP**: User experience points and level progression
-- **xpTransactions**: Historical XP transaction records
-
-The application uses nested collections for better organization and security. For example, messages are stored as a subcollection within conversations using the path `conversations/{conversationId}/messages/{messageId}`.
-
-### Firebase Services
-
-- **Authentication**: For user login and registration
-- **Firestore Database**: For storing application data with optimized indexes
-- **Storage**: For storing user-uploaded files
-- **Hosting**: For deploying the application
-- **Security Rules**: For controlling access to Firestore data
-- **Cloud Functions**: For automated tasks and server-side operations
-
-### Production Operations
-
-**System Monitoring:**
-```bash
-# Real-time production monitoring
-npm run monitor:production:comprehensive
-
-# Performance monitoring
-npm run performance:monitor:production
-
-# Health status verification
-npm run health:check:production
+```
+┌─○───┐
+│ │╲  │
+│ │ ○ │
+│ ○ ░ │
+└─░───┘
 ```
 
-**Deployment Operations:**
-```bash
-# Production deployment
-npm run deploy:production:full
+[license]: ./LICENSE
+[badge-license]: https://img.shields.io/github/license/gitleaks/gitleaks.svg
+[go-docs-badge]: https://pkg.go.dev/badge/github.com/gitleaks/gitleaks/v8?status
+[go-docs]: https://pkg.go.dev/github.com/zricethezav/gitleaks/v8
+[badge-build]: https://github.com/gitleaks/gitleaks/actions/workflows/test.yml/badge.svg
+[build]: https://github.com/gitleaks/gitleaks/actions/workflows/test.yml
+[go-report-card-badge]: https://goreportcard.com/badge/github.com/gitleaks/gitleaks/v8
+[go-report-card]: https://goreportcard.com/report/github.com/gitleaks/gitleaks/v8
+[dockerhub]: https://hub.docker.com/r/zricethezav/gitleaks
+[dockerhub-badge]: https://img.shields.io/docker/pulls/zricethezav/gitleaks.svg
+[gitleaks-action]: https://github.com/gitleaks/gitleaks-action
+[gitleaks-badge]: https://img.shields.io/badge/protected%20by-gitleaks-blue
+[gitleaks-playground-badge]: https://img.shields.io/badge/gitleaks%20-playground-blue
+[gitleaks-playground]: https://gitleaks.io/playground
 
-# Environment validation
-npm run validate:production:full
 
-# Emergency procedures
-npm run rollback:emergency:execute
+[![Github Action Test][badge-build]][build]
+[![Docker Hub][dockerhub-badge]][dockerhub]
+[![Gitleaks Playground][gitleaks-playground-badge]][gitleaks-playground]
+[![Gitleaks Action][gitleaks-badge]][gitleaks-action]
+[![GoDoc][go-docs-badge]][go-docs]
+[![GoReportCard][go-report-card-badge]][go-report-card]
+[![License][badge-license]][license]
+
+
+### Join our Discord! [![Discord](https://img.shields.io/discord/1102689410522284044.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/8Hzbrnkr7E)
+
+Gitleaks is a tool for **detecting** secrets like passwords, API keys, and tokens in git repos, files, and whatever else you wanna throw at it via `stdin`.
+
 ```
+➜  ~/code(master) gitleaks git -v
 
-**Performance Analysis:**
-```bash
-# Performance benchmarking
-npm run performance:benchmark:current
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
 
-# Performance trending analysis
-npm run performance:analyze:trends
 
-# Performance optimization
-npm run performance:optimize:recommendations
+Finding:     "export BUNDLE_ENTERPRISE__CONTRIBSYS__COM=cafebabe:deadbeef",
+Secret:      cafebabe:deadbeef
+RuleID:      sidekiq-secret
+Entropy:     2.609850
+File:        cmd/generate/config/rules/sidekiq.go
+Line:        23
+Commit:      cd5226711335c68be1e720b318b7bc3135a30eb2
+Author:      John
+Email:       john@users.noreply.github.com
+Date:        2022-08-03T12:31:40Z
+Fingerprint: cd5226711335c68be1e720b318b7bc3135a30eb2:cmd/generate/config/rules/sidekiq.go:sidekiq-secret:23
 ```
-
-### Cloudinary Integration
-
-The application uses Cloudinary for image storage and management. This provides several benefits:
-
-- **Optimized Image Delivery**: Cloudinary automatically optimizes images for different devices and network conditions
-- **Image Transformations**: Easily resize, crop, and transform images on-the-fly
-- **Responsive Images**: Automatically generate responsive images for different screen sizes
-- **CDN Delivery**: Fast image delivery through Cloudinary's global CDN
-
-## Enhanced Card System (Phase 2) ✨
-
-TradeYa features a modern, enhanced card system with advanced visual effects, accessibility, and performance optimizations (now fully integrated across all pages):
-
-### Features
-- **4 Card Variants**: `default`, `glass`, `elevated`, `premium`
-- **3D Tilt Effects**: Mouse-tracking with configurable intensity
-- **Brand-Specific Themes**: Orange (trade), Blue (user), Purple (collaboration)
-- **Glassmorphism**: Modern backdrop-blur effects with depth
-- **Accessibility**: Reduced motion support, keyboard navigation, screen reader optimization
-- **Performance**: GPU-accelerated animations, automatic feature detection
-- **Dark/Light Mode**: Seamless theme integration
-
-### Quick Usage
-```tsx
-import { Card, CardContent } from './components/ui/Card';
-
-<Card variant="glass" tilt={true} glowColor="orange" enhanced={true}>
-  <CardContent>
-    {/* Your content */}
-  </CardContent>
-</Card>
-```
-
-### Live Demo
-Visit `/card-test` in the running application to see all enhanced card features in action.
-
-**📖 Complete Documentation**: See [docs/ENHANCED_CARD_SYSTEM.md](docs/ENHANCED_CARD_SYSTEM.md) for comprehensive API documentation, migration guide, and best practices.
-
-## Documentation
-
-Detailed documentation is available for various aspects of the application:
-
-### Production Documentation
-- [Migration Project Status Final](docs/MIGRATION_PROJECT_STATUS_FINAL.md) - Complete project status and achievements
-- [Stakeholder Migration Update](docs/STAKEHOLDER_MIGRATION_UPDATE.md) - Executive summary and business impact
-- [Production Migration Runbook Final](docs/PRODUCTION_MIGRATION_RUNBOOK_FINAL.md) - Complete deployment procedures
-- [Migration Risk Assessment Update](docs/MIGRATION_RISK_ASSESSMENT_UPDATE.md) - Risk analysis and mitigation
-- [User Guide Technical Updated](docs/USER_GUIDE_TECHNICAL_UPDATED.md) - Comprehensive technical operations guide
-- [Comprehensive Documentation Index](docs/COMPREHENSIVE_DOCUMENTATION_INDEX.md) - Master documentation index
-
-### Core System Documentation
-- [Cloudinary Integration](CLOUDINARY.md) - Information about how Cloudinary is integrated for image uploads
-- [Profile Pictures](PROFILE_PICTURES.md) - Detailed documentation on profile picture handling
-- [Firebase Security Rules](docs/FIREBASE_SECURITY_RULES.md) - Comprehensive documentation of Firebase security rules for all collections
-- [Authentication](docs/AUTHENTICATION.md) - Detailed documentation on the authentication system including Google login
-- [Authentication Implementation](docs/AUTHENTICATION_IMPLEMENTATION.md) - Technical implementation guide with recent fixes and current state
-- [Testing](docs/TESTING.md) - Comprehensive testing documentation including current test coverage and strategies
-- [Real-time Listener Best Practices](docs/REALTIME_LISTENER_BEST_PRACTICES.md) - Best practices for working with Firebase Firestore real-time listeners, including how to avoid feedback loops
-
-### Feature Documentation
-- [Evidence Embed System](docs/EVIDENCE_EMBED_SYSTEM_SUMMARY.md) - Summary of the Evidence Embed System for showcasing work through embedded content
-  - [Detailed Implementation](docs/EVIDENCE_EMBED_SYSTEM_IMPLEMENTATION.md) - Comprehensive technical documentation of the Evidence Embed System
-- [Gamification System](docs/GAMIFICATION_IMPLEMENTATION_PHASE1.md) - Complete gamification system with XP, levels, and achievements
-- [Collaboration Roles System](docs/COLLABORATION_ROLES_SYSTEM.md) - Multi-user project collaboration with role management
-- [Trade Lifecycle System](docs/TRADE_LIFECYCLE_SYSTEM.md) - Complete trade management from creation to completion
-- [Portfolio System](docs/PORTFOLIO_SYSTEM.md) - User portfolio generation and management
-
-### Migration Documentation (Historical)
-- [Firestore Migration Implementation Guide](docs/FIRESTORE_MIGRATION_IMPLEMENTATION_GUIDE.md) - Complete guide for Firestore migration implementation
-- [Firestore Migration Analysis Report](docs/FIRESTORE_MIGRATION_ANALYSIS_REPORT.md) - Comprehensive analysis of migration requirements and approach
-- [Firestore Index Verification Tool](docs/FIRESTORE_INDEX_VERIFICATION_TOOL.md) - Documentation for index verification tooling
-- [Firestore Index Verification Implementation Summary](docs/FIRESTORE_INDEX_VERIFICATION_IMPLEMENTATION_SUMMARY.md) - Summary of verification tool implementation
-
-### Implementation Tracking
-- [Implementation Progress](docs/IMPLEMENTATION_PROGRESS.md) - Detailed progress tracking for all major features
-- [Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md) - High-level overview of completed systems
-
-## Current Status
-
-### Completed ✅
-
-- ✅ Basic project structure set up
-- ✅ Package.json configuration
-- ✅ TypeScript configuration
-- ✅ Vite configuration
-- ✅ Tailwind CSS integration
-- ✅ Firebase configuration
-- ✅ Authentication context
-- ✅ Basic routing
-- ✅ Layout components (Navbar, Footer)
-- ✅ Basic page components (Home, Profile, Trades)
-- ✅ Sign-up page with validation
-- ✅ Profile page with editing functionality
-- ✅ Trades listing page with filtering
-- ✅ Trade creation form
-- ✅ Trade detail page with contact form
-- ✅ User dashboard with activity overview
-- ✅ Edit and delete trades functionality
-- ✅ Password reset functionality
-- ✅ Real data storage with Firebase
-- ✅ Messaging functionality with real-time updates
-- ✅ Notifications system with real-time updates
-- ✅ User ratings and reviews system
-- ✅ Enhanced user interface with animations and transitions
-- ✅ Image upload functionality with Cloudinary
-- ✅ CI/CD pipeline with GitHub Actions and Firebase
-- ✅ Basic testing setup with Jest
-- ✅ Enhanced user profiles with skill badges and reputation system
-- ✅ Project collaboration system with applications
-- ✅ Deploy to production (Firebase)
-- ✅ Deploy to Vercel for multi-device testing
-- ✅ Add admin panel
-- ✅ Connections system
-- ✅ Advanced user directory
-- ✅ Challenges system
-- ✅ Robust error handling for data fetching
-- ✅ Firebase security rules implementation
-- ✅ Collaboration projects system with role management
-- ✅ Added creator profile pictures to collaboration projects
-- ✅ Fixed notification system type conflicts
-- ✅ Improved profile page skills handling for different data formats
-- ✅ Created required Firebase indexes for notifications and users collections
-- ✅ Fixed Cloudinary integration for profile pictures and image uploads
-- ✅ Fixed profile pictures not appearing by supporting both photoURL and profilePicture fields
-- ✅ Fixed profile placeholder image and SweetAlert initialization issues
-- ✅ Added specialized component for specific user profile picture
-- ✅ Updated profile picture handling to prioritize profilePicture field in Firebase
-- ✅ Implemented proper Content Security Policy for Vercel deployment
-- ✅ Added Google authentication with account linking for existing users
-- ✅ Implemented Evidence Embed System for showcasing work through embedded content
-- ✅ **Firestore Migration Phase 1 Complete**: Migration tooling, index verification, dependency analysis, and compatibility layers
-- ✅ **Firestore Migration Phase 2 COMPLETE**: Production deployment infrastructure with enterprise-grade capabilities
-- ✅ **Production Deployment OPERATIONAL**: Zero-downtime deployment with sub-5ms performance and 99.9%+ uptime
-- ✅ **Gamification System Complete**: XP tracking, level progression, achievements, real-time notifications, and leaderboards
-- ✅ **Portfolio System Complete**: Automatic portfolio generation with full management interface
-- ✅ **Trade Auto-Resolution System**: Automated trade completion with countdown timers and notifications
-
-### Current Focus - Operational Excellence
-
-- 🚀 **Production System Operational**: Enterprise-grade infrastructure with real-time monitoring
-- 🚀 **Performance Optimization**: Continuous performance monitoring and optimization
-- 🚀 **Operational Monitoring**: Real-time system health and performance tracking
-- 🚀 **Safety Systems Active**: Emergency procedures and rollback capabilities operational
-
-### Future Enhancements
-
-- 📝 Enhanced analytics and reporting
-- 📝 Advanced AI-powered recommendations
-- 📝 Mobile app development
-- 📝 Internationalization and localization
-- 📝 Advanced collaboration features
 
 ## Getting Started
 
-### Prerequisites
+Gitleaks can be installed using Homebrew, Docker, or Go. Gitleaks is also available in binary form for many popular platforms and OS types on the [releases page](https://github.com/gitleaks/gitleaks/releases). In addition, Gitleaks can be implemented as a pre-commit hook directly in your repo or as a GitHub action using [Gitleaks-Action](https://github.com/gitleaks/gitleaks-action).
 
-- Node.js (v16 or higher)
-- npm or yarn
-
-### Installation
-
-1. Clone the repository
+### Installing
 
 ```bash
-git clone <repository-url>
-cd tradeya
+# MacOS
+brew install gitleaks
+
+# Docker (DockerHub)
+docker pull zricethezav/gitleaks:latest
+docker run -v ${path_to_host_folder_to_scan}:/path zricethezav/gitleaks:latest [COMMAND] [OPTIONS] [SOURCE_PATH]
+
+# Docker (ghcr.io)
+docker pull ghcr.io/gitleaks/gitleaks:latest
+docker run -v ${path_to_host_folder_to_scan}:/path ghcr.io/gitleaks/gitleaks:latest [COMMAND] [OPTIONS] [SOURCE_PATH]
+
+# From Source (make sure `go` is installed)
+git clone https://github.com/gitleaks/gitleaks.git
+cd gitleaks
+make build
 ```
 
-1. Install dependencies
+### GitHub Action
 
-```bash
-npm install
+Check out the official [Gitleaks GitHub Action](https://github.com/gitleaks/gitleaks-action)
+
+```
+name: gitleaks
+on: [pull_request, push, workflow_dispatch]
+jobs:
+  scan:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE}} # Only required for Organizations, not personal accounts.
 ```
 
-1. Set up environment variables
-
-Create a `.env` file in the root directory with the following variables:
-
-```env
-VITE_FIREBASE_API_KEY=your-api-key
-VITE_FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your-project-id
-VITE_FIREBASE_STORAGE_BUCKET=your-project-id.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
-VITE_FIREBASE_APP_ID=your-app-id
-VITE_CLOUDINARY_CLOUD_NAME=your-cloud-name
-VITE_CLOUDINARY_UPLOAD_PRESET=your-upload-preset
-VITE_CLOUDINARY_API_KEY=your-api-key
-VITE_CLOUDINARY_API_SECRET=your-api-secret
-```
-
-> **Important**: Never commit your `.env` file to version control. It contains sensitive API keys and credentials. The `.env.example` file is provided as a template.
-
-1. Start the development server
-
-```bash
-npm run dev
-```
-
-### Building for Production
-
-```bash
-npm run build
-```
-
-### Preview Production Build
-
-```bash
-npm run preview
-```
-
-## Project Structure
-
-```text
-tradeya/
-├── public/              # Static assets
-├── src/                 # Source code
-│   ├── components/      # Reusable components
-│   │   ├── layout/      # Layout components (Navbar, Footer)
-│   │   ├── ui/          # UI components (Button, Input, etc.)
-│   │   └── features/    # Feature-specific components
-│   │       ├── chat/    # Chat and messaging components
-│   │       ├── connections/ # User connections components
-│   │       ├── evidence/   # Evidence embed components
-│   │       ├── gamification/ # Gamification UI components
-│   │       ├── notifications/ # Notification components
-│   │       ├── projects/ # Project-related components
-│   │       ├── reviews/ # Review components
-│   │       └── uploads/ # File upload components
-│   ├── pages/           # Page components
-│   │   ├── DashboardPage.tsx  # User dashboard
-│   │   ├── ProfilePage.tsx    # User profile
-│   │   ├── SignUpPage.tsx     # Sign up form
-│   │   ├── TradeDetailPage.tsx # Trade details
-│   │   ├── TradesPage.tsx     # Trades listing
-│   │   ├── ProjectsPage.tsx   # Projects listing
-│   │   ├── ProjectDetailPage.tsx # Project details
-│   │   ├── CollaborationDetailPage.tsx # Collaboration project details
-│   │   ├── ConnectionsPage.tsx # User connections
-│   │   ├── UserDirectoryPage.tsx # User directory
-│   │   ├── ChallengesPage.tsx # Challenges listing
-│   │   ├── LeaderboardPage.tsx # Gamification leaderboards
-│   │   └── admin/            # Admin pages
-│   ├── contexts/        # Context providers
-│   ├── services/        # Service modules (API calls, etc.)
-│   │   └── migration/   # Migration compatibility services (operational)
-│   ├── utils/           # Utility functions
-│   ├── hooks/           # Custom React hooks
-│   ├── types/           # TypeScript type definitions
-│   ├── App.tsx          # Main App component
-│   ├── AuthContext.tsx  # Authentication context
-│   ├── firebase-config.ts # Firebase configuration
-│   ├── main.tsx         # Entry point
-│   └── index.css        # Global styles
-├── scripts/             # Utility scripts
-│   ├── production/      # Production deployment scripts
-│   │   ├── production-deployment-executor.ts # Production deployment
-│   │   ├── production-monitoring.ts         # Production monitoring
-│   │   ├── production-rollback-system.ts    # Rollback procedures
-│   │   └── ...                              # Other production tools
-│   ├── verify-indexes.ts      # Index verification tool (legacy)
-│   ├── analyze-firebase-dependencies.ts # Dependency analysis (legacy)
-│   ├── migrate-schema.ts      # Schema migration utilities (legacy)
-│   ├── monitor-migration.ts   # Migration monitoring (legacy)
-│   ├── rollback-migration.ts  # Migration rollback (legacy)
-│   └── cleanup-legacy-fields.ts # Legacy cleanup (legacy)
-├── docs/                # Documentation
-├── .env                 # Environment variables (not in repo)
-├── .env.example         # Example environment variables
-├── firestore.rules      # Firebase security rules
-├── firestore.indexes.json # Firestore index definitions
-├── firebase.json        # Firebase configuration
-├── jest.config.ts       # Jest test configuration
-├── jest.config.migration.js # Migration test configuration
-├── index.html           # HTML template
-├── package.json         # Dependencies and scripts
-├── postcss.config.js    # PostCSS configuration
-├── tailwind.config.js   # Tailwind CSS configuration
-├── tsconfig.json        # TypeScript configuration
-├── tsconfig.node.json   # TypeScript Node configuration
-└── vite.config.ts       # Vite configuration
-```
-
-### Key Files
-
-- **firebase-config.ts**: Contains Firebase initialization and utility functions for authentication, database operations, and storage. Uses environment variables for configuration.
-- **AuthContext.tsx**: Provides authentication state and methods throughout the application.
-- **App.tsx**: Sets up routing and global providers for the application.
-- **firestore.ts**: Contains all Firestore database operations and interfaces.
-- **firestore.rules**: Contains Firebase security rules for controlling access to Firestore data.
-- **firestore.indexes.json**: Defines composite indexes for optimal query performance.
-
-## Recent Achievements
-### Challenges System Updates (August 2025)
-
-What changed
-- Standardized cards: `ChallengesPage` now uses shared `ChallengeCard` with footer CTAs (View/Join)
-- Tabs added: All / Active / My Challenges
-- Recommendations MVP: “Recommended for you” section powered by `getRecommendedChallenges`
-  - Now enriched using user’s recent categories and a difficulty band around their average
-  - Now excludes already-joined challenges in the returned results
-- UI hardening: Safe rendering for missing `difficulty` and `rewards.xp`
-- Detail page alignment: Uses `services/challenges.getChallenge` and shared types; normalizes `status`/`difficulty`
-- Dashboard: Mounted `ThreeTierProgressionUI`
-- Progression → Filters: `ThreeTierProgressionUI` tier clicks now navigate to `ChallengesPage?type=solo|trade|collaboration`; `ChallengesPage` applies the filter from the query param
-  - Added per‑tab empty‑states and a Clear filters control
-  - Challenge detail page now supports real joining and shows user progress with an “Ending soon” badge
-
-One-time maintenance
-- Normalize existing challenge docs:
-```bash
-npx tsx scripts/backfill-challenges.ts
-```
-- Verify indexes (e.g., status==ACTIVE + orderBy(endDate)) and deploy if needed:
-```bash
-npm run firebase:indexes:verify
-npm run deploy:indexes
-```
-
-Verify UI behavior
-```bash
-# Run targeted tests
-npx jest src/__tests__/ChallengesPageRender.test.tsx src/__tests__/ChallengesPageTabs.test.tsx src/__tests__/ChallengesPageEmptyAndClearFilters.test.tsx
-```
-
-Analytics (Challenges)
-- `challenge_recommendation_impressions`: count of recommended items shown
-- `challenge_joins`: total joins
-- `challenge_recommendation_joins`: joins originating from recommendations
-- `challenge_filters_zero_results`: filters produced zero results
-- `challenge_filters_cleared`: Clear filters action
-
-Indexes
-- Added composite index: `challenges (status ASC, endDate ASC)` for active challenges ordered by end date
-
-Seeding & E2E
-- Challenge seeding: `npx tsx scripts/seed-challenges.ts`
-- E2E (requires Playwright setup): `npx playwright test e2e/challenges-recommendations.spec.ts`
-
-### Production Migration Complete (December 2025) ✅
-
-**🚀 Enterprise-Grade Production Infrastructure Operational**
-
-- **Zero-Downtime Deployment**: Seamless production updates with no service interruption
-- **Sub-5ms Performance**: Response time optimization achieved and maintained
-- **99.9%+ Uptime**: Enterprise reliability demonstrated and operational
-- **Emergency Rollback**: < 30 second rollback capability tested and operational
-- **Real-time Monitoring**: Comprehensive system health and performance tracking
-- **Data Integrity**: 100% data consistency validation maintained
-
-**Key Production Achievements:**
-- ✅ Production deployment executor with automated validation
-- ✅ Real-time monitoring and alerting systems operational
-- ✅ Emergency rollback procedures tested and ready
-- ✅ Performance optimization with sub-5ms response times
-- ✅ Comprehensive safety mechanisms and backup systems
-- ✅ Complete documentation suite for operations and procedures
-
-### Evidence Embed System
-
-- Implemented a comprehensive system for showcasing work through embedded content from third-party platforms
-- Added support for multiple media types (videos, images, documents, code, design)
-- Created reusable components for submitting and displaying evidence
-- Integrated with Firebase for storing metadata without hosting media files directly
-- Implemented security measures including content sanitization and CSP updates
-- Added service functions for associating evidence with trades and collaborations
-- Created detailed documentation for the Evidence Embed System
-
-### Gamification System Complete
-
-**Phase 1 - Core Infrastructure:**
-- 7-tier XP and leveling system (Newcomer → Legend)
-- 10 predefined achievements across 5 categories
-- Automatic XP awards for trades, roles, evidence submission
-- Comprehensive gamification dashboard with progress tracking
-- Profile integration with dedicated "Progress" tab
-
-**Phase 2A - Real-time Notifications:**
-- XP gain toast notifications with glassmorphism styling
-- Level-up celebration modals with confetti animations
-- Achievement unlock animations with glow effects
-- Enhanced progress bars with smooth animations
-- User-configurable notification preferences
-
-**Phase 2B.1 - Leaderboards & Social Features:**
-- Global leaderboards with weekly, monthly, and all-time rankings
-- Category-specific leaderboards (trades, collaborations, achievements)
-- Social achievement sharing and user stats dashboard
-- Real-time ranking updates with position change indicators
-- Complete dark mode support with consistent theming
-
-### Authentication System Improvements
-
-- **LoginPage Component Restoration**: Fixed file corruption and restored full functionality with comprehensive test coverage
-- **Enhanced Security**: Implemented rate limiting, security logging, and improved password validation (8+ characters)
-- **Test Coverage**: All 7 LoginPage component tests passing with proper mocking and error handling
-- **Navigation Updates**: Changed post-login navigation target from `/profile` to `/dashboard`
-- **Google Authentication**: Complete Google sign-in integration with redirect handling and localStorage management
-- **Form Validation**: Added `noValidate` attribute for custom validation with proper error messaging
-- **TypeScript Integration**: Fixed AuthContext integration with proper Promise<void> return types
-- **Toast Integration**: Corrected toast notification parameter order throughout authentication flow
-
-## Next Steps
-
-### Current Operational Focus
-
-1. **Production Monitoring**: Continuous system health and performance monitoring
-2. **Performance Optimization**: Ongoing performance analysis and optimization
-3. **User Experience Enhancement**: User feedback analysis and experience improvements
-4. **System Reliability**: Maintaining 99.9%+ uptime and sub-5ms performance
-
-### Future Development
-
-1. Implement advanced search and filtering with AI recommendations
-2. Add payment integration (if needed)
-3. Expand admin panel capabilities for better moderation
-4. Set up comprehensive analytics and reporting
-5. Optimize performance and accessibility
-6. Develop dedicated mobile app
-7. Implement internationalization and localization
-8. Expand collaboration features with team management and progress tracking
-
-## Production Operations
-
-### System Monitoring
-
-**Real-time Monitoring:**
-```bash
-# Production system monitoring
-npm run monitor:production:comprehensive
-
-# Performance monitoring
-npm run performance:monitor:production
-
-# Error monitoring
-npm run monitor:errors:production
-```
-
-**Health Checks:**
-```bash
-# System health verification
-npm run health:check:production
-
-# Database performance check
-npm run database:performance:check
-
-# Security validation
-npm run security:validate:production
-```
-
-### Deployment Operations
-
-**Production Deployment:**
-```bash
-# Full production deployment
-npm run deploy:production:full
-
-# Application deployment
-npm run deploy:application:production
-
-# Database deployment
-npm run deploy:database:production
-```
-
-**Emergency Procedures:**
-```bash
-# Emergency rollback
-npm run rollback:emergency:execute
-
-# System recovery
-npm run recovery:execute:full
-
-# Status verification
-npm run health:check:emergency
-```
-
-## CI/CD Pipeline
-
-The project uses GitHub Actions for continuous integration and continuous deployment:
-
-- **Continuous Integration**: Automatically runs on every push and pull request to the `main` branch
-  - Installs dependencies
-  - Runs linting checks
-  - Runs tests
-  - Builds the application
-  - Runs production validation tests
-  - Validates Firebase configuration
-
-- **Continuous Deployment**: Automatically deploys to Firebase Hosting when changes are pushed to the `main` branch
-  - Only runs after all tests and builds pass
-  - Deploys to the production environment
-  - Verifies indexes are deployed
-  - Monitors deployment health
-
-### Local Deployment
-
-To deploy the application for testing:
-
-#### Firebase Deployment
-
-```bash
-# Login to Firebase (only needed once)
-npm run firebase:login
-
-# Verify production environment
-npm run validate:production:full
-
-# Deploy to preview channel
-npm run deploy:firebase:preview
-
-# Deploy to production
-npm run deploy:firebase
-```
-
-#### Vercel Deployment Commands
-
-```bash
-# Deploy to preview (for testing)
-npm run deploy:preview
-
-# Deploy to production
-npm run deploy
-```
-
-For more detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
-
-## Development Guidelines
-
-### Environment Variables
-
-The application uses environment variables for configuration, especially for Firebase. These are loaded through Vite's built-in environment variable support.
-
-In the code, environment variables are accessed using:
-
-```typescript
-import.meta.env.VITE_FIREBASE_API_KEY
-```
-
-Make sure to create a `.env` file based on the `.env.example` template before starting development.
-
-### Production Operations
-
-**Before making any production changes:**
-
-1. Validate production environment:
-   ```bash
-   npm run validate:production:full
+### Pre-Commit
+
+1. Install pre-commit from https://pre-commit.com/#install
+2. Create a `.pre-commit-config.yaml` file at the root of your repository with the following content:
+
+   ```
+   repos:
+     - repo: https://github.com/gitleaks/gitleaks
+       rev: v8.24.2
+       hooks:
+         - id: gitleaks
    ```
 
-2. Check system health:
-   ```bash
-   npm run health:check:production
-   ```
+   for a [native execution of GitLeaks](https://github.com/gitleaks/gitleaks/releases) or use the [`gitleaks-docker` pre-commit ID](https://github.com/gitleaks/gitleaks/blob/master/.pre-commit-hooks.yaml) for executing GitLeaks using the [official Docker images](#docker)
 
-3. Monitor performance:
-   ```bash
-   npm run performance:monitor:production
-   ```
+3. Auto-update the config to the latest repos' versions by executing `pre-commit autoupdate`
+4. Install with `pre-commit install`
+5. Now you're all set!
 
-### Code Style
+```
+➜ git commit -m "this commit contains a secret"
+Detect hardcoded secrets.................................................Failed
+```
 
-- Use TypeScript for type safety
-- Follow React best practices with functional components and hooks
-- Use Tailwind CSS for styling
-- Implement responsive design for all components
-- Write meaningful comments for complex logic
-- Document Firebase operations and index requirements
-- Use production-ready patterns for database operations
+Note: to disable the gitleaks pre-commit hook you can prepend `SKIP=gitleaks` to the commit command
+and it will skip running gitleaks
 
-## Contributing
+```
+➜ SKIP=gitleaks git commit -m "skip gitleaks check"
+Detect hardcoded secrets................................................Skipped
+```
 
-[Add contribution guidelines here]
+## Usage
 
-## License
+```
+Usage:
+  gitleaks [command]
 
-[Add license information here]
+Available Commands:
+  completion  generate the autocompletion script for the specified shell
+  dir         scan directories or files for secrets
+  git         scan git repositories for secrets
+  help        Help about any command
+  stdin       detect secrets from stdin
+  version     display gitleaks version
+
+Flags:
+  -b, --baseline-path string          path to baseline with issues that can be ignored
+  -c, --config string                 config file path
+                                      order of precedence:
+                                      1. --config/-c
+                                      2. env var GITLEAKS_CONFIG
+                                      3. env var GITLEAKS_CONFIG_TOML with the file content
+                                      4. (target path)/.gitleaks.toml
+                                      If none of the four options are used, then gitleaks will use the default config
+      --enable-rule strings           only enable specific rules by id
+      --exit-code int                 exit code when leaks have been encountered (default 1)
+  -i, --gitleaks-ignore-path string   path to .gitleaksignore file or folder containing one (default ".")
+  -h, --help                          help for gitleaks
+      --ignore-gitleaks-allow         ignore gitleaks:allow comments
+  -l, --log-level string              log level (trace, debug, info, warn, error, fatal) (default "info")
+      --max-decode-depth int          allow recursive decoding up to this depth (default "0", no decoding is done)
+      --max-target-megabytes int      files larger than this will be skipped
+      --no-banner                     suppress banner
+      --no-color                      turn off color for verbose output
+      --redact uint[=100]             redact secrets from logs and stdout. To redact only parts of the secret just apply a percent value from 0..100. For example --redact=20 (default 100%)
+  -f, --report-format string          output format (json, csv, junit, sarif) (default "json")
+  -r, --report-path string            report file
+      --report-template string        template file used to generate the report (implies --report-format=template)
+  -v, --verbose                       show verbose output from scan
+      --version                       version for gitleaks
+
+Use "gitleaks [command] --help" for more information about a command.
+```
+
+### Commands
+
+⚠️ v8.19.0 introduced a change that deprecated `detect` and `protect`. Those commands are still available but
+are hidden in the `--help` menu. Take a look at this [gist](https://gist.github.com/zricethezav/b325bb93ebf41b9c0b0507acf12810d2) for easy command translations.
+If you find v8.19.0 broke an existing command (`detect`/`protect`), please open an issue.
+
+There are three scanning modes: `git`, `dir`, and `stdin`.
+
+#### Git
+The `git` command lets you scan local git repos. Under the hood, gitleaks uses the `git log -p` command to scan patches.
+You can configure the behavior of `git log -p` with the `log-opts` option.
+For example, if you wanted to run gitleaks on a range of commits you could use the following
+command: `gitleaks git -v --log-opts="--all commitA..commitB" path_to_repo`. See the [git log](https://git-scm.com/docs/git-log) documentation for more information.
+If there is no target specified as a positional argument, then gitleaks will attempt to scan the current working directory as a git repo.
+
+#### Dir
+The `dir` (aliases include `files`, `directory`) command lets you scan directories and files. Example: `gitleaks dir -v path_to_directory_or_file`.
+If there is no target specified as a positional argument, then gitleaks will scan the current working directory.
+
+#### Stdin
+You can also stream data to gitleaks with the `stdin` command. Example: `cat some_file | gitleaks -v stdin`
+
+### Creating a baseline
+
+When scanning large repositories or repositories with a long history, it can be convenient to use a baseline. When using a baseline,
+gitleaks will ignore any old findings that are present in the baseline. A baseline can be any gitleaks report. To create a gitleaks report, run gitleaks with the `--report-path` parameter.
+
+```
+gitleaks git --report-path gitleaks-report.json # This will save the report in a file called gitleaks-report.json
+```
+
+Once as baseline is created it can be applied when running the detect command again:
+
+```
+gitleaks git --baseline-path gitleaks-report.json --report-path findings.json
+```
+
+After running the detect command with the --baseline-path parameter, report output (findings.json) will only contain new issues.
+
+## Pre-Commit hook
+
+You can run Gitleaks as a pre-commit hook by copying the example `pre-commit.py` script into
+your `.git/hooks/` directory.
+
+## Load Configuration
+
+The order of precedence is:
+
+1. `--config/-c` option:
+      ```bash
+      gitleaks git --config /home/dev/customgitleaks.toml .
+      ```
+2. Environment variable `GITLEAKS_CONFIG` with the file path:
+      ```bash
+      export GITLEAKS_CONFIG="/home/dev/customgitleaks.toml"
+      gitleaks git .
+      ```
+3. Environment variable `GITLEAKS_CONFIG_TOML` with the file content:
+      ```bash
+      export GITLEAKS_CONFIG_TOML=`cat customgitleaks.toml`
+      gitleaks git .
+      ```
+4. A `.gitleaks.toml` file within the target path:
+      ```bash
+      gitleaks git .
+      ```
+
+If none of the four options are used, then gitleaks will use the default config.
+
+## Configuration
+
+Gitleaks offers a configuration format you can follow to write your own secret detection rules:
+
+```toml
+# Title for the gitleaks configuration file.
+title = "Custom Gitleaks configuration"
+
+# You have basically two options for your custom configuration:
+#
+# 1. define your own configuration, default rules do not apply
+#
+#    use e.g., the default configuration as starting point:
+#    https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
+#
+# 2. extend a configuration, the rules are overwritten or extended
+#
+#    When you extend a configuration the extended rules take precedence over the
+#    default rules. I.e., if there are duplicate rules in both the extended
+#    configuration and the default configuration the extended rules or
+#    attributes of them will override the default rules.
+#    Another thing to know with extending configurations is you can chain
+#    together multiple configuration files to a depth of 2. Allowlist arrays are
+#    appended and can contain duplicates.
+
+# useDefault and path can NOT be used at the same time. Choose one.
+[extend]
+# useDefault will extend the default gitleaks config built in to the binary
+# the latest version is located at:
+# https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
+useDefault = true
+# or you can provide a path to a configuration to extend from.
+# The path is relative to where gitleaks was invoked,
+# not the location of the base config.
+# path = "common_config.toml"
+# If there are any rules you don't want to inherit, they can be specified here.
+disabledRules = [ "generic-api-key"]
+
+# An array of tables that contain information that define instructions
+# on how to detect secrets
+[[rules]]
+
+# Unique identifier for this rule
+id = "awesome-rule-1"
+
+# Short human readable description of the rule.
+description = "awesome rule 1"
+
+# Golang regular expression used to detect secrets. Note Golang's regex engine
+# does not support lookaheads.
+regex = '''one-go-style-regex-for-this-rule'''
+
+# Int used to extract secret from regex match and used as the group that will have
+# its entropy checked if `entropy` is set.
+secretGroup = 3
+
+# Float representing the minimum shannon entropy a regex group must have to be considered a secret.
+entropy = 3.5
+
+# Golang regular expression used to match paths. This can be used as a standalone rule or it can be used
+# in conjunction with a valid `regex` entry.
+path = '''a-file-path-regex'''
+
+# Keywords are used for pre-regex check filtering. Rules that contain
+# keywords will perform a quick string compare check to make sure the
+# keyword(s) are in the content being scanned. Ideally these values should
+# either be part of the identiifer or unique strings specific to the rule's regex
+# (introduced in v8.6.0)
+keywords = [
+  "auth",
+  "password",
+  "token",
+]
+
+# Array of strings used for metadata and reporting purposes.
+tags = ["tag","another tag"]
+
+    # ⚠️ In v8.21.0 `[rules.allowlist]` was replaced with `[[rules.allowlists]]`.
+    # This change was backwards-compatible: instances of `[rules.allowlist]` still  work.
+    #
+    # You can define multiple allowlists for a rule to reduce false positives.
+    # A finding will be ignored if _ANY_ `[[rules.allowlists]]` matches.
+    [[rules.allowlists]]
+    description = "ignore commit A"
+    # When multiple criteria are defined the default condition is "OR".
+    # e.g., this can match on |commits| OR |paths| OR |stopwords|.
+    condition = "OR"
+    commits = [ "commit-A", "commit-B"]
+    paths = [
+      '''go\.mod''',
+      '''go\.sum'''
+    ]
+    # note: stopwords targets the extracted secret, not the entire regex match
+    # like 'regexes' does. (stopwords introduced in 8.8.0)
+    stopwords = [
+      '''client''',
+      '''endpoint''',
+    ]
+
+    [[rules.allowlists]]
+    # The "AND" condition can be used to make sure all criteria match.
+    # e.g., this matches if |regexes| AND |paths| are satisfied.
+    condition = "AND"
+    # note: |regexes| defaults to check the _Secret_ in the finding.
+    # Acceptable values for |regexTarget| are "secret" (default), "match", and "line".
+    regexTarget = "match"
+    regexes = [ '''(?i)parseur[il]''' ]
+    paths = [ '''package-lock\.json''' ]
+
+# You can extend a particular rule from the default config. e.g., gitlab-pat
+# if you have defined a custom token prefix on your GitLab instance
+[[rules]]
+id = "gitlab-pat"
+# all the other attributes from the default rule are inherited
+
+    [[rules.allowlists]]
+    regexTarget = "line"
+    regexes = [ '''MY-glpat-''' ]
+
+# This is a global allowlist which has a higher order of precedence than rule-specific allowlists.
+# If a commit listed in the `commits` field below is encountered then that commit will be skipped and no
+# secrets will be detected for said commit. The same logic applies for regexes and paths.
+[allowlist]
+description = "global allow list"
+commits = [ "commit-A", "commit-B", "commit-C"]
+paths = [
+  '''gitleaks\.toml''',
+  '''(.*?)(jpg|gif|doc)'''
+]
+
+# note: (global) regexTarget defaults to check the _Secret_ in the finding.
+# if regexTarget is not specified then _Secret_ will be used.
+# Acceptable values for regexTarget are "match" and "line"
+regexTarget = "match"
+regexes = [
+  '''219-09-9999''',
+  '''078-05-1120''',
+  '''(9[0-9]{2}|666)-\d{2}-\d{4}''',
+]
+# note: stopwords targets the extracted secret, not the entire regex match
+# like 'regexes' does. (stopwords introduced in 8.8.0)
+stopwords = [
+  '''client''',
+  '''endpoint''',
+]
+```
+
+Refer to the default [gitleaks config](https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml) for examples or follow the [contributing guidelines](https://github.com/gitleaks/gitleaks/blob/master/CONTRIBUTING.md) if you would like to contribute to the default configuration. Additionally, you can check out [this gitleaks blog post](https://blog.gitleaks.io/stop-leaking-secrets-configuration-2-3-aeed293b1fbf) which covers advanced configuration setups.
+
+### Additional Configuration
+
+#### gitleaks:allow
+
+If you are knowingly committing a test secret that gitleaks will catch you can add a `gitleaks:allow` comment to that line which will instruct gitleaks
+to ignore that secret. Ex:
+
+```
+class CustomClass:
+    discord_client_secret = '8dyfuiRyq=vVc3RRr_edRk-fK__JItpZ'  #gitleaks:allow
+
+```
+
+#### .gitleaksignore
+
+You can ignore specific findings by creating a `.gitleaksignore` file at the root of your repo. In release v8.10.0 Gitleaks added a `Fingerprint` value to the Gitleaks report. Each leak, or finding, has a Fingerprint that uniquely identifies a secret. Add this fingerprint to the `.gitleaksignore` file to ignore that specific secret. See Gitleaks' [.gitleaksignore](https://github.com/gitleaks/gitleaks/blob/master/.gitleaksignore) for an example. Note: this feature is experimental and is subject to change in the future.
+
+#### Decoding
+
+Sometimes secrets are encoded in a way that can make them difficult to find
+with just regex. Now you can tell gitleaks to automatically find and decode
+encoded text. The flag `--max-decode-depth` enables this feature (the default
+value "0" means the feature is disabled by default).
+
+Recursive decoding is supported since decoded text can also contain encoded
+text.  The flag `--max-decode-depth` sets the recursion limit. Recursion stops
+when there are no new segments of encoded text to decode, so setting a really
+high max depth doesn't mean it will make that many passes. It will only make as
+many as it needs to decode the text. Overall, decoding only minimally increases
+scan times.
+
+The findings for encoded text differ from normal findings in the following
+ways:
+
+- The location points the bounds of the encoded text
+  - If the rule matches outside the encoded text, the bounds are adjusted to
+    include that as well
+- The match and secret contain the decoded value
+- Two tags are added `decoded:<encoding>` and `decode-depth:<depth>`
+
+Currently supported encodings:
+
+- `base64` (both standard and base64url)
+
+#### Reporting
+
+Gitleaks has built-in support for several report formats: [`json`](https://github.com/gitleaks/gitleaks/blob/master/testdata/expected/report/json_simple.json), [`csv`](https://github.com/gitleaks/gitleaks/blob/master/testdata/expected/report/csv_simple.csv?plain=1), [`junit`](https://github.com/gitleaks/gitleaks/blob/master/testdata/expected/report/junit_simple.xml), and [`sarif`](https://github.com/gitleaks/gitleaks/blob/master/testdata/expected/report/sarif_simple.sarif).
+
+If none of these formats fit your need, you can create your own report format with a [Go `text/template` .tmpl file](https://www.digitalocean.com/community/tutorials/how-to-use-templates-in-go#step-4-writing-a-template) and the `--report-template` flag. The template can use [extended functionality from the `Masterminds/sprig` template library](https://masterminds.github.io/sprig/).
+
+For example, the following template provides a custom JSON output:
+```gotemplate
+# jsonextra.tmpl
+[{{ $lastFinding := (sub (len . ) 1) }}
+{{- range $i, $finding := . }}{{with $finding}}
+    {
+        "Description": {{ quote .Description }},
+        "StartLine": {{ .StartLine }},
+        "EndLine": {{ .EndLine }},
+        "StartColumn": {{ .StartColumn }},
+        "EndColumn": {{ .EndColumn }},
+        "Line": {{ quote .Line }},
+        "Match": {{ quote .Match }},
+        "Secret": {{ quote .Secret }},
+        "File": "{{ .File }}",
+        "SymlinkFile": {{ quote .SymlinkFile }},
+        "Commit": {{ quote .Commit }},
+        "Entropy": {{ .Entropy }},
+        "Author": {{ quote .Author }},
+        "Email": {{ quote .Email }},
+        "Date": {{ quote .Date }},
+        "Message": {{ quote .Message }},
+        "Tags": [{{ $lastTag := (sub (len .Tags ) 1) }}{{ range $j, $tag := .Tags }}{{ quote . }}{{ if ne $j $lastTag }},{{ end }}{{ end }}],
+        "RuleID": {{ quote .RuleID }},
+        "Fingerprint": {{ quote .Fingerprint }}
+    }{{ if ne $i $lastFinding }},{{ end }}
+{{- end}}{{ end }}
+]
+```
+
+Usage:
+```sh
+$ gitleaks dir ~/leaky-repo/ --report-path "report.json" --report-format template --report-template testdata/report/jsonextra.tmpl
+```
+
+## Sponsorships
+
+<p align="left">
+	<h3><a href="https://coderabbit.ai/?utm_source=oss&utm_medium=sponsorship&utm_campaign=gitleaks">coderabbit.ai</h3>
+	  <a href="https://coderabbit.ai/?utm_source=oss&utm_medium=sponsorship&utm_campaign=gitleaks">
+		  <img alt="CodeRabbit.ai Sponsorship" src="https://github.com/gitleaks/gitleaks/assets/15034943/76c30a85-887b-47ca-9956-17a8e55c6c41" width=200>
+	  </a>
+</p>
+
+
+## Exit Codes
+
+You can always set the exit code when leaks are encountered with the --exit-code flag. Default exit codes below:
+
+```
+0 - no leaks present
+1 - leaks or error encountered
+126 - unknown flag
+```
