@@ -56,8 +56,8 @@ fi
 echo "🧹 Running standard pre-commit checks..."
 
 # Lint staged files
-if command -v lint-staged &> /dev/null; then
-  lint-staged
+if command -v npx lint-staged &> /dev/null; then
+  npx lint-staged
 fi
 
 # Run TypeScript check on staged files
