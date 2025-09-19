@@ -74,3 +74,4 @@ fi
 
 echo "✅ All pre-commit checks passed!"
 npm run pre-commit
+npm run pre-commit
