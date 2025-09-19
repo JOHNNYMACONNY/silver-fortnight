@@ -25,7 +25,6 @@ export class MemoryStorageAdapter implements IStorageAdapter {
   }
 
   // No dispose needed for memory adapter, but provided for symmetry
-  // eslint-disable-next-line @typescript-eslint/require-await
   async dispose(): Promise<void> {
     // noop
   }

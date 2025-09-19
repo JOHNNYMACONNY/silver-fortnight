@@ -384,7 +384,6 @@ export class TodoService {
   private logEvent(ev: StructuredLogEvent): void {
     // Plan §5 Logging: console JSON single line
     // Safe stringify (payload expected to be serializable)
-    // eslint-disable-next-line no-console
     console.log(JSON.stringify(ev));
     // Dispatch to event listeners (best-effort, swallow errors)
     const snapshot = this.repo.getAll();

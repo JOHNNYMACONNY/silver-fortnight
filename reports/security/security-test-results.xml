@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="9" failures="0" errors="0" time="0.358">
-  <testsuite name="Firebase Security Rules" errors="0" failures="0" skipped="0" timestamp="2025-09-17T23:48:19" time="0.199" tests="9">
-    <testcase classname="Firebase Security Rules › User Profiles" name="allows users to read their own profile" time="0">
+<testsuites name="jest tests" tests="9" failures="0" errors="0" time="0.375">
+  <testsuite name="Firebase Security Rules" errors="0" failures="0" skipped="0" timestamp="2025-09-19T09:27:59" time="0.209" tests="9">
+    <testcase classname="Firebase Security Rules › User Profiles" name="allows users to read their own profile" time="0.001">
     </testcase>
     <testcase classname="Firebase Security Rules › User Profiles" name="prevents users from reading other profiles without permission" time="0">
     </testcase>
@@ -15,7 +15,7 @@
     </testcase>
     <testcase classname="Firebase Security Rules › Storage Rules › Profile Images" name="allows users to upload their own profile image" time="0">
     </testcase>
-    <testcase classname="Firebase Security Rules › Storage Rules › Profile Images" name="prevents users from uploading to other profiles" time="0">
+    <testcase classname="Firebase Security Rules › Storage Rules › Profile Images" name="prevents users from uploading to other profiles" time="0.001">
     </testcase>
     <testcase classname="Firebase Security Rules › Storage Rules › Profile Images" name="enforces file size limits" time="0">
     </testcase>

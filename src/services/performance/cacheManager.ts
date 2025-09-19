@@ -170,7 +170,7 @@ export class CacheManager {
   private config: CacheConfig;
   private cache: Map<string, CacheEntry> = new Map();
   private stats: CacheStats;
-  private eventListeners: Map<string, Function[]> = new Map();
+  private eventListeners: Map<string, ((...args: any[]) => void)[]> = new Map();
   private cleanupTimer: NodeJS.Timeout | null = null;
   private prefetchQueue: Set<string> = new Set();
   private accessHistory: Map<string, number[]> = new Map();
@@ -892,14 +892,14 @@ export class CacheManager {
    * Public API methods
    */
 
-  public addEventListener(type: string, listener: Function): void {
+  public addEventListener(type: string, listener: (...args: any[]) => void): void {
     if (!this.eventListeners.has(type)) {
       this.eventListeners.set(type, []);
     }
     this.eventListeners.get(type)!.push(listener);
   }
 
-  public removeEventListener(type: string, listener: Function): void {
+  public removeEventListener(type: string, listener: (...args: any[]) => void): void {
     const listeners = this.eventListeners.get(type);
     if (listeners) {
       const index = listeners.indexOf(listener);

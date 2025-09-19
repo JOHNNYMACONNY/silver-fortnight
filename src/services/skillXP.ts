@@ -73,7 +73,6 @@ export const addSkillXP = async (
     try { await markSkillPracticeDay(userId); } catch {}
     return { success: true, data: updated };
   } catch (error: any) {
-    // eslint-disable-next-line no-console
     console.error('addSkillXP failed', error);
     return { success: false, error: error?.message || 'Failed to add skill XP' };
   }

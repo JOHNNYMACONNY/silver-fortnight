@@ -105,7 +105,6 @@ export const SecurityTestPage: React.FC = () => {
     };
 
     runTests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   if (!currentUser) {

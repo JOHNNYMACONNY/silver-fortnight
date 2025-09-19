@@ -80,7 +80,7 @@ export default tseslint.config(
       "no-var": "warn",
       "prefer-const": "warn",
       "no-case-declarations": "warn",
-      "no-namespace": "warn",
+      "@typescript-eslint/no-namespace": "warn",
     },
   },
   {
