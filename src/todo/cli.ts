@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 // Phase 1 TODO System - CLI
 // Commands: add, list|search, start, done, reopen, reorder, metrics, archive|archive-completed,
 //           update, export, snapshot, integrity
@@ -12,6 +11,9 @@
 
 import { FileStorageAdapter } from './storage/fileAdapter';
 import { MemoryStorageAdapter } from './storage/memoryAdapter';
+import { generateMarkdown } from './snapshot';
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   TodoStatus,
   DuplicateContentError,
@@ -280,7 +282,6 @@ async function cmdExport(svc: TodoService, options: CliOptions, flags: Record<st
     return;
   }
   if (format === 'md') {
-    const { generateMarkdown } = require('./snapshot');
     const md = generateMarkdown(todos, { includeArchived });
     if (options.json) {
       output(options, { event: 'export', format: 'md', markdown: md }, () => '');
@@ -293,8 +294,6 @@ async function cmdExport(svc: TodoService, options: CliOptions, flags: Record<st
 }
 
 async function ensureMemoryBankDir(): Promise<string> {
-  const fs = require('fs');
-  const path = require('path');
   const dir = 'memory-bank';
   if (!fs.existsSync(dir)) fs.mkdirSync(dir);
   return path.join(dir, 'todo.md');
@@ -303,10 +302,8 @@ async function ensureMemoryBankDir(): Promise<string> {
 async function cmdSnapshot(svc: TodoService, options: CliOptions, flags: Record<string,string|boolean>) {
   const includeArchived = Boolean(flags.includeArchived);
   const todos = svc.listTodos({ includeArchived, sort: 'order' });
-  const { generateMarkdown } = require('./snapshot');
   const md = generateMarkdown(todos, { includeArchived });
   const filePath = await ensureMemoryBankDir();
-  const fs = require('fs');
   fs.writeFileSync(filePath, md, 'utf8');
   output(options, { event: 'snapshot_written', file: filePath }, () => `Snapshot written: ${filePath}`);
 }

@@ -101,8 +101,7 @@ export const WeeklyXPGoal: React.FC<WeeklyXPGoalProps> = ({ userId, target = 500
       setTargetValue(target);
       setTipsEnabled(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [userId, target]);
 
   // Analytics: fire once per week on crossing to >=100%
   useEffect(() => {

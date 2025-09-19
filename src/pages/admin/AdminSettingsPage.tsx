@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // TODO: The linter is reporting phantom `no-explicit-any` errors in this file.
 // These errors persist even when the types are correctly defined.
 // This is likely due to a bug in the linter or TypeScript server.

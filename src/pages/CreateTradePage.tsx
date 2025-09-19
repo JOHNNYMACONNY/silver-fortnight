@@ -147,7 +147,6 @@ const CreateTradePage: React.FC = () => {
       };
 
       // Create the trade
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: tradeId, error: createError } = await createTrade(tradeData as any);
 
       if (createError) {

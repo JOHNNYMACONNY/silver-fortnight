@@ -1,7 +1,6 @@
 // Phase 1 TODO System - Data Models
 // Plan §2 Data Model & §5 Logging
 
-/* eslint-disable @typescript-eslint/consistent-type-definitions */
 
 //////////////////////
 // ID Generation

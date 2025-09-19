@@ -92,10 +92,12 @@ Object.defineProperty(global, 'localStorage', {
 
 // Add required TextEncoder/TextDecoder
 if (typeof TextEncoder === 'undefined') {
-  (global as any).TextEncoder = require('util').TextEncoder;
+  // @ts-expect-error - Node.js util module
+  (global as any).TextEncoder = eval('require')('util').TextEncoder;
 }
 if (typeof TextDecoder === 'undefined') {
-  (global as any).TextDecoder = require('util').TextDecoder;
+  // @ts-expect-error - Node.js util module
+  (global as any).TextDecoder = eval('require')('util').TextDecoder;
 }
 
 // Cleanup utilities
@@ -140,11 +142,9 @@ process.on('uncaughtException', error => {
 });
 
 // Custom matchers
-declare global {
-  namespace jest {
-    interface Matchers<R> {
-      toHaveBeenCalledOnceWith(...args: any[]): R;
-    }
+declare module '@jest/expect' {
+  interface Matchers<R> {
+    toHaveBeenCalledOnceWith(...args: any[]): R;
   }
 }
 
