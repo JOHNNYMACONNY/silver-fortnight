@@ -1,4 +1,4 @@
-import { onSchedule } from "firebase-functions/v2/scheduler";
+import { scheduler } from "firebase-functions";
 import {
   activateScheduledChallenges,
   completeExpiredChallenges,
@@ -58,7 +58,7 @@ const createNotification = async (data: NotificationData): Promise<void> => {
 };
 
 // Cloud Function to check for pending confirmations and send reminders
-export const checkPendingConfirmations = onSchedule(
+export const checkPendingConfirmations = scheduler.onSchedule(
   "every 24 hours",
   async () => {
     console.log("Starting pending confirmations check...");
@@ -163,7 +163,7 @@ export const checkPendingConfirmations = onSchedule(
 );
 
 // Cloud Function to auto-complete pending trades
-export const autoCompletePendingTrades = onSchedule(
+export const autoCompletePendingTrades = scheduler.onSchedule(
   "every 24 hours",
   async () => {
     console.log("Starting auto-completion check...");
@@ -226,17 +226,23 @@ export const autoCompletePendingTrades = onSchedule(
 );
 
 // Challenge schedulers (MVP)
-export const activateChallenges = onSchedule("every 1 hours", async () => {
-  const res = await activateScheduledChallenges();
-  if (res.error) throw new Error(res.error);
-});
+export const activateChallenges = scheduler.onSchedule(
+  "every 1 hours",
+  async () => {
+    const res = await activateScheduledChallenges();
+    if (res.error) throw new Error(res.error);
+  }
+);
 
-export const completeChallenges = onSchedule("every 1 hours", async () => {
-  const res = await completeExpiredChallenges();
-  if (res.error) throw new Error(res.error);
-});
+export const completeChallenges = scheduler.onSchedule(
+  "every 1 hours",
+  async () => {
+    const res = await completeExpiredChallenges();
+    if (res.error) throw new Error(res.error);
+  }
+);
 
-export const scheduleWeeklyChallenges = onSchedule(
+export const scheduleWeeklyChallenges = scheduler.onSchedule(
   "every monday 00:00",
   async () => {
     const res = await scheduleRecurringChallenges();
