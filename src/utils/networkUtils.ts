@@ -8,12 +8,7 @@
 /**
  * Network connection types
  */
-export type ConnectionType =
-  | 'slow-2g'
-  | '2g'
-  | '3g'
-  | '4g'
-  | 'unknown';
+export type ConnectionType = "slow-2g" | "2g" | "3g" | "4g" | "unknown";
 
 /**
  * Network information interface
@@ -35,18 +30,16 @@ export const getNetworkInfo = (): NetworkInfo => {
   // Default values for browsers without NetworkInformation API
   const defaultInfo: NetworkInfo = {
     online: navigator.onLine,
-    connectionType: 'unknown',
+    connectionType: "unknown",
     downlink: 10, // Assume decent connection by default
     rtt: 50, // Assume decent latency by default
-    saveData: false
+    saveData: false,
   };
 
   // Check if the NetworkInformation API is available
-  // @ts-ignore - Navigator connection property is not in TypeScript defs
-  const connection = navigator.connection ||
-    // @ts-ignore
+  const connection =
+    navigator.connection ||
     navigator.mozConnection ||
-    // @ts-ignore
     navigator.webkitConnection;
 
   if (!connection) {
@@ -55,14 +48,10 @@ export const getNetworkInfo = (): NetworkInfo => {
 
   return {
     online: navigator.onLine,
-    // @ts-ignore - effectiveType is not in TypeScript defs
-    connectionType: connection.effectiveType || 'unknown',
-    // @ts-ignore - downlink is not in TypeScript defs
+    connectionType: connection.effectiveType || "unknown",
     downlink: connection.downlink || defaultInfo.downlink,
-    // @ts-ignore - rtt is not in TypeScript defs
     rtt: connection.rtt || defaultInfo.rtt,
-    // @ts-ignore - saveData is not in TypeScript defs
-    saveData: connection.saveData || defaultInfo.saveData
+    saveData: connection.saveData || defaultInfo.saveData,
   };
 };
 
@@ -75,7 +64,7 @@ export const isSlowConnection = (): boolean => {
   const { connectionType, downlink, rtt } = getNetworkInfo();
 
   // Consider slow-2g and 2g as slow connections
-  if (connectionType === 'slow-2g' || connectionType === '2g') {
+  if (connectionType === "slow-2g" || connectionType === "2g") {
     return true;
   }
 
@@ -116,13 +105,13 @@ export const isOffline = (): boolean => {
 export const addConnectionListeners = (
   onOnline: () => void,
   onOffline: () => void
-): () => void => {
-  window.addEventListener('online', onOnline);
-  window.addEventListener('offline', onOffline);
+): (() => void) => {
+  window.addEventListener("online", onOnline);
+  window.addEventListener("offline", onOffline);
 
   return () => {
-    window.removeEventListener('online', onOnline);
-    window.removeEventListener('offline', onOffline);
+    window.removeEventListener("online", onOnline);
+    window.removeEventListener("offline", onOffline);
   };
 };
 
@@ -134,13 +123,11 @@ export const addConnectionListeners = (
  */
 export const addConnectionChangeListener = (
   onChange: (info: NetworkInfo) => void
-): () => void => {
+): (() => void) => {
   // Check if the NetworkInformation API is available
-  // @ts-ignore - Navigator connection property is not in TypeScript defs
-  const connection = navigator.connection ||
-    // @ts-ignore
+  const connection =
+    navigator.connection ||
     navigator.mozConnection ||
-    // @ts-ignore
     navigator.webkitConnection;
 
   if (!connection) {
@@ -151,12 +138,10 @@ export const addConnectionChangeListener = (
     onChange(getNetworkInfo());
   };
 
-  // @ts-ignore - addEventListener is not in TypeScript defs
-  connection.addEventListener('change', handleChange);
+  connection.addEventListener("change", handleChange);
 
   return () => {
-    // @ts-ignore - removeEventListener is not in TypeScript defs
-    connection.removeEventListener('change', handleChange);
+    connection.removeEventListener("change", handleChange);
   };
 };
 
@@ -189,7 +174,7 @@ export async function retryWithBackoff<T>(
       const delay = baseDelay * Math.pow(2, retries) + Math.random() * 1000;
 
       // Wait before retrying
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 }
@@ -231,11 +216,11 @@ export const fetchWithRetry = async (
     try {
       return await fetch(url, {
         ...options,
-        signal: controller.signal
+        signal: controller.signal,
       });
     } catch (error: any) {
       // If the error is due to timeout, throw a more descriptive error
-      if (error.name === 'AbortError') {
+      if (error.name === "AbortError") {
         throw new Error(`Request to ${url} timed out after ${timeoutMs}ms`);
       }
 
@@ -263,7 +248,7 @@ export const loadImageWithRetry = (
 
       // Set up timeout
       const timeout = setTimeout(() => {
-        img.src = ''; // Cancel the request
+        img.src = ""; // Cancel the request
         reject(new Error(`Image load timed out after ${timeoutMs}ms`));
       }, timeoutMs);
 
@@ -291,13 +276,11 @@ export const loadImageWithRetry = (
  */
 export const isLowEndDevice = (): boolean => {
   // Check for memory constraints
-  // @ts-ignore - deviceMemory is not in TypeScript defs
-  if (navigator.deviceMemory && navigator.deviceMemory < 4) {
+  if ((navigator as any).deviceMemory && (navigator as any).deviceMemory < 4) {
     return true;
   }
 
   // Check for CPU constraints
-  // @ts-ignore - hardwareConcurrency is not in TypeScript defs
   if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) {
     return true;
   }
@@ -321,9 +304,9 @@ export const getAdaptiveQualityUrl = (
   } = {}
 ): string => {
   const {
-    lowQualityParams = 'q_auto:low,f_auto',
-    mediumQualityParams = 'q_auto:good,f_auto',
-    highQualityParams = 'q_auto:best,f_auto'
+    lowQualityParams = "q_auto:low,f_auto",
+    mediumQualityParams = "q_auto:good,f_auto",
+    highQualityParams = "q_auto:best,f_auto",
   } = options;
 
   // Check network and device conditions
@@ -341,9 +324,9 @@ export const getAdaptiveQualityUrl = (
   }
 
   // For Cloudinary URLs
-  if (baseUrl.includes('cloudinary.com')) {
+  if (baseUrl.includes("cloudinary.com")) {
     // Extract parts of the Cloudinary URL
-    const uploadIndex = baseUrl.indexOf('/upload/');
+    const uploadIndex = baseUrl.indexOf("/upload/");
 
     if (uploadIndex !== -1) {
       const prefix = baseUrl.substring(0, uploadIndex + 8); // Include '/upload/'
@@ -354,6 +337,6 @@ export const getAdaptiveQualityUrl = (
   }
 
   // For other URLs, append as query parameters
-  const separator = baseUrl.includes('?') ? '&' : '?';
+  const separator = baseUrl.includes("?") ? "&" : "?";
   return `${baseUrl}${separator}quality=${qualityParams}`;
 };
