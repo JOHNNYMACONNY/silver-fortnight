@@ -1,13 +1,10 @@
-import * as functions from "firebase-functions";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import {
   activateScheduledChallenges,
   completeExpiredChallenges,
   scheduleRecurringChallenges,
 } from "./challengesScheduler";
 import * as admin from "firebase-admin";
-
-// Use the scheduler from firebase-functions
-const { onSchedule } = functions.scheduler;
 
 // Initialize Firebase Admin
 admin.initializeApp();
