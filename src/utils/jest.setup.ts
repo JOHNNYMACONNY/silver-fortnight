@@ -1,12 +1,12 @@
-import { jest } from '@jest/globals';
-import '@testing-library/jest-dom';
+import { jest } from "@jest/globals";
+import "@testing-library/jest-dom";
 
 // Save original console methods
 const originalConsole = {
   error: console.error,
   warn: console.warn,
   info: console.info,
-  log: console.log
+  log: console.log,
 };
 
 // Mock fetch
@@ -14,14 +14,16 @@ const mockFetch = jest.fn().mockImplementation(() =>
   Promise.resolve({
     ok: true,
     status: 200,
-    statusText: 'OK',
+    statusText: "OK",
     headers: new Headers(),
     json: () => Promise.resolve({}),
-    text: () => Promise.resolve(''),
+    text: () => Promise.resolve(""),
     blob: () => Promise.resolve(new Blob()),
     arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
     formData: () => Promise.resolve(new FormData()),
-    clone: function() { return Object.assign({}, this); }
+    clone: function () {
+      return Object.assign({}, this);
+    },
   })
 );
 
@@ -34,9 +36,9 @@ console.info = jest.fn();
 console.log = jest.fn();
 
 // Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: jest.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -61,12 +63,14 @@ class MockResizeObserver {
 class MockIntersectionObserver {
   constructor(_callback: IntersectionObserverCallback) {}
   readonly root: Element | Document | null = null;
-  readonly rootMargin: string = '0px';
+  readonly rootMargin: string = "0px";
   readonly thresholds: ReadonlyArray<number> = [0];
   observe = jest.fn();
   unobserve = jest.fn();
   disconnect = jest.fn();
-  takeRecords(): IntersectionObserverEntry[] { return []; }
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
 }
 (global as any).IntersectionObserver = MockIntersectionObserver;
 
@@ -80,43 +84,59 @@ const localStorageMock = {
   key: jest.fn(),
 };
 
-Object.defineProperty(window, 'localStorage', {
+Object.defineProperty(window, "localStorage", {
   value: localStorageMock,
   writable: true,
 });
 
-Object.defineProperty(global, 'localStorage', {
+Object.defineProperty(global, "localStorage", {
   value: localStorageMock,
   writable: true,
 });
 
 // Add required TextEncoder/TextDecoder
-if (typeof TextEncoder === 'undefined') {
-  // @ts-expect-error - Node.js util module
-  (global as any).TextEncoder = eval('require')('util').TextEncoder;
+if (typeof TextEncoder === "undefined") {
+  try {
+    (global as any).TextEncoder = eval("require")("util").TextEncoder;
+  } catch {
+    // Fallback for environments without util module
+    (global as any).TextEncoder = class TextEncoder {
+      encode(input: string) {
+        return new Uint8Array(Buffer.from(input, "utf8"));
+      }
+    };
+  }
 }
-if (typeof TextDecoder === 'undefined') {
-  // @ts-expect-error - Node.js util module
-  (global as any).TextDecoder = eval('require')('util').TextDecoder;
+if (typeof TextDecoder === "undefined") {
+  try {
+    (global as any).TextDecoder = eval("require")("util").TextDecoder;
+  } catch {
+    // Fallback for environments without util module
+    (global as any).TextDecoder = class TextDecoder {
+      decode(input: Uint8Array) {
+        return Buffer.from(input).toString("utf8");
+      }
+    };
+  }
 }
 
 // Cleanup utilities
 afterEach(() => {
   // Clear all mocks
   jest.clearAllMocks();
-  
+
   // Clear DOM
-  document.body.innerHTML = '';
-  
+  document.body.innerHTML = "";
+
   // Reset fetch mock
   mockFetch.mockClear();
-  
+
   // Reset localStorage mock
   (localStorage.getItem as jest.Mock).mockClear();
   (localStorage.setItem as jest.Mock).mockClear();
   (localStorage.removeItem as jest.Mock).mockClear();
   (localStorage.clear as jest.Mock).mockClear();
-  
+
   // Reset console mocks
   (console.error as jest.Mock).mockClear();
   (console.warn as jest.Mock).mockClear();
@@ -133,16 +153,16 @@ afterAll(() => {
 });
 
 // Error handlers
-process.on('unhandledRejection', error => {
-  console.error('Unhandled Promise Rejection:', error);
+process.on("unhandledRejection", (error) => {
+  console.error("Unhandled Promise Rejection:", error);
 });
 
-process.on('uncaughtException', error => {
-  console.error('Uncaught Exception:', error);
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception:", error);
 });
 
 // Custom matchers
-declare module '@jest/expect' {
+declare module "@jest/expect" {
   interface Matchers<R> {
     toHaveBeenCalledOnceWith(...args: any[]): R;
   }
@@ -150,15 +170,16 @@ declare module '@jest/expect' {
 
 expect.extend({
   toHaveBeenCalledOnceWith(received: jest.Mock, ...args: any[]) {
-    const pass = received.mock.calls.length === 1 &&
-                 JSON.stringify(received.mock.calls[0]) === JSON.stringify(args);
-    
+    const pass =
+      received.mock.calls.length === 1 &&
+      JSON.stringify(received.mock.calls[0]) === JSON.stringify(args);
+
     return {
       message: () =>
         pass
           ? `Expected mock not to have been called once with ${args}`
           : `Expected mock to have been called once with ${args}`,
-      pass
+      pass,
     };
-  }
+  },
 });
