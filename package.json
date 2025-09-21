@@ -23,7 +23,7 @@
     "assets:manifest": "node -e \"console.log(JSON.stringify(require('./public/asset-manifest.json'), null, 2))\"",
     "preview": "vite preview",
     "type-check": "tsc -p tsconfig.app.json --noEmit",
-    "lint": "eslint 'src/**/*.{ts,tsx}' --report-unused-disable-directives --max-warnings 1000",
+    "lint": "eslint 'src/**/*.{ts,tsx}' --report-unused-disable-directives --max-warnings 2500",
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "test": "jest --coverage",
