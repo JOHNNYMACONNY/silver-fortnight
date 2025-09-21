@@ -1,11 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleWeeklyChallenges = exports.completeChallenges = exports.activateChallenges = exports.autoCompletePendingTrades = exports.checkPendingConfirmations = void 0;
-const functions = require("firebase-functions");
+const scheduler_1 = require("firebase-functions/v2/providers/scheduler");
 const challengesScheduler_1 = require("./challengesScheduler");
 const admin = require("firebase-admin");
-// Use the scheduler from firebase-functions
-const { onSchedule } = functions.scheduler;
 // Initialize Firebase Admin
 admin.initializeApp();
 const db = admin.firestore();
@@ -19,7 +17,7 @@ const createNotification = async (data) => {
     }
 };
 // Cloud Function to check for pending confirmations and send reminders
-exports.checkPendingConfirmations = onSchedule("every 24 hours", async () => {
+exports.checkPendingConfirmations = (0, scheduler_1.onSchedule)("every 24 hours", async () => {
     console.log("Starting pending confirmations check...");
     try {
         const now = admin.firestore.Timestamp.now();
@@ -106,7 +104,7 @@ exports.checkPendingConfirmations = onSchedule("every 24 hours", async () => {
     }
 });
 // Cloud Function to auto-complete pending trades
-exports.autoCompletePendingTrades = onSchedule("every 24 hours", async () => {
+exports.autoCompletePendingTrades = (0, scheduler_1.onSchedule)("every 24 hours", async () => {
     console.log("Starting auto-completion check...");
     try {
         const now = admin.firestore.Timestamp.now();
@@ -150,17 +148,17 @@ exports.autoCompletePendingTrades = onSchedule("every 24 hours", async () => {
     }
 });
 // Challenge schedulers (MVP)
-exports.activateChallenges = onSchedule("every 1 hours", async () => {
+exports.activateChallenges = (0, scheduler_1.onSchedule)("every 1 hours", async () => {
     const res = await (0, challengesScheduler_1.activateScheduledChallenges)();
     if (res.error)
         throw new Error(res.error);
 });
-exports.completeChallenges = onSchedule("every 1 hours", async () => {
+exports.completeChallenges = (0, scheduler_1.onSchedule)("every 1 hours", async () => {
     const res = await (0, challengesScheduler_1.completeExpiredChallenges)();
     if (res.error)
         throw new Error(res.error);
 });
-exports.scheduleWeeklyChallenges = onSchedule("every monday 00:00", async () => {
+exports.scheduleWeeklyChallenges = (0, scheduler_1.onSchedule)("every monday 00:00", async () => {
     const res = await (0, challengesScheduler_1.scheduleRecurringChallenges)();
     if (res.error)
         throw new Error(res.error);
