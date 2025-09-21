@@ -16,8 +16,13 @@
     "seed:challenges": "npx tsx scripts/seed-challenges.ts",
     "playwright:install": "npx playwright install --with-deps",
     "dev": "vite",
-    "build": "npm run assets:optimize && npm run assets:cleanup && npm run functions:build && tsc && vite build",
+    "build": "npm run build:parallel",
+    "build:parallel": "npm run functions:build:fast & npm run assets:optimize & npm run tsc & wait && npm run assets:cleanup && npm run vite build",
+    "build:cache": "npm run functions:build:fast && npm run tsc && npm run vite build",
+    "build:ci": "npm run functions:build:fast && npm run tsc && npm run vite build",
+    "build:dev": "npm run assets:optimize && npm run assets:cleanup && npm run functions:build && tsc && vite build",
     "functions:build": "cd functions && npm ci --ignore-scripts && npm run build",
+    "functions:build:fast": "cd functions && npm ci --prefer-offline --no-audit --ignore-scripts && npm run build",
     "assets:optimize": "node scripts/optimize-assets.cjs",
     "assets:cleanup": "node scripts/cleanup-assets.cjs",
     "assets:clean": "rm -rf public/icons public/images/optimized public/assets",
@@ -59,7 +64,7 @@
     "security:report": "./scripts/validate-security.sh --report-only",
     "prepare": "if [ \"$CI\" != \"true\" ] && [ \"$VERCEL\" != \"1\" ] && [ \"$NETLIFY\" != \"true\" ]; then npm run security:init && (git rev-parse --git-dir > /dev/null 2>&1 && command -v husky > /dev/null 2>&1 && husky install || echo 'Skipping husky install - not in a git repo or husky missing'); else echo 'Skipping prepare script in CI/deployment environment'; fi",
     "postinstall": "echo 'Post-install completed successfully'",
-    "prebuild": "cd functions && npm ci --ignore-scripts && npm run build",
+    "prebuild": "npm run functions:build:fast",
     "precommit": "lint-staged && npm run security:check",
     "pre-commit": "npm run precommit",
     "firebase:emulators": "firebase emulators:start --only firestore,storage",
@@ -107,6 +112,8 @@
     "docs:quick": "npx tsx scripts/docs-cli.ts quick",
     "docs:test": "jest --config jest.config.ts scripts/__tests__/maintain-docs.test.ts",
     "docs:maintenance": "npx tsx scripts/maintain-docs.ts analyze && npx tsx scripts/maintain-docs.ts validate && npx tsx scripts/maintain-docs.ts priority",
+    "optimize:analyze": "node scripts/build-optimizer.js",
+    "optimize:build": "npm run build:cache",
     "test:migration:comprehensive": "jest --config jest.config.migration.ts --coverage --verbose --reporters=default --reporters=jest-html-reporters",
     "test:migration:production-engine": "jest --config jest.config.migration.ts --testPathPattern=productionMigrationEngine.test.ts",
     "test:migration:monitoring": "jest --config jest.config.migration.ts --testPathPattern=enhancedMonitoring.test.ts",
@@ -183,6 +190,10 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "chromatic": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   },
   "dependencies": {
     "@emnapi/core": "^1.5.0",

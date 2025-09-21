@@ -26,13 +26,13 @@
       ]
     }
   ],
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build:ci",
   "outputDirectory": "dist",
   "framework": "vite",
   "github": {
     "silent": true
   },
-  "installCommand": "npm ci --ignore-scripts && npm run build",
+  "installCommand": "npm ci --prefer-offline --no-audit --ignore-scripts",
   "env": {
     "VERCEL": "1"
   }
