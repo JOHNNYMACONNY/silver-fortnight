@@ -109,10 +109,10 @@ export const CollaborationDetailPage: React.FC = () => {
           setApplications(applicationsData);
           const userApplication = applicationsData.find(app => app.applicantId === currentUser?.uid);
           setHasApplied(!!userApplication);
-        } else {
-          // Handle case where collaborationData is null but no explicit error
-          setError('Collaboration not found');
         }
+      } else {
+        // Handle case where collaborationData is null but no explicit error
+        setError('Collaboration not found');
       }
 
       setIsLoading(false);
@@ -352,7 +352,7 @@ export const CollaborationDetailPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setIsDeleting(true)}
-                  className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 focus:outline-none focus:ring-2 focus_ring-offset-2 focus:ring-destructive"
+                  className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-destructive"
                 >
                   <Trash2 className="-ml-0.5 mr-2 h-4 w-4" />
                   Delete

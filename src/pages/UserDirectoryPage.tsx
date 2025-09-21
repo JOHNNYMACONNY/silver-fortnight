@@ -109,7 +109,9 @@ export const UserDirectoryPage: React.FC = () => {
         setRelationFilter(null);
         setRelationUserId(null);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Error processing URL parameters:', e);
+    }
 
     const fetchUsers = async () => {
       setLoading(true);
