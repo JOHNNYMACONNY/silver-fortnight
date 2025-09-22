@@ -20,6 +20,10 @@ public/src/
 public/assets/
 *.asset-report.json
 public/asset-manifest.json
+public/asset-report.json
+public/icons/optimized/
+public/icons/**/optimized/
+functions/lib/
 
 # misc
 .DS_Store
