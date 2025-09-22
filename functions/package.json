@@ -6,8 +6,8 @@
     "node": "18 || 20 || 22"
   },
   "scripts": {
-    "build": "tsc --build --verbose",
-    "build:fast": "tsc --build --incremental",
+    "build": "tsc",
+    "build:fast": "tsc --incremental",
     "build:watch": "tsc --build --watch",
     "clean": "rm -rf lib",
     "serve": "npm run build && firebase emulators:start --only functions",

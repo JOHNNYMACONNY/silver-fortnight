@@ -43,12 +43,6 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: false,
     minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    },
     rollupOptions: {
       output: {
         manualChunks: {
@@ -59,8 +53,7 @@ export default defineConfig({
           utils: ['date-fns', 'clsx', 'tailwind-merge', 'zod']
         }
       }
-    },
-    chunkSizeWarningLimit: 1000
+    }
   },
 
   optimizeDeps: {
@@ -71,10 +64,8 @@ export default defineConfig({
       'firebase/app',
       'firebase/auth',
       'firebase/firestore',
-      '@tanstack/react-query',
-      'framer-motion'
-    ],
-    force: false
+      '@tanstack/react-query'
+    ]
   },
 
   define: {

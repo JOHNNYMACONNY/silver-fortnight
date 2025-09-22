@@ -163,4 +163,3 @@ exports.scheduleWeeklyChallenges = firebase_functions_1.scheduler.onSchedule("ev
     if (res.error)
         throw new Error(res.error);
 });
-//# sourceMappingURL=index.js.map

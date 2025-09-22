@@ -32,7 +32,7 @@
   "github": {
     "silent": true
   },
-  "installCommand": "npm ci --prefer-offline --no-audit --ignore-scripts",
+  "installCommand": "npm ci --ignore-scripts",
   "env": {
     "VERCEL": "1"
   }
