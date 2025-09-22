@@ -20,7 +20,6 @@ import { initializeMigrationRegistry } from './services/migration';
 import { getSyncFirebaseDb } from './firebase-config';
 import { GamificationNotificationProvider } from './contexts/GamificationNotificationContext';
 import { initializeFirebase } from './firebase-config';
-import PWAProvider from './components/providers/PWAProvider';
 import ConsistencyCheckerPage from './pages/ConsistencyCheckerPage';
 import DevDashboard from './components/development/DevDashboard';
 import { StyleGuide } from './components/ui/StyleGuide';
@@ -65,7 +64,7 @@ import PortfolioPage from './pages/PortfolioPage';
 import LoginPage from './components/auth/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import { SignUpPage } from './pages/SignUpPage';
-import PasswordResetPage from './pages/PasswordResetPage';
+import { PasswordResetPage } from './pages/PasswordResetPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 
 // Import Component Status Checker
@@ -125,7 +124,6 @@ function App() {
 
   return (
     <EnhancedErrorBoundary>
-      <PWAProvider>
         <NotificationsProvider>
           <GamificationNotificationProvider>
         <MainLayout containerized={false}>
@@ -243,7 +241,6 @@ function App() {
         </MainLayout>
         </GamificationNotificationProvider>
       </NotificationsProvider>
-      </PWAProvider>
     </EnhancedErrorBoundary>
   );
 }
