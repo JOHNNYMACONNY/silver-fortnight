@@ -72,6 +72,7 @@ import ComprehensiveThemeTest from './components/ComprehensiveThemeTest';
 import ProfilePage from './pages/ProfilePage';
 import { TradesPage } from './pages/TradesPage';
 import { TradeDetailPage } from './pages/TradeDetailPage';
+import CreateTradePage from './pages/CreateTradePage';
 import PortfolioPage from './pages/PortfolioPage';
 import LoginPage from './components/auth/LoginPage';
 import DashboardPage from './pages/DashboardPage';
@@ -151,7 +152,8 @@ function App() {
           <Routes>
             <Route path="/" element={<RouteErrorBoundary><HomePage /></RouteErrorBoundary>} />
             <Route path="/trades" element={<RouteErrorBoundary><TradesPage /></RouteErrorBoundary>} />
-        <Route path="/trades/:tradeId" element={<RouteErrorBoundary><TradeDetailPage /></RouteErrorBoundary>} />
+            <Route path="/trades/new" element={<RouteErrorBoundary><ProtectedRoute><CreateTradePage /></ProtectedRoute></RouteErrorBoundary>} />
+            <Route path="/trades/:tradeId" element={<RouteErrorBoundary><TradeDetailPage /></RouteErrorBoundary>} />
         <Route path="/projects" element={<RouteErrorBoundary><CollaborationsPage /></RouteErrorBoundary>} />
         <Route path="/collaborations" element={<RouteErrorBoundary><CollaborationsPage /></RouteErrorBoundary>} />
         <Route path="/collaborations/new" element={<RouteErrorBoundary><CreateCollaborationPage /></RouteErrorBoundary>} />

@@ -16,7 +16,7 @@ export async function autoCreateUserProfile() {
   if (!userSnap.exists()) {
     await setDoc(userRef, {
       name: user.displayName || user.email || user.uid,
-      email: user.email,
+      email: user.email || '', // Ensure email is always a string, not null
       createdAt: serverTimestamp(),
       roles: ['user']
     });
