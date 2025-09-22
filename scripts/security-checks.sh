@@ -54,14 +54,39 @@ else
     print_status "High severity vulnerabilities found" "fail"
 fi
 
-# 3. Check for sensitive files
+# 3. Check for sensitive files (fail only if tracked by git; warn for untracked/local)
 echo -e "\n📄 Checking for sensitive files..."
 SENSITIVE_FILES=$(find . -type f -name "*.pem" -o -name "*.key" -o -name "*.env" 2>/dev/null)
 if [ -z "$SENSITIVE_FILES" ]; then
     print_status "No sensitive files found in repository" "pass"
 else
-    print_status "Sensitive files found in repository" "fail"
-    echo "$SENSITIVE_FILES"
+    TRACKED_LIST=""
+    UNTRACKED_LIST=""
+    while IFS= read -r f; do
+        # Normalize path without leading ./
+        fp="${f#./}"
+        if git ls-files --error-unmatch "$fp" >/dev/null 2>&1; then
+            TRACKED_LIST+="$fp\n"
+        else
+            UNTRACKED_LIST+="$fp\n"
+        fi
+    done <<EOF
+$SENSITIVE_FILES
+EOF
+
+    if [ -n "$TRACKED_LIST" ]; then
+        echo -e "$TRACKED_LIST"
+        print_status "Sensitive files are tracked in git" "fail"
+    fi
+
+    if [ -n "$UNTRACKED_LIST" ]; then
+        echo -e "$UNTRACKED_LIST"
+        print_status "Sensitive files present but untracked (local only)" "warn"
+    fi
+
+    if [ -z "$TRACKED_LIST" ] && [ -z "$UNTRACKED_LIST" ]; then
+        print_status "No sensitive files found in repository" "pass"
+    fi
 fi
 
 # 4. Run ESLint security checks
