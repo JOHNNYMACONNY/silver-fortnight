@@ -426,7 +426,7 @@ export const PortfolioCreationModal: React.FC<PortfolioCreationModalProps> = ({
                       >
                         <div className="flex items-center gap-2">
                           <Award className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{evidence.name}</span>
+                          <span className="text-sm">{evidence.title}</span>
                           <Badge variant="outline" className="text-xs">
                             {evidence.type}
                           </Badge>

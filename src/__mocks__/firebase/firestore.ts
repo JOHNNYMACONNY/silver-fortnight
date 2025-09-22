@@ -32,7 +32,7 @@ export const doc = mockJestFn().mockImplementation((db: any, collectionName: str
   return createDocRef(documentId);
 });
 
-export const getDoc = jest.fn().mockResolvedValue(createDocSnapshot({ id: 'mock-doc-id', exists: true }));
+export const getDoc = jest.fn().mockResolvedValue(createDocSnapshot({ id: 'mock-doc-id', exists: true } as any));
 
 export const collection = mockJestFn().mockImplementation((db: any, collectionName: string) => ({
   doc: mockJestFn().mockImplementation((id: string) => createDocRef(id)),
