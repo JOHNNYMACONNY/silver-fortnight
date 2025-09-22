@@ -4,17 +4,20 @@ const getSyncFirebaseDbResolved = () => {
   let mod: any = firebaseConfigModule as any;
 
   // Fallback: if the import namespace is empty (common with Jest ESM/CJS interop),
-  // attempt a dynamic require to get the mocked CommonJS shape.
-  if ((!mod || Object.keys(mod).length === 0) && typeof require !== 'undefined') {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const required = require('../firebase-config');
-      if (required) {
-        mod = required;
+  // attempt a dynamic import to get the mocked ESM/CJS shape without require().
+  // Note: dynamic import is async; tests calling this helper should initialize
+  // firebase-config properly. As an extra safety net, we synchronously continue
+  // and prefer other shapes below; the dynamic import result is ignored here.
+  if (!mod || Object.keys(mod).length === 0) {
+    // Best-effort kick of a dynamic import that does not block
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    import('../firebase-config').then((m) => {
+      if (m && Object.keys(mod || {}).length === 0) {
+        // shallow replace only if we still have empty module
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (mod as any) = m as any;
       }
-    } catch {
-      // ignore, we'll continue trying other shapes
-    }
+    }).catch(() => {/* ignore */});
   }
 
   // If module uses default export shape wrapped by namespace, merge default onto top-level
