@@ -91,4 +91,3 @@ const scheduleRecurringChallenges = async () => {
     }
 };
 exports.scheduleRecurringChallenges = scheduleRecurringChallenges;
-//# sourceMappingURL=challengesScheduler.js.map
