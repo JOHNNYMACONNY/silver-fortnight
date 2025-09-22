@@ -45,13 +45,13 @@ jest.mock('../contexts/PerformanceContext', () => ({
   })
 }));
 
-// Mock Firestore methods
-const mockGet = jest.fn();
-const mockGetDocs = jest.fn();
-const mockQuery = jest.fn();
-const mockWhere = jest.fn();
-const mockOrderBy = jest.fn();
-const mockLimit = jest.fn();
+// Mock Firestore methods (use var to avoid TDZ with jest.mock hoisting)
+var mockGet = jest.fn();
+var mockGetDocs = jest.fn();
+var mockQuery = jest.fn();
+var mockWhere = jest.fn();
+var mockOrderBy = jest.fn();
+var mockLimit = jest.fn();
 
 jest.mock('firebase/firestore', () => ({
   doc: jest.fn(),
