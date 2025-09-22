@@ -4,6 +4,7 @@ import {
   getAuth, 
   onAuthStateChanged, 
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
   signOut as firebaseSignOut
@@ -12,14 +13,19 @@ import { autoCreateUserProfile } from './utils/autoCreateUserProfile';
 import { markLoginDay } from './services/streaks';
 import { User as FirestoreUser, getUserProfile } from './services/firestore-exports';
 
-// Admin configuration - can be moved to environment variables later
-const ADMIN_UIDS: string[] = [
-  'TozfQg0dAHe4ToLyiSnkDqe3ECj2', // Existing admin UID from MigrationPage
-];
+// Admin configuration - loaded from environment variables
+const getAdminUids = (): string[] => {
+  const envUids = process.env.VITE_ADMIN_UIDS || '';
+  return envUids ? envUids.split(',').map(uid => uid.trim()) : [];
+};
 
-const ADMIN_EMAILS: string[] = [
-  // Add admin email addresses here if needed
-];
+const getAdminEmails = (): string[] => {
+  const envEmails = process.env.VITE_ADMIN_EMAILS || '';
+  return envEmails ? envEmails.split(',').map(email => email.trim()) : [];
+};
+
+const ADMIN_UIDS: string[] = getAdminUids();
+const ADMIN_EMAILS: string[] = getAdminEmails();
 
 // Helper function to check if user is admin
 const checkIsAdmin = (user: AuthUser | null): boolean => {
@@ -40,6 +46,8 @@ export interface AuthContextType {
   isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   logout: () => Promise<void>;  // Alias for signOut for backward compatibility
@@ -99,13 +107,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       setError(null);
       const result = await signInWithEmailAndPassword(auth, email, password);
-      setUser(result.user);
-      setIsAdmin(checkIsAdmin(result.user));
-      const { data: profile } = await getUserProfile(result.user.uid);
-      setUserProfile(profile || null);
-      await autoCreateUserProfile(); // Ensure Firestore user doc exists
-      // Update login streak on successful sign-in
-      try { await markLoginDay(result.user.uid); } catch (e) { /* non-blocking */ }
+      console.log('AuthProvider: Firebase sign in successful, user:', result.user.uid);
+      // Note: onAuthStateChanged will handle setting the user state
+      // so we don't need to set it here manually
       console.log('AuthProvider: Email sign in successful');
     } catch (err) {
       console.error('AuthProvider: Email sign in error', err);
@@ -117,6 +121,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signInWithEmail = signIn;  // Alias for backward compatibility
+
+  const signUp = async (email: string, password: string) => {
+    try {
+      console.log('AuthProvider: Attempting email sign up');
+      setLoading(true);
+      setError(null);
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      setUser(result.user);
+      setIsAdmin(checkIsAdmin(result.user));
+      const { data: profile } = await getUserProfile(result.user.uid);
+      setUserProfile(profile || null);
+      await autoCreateUserProfile(); // Ensure Firestore user doc exists
+      // Update login streak on successful sign-up
+      try { await markLoginDay(result.user.uid); } catch (e) { /* non-blocking */ }
+      console.log('AuthProvider: Email sign up successful');
+    } catch (err) {
+      console.error('AuthProvider: Email sign up error', err);
+      setError(err as Error);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signUpWithEmail = signUp;  // Alias for backward compatibility
 
   const signInWithGoogle = async () => {
     try {
@@ -172,6 +201,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAdmin,
     signIn,
     signInWithEmail,
+    signUp,
+    signUpWithEmail,
     signInWithGoogle,
     signOut,
     logout

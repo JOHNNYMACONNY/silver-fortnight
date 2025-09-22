@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RefreshCw, TrendingUp, Users, Trophy, Calendar, Plus, Search } from 'lucide-react';
+import { RefreshCw, TrendingUp, Users, Trophy, Calendar, Search } from 'lucide-react';
+import { PlusCircle } from '../utils/icons';
 import { LeaderboardCategory, LeaderboardPeriod } from '../types/gamification';
 import { LeaderboardWidget } from '../components/features/LeaderboardWidget';
 
@@ -14,6 +15,7 @@ import { ThreeTierProgressionUI } from '../components/challenges/ThreeTierProgre
 import { StreakWidget } from '../components/features/StreakWidget';
 import { Button } from '../components/ui/Button';
 import { semanticClasses } from '../utils/semanticColors';
+import { StandardPageHeader } from '../components/layout/StandardPageHeader';
 
 const DashboardPage: React.FC = () => {
   const { stats, recentActivity, loading, error, refreshData } = useDashboardData();
@@ -68,30 +70,28 @@ const DashboardPage: React.FC = () => {
   return (
     <Box className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <Stack gap="lg">
-        <header>
-          <Cluster className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8" wrap>
-            <Stack gap="xs">
-              <h1 className="text-3xl font-bold text-foreground">
-                {getGreeting()}, {user?.displayName || user?.email?.split('@')[0] || 'Trader'}!
-              </h1>
-              <p className="text-muted-foreground mt-1">Welcome back to your trading dashboard</p>
-            </Stack>
-            <Cluster gap="sm">
+        <StandardPageHeader
+          title={`${getGreeting()}, ${user?.displayName || user?.email?.split('@')[0] || 'Trader'}!`}
+          description="Welcome back to your trading dashboard"
+          isLoading={loading}
+          loadingMessage="Loading dashboard..."
+          actions={
+            <div className="flex gap-2">
               <Button variant="secondary" size="md" onClick={refreshData} title="Refresh data">
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh
               </Button>
-              <Button variant="primary" size="md" topic="trades" onClick={() => navigate('/trades?action=create')}>
-                <Plus className="w-4 h-4 mr-2" />
-                New Trade
+              <Button variant="primary" size="md" onClick={() => navigate('/trades/new')}>
+                <PlusCircle className="w-4 h-4 mr-2" />
+                Create New Trade
               </Button>
               <Button variant="secondary" size="md" onClick={() => navigate('/connections')}>
                 <Users className="w-4 h-4 mr-2" />
                 Invite Friend
               </Button>
-            </Cluster>
-          </Cluster>
-        </header>
+            </div>
+          }
+        />
 
         {error && (
           <Box className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-6">

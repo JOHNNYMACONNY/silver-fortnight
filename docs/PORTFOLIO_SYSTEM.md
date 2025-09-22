@@ -26,7 +26,7 @@ The portfolio system will:
 
 ### Key Features
 
-- **Automatic Generation**: Portfolio items created when trades/collaborations complete
+- **Automatic Generation**: Portfolio items created when trades, collaborations, and challenges complete
 - **Visibility Controls**: Users can show/hide items without altering original data
 - **Organization Options**: Categorization, pinning, and featuring capabilities
 - **Evidence Display**: Showcase embedded evidence from completed work
@@ -42,7 +42,7 @@ export interface PortfolioItem {
   id: string;
   userId: string;
   sourceId: string;  // ID of original trade or collaboration
-  sourceType: 'trade' | 'collaboration';
+  sourceType: 'trade' | 'collaboration' | 'challenge';
   title: string;
   description: string;
   skills: string[];  // Skills demonstrated
@@ -94,11 +94,12 @@ export interface User {
 - Portfolio management services implemented: `updatePortfolioItemVisibility`, `updatePortfolioItemFeatured`, `updatePortfolioItemPinned`, `deletePortfolioItem`.
 - Collaboration role completion now triggers generation via `generateCollaborationPortfolioItem` with aligned types (`assignedUserId`, `completionEvidence`).
 - Trade completion generation is available via `generateTradePortfolioItem` and should be called from the trade completion workflow.
-- UI integration and full automation wiring are the next steps.
+- Challenge completion generation is available via `generateChallengePortfolioItem` and is automatically called from the challenge completion workflow.
+- UI integration and full automation wiring are complete.
 
 ### Automatic Portfolio Generation
 
-When a trade or collaboration is completed:
+When a trade, collaboration, or challenge is completed:
 1. System creates portfolio items for all participants
 2. Items inherit details from the original source
 3. Evidence is referenced (not duplicated)
@@ -140,6 +141,79 @@ export const generateTradePortfolioItem = async (
     return { success: true, error: null };
   } catch (err) {
     // Error handling...
+  }
+};
+```
+
+```typescript
+/**
+ * Generate portfolio item from completed challenge
+ * Automatically called when a challenge is completed
+ */
+export const generateChallengePortfolioItem = async (
+  challenge: {
+    id: string;
+    title: string;
+    description: string;
+    category: string;
+    tags?: string[];
+    objectives?: string[];
+  },
+  userChallenge: {
+    completedAt?: any;
+    submissionData?: {
+      embeddedEvidence?: any[];
+    };
+    submissions?: Array<{
+      embeddedEvidence?: any[];
+    }>;
+    lastActivityAt?: any;
+  },
+  userId: string,
+  defaultVisibility: boolean = true
+): Promise<{ success: boolean; error: string | null }> => {
+  try {
+    // Extract skills from available data with fallbacks
+    const skills = [
+      challenge.category, // Primary skill source
+      ...(challenge.tags || []), // Additional skills from tags
+      ...(challenge.objectives || []).map(obj => 
+        obj.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim()
+      ).filter(skill => skill.length > 0) // Extract keywords from objectives
+    ].filter((skill, index, arr) => arr.indexOf(skill) === index); // Remove duplicates
+
+    // Extract evidence from submission data with fallbacks
+    const evidence = userChallenge.submissionData?.embeddedEvidence || 
+                     userChallenge.submissions?.[0]?.embeddedEvidence || 
+                     [];
+
+    // Use completedAt with fallback
+    const completedAt = userChallenge.completedAt || 
+                       userChallenge.lastActivityAt || 
+                       new Date();
+
+    const portfolioItem: PortfolioItem = {
+      id: '', // Firestore will generate the ID
+      userId,
+      sourceId: challenge.id,
+      sourceType: 'challenge',
+      title: challenge.title,
+      description: challenge.description,
+      skills,
+      completedAt,
+      visible: defaultVisibility,
+      featured: false,
+      pinned: false,
+      evidence,
+      collaborators: [] // Challenges are typically solo
+    };
+    
+    const db = getSyncFirebaseDb();
+    const portfolioRef = collection(db, 'users', userId, 'portfolio');
+    await addDoc(portfolioRef, portfolioItem);
+    return { success: true, error: null };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Unknown error' };
   }
 };
 ```
@@ -283,7 +357,7 @@ interface PortfolioTabProps {
 export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile }) => {
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [filter, setFilter] = useState<'all' | 'trades' | 'collaborations' | 'featured'>('all');
+  const [filter, setFilter] = useState<'all' | 'trades' | 'collaborations' | 'challenges' | 'featured'>('all');
   const [loading, setLoading] = useState(false);
   const [isManaging, setIsManaging] = useState(false);
 
@@ -305,6 +379,8 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
         return portfolioItems.filter(item => item.sourceType === 'trade');
       case 'collaborations':
         return portfolioItems.filter(item => item.sourceType === 'collaboration');
+      case 'challenges':
+        return portfolioItems.filter(item => item.sourceType === 'challenge');
       case 'featured':
         return portfolioItems.filter(item => item.featured);
       default:
@@ -337,6 +413,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
             <option value="all">All</option>
             <option value="trades">Trades</option>
             <option value="collaborations">Collaborations</option>
+            <option value="challenges">Challenges</option>
             <option value="featured">Featured</option>
           </select>
           {isOwnProfile && (
@@ -511,6 +588,31 @@ const handleConfirmCompletion = async () => {
     
     // Show success message
     addToast('success', 'Trade completed and added to your portfolio!');
+    
+  } catch (err) {
+    // Handle error
+  }
+};
+```
+
+### Challenge Completion
+
+When a challenge is completed:
+
+```typescript
+// In challenge completion handler
+const handleChallengeCompletion = async () => {
+  try {
+    // First complete the challenge (existing functionality)
+    const result = await completeChallenge(challengeId, submissionData);
+    
+    if (result.success && result.rewards) {
+      // Handle post-completion actions including portfolio generation
+      await handlePostCompletionActions(userId, challenge, result.rewards, userChallenge);
+      
+      // Show success message
+      addToast('success', 'Challenge completed and added to your portfolio!');
+    }
     
   } catch (err) {
     // Handle error

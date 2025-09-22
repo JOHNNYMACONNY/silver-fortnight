@@ -124,7 +124,7 @@ export const ChallengeCompletionInterface: React.FC<ChallengeCompletionInterface
         setStep('completed');
         
         // Handle post-completion actions
-        await handlePostCompletionActions(userId, challenge, result.rewards);
+        await handlePostCompletionActions(userId, challenge, result.rewards, userChallenge);
         
         onComplete?.(result.rewards);
       } else {

@@ -26,8 +26,21 @@ This document outlines a comprehensive testing plan for the Trade Lifecycle Syst
 - **Verification**: 
   - Trade appears in the creator's dashboard
   - Trade is visible in the trade listings
+  - Route `/trades/new` is accessible and functional
+  - Form validation works correctly
+  - Authentication is required
 
-#### 1.2 Edit Trade
+#### 1.2 Create Trade Route Access
+- **Action**: Navigate to `/trades/new` route
+- **Expected Result**: 
+  - If authenticated: Show create trade form
+  - If not authenticated: Redirect to login page
+- **Verification**: 
+  - Route is properly configured in App.tsx
+  - ProtectedRoute wrapper functions correctly
+  - CreateTradePage component loads without errors
+
+#### 1.3 Edit Trade
 - **Action**: Edit an existing trade
 - **Expected Result**: Trade details are updated
 - **Verification**: Updated details appear in the trade detail page

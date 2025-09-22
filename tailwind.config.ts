@@ -3,37 +3,17 @@ import containerQueries from "@tailwindcss/container-queries";
 
 const config = {
   safelist: [
-    // Grid columns (for dynamic columns/colSpan/rowSpan)
-    {
-      pattern: /grid-cols-(1|2|3|4|5|6|7|8|9|10|11|12)/,
-      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
-    },
-    {
-      pattern: /col-span-(1|2|3|4|5|6|7|8|9|10|11|12)/,
-      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
-    },
-    {
-      pattern: /row-span-(1|2|3|4|5|6)/,
-      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
-    },
-    // Container query classes (if using @container/@md: etc.)
-    {
-      pattern: /@container/,
-    },
-    {
-      pattern: /@md:grid-cols-(1|2|3|4|5|6)/,
-    },
-    // Any other dynamic classes you use (e.g., bg-*, text-*, etc.)
-    {
-      pattern: /(bg|text|border|ring|shadow)-(primary|secondary|accent|muted|foreground|background|card|blue|red|green|yellow|gray|slate|zinc|neutral|stone|amber|orange|lime|emerald|teal|cyan|sky|indigo|violet|purple|fuchsia|pink|rose)-(50|100|200|300|400|500|600|700|800|900)/,
-      variants: ['dark'],
-    },
+    // Only essential dynamic classes for better performance
+    'grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4',
+    'col-span-1', 'col-span-2', 'col-span-3', 'col-span-4',
+    'row-span-1', 'row-span-2', 'row-span-3',
+    // Essential color variants
+    'bg-primary', 'text-primary', 'border-primary',
+    'bg-secondary', 'text-secondary', 'border-secondary',
   ],
   content: [
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
-    './components/**/*.{js,ts,jsx,tsx}',
-    './pages/**/*.{js,ts,jsx,tsx}',
   ],
   darkMode: 'class',
   theme: {

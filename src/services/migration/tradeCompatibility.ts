@@ -10,11 +10,13 @@ import {
   QueryConstraint,
   Firestore
 } from 'firebase/firestore';
+import { TradeSkill } from '../../types/skill';
 
 /**
- * Trade data structure for skills
+ * Trade data structure for skills - now using standardized interface
+ * Legacy interface kept for backward compatibility during migration
  */
-export interface TradeSkill {
+export interface LegacyTradeSkill {
   id: string;
   name: string;
   level: 'beginner' | 'intermediate' | 'advanced' | 'expert';

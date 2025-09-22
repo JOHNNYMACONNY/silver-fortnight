@@ -46,12 +46,12 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
     shouldUseReducedAnimations,
     getOptimalSpacing,
   } = useMobileOptimization();
-  // Form variant styles
+  // Form variant styles with enhanced animations
   const formVariants = {
-    standard: `glassmorphic rounded-2xl p-6`,
-    elevated: `glassmorphic rounded-3xl p-8 shadow-2xl`,
-    modal: `glassmorphic rounded-2xl p-8 shadow-beautiful`,
-    stepped: `glassmorphic rounded-r-2xl pl-8 pr-6 py-6 border-l-4 border-gradient-to-b from-orange-500 to-blue-500`
+    standard: `glassmorphic rounded-2xl p-6 transition-all duration-500 ease-out hover:shadow-xl hover:shadow-primary/10 hover:scale-[1.01]`,
+    elevated: `glassmorphic rounded-3xl p-8 shadow-2xl transition-all duration-500 ease-out hover:shadow-2xl hover:shadow-primary/15 hover:scale-[1.02]`,
+    modal: `glassmorphic rounded-2xl p-8 shadow-beautiful transition-all duration-500 ease-out hover:shadow-xl hover:shadow-secondary/10 hover:scale-[1.01]`,
+    stepped: `glassmorphic rounded-r-2xl pl-8 pr-6 py-6 border-l-4 border-gradient-to-b from-orange-500 to-blue-500 transition-all duration-500 ease-out hover:shadow-xl hover:shadow-purple/10 hover:scale-[1.01]`
   };
 
   // Blur intensity classes

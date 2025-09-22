@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { getUserProfile, User, getAllTrades } from '../services/firestore-exports';
+import { tradeService } from '../services/entities/TradeService';
 import PerformanceMonitor from '../components/ui/PerformanceMonitor';
 import TradeCard, { ExtendedTrade } from '../components/features/trades/TradeCard';
 import { motion } from 'framer-motion';
@@ -10,6 +11,8 @@ import { EnhancedFilterPanel } from '../components/features/search/EnhancedFilte
 import { TradeListSkeleton } from '../components/ui/skeletons/TradeCardSkeleton';
 import { useToast } from '../contexts/ToastContext';
 import { AnimatedButton } from '../components/animations';
+import { Button } from '../components/ui/Button';
+import { PlusCircle } from '../utils/icons';
 import Box from '../components/layout/primitives/Box';
 import Stack from '../components/layout/primitives/Stack';
 import Cluster from '../components/layout/primitives/Cluster';
@@ -17,6 +20,7 @@ import Grid from '../components/layout/primitives/Grid';
 import { useTradeSearch } from '../hooks/useTradeSearch';
 import { getSyncFirebaseDb } from '../firebase-config';
 import { collection, query as fsQuery, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { StandardPageHeader } from '../components/layout/StandardPageHeader';
 
 export const TradesPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -55,49 +59,90 @@ export const TradesPage: React.FC = () => {
     setTradeCreators(creators);
   }, []);
 
+  // Fallback function to fetch trades using TradeService
+  const fetchTradesFallback = useCallback(async () => {
+    try {
+      console.log('Using fallback method to fetch trades...');
+      const result = await tradeService.getTradesByStatus('open', 20);
+      
+      if (result.error) {
+        console.error('Fallback fetch failed:', result.error);
+        setError(result.error.message || 'Failed to fetch trades');
+        return;
+      }
+
+      if (result.data) {
+        console.log('Fallback fetched trades:', result.data.length, 'items');
+        setTrades(result.data as ExtendedTrade[]);
+        
+        // Fetch creators for the trades
+        const creatorIds = result.data
+          .map(trade => trade.creatorId)
+          .filter((id, index, self) => id && self.indexOf(id) === index);
+        
+        if (creatorIds.length > 0) {
+          await fetchTradeCreators(creatorIds);
+        }
+      }
+    } catch (err: any) {
+      console.error('Fallback fetch error:', err);
+      setError(err.message || 'Failed to fetch trades');
+    }
+  }, [fetchTradeCreators]);
+
   // Realtime trades via onSnapshot
   useEffect(() => {
     setLoading(true);
     setError(null);
-    const db = getSyncFirebaseDb();
-    const tradesCol = collection(db, 'trades');
-    const q = fsQuery(
-      tradesCol,
-      where('status', '==', 'open'),
-      orderBy('createdAt', 'desc'),
-      limit(20)
-    );
+    
+    try {
+      const db = getSyncFirebaseDb();
+      const tradesCol = collection(db, 'trades');
+      const q = fsQuery(
+        tradesCol,
+        where('status', '==', 'open'),
+        orderBy('createdAt', 'desc'),
+        limit(20)
+      );
 
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
-      try {
-        const items = snapshot.docs
-          .map(doc => ({ id: doc.id, ...(doc.data() as any) }))
-          .filter(trade => !!trade.id) as ExtendedTrade[];
-        setTrades(items);
+      const unsubscribe = onSnapshot(q, async (snapshot) => {
+        try {
+          const items = snapshot.docs
+            .map(doc => ({ id: doc.id, ...(doc.data() as any) }))
+            .filter(trade => !!trade.id) as ExtendedTrade[];
+          
+          console.log('Fetched trades:', items.length, 'items');
+          setTrades(items);
 
-        // Fetch creators for the trades
-        const creatorIds = items
-          .map(trade => (trade as any).creatorId)
-          .filter((id, index, self) => id && self.indexOf(id) === index) as string[];
-        if (creatorIds.length > 0) {
-          await fetchTradeCreators(creatorIds);
+          // Fetch creators for the trades
+          const creatorIds = items
+            .map(trade => (trade as any).creatorId)
+            .filter((id, index, self) => id && self.indexOf(id) === index) as string[];
+          
+          if (creatorIds.length > 0) {
+            await fetchTradeCreators(creatorIds);
+          }
+          setLoading(false);
+        } catch (err: any) {
+          console.error('Error processing realtime trades:', err);
+          setError(err.message || 'Failed to process trades');
+          setLoading(false);
         }
-        setLoading(false);
-      } catch (err: any) {
-        console.error('Error processing realtime trades:', err);
-        setError(err.message || 'Failed to process trades');
-        setLoading(false);
-      }
-    }, (err) => {
-      console.error('Error subscribing to trades:', err);
-      setError(err.message || 'Failed to subscribe to trades');
-      setLoading(false);
-    });
+      }, (err) => {
+        console.error('Error subscribing to trades:', err);
+        console.log('Attempting fallback fetch...');
+        fetchTradesFallback().finally(() => setLoading(false));
+      });
 
-    return () => {
-      unsubscribe();
-    };
-  }, [fetchTradeCreators]);
+      return () => {
+        unsubscribe();
+      };
+    } catch (err: any) {
+      console.error('Error setting up trades listener:', err);
+      console.log('Attempting fallback fetch...');
+      fetchTradesFallback().finally(() => setLoading(false));
+    }
+  }, [fetchTradeCreators, fetchTradesFallback]);
 
   // Load search and filters from URL on mount
   useEffect(() => {
@@ -272,22 +317,28 @@ export const TradesPage: React.FC = () => {
   return (
     <Box className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Stack gap="lg">
-        <Cluster justify="between" align="center" gap="md" className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 mb-6 flex-col md:flex-row">
-          <h1 className="text-3xl font-bold text-foreground">Available Trades</h1>
-          <Cluster gap="sm" align="center">
-            <PerformanceMonitor pageName="TradesPage" />
-            <AnimatedButton
-              onClick={() => navigate('/trades/new')}
-              className="whitespace-nowrap"
-              tradingContext="proposal"
-              variant="primary"
-            >
-              Create New Trade
-            </AnimatedButton>
-          </Cluster>
-        </Cluster>
+        <StandardPageHeader
+          title="Available Trades"
+          description="Discover and participate in skill exchanges with other developers"
+          isLoading={loading}
+          loadingMessage="Loading trades..."
+          actions={
+            <div className="flex gap-2 items-center">
+              <PerformanceMonitor pageName="TradesPage" />
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => navigate('/trades/new')}
+                className="flex items-center gap-2 whitespace-nowrap"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Create New Trade
+              </Button>
+            </div>
+          }
+        />
 
-        <Box className="glassmorphic rounded-xl p-4 md:p-6 mb-8">
+        <Box className="mb-8">
           <EnhancedSearchBar
             searchTerm={searchTerm}
             onSearchChange={handleSearchTermChange}
@@ -334,6 +385,9 @@ export const TradesPage: React.FC = () => {
         ) : error ? (
           <Box className="col-span-full bg-card text-card-foreground p-6 rounded-lg shadow-sm border border-border text-center">
             <p className="text-destructive-foreground">{error}</p>
+            <div className="mt-2 text-sm text-muted-foreground">
+              Debug info: Trades count: {trades.length}, Enhanced trades: {enhancedTrades.length}
+            </div>
             <AnimatedButton onClick={() => window.location.reload()} className="mt-4" tradingContext="general" variant="secondary">
               Try Again
             </AnimatedButton>
@@ -344,6 +398,9 @@ export const TradesPage: React.FC = () => {
             <p className="text-muted-foreground mt-2">
               No trades match your search criteria. Try a different search term or create a new trade!
             </p>
+            <div className="mt-2 text-sm text-muted-foreground">
+              Debug info: Raw trades: {trades.length}, Filtered trades: {filteredTrades.length}, Enhanced trades: {enhancedTrades.length}
+            </div>
             <AnimatedButton onClick={() => navigate('/trades/new')} className="mt-4" tradingContext="proposal" variant="primary">
               Create Your First Trade
             </AnimatedButton>

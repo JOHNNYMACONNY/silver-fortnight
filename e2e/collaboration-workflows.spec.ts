@@ -297,4 +297,27 @@ test.describe('Collaboration Workflows E2E Tests', () => {
     await page.click('[data-testid="nav-completed-projects"]');
     await expect(page.locator('[data-testid="completed-project-card"]')).toHaveCountGreaterThan(0);
   });
+
+  test('should handle collaboration permissions correctly for non-creators', async ({ page }) => {
+    // Navigate to an existing collaboration as a non-creator
+    await page.goto('/collaborations/SH0r2mGpvjbEMtwS0npb');
+    
+    // Verify page loads without permission errors
+    await expect(page.locator('[data-testid="collaboration-title"]')).toBeVisible();
+    
+    // Verify no "Failed to fetch applications" error appears
+    await expect(page.locator('text=Failed to fetch applications')).not.toBeVisible();
+    
+    // Verify collaboration details are visible
+    await expect(page.locator('[data-testid="collaboration-description"]')).toBeVisible();
+    
+    // Verify roles section is visible
+    await expect(page.locator('[data-testid="roles-section"]')).toBeVisible();
+    
+    // Verify user can apply for roles (if any are open)
+    const applyButtons = page.locator('[data-testid="apply-role-button"]');
+    if (await applyButtons.count() > 0) {
+      await expect(applyButtons.first()).toBeEnabled();
+    }
+  });
 });

@@ -4,6 +4,7 @@ import { CollaborationService, collaborationService } from '../entities/Collabor
 import { errorService } from '../errorService';
 import { networkResilience } from '../networkResilience';
 import { gracefulDegradation } from '../gracefulDegradation';
+import { analyticsService } from '../analytics/AnalyticsService';
 
 /**
  * Service Registry - Central registry for all application services
@@ -41,6 +42,7 @@ export class ServiceRegistry {
     this.services.set('errorService', errorService);
     this.services.set('networkResilience', networkResilience);
     this.services.set('gracefulDegradation', gracefulDegradation);
+    this.services.set('analyticsService', analyticsService);
   }
 
   /**

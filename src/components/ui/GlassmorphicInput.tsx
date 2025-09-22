@@ -20,6 +20,7 @@ interface GlassmorphicInputProps extends Omit<React.InputHTMLAttributes<HTMLInpu
     shadow: boolean;
   };
   showPasswordToggle?: boolean;
+  onPasswordToggle?: () => void;
   animatedLabel?: boolean;
   realTimeValidation?: boolean;
   onValidationChange?: (isValid: boolean) => void;
@@ -43,6 +44,7 @@ export const GlassmorphicInput = forwardRef<HTMLInputElement, GlassmorphicInputP
       shadow: true
     },
     showPasswordToggle = false,
+    onPasswordToggle,
     animatedLabel = true,
     realTimeValidation = false,
     onValidationChange,
@@ -122,10 +124,11 @@ export const GlassmorphicInput = forwardRef<HTMLInputElement, GlassmorphicInputP
       props.onChange?.(e);
     }, [realTimeValidation, onValidationChange, props]);
 
-    // Phase 6.1: Password toggle
-    const togglePasswordVisibility = useCallback(() => {
-      setShowPassword(!showPassword);
-    }, [showPassword]);
+  // Phase 6.1: Password toggle
+  const togglePasswordVisibility = useCallback(() => {
+    setShowPassword(!showPassword);
+    onPasswordToggle?.();
+  }, [showPassword, onPasswordToggle]);
 
     // Phase 6.1: Animated label
     const shouldFloatLabel = animatedLabel && (isFocused || hasValue);

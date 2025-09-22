@@ -159,7 +159,7 @@ export const ErrorRecoverySystem: React.FC<ErrorRecoverySystemProps> = ({
             if ('serviceWorker' in navigator) {
               const registrations = await navigator.serviceWorker.getRegistrations();
               await Promise.all(registrations.map(reg => reg.unregister()));
-              await navigator.serviceWorker.register('/sw.js'); // Consider moving '/sw.js' to a constants file
+              await navigator.serviceWorker.register('/assets/js/sw.js'); // Consider moving '/assets/js/sw.js' to a constants file
             }
             return true;
           } catch {

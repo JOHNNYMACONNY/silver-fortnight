@@ -27,6 +27,11 @@ export interface User {
   role?: UserRole;
   createdAt?: any;
   updatedAt?: any;
+  // Profile customization fields
+  handle?: string; // Public handle (e.g., @username)
+  verified?: boolean; // Account verification status
+  handlePrivate?: boolean; // Privacy setting for handle visibility
+  tagline?: string; // One-line user description
   // Optional profile banner (Cloudinary publicId data or legacy string URL)
   banner?: BannerData | string | null;
   // Optional FX settings for banner overlay

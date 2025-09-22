@@ -319,9 +319,15 @@ export interface LeaderboardEntry {
   id?: string;
   userId: string;
   userName: string;
+  displayName?: string;
+  handle?: string;
+  photoURL?: string;
   userAvatar?: string;
   rank: number;
   value: number; // XP, trade count, etc.
+  score?: number; // Alternative to value
+  category?: string;
+  period?: string;
   rankChange: number; // Rank change from previous period
   isCurrentUser?: boolean;
 }
@@ -439,6 +445,9 @@ export interface SocialStats {
   // Optional composite reputation for caching/analytics (0–100)
   reputationScore?: number;
   reputationLastComputedAt?: Timestamp;
+  // Additional fields for real-time updates
+  rank?: number;
+  weeklyXP?: number;
 }
 
 export interface LeaderboardNotification {

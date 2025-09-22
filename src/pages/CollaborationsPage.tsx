@@ -227,7 +227,7 @@ export const CollaborationsPage: React.FC = () => {
       </div>
 
       {/* Enhanced Search Section (sticky on mobile) */}
-      <div className="glassmorphic sm:static sticky top-16 z-sticky bg-card/80 backdrop-blur-sm rounded-xl p-4 md:p-6 mb-8 border border-border/60">
+      <div className="sm:static sticky top-16 z-sticky mb-8">
         <EnhancedSearchBar
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}

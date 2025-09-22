@@ -322,7 +322,7 @@ export const CardContent: React.FC<CardContentProps> = ({ children, className = 
   return (
     <div
       className={cn(
-        'p-6 pt-0 @container flex flex-col gap-4 @md:flex-row @md:gap-8',
+        'p-6 pt-0 flex flex-col gap-6',
         className
       )}
     >

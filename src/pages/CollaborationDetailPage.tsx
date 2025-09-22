@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import {
-  getCollaboration,
   deleteCollaboration,
   getCollaborationApplications,
   updateCollaborationApplication,
@@ -11,10 +10,15 @@ import {
   CollaborationApplication,
   User
 } from '../services/firestore-exports';
+import { getCollaborationRoles } from '../services/collaborationRoles';
+import { collaborationService } from '../services/entities/CollaborationService';
+import { getSyncFirebaseDb } from '../firebase-config';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import CollaborationForm_legacy from '../components/features/collaborations/CollaborationForm_legacy';
 import CollaborationApplicationForm from '../components/features/collaborations/CollaborationApplicationForm';
 import CollaborationApplicationCard from '../components/features/collaborations/CollaborationApplicationCard';
 import { RoleCard } from '../components/collaboration/RoleCard';
+import { CollaborationRolesSection } from '../components/collaboration/CollaborationRolesSection';
 import { useToast } from '../contexts/ToastContext';
 import { Modal } from '../components/ui/Modal';
 import { ArrowLeft, Edit, Trash2, MapPin, Clock, DollarSign, Users } from 'lucide-react';
@@ -57,6 +61,7 @@ export const CollaborationDetailPage: React.FC = () => {
 
   const [collaboration, setCollaboration] = useState<Collaboration | undefined>(undefined);
   const [applications, setApplications] = useState<CollaborationApplication[]>([]);
+  const [roles, setRoles] = useState<CollaborationRoleData[]>([]);
   const [creatorProfile, setCreatorProfile] = useState<User | null>(null);
   const [isLoadingCreator, setIsLoadingCreator] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -83,15 +88,16 @@ export const CollaborationDetailPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
 
-      const { data: collaborationData, error: collaborationError } = await getCollaboration(collaborationId);
-      if (collaborationError) {
-        setError(`Failed to fetch collaboration: ${collaborationError.message}`);
-      } else if (collaborationData) {
+      const collaborationResult = await collaborationService.getCollaboration(collaborationId);
+      if (collaborationResult.error) {
+        setError(`Failed to fetch collaboration: ${collaborationResult.error.message}`);
+      } else if (collaborationResult.data) {
+        const collaborationData = collaborationResult.data;
         setCollaboration(collaborationData);
-        setIsOwner(currentUser?.uid === (collaborationData as any).creatorId || currentUser?.uid === (collaborationData as any).ownerId);
+        setIsOwner(currentUser?.uid === collaborationData.creatorId || currentUser?.uid === (collaborationData as any).ownerId);
 
         // Fetch creator profile for live data
-        const creatorId = (collaborationData as any).creatorId || (collaborationData as any).ownerId;
+        const creatorId = collaborationData.creatorId || (collaborationData as any).ownerId;
         if (creatorId) {
           setIsLoadingCreator(true);
           const { data: profileData } = await getUserProfile(creatorId);
@@ -101,15 +107,64 @@ export const CollaborationDetailPage: React.FC = () => {
           setIsLoadingCreator(false);
         }
 
-        // Fetch applications only if collaboration is loaded
-        const { data: applicationsData, error: applicationsError } = await getCollaborationApplications(collaborationId);
-        if (applicationsError) {
-          setError(`Failed to fetch applications: ${applicationsError.message}`);
-        } else if (applicationsData) {
-          setApplications(applicationsData);
-          const userApplication = applicationsData.find(app => app.applicantId === currentUser?.uid);
+        // Determine if user is owner first
+        const userIsOwner = currentUser?.uid === collaborationData.creatorId || currentUser?.uid === (collaborationData as any).ownerId;
+        
+        // Fetch roles and applications only if collaboration is loaded
+        const [applicationsResult, rolesResult] = await Promise.all([
+          // Only fetch applications if user is the creator (for management) or to check if user has applied
+          userIsOwner ? getCollaborationApplications(collaborationId) : Promise.resolve({ data: [], error: null }),
+          getCollaborationRoles(collaborationId)
+        ]);
+
+        if (applicationsResult.error) {
+          console.warn(`Failed to fetch applications: ${applicationsResult.error.message}`);
+          // Don't set this as a critical error for non-creators
+          if (userIsOwner) {
+            setError(`Failed to fetch applications: ${applicationsResult.error.message}`);
+          }
+        } else if (applicationsResult.data) {
+          setApplications(applicationsResult.data);
+          const userApplication = applicationsResult.data.find(app => app.applicantId === currentUser?.uid);
           setHasApplied(!!userApplication);
-        } else {
+        }
+
+        // For non-creators, check if they have applied by looking at their own applications
+        if (!userIsOwner && currentUser?.uid) {
+          try {
+            // Check if user has any applications across all roles
+            const userApplicationCheck = await Promise.all(
+              (rolesResult.data || []).map(async (role) => {
+                try {
+                  const userAppsQuery = query(
+                    collection(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles/${role.id}/applications`),
+                    where('applicantId', '==', currentUser.uid)
+                  );
+                  const userAppsSnapshot = await getDocs(userAppsQuery);
+                  return !userAppsSnapshot.empty;
+                } catch (error) {
+                  console.warn(`Failed to check applications for role ${role.id}:`, error);
+                  return false;
+                }
+              })
+            );
+            setHasApplied(userApplicationCheck.some(hasApplied => hasApplied));
+          } catch (error) {
+            console.warn('Failed to check user applications:', error);
+          }
+        }
+
+        if (rolesResult.success && rolesResult.data) {
+          setRoles(rolesResult.data);
+        } else if (rolesResult.error) {
+          console.warn(`Failed to fetch roles: ${rolesResult.error}`);
+          // Fallback to legacy roles if available
+          if ((collaborationData as any).roles && Array.isArray((collaborationData as any).roles)) {
+            setRoles(transformLegacyRoles((collaborationData as any).roles, collaborationId));
+          }
+        }
+
+        if (!collaborationResult.data) {
           // Handle case where collaborationData is null but no explicit error
           setError('Collaboration not found');
         }
@@ -148,6 +203,16 @@ export const CollaborationDetailPage: React.FC = () => {
   const handleApplicationSubmit = () => {
     setShowApplicationForm(false);
     setHasApplied(true);
+  };
+
+  const handleRolesUpdate = async () => {
+    // Refresh roles data when roles are updated
+    if (collaborationId) {
+      const rolesResult = await getCollaborationRoles(collaborationId);
+      if (rolesResult.success && rolesResult.data) {
+        setRoles(rolesResult.data);
+      }
+    }
   };
 
   const handleAcceptApplication = async (applicationId: string) => {
@@ -345,16 +410,18 @@ export const CollaborationDetailPage: React.FC = () => {
               <div className="mt-4 md:mt-0 flex-shrink-0 flex items-center space-x-2">
                 <button
                   onClick={() => setIsEditing(true)}
+                  aria-label="Edit collaboration details"
                   className="inline-flex items-center px-3 py-1.5 border border-border rounded-md shadow-sm text-sm font-medium text-foreground bg-card hover:bg-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
                 >
-                  <Edit className="-ml-0.5 mr-2 h-4 w-4" />
+                  <Edit className="-ml-0.5 mr-2 h-4 w-4" aria-hidden="true" />
                   Edit
                 </button>
                 <button
                   onClick={() => setIsDeleting(true)}
-                  className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 focus:outline-none focus:ring-2 focus_ring-offset-2 focus:ring-destructive"
+                  aria-label="Delete collaboration"
+                  className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-destructive"
                 >
-                  <Trash2 className="-ml-0.5 mr-2 h-4 w-4" />
+                  <Trash2 className="-ml-0.5 mr-2 h-4 w-4" aria-hidden="true" />
                   Delete
                 </button>
               </div>
@@ -365,13 +432,13 @@ export const CollaborationDetailPage: React.FC = () => {
         <div className="p-6">
           <div className="mb-6">
             <h2 className="text-lg font-medium text-foreground">About this Collaboration</h2>
-            <p className="mt-2 text-base text-muted-foreground whitespace-pre-wrap">{collaboration.description}</p>
+            <p className="mt-2 text-base text-muted-foreground whitespace-pre-wrap" aria-describedby="collaboration-description">{collaboration.description}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
+            <section>
               <h3 className="text-lg font-medium text-foreground">Details</h3>
-              <dl className="mt-2 space-y-4">
+              <dl className="mt-2 space-y-4" role="list" aria-label="Collaboration details">
                 {collaboration.location && (
                   <div className="flex">
                     <dt className="flex-shrink-0">
@@ -407,8 +474,8 @@ export const CollaborationDetailPage: React.FC = () => {
                   </div>
                 )}
               </dl>
-            </div>
-            <div>
+            </section>
+            <section>
               <h3 className="text-lg font-medium text-foreground">Skills Needed</h3>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {collaboration.skillsNeeded && collaboration.skillsNeeded.length > 0 ? (
@@ -421,24 +488,18 @@ export const CollaborationDetailPage: React.FC = () => {
                   <p className="text-muted-foreground">No specific skills required</p>
                 )}
               </div>
-            </div>
+            </section>
           </div>
 
           {/* Roles Section */}
-          {collaborationId && ((collaboration as any).roles && Array.isArray((collaboration as any).roles) && (collaboration as any).roles.length > 0) && (
-            <div className="mt-8">
-              <h3 className="text-lg font-medium text-foreground mb-4">Available Roles</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {transformLegacyRoles((collaboration as any).roles, collaborationId).map((role) => (
-                  <RoleCard
-                    key={role.id}
-                    role={role}
-                    collaborationId={collaborationId}
-                    isCreator={isOwner}
-                  />
-                ))}
-              </div>
-            </div>
+          {collaborationId && roles.length > 0 && (
+            <CollaborationRolesSection
+              collaborationId={collaborationId}
+              collaborationTitle={collaboration.title}
+              roles={roles}
+              isCreator={isOwner}
+              onRolesUpdated={handleRolesUpdate}
+            />
           )}
 
           {!isOwner && !isCollaborator && (
@@ -462,6 +523,9 @@ export const CollaborationDetailPage: React.FC = () => {
           <nav className="-mb-px flex space-x-8" aria-label="Tabs">
             <button
               onClick={() => setActiveTab('details')}
+              aria-label="View collaborators tab"
+              aria-selected={activeTab === 'details'}
+              role="tab"
               className={`${
                 activeTab === 'details'
                   ? 'border-primary text-primary'
@@ -473,6 +537,9 @@ export const CollaborationDetailPage: React.FC = () => {
             {isOwner && (
               <button
                 onClick={() => setActiveTab('applications')}
+                aria-label={`View applications tab (${applications.filter(app => app.status === 'pending').length} pending)`}
+                aria-selected={activeTab === 'applications'}
+                role="tab"
                 className={`${
                   activeTab === 'applications'
                     ? 'border-primary text-primary'
@@ -486,7 +553,7 @@ export const CollaborationDetailPage: React.FC = () => {
         </div>
         <div className="mt-6">
           {activeTab === 'details' && (
-            <div>
+            <div role="tabpanel" aria-label="Collaborators information">
               <h3 className="text-lg font-medium text-foreground mb-4">Current Collaborators</h3>
               {collaboration.collaborators && collaboration.collaborators.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -507,7 +574,7 @@ export const CollaborationDetailPage: React.FC = () => {
             </div>
           )}
           {activeTab === 'applications' && isOwner && (
-            <div>
+            <div role="tabpanel" aria-label="Applications management">
               <h3 className="text-lg font-medium text-foreground mb-4">Pending Applications</h3>
               {applications.filter(app => app.status === 'pending').length > 0 ? (
                 <div className="space-y-4">

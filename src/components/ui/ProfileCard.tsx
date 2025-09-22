@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../utils/cn';
-import { MapPin, Calendar } from 'lucide-react';
+import { MapPin, Calendar, Check, Globe } from 'lucide-react';
 import { ReputationBadge } from './ReputationBadge';
 import { SkillBadge } from './SkillBadge';
 import { Skill } from '../../types/collaboration';
@@ -20,6 +20,11 @@ export interface ProfileCardProps {
   skills?: Skill[];
   reputationScore?: number;
   className?: string;
+  // New User fields
+  handle?: string;
+  verified?: boolean;
+  tagline?: string;
+  website?: string;
   // Enhanced Card customization props
   variant?: 'default' | 'glass' | 'elevated' | 'premium';
   enhanced?: boolean;
@@ -36,6 +41,10 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   skills = [],
   reputationScore = 0,
   className,
+  handle,
+  verified = false,
+  tagline,
+  website,
   variant = 'premium',
   enhanced = true
 }) => {
@@ -89,10 +98,22 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
                 className="flex-shrink-0"
               />
               
-              {/* Name (truncated) */}
-              <CardTitle className="truncate text-base font-semibold">
-                {displayName}
-              </CardTitle>
+              {/* Name and Handle */}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="truncate text-base font-semibold">
+                    {displayName}
+                  </CardTitle>
+                  {verified && (
+                    <Check className="w-4 h-4 text-success-600 dark:text-success-400 flex-shrink-0" />
+                  )}
+                </div>
+                {handle && (
+                  <p className="text-sm text-muted-foreground truncate">
+                    @{handle}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Reputation Badge in status position */}
@@ -106,6 +127,13 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 
         {/* Content Section */}
         <CardContent className="flex-1 overflow-hidden px-4 pb-4">
+          {/* Tagline Section */}
+          {tagline && (
+            <p className="text-sm text-primary font-medium line-clamp-1 mb-2">
+              {tagline}
+            </p>
+          )}
+
           {/* Bio Section */}
           {bio && (
             <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
@@ -113,16 +141,31 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
             </p>
           )}
 
-          {/* Location & Join Date Row */}
-          <div className="flex items-center text-sm text-muted-foreground mb-4 space-x-4">
+          {/* Location, Website & Join Date Row */}
+          <div className="space-y-2 mb-4">
             {location && (
-              <div className="flex items-center">
+              <div className="flex items-center text-sm text-muted-foreground">
                 <MapPin className="mr-1.5 h-4 w-4" />
                 <span className="truncate">{location}</span>
               </div>
             )}
             
-            <div className="flex items-center">
+            {website && (
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Globe className="mr-1.5 h-4 w-4" />
+                <a
+                  href={website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="truncate hover:text-primary transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {website.replace(/^https?:\/\//, '')}
+                </a>
+              </div>
+            )}
+            
+            <div className="flex items-center text-sm text-muted-foreground">
               <Calendar className="mr-1.5 h-4 w-4" />
               <span>Joined {formattedJoinDate}</span>
             </div>

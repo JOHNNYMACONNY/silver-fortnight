@@ -3,18 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { 
   createTrade, 
-  TradeSkill, 
   getUserProfile, 
   User as UserProfile, // Using alias to avoid conflict if another User type is in scope
   Timestamp 
 } from '../services/firestore-exports';
+import { TradeSkill } from '../types/skill';
 import { useToast } from '../contexts/ToastContext';
 import { Button } from '../components/ui/Button';
 import { ProposalSubmitButton, AnimatedButton } from '../components/animations';
-import { Input } from '../components/ui/Input';
+import { GlassmorphicInput } from '../components/ui/GlassmorphicInput';
+import { AccessibleFormField } from '../components/ui/AccessibleFormField';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/Select';
 import { Textarea } from '../components/ui/Textarea';
 import { X, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const CreateTradePage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -25,8 +27,8 @@ const CreateTradePage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
-  const [offeredSkills, setOfferedSkills] = useState<TradeSkill[]>([]);
-  const [requestedSkills, setRequestedSkills] = useState<TradeSkill[]>([]);
+  const [skillsOffered, setSkillsOffered] = useState<TradeSkill[]>([]);
+  const [skillsWanted, setSkillsWanted] = useState<TradeSkill[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -68,7 +70,7 @@ const CreateTradePage: React.FC = () => {
         name: newOfferedSkill.trim(),
         level: newOfferedSkillLevel
       };
-      setOfferedSkills([...offeredSkills, skill]);
+      setSkillsOffered([...skillsOffered, skill]);
       setNewOfferedSkill('');
       setNewOfferedSkillLevel('intermediate');
     }
@@ -76,7 +78,7 @@ const CreateTradePage: React.FC = () => {
 
   // Remove offered skill
   const removeOfferedSkill = (index: number) => {
-    setOfferedSkills(offeredSkills.filter((_, i) => i !== index));
+    setSkillsOffered(skillsOffered.filter((_, i) => i !== index));
   };
 
   // Add requested skill
@@ -86,7 +88,7 @@ const CreateTradePage: React.FC = () => {
         name: newRequestedSkill.trim(),
         level: newRequestedSkillLevel
       };
-      setRequestedSkills([...requestedSkills, skill]);
+      setSkillsWanted([...skillsWanted, skill]);
       setNewRequestedSkill('');
       setNewRequestedSkillLevel('intermediate');
     }
@@ -94,18 +96,22 @@ const CreateTradePage: React.FC = () => {
 
   // Remove requested skill
   const removeRequestedSkill = (index: number) => {
-    setRequestedSkills(requestedSkills.filter((_, i) => i !== index));
+    setSkillsWanted(skillsWanted.filter((_, i) => i !== index));
   };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Form submission started');
+    
     if (!currentUser) {
+      console.error('No current user found');
       setError('You must be logged in to create a trade');
       return;
     }
 
+    console.log('Current user:', currentUser.uid);
     setIsSubmitting(true);
     setError(null);
 
@@ -120,10 +126,10 @@ const CreateTradePage: React.FC = () => {
       if (!category) {
         throw new Error('Please select a category');
       }
-      if (offeredSkills.length === 0) {
+      if (skillsOffered.length === 0) {
         throw new Error('Please add at least one skill you are offering');
       }
-      if (requestedSkills.length === 0) {
+      if (skillsWanted.length === 0) {
         throw new Error('Please add at least one skill you are requesting');
       }
 
@@ -132,11 +138,8 @@ const CreateTradePage: React.FC = () => {
         title: title.trim(),
         description: description.trim(),
         category,
-        skillsOffered: offeredSkills,
-        skillsWanted: requestedSkills,
-        // Aliases for backward compatibility
-        offeredSkills: offeredSkills,
-        requestedSkills: requestedSkills,
+        skillsOffered: skillsOffered,
+        skillsWanted: skillsWanted,
         creatorId: currentUser.uid,
         creatorName: userProfile?.displayName || currentUser.displayName || 'Anonymous',
         creatorPhotoURL: userProfile?.profilePicture || userProfile?.photoURL || currentUser.photoURL || undefined,
@@ -147,18 +150,24 @@ const CreateTradePage: React.FC = () => {
       };
 
       // Create the trade
+      console.log('Creating trade with data:', tradeData);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: tradeId, error: createError } = await createTrade(tradeData as any);
 
+      console.log('Trade creation result:', { tradeId, createError });
+
       if (createError) {
+        console.error('Trade creation error:', createError);
         throw new Error(createError.message);
       }
 
       if (!tradeId) {
+        console.error('No trade ID returned');
         throw new Error('Failed to create trade');
       }
 
       // Success!
+      console.log('Trade created successfully with ID:', tradeId);
       addToast('success', 'Trade created successfully!');
       navigate('/trades');
 
@@ -196,17 +205,23 @@ const CreateTradePage: React.FC = () => {
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <label htmlFor="title" className="block text-sm font-medium text-muted-foreground mb-1">
-                Trade Title <span className="text-destructive">*</span>
-              </label>
-              <Input
-                type="text"
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Logo Design for Website Development"
-                required
-              />
+              <AccessibleFormField 
+                id="title" 
+                label="Trade Title" 
+                error={!title ? 'Title is required' : undefined}
+              >
+                <GlassmorphicInput
+                  type="text"
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g., Logo Design for Website Development"
+                  required
+                  icon={<X className="h-5 w-5" />}
+                  animatedLabel={true}
+                  realTimeValidation={true}
+                />
+              </AccessibleFormField>
             </div>
 
             <div>
@@ -248,12 +263,15 @@ const CreateTradePage: React.FC = () => {
             
             {/* Add skill form */}
             <div className="flex gap-2 mb-3">
-              <Input
+              <GlassmorphicInput
                 type="text"
                 value={newOfferedSkill}
                 onChange={(e) => setNewOfferedSkill(e.target.value)}
                 placeholder="Enter a skill you can offer"
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addOfferedSkill())}
+                icon={<X className="h-5 w-5" />}
+                animatedLabel={true}
+                realTimeValidation={true}
               />
               <Select value={newOfferedSkillLevel} onValueChange={(value) => setNewOfferedSkillLevel(value as 'beginner' | 'intermediate' | 'expert')}>
                 <SelectTrigger>
@@ -275,7 +293,7 @@ const CreateTradePage: React.FC = () => {
             
             {/* Offered skills list */}
             <div className="flex flex-wrap gap-2">
-              {offeredSkills.map((skill, index) => (
+              {skillsOffered.map((skill, index) => (
                 <div key={index} className="flex items-center bg-primary/10 text-primary rounded-full px-3 py-1 text-sm font-medium">
                   <span>{skill.name} ({skill.level})</span>
                   <button type="button" onClick={() => removeOfferedSkill(index)} className="ml-2 text-primary hover:text-primary/90">
@@ -294,12 +312,15 @@ const CreateTradePage: React.FC = () => {
             
             {/* Add skill form */}
             <div className="flex gap-2 mb-3">
-              <Input
+              <GlassmorphicInput
                 type="text"
                 value={newRequestedSkill}
                 onChange={(e) => setNewRequestedSkill(e.target.value)}
                 placeholder="Enter a skill you are looking for"
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addRequestedSkill())}
+                icon={<X className="h-5 w-5" />}
+                animatedLabel={true}
+                realTimeValidation={true}
               />
               <Select value={newRequestedSkillLevel} onValueChange={(value) => setNewRequestedSkillLevel(value as 'beginner' | 'intermediate' | 'expert')}>
                 <SelectTrigger>
@@ -321,7 +342,7 @@ const CreateTradePage: React.FC = () => {
             
             {/* Requested skills list */}
             <div className="flex flex-wrap gap-2">
-              {requestedSkills.map((skill, index) => (
+              {skillsWanted.map((skill, index) => (
                 <div key={index} className="flex items-center bg-primary/10 text-primary rounded-full px-3 py-1 text-sm font-medium">
                   <span>{skill.name} ({skill.level})</span>
                   <button type="button" onClick={() => removeRequestedSkill(index)} className="ml-2 text-primary hover:text-primary/90">
@@ -332,15 +353,20 @@ const CreateTradePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex justify-end pt-4">
+          <motion.div 
+            className="flex justify-end pt-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
             <ProposalSubmitButton
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !title || skillsOffered.length === 0 || skillsWanted.length === 0}
               loading={isSubmitting}
             >
-              Create Trade
+              {isSubmitting ? 'Creating Trade...' : 'Create Trade'}
             </ProposalSubmitButton>
-          </div>
+          </motion.div>
         </form>
       </div>
     </div>

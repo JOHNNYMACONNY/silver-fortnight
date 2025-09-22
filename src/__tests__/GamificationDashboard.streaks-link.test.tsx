@@ -1,6 +1,9 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { GamificationDashboard } from '../components/gamification/GamificationDashboard';
+import { ToastProvider } from '../contexts/ToastContext';
+import { PerformanceProvider } from '../contexts/PerformanceContext';
+import { GamificationNotificationProvider } from '../contexts/GamificationNotificationContext';
 
 jest.mock('../AuthContext', () => ({
   useAuth: () => ({ currentUser: { uid: 'u1' } }),
@@ -17,12 +20,20 @@ jest.mock('../services/achievements', () => ({
 }));
 
 jest.mock('../components/features/StreakWidget', () => ({
-  StreakWidget: () => <div data-testid="streak-widget">streak</div>,
+  StreakWidget: () => 'streak',
 }));
 
 describe('GamificationDashboard streaks link', () => {
   it('navigates to history tab when clicking View streak details', async () => {
-    render(<GamificationDashboard />);
+    render(
+      <PerformanceProvider>
+        <ToastProvider>
+          <GamificationNotificationProvider>
+            <GamificationDashboard />
+          </GamificationNotificationProvider>
+        </ToastProvider>
+      </PerformanceProvider>
+    );
     const link = await screen.findByRole('button', { name: /View streak details/i });
     fireEvent.click(link);
     // History tab title

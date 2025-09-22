@@ -11,6 +11,7 @@ import {
   getUserChallenges, 
   getChallenges 
 } from '../../services/challenges';
+import { StandardPageHeader } from '../layout/StandardPageHeader';
 import { canAccessTier } from '../../services/threeTierProgression';
 import { 
   Challenge, 
@@ -194,63 +195,63 @@ export const ChallengeManagementDashboard: React.FC<ChallengeManagementDashboard
 
   return (
     <div className={cn("space-y-6", className)}>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Challenge Hub</h1>
-          <p className="text-gray-300">Create, discover, and complete challenges to level up your skills</p>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button
-            variant={viewMode === 'overview' ? 'default' : 'outline'}
-            onClick={() => setViewMode('overview')}
-            size="sm"
-          >
-            Overview
-          </Button>
-          <Button
-            variant={viewMode === 'browse' ? 'default' : 'outline'}
-            onClick={() => setViewMode('browse')}
-            size="sm"
-          >
-            Browse
-          </Button>
-          <Button
-            variant={viewMode === 'discover' ? 'default' : 'outline'}
-            onClick={() => setViewMode('discover')}
-            size="sm"
-            className="bg-gradient-to-r from-purple-500 to-pink-500"
-          >
-            <Search className="w-4 h-4 mr-2" />
-            Discover
-          </Button>
-          <Button
-            variant={viewMode === 'my-challenges' ? 'default' : 'outline'}
-            onClick={() => setViewMode('my-challenges')}
-            size="sm"
-          >
-            My Challenges
-          </Button>
-          <Button
-            variant={viewMode === 'skill-tracking' ? 'default' : 'outline'}
-            onClick={() => setViewMode('skill-tracking')}
-            size="sm"
-          >
-            <BarChart3 className="w-4 h-4 mr-2" />
-            Skills
-          </Button>
-          <Button
-            variant={viewMode === 'create' ? 'default' : 'outline'}
-            onClick={() => setViewMode('create')}
-            size="sm"
-            className="bg-gradient-to-r from-orange-500 to-blue-500"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create
-          </Button>
-        </div>
-      </div>
+      <StandardPageHeader
+        title="Challenge Hub"
+        description="Create, discover, and complete challenges to level up your skills"
+        actions={
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              variant={viewMode === 'overview' ? 'default' : 'outline'}
+              onClick={() => setViewMode('overview')}
+              size="sm"
+            >
+              Overview
+            </Button>
+            <Button
+              variant={viewMode === 'browse' ? 'default' : 'outline'}
+              onClick={() => setViewMode('browse')}
+              size="sm"
+            >
+              Browse
+            </Button>
+            <Button
+              variant={viewMode === 'discover' ? 'default' : 'outline'}
+              onClick={() => setViewMode('discover')}
+              size="sm"
+              className="bg-gradient-to-r from-purple-500 to-pink-500"
+            >
+              <Search className="w-4 h-4 mr-2" />
+              Discover
+            </Button>
+            <Button
+              variant={viewMode === 'my-challenges' ? 'default' : 'outline'}
+              onClick={() => setViewMode('my-challenges')}
+              size="sm"
+            >
+              My Challenges
+            </Button>
+            <Button
+              variant={viewMode === 'skill-tracking' ? 'default' : 'outline'}
+              onClick={() => setViewMode('skill-tracking')}
+              size="sm"
+            >
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Skills
+            </Button>
+            <Button
+              variant={viewMode === 'create' ? 'default' : 'outline'}
+              onClick={() => setViewMode('create')}
+              size="sm"
+              className="bg-gradient-to-r from-orange-500 to-blue-500"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create
+            </Button>
+          </div>
+        }
+        isLoading={loading}
+        loadingMessage="Loading challenge hub..."
+      />
 
       <AnimatePresence mode="wait">
         {/* Overview Mode */}

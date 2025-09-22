@@ -18,10 +18,9 @@
     - /url: /portfolio
   - button "Search ⌘K"
   - button "Switch to dark mode": Dark
-  - button "2 Notifications"
-  - button "Open user menu for John Frederick Roberts":
-    - img "John Frederick Roberts"
-    - text: John Frederick Roberts
+  - button "Notifications"
+  - button "Log In"
+  - button "Sign Up"
 - heading "Welcome to TradeYa" [level=1]
 - paragraph: Connect with others, exchange skills, and collaborate on exciting collaborations.
 - heading "Discover What's Possible" [level=2]

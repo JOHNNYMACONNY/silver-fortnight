@@ -18,13 +18,9 @@
     - /url: /portfolio
   - button "Search ⌘K"
   - button "Switch to dark mode": Dark
-  - button "2 Notifications"
-  - button "Open user menu for John Frederick Roberts":
-    - img "John Frederick Roberts"
-    - text: John Frederick Roberts
-- text: Trade not found
-- link "← Back to Trades":
-  - /url: /trades
+  - button "Notifications"
+  - button "Log In"
+  - button "Sign Up"
 - button "Open Dev Dashboard"
 - contentinfo:
   - link "TradeYa Logo TradeYa":

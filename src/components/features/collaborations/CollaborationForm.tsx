@@ -8,11 +8,12 @@ import { doc, collection, runTransaction, getDocs } from 'firebase/firestore';
 import { logTransaction } from '../../../utils/transactionLogging';
 import { useToast } from '../../../contexts/ToastContext';
 import { Plus, Trash2, Edit } from 'lucide-react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { RoleDefinitionForm } from '../../collaboration/RoleDefinitionForm';
 import { Modal } from '../../ui/Modal';
 import { Button } from '../../ui/Button';
-import { Input } from '../../ui/Input';
+import { GlassmorphicInput } from '../../ui/GlassmorphicInput';
+import { AccessibleFormField } from '../../ui/AccessibleFormField';
 import { Textarea } from '../../ui/Textarea';
 import { Label } from '../../ui/Label';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../ui/Card';
@@ -511,17 +512,23 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
           <CardTitle>{isCreating ? 'Create New Collaboration' : 'Edit Collaboration'}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="title">Collaboration Title</Label>
-            <Input
+          <AccessibleFormField 
+            id="title" 
+            label="Collaboration Title" 
+            error={!title ? 'Title is required' : undefined}
+          >
+            <GlassmorphicInput
               id="title"
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder="Enter collaboration title"
               required
+              icon={<Plus className="h-5 w-5" />}
+              animatedLabel={true}
+              realTimeValidation={true}
             />
-          </div>
+          </AccessibleFormField>
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
@@ -576,19 +583,32 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
           </div>
         </CardContent>
         <CardFooter className="flex justify-end space-x-2">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onCancel}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={loading}
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onCancel}
+            >
+              Cancel
+            </Button>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
           >
-            {loading ? 'Saving...' : isCreating ? 'Create Collaboration' : 'Update Collaboration'}
-          </Button>
+            <Button
+              type="submit"
+              disabled={loading || !title || roles.length === 0}
+            >
+              {loading ? 'Saving...' : isCreating ? 'Create Collaboration' : 'Update Collaboration'}
+            </Button>
+          </motion.div>
         </CardFooter>
       </form>
       

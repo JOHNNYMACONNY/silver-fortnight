@@ -7,6 +7,7 @@ import SkillSelector from '../components/ui/SkillSelector';
 import type { Skill } from '../types/collaboration';
 import ProfileCard from '../components/ui/ProfileCard';
 import ProfileHoverCard from '../components/ui/ProfileHoverCard';
+import { User } from '../services/entities/UserService';
 
 export const ProfileComponentsDemo: React.FC = () => {
   const [bannerURL, setBannerURL] = useState<string | BannerData>('');
@@ -19,15 +20,20 @@ export const ProfileComponentsDemo: React.FC = () => {
   ]);
 
   // Sample user data for demo
-  const sampleUser = {
-    userId: 'user123',
+  const sampleUser: User = {
+    uid: 'user123',
+    id: 'user123',
     displayName: 'Jane Smith',
     photoURL: 'https://randomuser.me/api/portraits/women/44.jpg',
     location: 'San Francisco, CA',
-    joinDate: new Date(2022, 5, 15),
+    createdAt: new Date(2022, 5, 15),
     bio: 'Full-stack developer with a passion for creating beautiful and functional web applications.',
     skills: skills,
-    reputationScore: 85
+    reputationScore: 85,
+    handle: 'janesmith',
+    verified: true,
+    tagline: 'Building the future, one component at a time',
+    website: 'https://janesmith.dev'
   };
 
   return (
@@ -107,14 +113,18 @@ export const ProfileComponentsDemo: React.FC = () => {
             <h2 className="text-xl font-semibold text-foreground mb-4">Profile Card</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ProfileCard
-                userId={sampleUser.userId}
-                displayName={sampleUser.displayName}
+                userId={sampleUser.id}
+                displayName={sampleUser.displayName || 'Unknown User'}
                 photoURL={sampleUser.photoURL}
                 location={sampleUser.location}
-                joinDate={sampleUser.joinDate}
+                joinDate={sampleUser.createdAt}
                 bio={sampleUser.bio}
                 skills={sampleUser.skills}
                 reputationScore={sampleUser.reputationScore}
+                handle={sampleUser.handle}
+                verified={sampleUser.verified}
+                tagline={sampleUser.tagline}
+                website={sampleUser.website}
               />
               
               <ProfileCard
@@ -124,12 +134,16 @@ export const ProfileComponentsDemo: React.FC = () => {
                 location="New York, NY"
                 joinDate={new Date(2021, 2, 10)}
                 bio="UX designer with a background in psychology."
-                  skills={[
-                    { id: '1', name: 'UI/UX', level: 'expert' },
-                    { id: '2', name: 'Figma', level: 'intermediate' },
-                    { id: '3', name: 'User Research', level: 'intermediate' }
-                  ]}
+                skills={[
+                  { id: '1', name: 'UI/UX', level: 'expert' },
+                  { id: '2', name: 'Figma', level: 'intermediate' },
+                  { id: '3', name: 'User Research', level: 'intermediate' }
+                ]}
                 reputationScore={72}
+                handle="johndoe"
+                verified={false}
+                tagline="Designing experiences that matter"
+                website="https://johndoe.design"
               />
             </div>
           </section>
@@ -143,12 +157,16 @@ export const ProfileComponentsDemo: React.FC = () => {
             <div className="space-y-2">
               <div>
                 <ProfileHoverCard
-                  userId={sampleUser.userId}
+                  userId={sampleUser.id}
                   displayName={sampleUser.displayName}
                   photoURL={sampleUser.photoURL}
                   bio={sampleUser.bio}
                   skills={sampleUser.skills}
                   reputationScore={sampleUser.reputationScore}
+                  handle={sampleUser.handle}
+                  verified={sampleUser.verified}
+                  tagline={sampleUser.tagline}
+                  website={sampleUser.website}
                 >
                   <span className="text-primary font-medium cursor-pointer">
                     {sampleUser.displayName}
@@ -170,6 +188,10 @@ export const ProfileComponentsDemo: React.FC = () => {
                     { id: '3', name: 'User Research', level: 'intermediate' }
                   ]}
                   reputationScore={72}
+                  handle="johndoe"
+                  verified={false}
+                  tagline="Designing experiences that matter"
+                  website="https://johndoe.design"
                 >
                   <span className="text-primary font-medium cursor-pointer">
                     John Doe

@@ -1,8 +1,36 @@
 import '@testing-library/jest-dom';
 import 'jest-extended';
+import React from 'react';
 
 // Set up global polyfills before any other imports
 import { TextEncoder } from 'util';
+
+// Make React available globally for JSX
+(global as any).React = React;
+
+// Mock JSX runtime for jest.mock() factories
+(global as any).jsx_runtime_1 = {
+  jsx: (type: any, props: any, key?: any) => ({ type, props, key }),
+  jsxs: (type: any, props: any, key?: any) => ({ type, props, key }),
+  Fragment: React.Fragment
+};
+
+// Mock react_1 for jest.mock() factories
+(global as any).react_1 = {
+  default: React,
+  createElement: React.createElement,
+  Fragment: React.Fragment,
+  useState: React.useState,
+  useEffect: React.useEffect,
+  useContext: React.useContext,
+  useReducer: React.useReducer,
+  useCallback: React.useCallback,
+  useMemo: React.useMemo,
+  useRef: React.useRef,
+  useImperativeHandle: React.useImperativeHandle,
+  useLayoutEffect: React.useLayoutEffect,
+  useDebugValue: React.useDebugValue
+};
 
 // Set up global TextEncoder for tests
 (global as any).TextEncoder = TextEncoder;

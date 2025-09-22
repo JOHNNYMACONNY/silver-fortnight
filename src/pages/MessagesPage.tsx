@@ -9,6 +9,7 @@ import { ChatContainer } from '../components/features/chat/ChatContainer';
 import { useAuth } from '../AuthContext';
 import PerformanceMonitor from '../components/ui/PerformanceMonitor';
 import { MessageProvider } from '../contexts/MessageContext';
+import { StandardPageHeader } from '../components/layout/StandardPageHeader';
 
 import { Button } from '../components/ui/Button';
 
@@ -50,9 +51,12 @@ export const MessagesPage: React.FC = () => {
       <PerformanceMonitor pageName="MessagesPage" />
 
       <div className="flex flex-col space-y-6">
-        <div className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5">
-          <h1 className="text-3xl font-bold text-foreground">Messages</h1>
-        </div>
+        <StandardPageHeader
+          title="Messages"
+          description="Connect and collaborate with other developers through real-time messaging"
+          isLoading={loading}
+          loadingMessage="Loading messages..."
+        />
 
         {/* Chat container with proper height calculation */}
         <div className="bg-card border border-border rounded-lg shadow-sm transition-all duration-200 overflow-hidden" 

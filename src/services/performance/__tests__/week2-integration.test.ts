@@ -10,7 +10,7 @@ import { PreloadingService } from '../preloadingService';
 import { AdaptiveLoader } from '../adaptiveLoader';
 import { CacheManager } from '../cacheManager';
 import { SmartOrchestrator } from '../smartOrchestrator';
-import { SmartBundleAnalyzer } from '../../utils/performance/smartBundleAnalyzer';
+// import { SmartBundleAnalyzer } from '../../utils/performance/smartBundleAnalyzer';
 import { StructuredLogger } from '../../utils/performance/structuredLogger';
 
 // Mock Firebase

@@ -18,6 +18,9 @@ interface RoleCardProps {
   onEdit?: () => void;
   onRequestCompletion?: () => void;
   onAbandon?: () => void;
+  // Enhanced Card customization props
+  variant?: 'default' | 'glass' | 'elevated' | 'premium';
+  enhanced?: boolean;
 }
 
 // Create a stable composite key for roles
@@ -33,7 +36,9 @@ export const RoleCard: React.FC<RoleCardProps> = ({
   onManage,
   onEdit,
   onRequestCompletion,
-  onAbandon
+  onAbandon,
+  variant = 'premium', // Default to premium for role importance
+  enhanced = true // Enable enhanced effects by default
 }) => {
   // Determine avatar user ID (use participantId if available, else fallback)
   const avatarUserId = role.participantId || '';
@@ -59,11 +64,12 @@ export const RoleCard: React.FC<RoleCardProps> = ({
       style={{ containerType: 'inline-size' }}
     >
       <Card 
-        variant="premium"
-        tilt={true}
+        variant={variant}
+        tilt={enhanced}
+        tiltIntensity={4} // Moderate tilt for professional feel
         depth="lg"
-        glow="subtle"
-        glowColor="auto"
+        glow={enhanced ? "subtle" : "none"}
+        glowColor="purple" // Purple for collaboration/creativity theme
         hover={true}
         interactive={true}
         className="h-[380px] flex flex-col cursor-pointer overflow-hidden"
@@ -181,7 +187,8 @@ export const RoleCard: React.FC<RoleCardProps> = ({
               {role.status !== RoleState.COMPLETED && role.status !== RoleState.ABANDONED && (
                 <button
                   onClick={onEdit}
-                  className={cn('text-muted-foreground hover:text-foreground mr-4 transition-colors')}
+                  className={cn('inline-flex items-center px-3 py-1.5 border border-border rounded-md shadow-sm text-sm font-medium text-foreground bg-card hover:bg-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring mr-2 transition-colors')}
+                  aria-label={`Edit role ${role.title}`}
                 >
                   Edit
                 </button>
@@ -189,7 +196,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
               {role.status === RoleState.FILLED && onAbandon && (
                 <button
                   onClick={onAbandon}
-                  className={cn('text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 mr-4 transition-colors')}
+                  className={cn('inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 dark:text-amber-300 dark:bg-amber-900/20 dark:hover:bg-amber-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 mr-2 transition-colors')}
                   aria-label={`Abandon role ${role.title}`}
                 >
                   Abandon Role
@@ -197,7 +204,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
               )}
               <button
                 onClick={onManage}
-                className={cn('bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors')}
+                className={cn('inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors')}
                 aria-label={`${role.status === RoleState.OPEN ? 'Manage applications' : 'Manage role'} for ${role.title}`}
               >
                 {role.status === RoleState.OPEN ? 'Manage Applications' : 'Manage Role'}
@@ -208,7 +215,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
               {role.status === RoleState.OPEN && (
                 <button
                   onClick={onApply}
-                  className={cn('bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors')}
+                  className={cn('inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors')}
                   aria-label={`Apply for ${role.title}`}
                 >
                   Apply
@@ -220,7 +227,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
                !role.completionStatus && (
                 <button
                   onClick={onRequestCompletion}
-                  className={cn('bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors')}
+                  className={cn('inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors')}
                   aria-label={`Request completion for ${role.title}`}
                 >
                   Request Role Completion

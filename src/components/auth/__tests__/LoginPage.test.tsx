@@ -98,7 +98,7 @@ describe('LoginPage', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/password must be at least 8 characters long/i)).toBeInTheDocument();
+      expect(screen.getByText(/password must be at least 8 characters/i)).toBeInTheDocument();
     });
   });
 
@@ -159,6 +159,49 @@ describe('LoginPage', () => {
     await waitFor(() => {
       expect(mockSignInWithGoogle).toHaveBeenCalled();
       expect(localStorage.setItem).toHaveBeenCalledWith('auth_redirect', 'true');
+    });
+  });
+
+  it('validates CSRF token on form submission', async () => {
+    // Mock CSRF validation to fail
+    jest.doMock('../../../utils/csrf', () => ({
+      validateCSRFToken: jest.fn().mockReturnValue(false),
+      getCSRFToken: jest.fn().mockReturnValue('invalid-token'),
+      createCSRFToken: jest.fn().mockReturnValue({ token: 'test-token' }),
+      storeCSRFToken: jest.fn(),
+    }));
+
+    renderLoginPage();
+    
+    const emailInput = screen.getByPlaceholderText(/email address/i);
+    const passwordInput = screen.getByPlaceholderText(/password/i);
+    const submitButton = screen.getByRole('button', { name: /sign in$/i });
+
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/invalid security token/i)).toBeInTheDocument();
+    });
+  });
+
+  it('handles navigation after successful login', async () => {
+    mockSignInWithEmail.mockResolvedValue(undefined);
+
+    renderLoginPage();
+    
+    const emailInput = screen.getByPlaceholderText(/email address/i);
+    const passwordInput = screen.getByPlaceholderText(/password/i);
+    const submitButton = screen.getByRole('button', { name: /sign in$/i });
+
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(mockSignInWithEmail).toHaveBeenCalledWith('test@example.com', 'password123');
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     });
   });
 });

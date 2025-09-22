@@ -47,6 +47,17 @@ describe('RoleCard', () => {
     expect(screen.getByText('Untitled Role')).toBeInTheDocument();
   });
 
+  it('renders with custom variant prop', () => {
+    render(<RoleCard role={baseRole} collaborationId="collab-1" isCreator={false} variant="glass" />);
+    // The variant prop should be passed to the Card component
+    expect(screen.getByText('Frontend Developer')).toBeInTheDocument();
+  });
+
+  it('renders with enhanced effects disabled', () => {
+    render(<RoleCard role={baseRole} collaborationId="collab-1" isCreator={false} enhanced={false} />);
+    expect(screen.getByText('Frontend Developer')).toBeInTheDocument();
+  });
+
   it('shows up to 3 skill badges and a +N more badge if more', () => {
     render(<RoleCard role={baseRole} collaborationId="collab-1" isCreator={false} />);
     expect(screen.getByText('React')).toBeInTheDocument();
@@ -111,5 +122,22 @@ describe('RoleCard', () => {
     expect(card).toHaveAttribute('aria-label', expect.stringContaining('Role:'));
     card.focus();
     expect(card).toHaveClass('focus:outline-none');
+  });
+
+  it('has proper ARIA labels for action buttons', () => {
+    render(<RoleCard role={baseRole} collaborationId="collab-1" isCreator={true} onEdit={jest.fn()} onManage={jest.fn()} />);
+    
+    const editButton = screen.getByText('Edit');
+    expect(editButton).toHaveAttribute('aria-label', expect.stringContaining('Edit role'));
+    
+    const manageButton = screen.getByText('Manage Applications');
+    expect(manageButton).toHaveAttribute('aria-label', expect.stringContaining('Manage applications'));
+  });
+
+  it('has proper ARIA labels for non-creator buttons', () => {
+    render(<RoleCard role={baseRole} collaborationId="collab-1" isCreator={false} onApply={jest.fn()} />);
+    
+    const applyButton = screen.getByText('Apply');
+    expect(applyButton).toHaveAttribute('aria-label', expect.stringContaining('Apply for'));
   });
 }); 

@@ -21,9 +21,7 @@
   - button "Notifications"
   - button "Log In"
   - button "Sign Up"
-- text: Challenge not found
-- link "Back to Challenges":
-  - /url: /challenges
+- paragraph: Loading…
 - button "Open Dev Dashboard"
 - contentinfo:
   - link "TradeYa Logo TradeYa":
@@ -65,16 +63,4 @@
       - link "Cookie Policy":
         - /url: /cookies
   - paragraph: "&copy: 2025 TradeYa. All rights reserved."
-- alert:
-  - img
-  - paragraph: Challenge not found
-  - button "Close":
-    - text: Close
-    - img
-- alert:
-  - img
-  - paragraph: Challenge not found
-  - button "Close":
-    - text: Close
-    - img
 ```

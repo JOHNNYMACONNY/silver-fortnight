@@ -20,8 +20,10 @@ import { initializeMigrationRegistry } from './services/migration';
 import { getSyncFirebaseDb } from './firebase-config';
 import { GamificationNotificationProvider } from './contexts/GamificationNotificationContext';
 import { initializeFirebase } from './firebase-config';
+import PWAProvider from './components/providers/PWAProvider';
 import ConsistencyCheckerPage from './pages/ConsistencyCheckerPage';
 import DevDashboard from './components/development/DevDashboard';
+import { StyleGuide } from './components/ui/StyleGuide';
 import { logger } from './utils/logging/logger';
 import Spinner from './components/ui/Spinner';
 import AppPreloader from './components/ui/AppPreloader';
@@ -46,27 +48,14 @@ const UserDirectoryPage = lazy(() => import('./pages/UserDirectoryPage'));
 const ChallengesPage = lazy(() => import('./pages/ChallengesPage'));
 const ChallengeDetailPage = lazy(() => import('./pages/ChallengeDetailPage'));
 const ChallengeCalendarPage = lazy(() => import('./pages/ChallengeCalendarPage'));
+const CreateTradePage = lazy(() => import('./pages/CreateTradePage'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const MessagesPage = lazy(() => import('./pages/MessagesPage').then(module => ({ default: module.MessagesPage })));
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
-const BannerTestPage = lazy(() => import('./pages/BannerTestPage'));
 const MigrationPage = lazy(() => import('./pages/MigrationPage'));
 const AsymmetricHomePageLayout = lazy(() => import('./pages/AsymmetricHomePageLayout'));
-const TailwindTestPage = lazy(() => import('./pages/TailwindTestPage'));
-const CardTestPage = lazy(() => import('./pages/CardTestPage'));
-const BentoGridDemoPage = lazy(() => import('./pages/BentoGridDemoPage'));
-const FormSystemDemoPage = lazy(() => import('./pages/FormSystemDemoPage'));
-const MicroAnimationsDemoPage = lazy(() => import('./pages/MicroAnimationsDemoPage'));
-const NavigationSystemDemoPage = lazy(() => import('./pages/NavigationSystemDemoPage'));
-const DesignSystemOverviewPage = lazy(() => import('./pages/DesignSystemOverviewPage'));
-const AsymmetricLayoutTestPage = lazy(() => import('./pages/AsymmetricLayoutTestPage'));
 const HelpReputation = lazy(() => import('./pages/HelpReputation'));
-const SimpleAsymmetricTest = lazy(() => import('./pages/SimpleAsymmetricTest'));
 
-// Import test components
-import ThemeTest from './components/ThemeTest';
-import SimpleTailwindTest from './components/SimpleTailwindTest';
-import ComprehensiveThemeTest from './components/ComprehensiveThemeTest';
 
 // Import pages that we've created
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
@@ -79,8 +68,6 @@ import { SignUpPage } from './pages/SignUpPage';
 import { PasswordResetPage } from '@pages/PasswordResetPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 
-// Import Evidence Test Page
-import EvidenceTestPage from './pages/EvidenceTestPage';
 // Import Component Status Checker
 import ComponentStatusChecker from './components/ui/ComponentStatusChecker';
 // Production build - test pages removed
@@ -138,9 +125,10 @@ function App() {
 
   return (
     <EnhancedErrorBoundary>
-      <NotificationsProvider>
-        <GamificationNotificationProvider>
-      <MainLayout containerized={false}>
+      <PWAProvider>
+        <NotificationsProvider>
+          <GamificationNotificationProvider>
+        <MainLayout containerized={false}>
         {/* Preload critical application resources */}
         <AppPreloader />
 
@@ -151,6 +139,16 @@ function App() {
           <Routes>
             <Route path="/" element={<RouteErrorBoundary><HomePage /></RouteErrorBoundary>} />
             <Route path="/trades" element={<RouteErrorBoundary><TradesPage /></RouteErrorBoundary>} />
+            <Route 
+              path="/trades/new" 
+              element={
+                <RouteErrorBoundary>
+                  <ProtectedRoute>
+                    <CreateTradePage />
+                  </ProtectedRoute>
+                </RouteErrorBoundary>
+              } 
+            />
         <Route path="/trades/:tradeId" element={<RouteErrorBoundary><TradeDetailPage /></RouteErrorBoundary>} />
         <Route path="/projects" element={<RouteErrorBoundary><CollaborationsPage /></RouteErrorBoundary>} />
         <Route path="/collaborations" element={<RouteErrorBoundary><CollaborationsPage /></RouteErrorBoundary>} />
@@ -169,18 +167,6 @@ function App() {
         <Route path="/signup" element={<RouteErrorBoundary><SignUpPage /></RouteErrorBoundary>} />
         <Route path="/profile-components" element={<RouteErrorBoundary><ProfileComponentsDemo /></RouteErrorBoundary>} />
         <Route path="/asymmetric" element={<RouteErrorBoundary><AsymmetricHomePageLayout /></RouteErrorBoundary>} />
-        <Route path="/bentogrid-demo" element={<RouteErrorBoundary><BentoGridDemoPage /></RouteErrorBoundary>} />
-        <Route path="/form-system-demo" element={<RouteErrorBoundary><FormSystemDemoPage /></RouteErrorBoundary>} />
-        <Route path="/micro-animations-demo" element={<RouteErrorBoundary><MicroAnimationsDemoPage /></RouteErrorBoundary>} />
-        <Route path="/navigation-demo" element={<RouteErrorBoundary><NavigationSystemDemoPage /></RouteErrorBoundary>} />
-        <Route path="/design-system-overview" element={<RouteErrorBoundary><DesignSystemOverviewPage /></RouteErrorBoundary>} />
-        <Route path="/asymmetric-layout-test" element={<RouteErrorBoundary><AsymmetricLayoutTestPage /></RouteErrorBoundary>} />
-        <Route path="/simple-asymmetric-test" element={<RouteErrorBoundary><SimpleAsymmetricTest /></RouteErrorBoundary>} />
-        <Route path="/tailwind-debug" element={<RouteErrorBoundary><TailwindTestPage /></RouteErrorBoundary>} />
-        <Route path="/card-test" element={<RouteErrorBoundary><CardTestPage /></RouteErrorBoundary>} />
-        <Route path="/theme-test" element={<RouteErrorBoundary><ThemeTest /></RouteErrorBoundary>} />
-        <Route path="/tailwind-test" element={<RouteErrorBoundary><SimpleTailwindTest /></RouteErrorBoundary>} />
-        <Route path="/comprehensive-theme-test" element={<RouteErrorBoundary><ComprehensiveThemeTest /></RouteErrorBoundary>} />
         <Route path="/admin" element={<RouteErrorBoundary><AdminRoute><AdminDashboard /></AdminRoute></RouteErrorBoundary>} />
         <Route path="/reset-password" element={<RouteErrorBoundary><PasswordResetPage /></RouteErrorBoundary>} />
 
@@ -215,11 +201,12 @@ function App() {
         <Route path="/leaderboard" element={<RouteErrorBoundary><LeaderboardPage /></RouteErrorBoundary>} />
 
         {/* Test routes */}
-        <Route path="/banner-test" element={<RouteErrorBoundary><BannerTestPage /></RouteErrorBoundary>} />
-        <Route path="/evidence-demo" element={<RouteErrorBoundary><EvidenceTestPage /></RouteErrorBoundary>} />
         <Route path="/component-status" element={<RouteErrorBoundary><div className="max-w-4xl mx-auto p-6"><ComponentStatusChecker /></div></RouteErrorBoundary>} />
         {process.env.NODE_ENV === 'development' && (
-          <Route path="/consistency-checker" element={<RouteErrorBoundary><ConsistencyCheckerPage /></RouteErrorBoundary>} />
+          <>
+            <Route path="/consistency-checker" element={<RouteErrorBoundary><ConsistencyCheckerPage /></RouteErrorBoundary>} />
+            <Route path="/style-guide" element={<RouteErrorBoundary><StyleGuide /></RouteErrorBoundary>} />
+          </>
         )}
 
         {/* Admin routes */}
@@ -253,9 +240,10 @@ function App() {
 
         {/* Development Dashboard - only in development */}
         <DevDashboard />
-      </MainLayout>
-      </GamificationNotificationProvider>
-    </NotificationsProvider>
+        </MainLayout>
+        </GamificationNotificationProvider>
+      </NotificationsProvider>
+      </PWAProvider>
     </EnhancedErrorBoundary>
   );
 }

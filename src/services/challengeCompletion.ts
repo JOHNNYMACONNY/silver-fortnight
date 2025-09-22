@@ -21,6 +21,7 @@ import { awardXP, XPSource, XP_VALUES } from './gamification';
 import { updateProgressionOnChallengeCompletion } from './threeTierProgression';
 import { checkAndUnlockAchievements } from './achievements';
 import { createNotification } from './notifications';
+import { generateChallengePortfolioItem } from './portfolio';
 
 const db = getSyncFirebaseDb();
 
@@ -330,7 +331,8 @@ const calculateStreakBonus = async (userId: string, challengeType: ChallengeType
 export const handlePostCompletionActions = async (
   userId: string,
   challenge: Challenge,
-  rewards: CompletionReward
+  rewards: CompletionReward,
+  userChallenge?: UserChallenge
 ): Promise<void> => {
   try {
     // Send completion notification
@@ -366,6 +368,29 @@ export const handlePostCompletionActions = async (
         },
         createdAt: Timestamp.now()
       });
+    }
+
+    // Generate portfolio item for the challenge completion
+    // Note: We continue even if portfolio generation fails to avoid blocking challenge completion
+    if (userChallenge) {
+      try {
+        await generateChallengePortfolioItem(
+          {
+            id: challenge.id,
+            title: challenge.title,
+            description: challenge.description,
+            category: challenge.category,
+            tags: challenge.tags,
+            objectives: challenge.objectives
+          },
+          userChallenge,
+          userId,
+          true // defaultVisibility
+        );
+      } catch (portfolioError: any) {
+        // Log portfolio generation error but don't fail the challenge completion
+        console.warn('Portfolio generation failed for challenge:', portfolioError.message);
+      }
     }
   } catch (error) {
     console.error('Error handling post-completion actions:', error);

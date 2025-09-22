@@ -264,3 +264,79 @@ export async function generateCollaborationPortfolioItem(
     return { success: false, error: err?.message || 'Unknown error' };
   }
 }
+
+/**
+ * Generate a portfolio item from a completed challenge.
+ * Call this when a challenge is completed.
+ * @param challenge - The completed challenge object
+ * @param userChallenge - The user's challenge completion data
+ * @param userId - The user for whom to create the portfolio item
+ * @param defaultVisibility - Default visibility for the new item
+ * @returns Promise with success and error fields
+ */
+export async function generateChallengePortfolioItem(
+  challenge: {
+    id: string;
+    title: string;
+    description: string;
+    category: string;
+    tags?: string[];
+    objectives?: string[];
+  },
+  userChallenge: {
+    completedAt?: any;
+    submissionData?: {
+      embeddedEvidence?: any[];
+    };
+    submissions?: Array<{
+      embeddedEvidence?: any[];
+    }>;
+    lastActivityAt?: any;
+  },
+  userId: string,
+  defaultVisibility: boolean = true
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    // Extract skills from available data with fallbacks
+    const skills = [
+      challenge.category, // Primary skill source
+      ...(challenge.tags || []), // Additional skills from tags
+      ...(challenge.objectives || []).map(obj => 
+        obj.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim()
+      ).filter(skill => skill.length > 0) // Extract keywords from objectives
+    ].filter((skill, index, arr) => arr.indexOf(skill) === index); // Remove duplicates
+
+    // Extract evidence from submission data with fallbacks
+    const evidence = userChallenge.submissionData?.embeddedEvidence || 
+                     userChallenge.submissions?.[0]?.embeddedEvidence || 
+                     [];
+
+    // Use completedAt with fallback
+    const completedAt = userChallenge.completedAt || 
+                       userChallenge.lastActivityAt || 
+                       new Date();
+
+    const portfolioItem: PortfolioItem = {
+      id: '', // Firestore will generate the ID
+      userId,
+      sourceId: challenge.id,
+      sourceType: 'challenge',
+      title: challenge.title,
+      description: challenge.description,
+      skills,
+      completedAt,
+      visible: defaultVisibility,
+      featured: false,
+      pinned: false,
+      evidence,
+      collaborators: [] // Challenges are typically solo
+    };
+    
+    const db = getSyncFirebaseDb();
+    const portfolioRef = collection(db, 'users', userId, 'portfolio');
+    await addDoc(portfolioRef, portfolioItem);
+    return { success: true, error: null };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Unknown error' };
+  }
+}

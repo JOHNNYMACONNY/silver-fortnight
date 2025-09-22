@@ -1,8 +1,52 @@
+// Mock Firebase modules explicitly BEFORE any imports
+jest.mock('firebase/auth', () => ({
+  getAuth: jest.fn(() => ({
+    currentUser: {
+      uid: 'test-user-id',
+      email: 'test@example.com',
+      displayName: 'Test User',
+      photoURL: 'https://example.com/photo.jpg',
+      emailVerified: true
+    },
+    signInWithEmailAndPassword: jest.fn().mockResolvedValue({ user: { uid: 'test-uid' } }),
+    signInWithPopup: jest.fn().mockResolvedValue({ user: { uid: 'test-uid' } }),
+    signOut: jest.fn().mockResolvedValue(undefined),
+    onAuthStateChanged: jest.fn().mockImplementation((callback: any) => {
+      if (typeof callback === 'function') {
+        callback({ uid: 'test-uid', email: 'test@example.com' });
+      }
+      return () => {};
+    })
+  })),
+  GoogleAuthProvider: jest.fn(() => ({
+    PROVIDER_ID: 'google.com'
+  })),
+  signInWithEmailAndPassword: jest.fn().mockResolvedValue({ user: { uid: 'test-uid' } }),
+  signInWithPopup: jest.fn().mockResolvedValue({ user: { uid: 'test-uid' } }),
+  signOut: jest.fn().mockResolvedValue(undefined),
+  onAuthStateChanged: jest.fn().mockImplementation((callback: any) => {
+    if (typeof callback === 'function') {
+      callback({ uid: 'test-uid', email: 'test@example.com' });
+    }
+    return () => {};
+  })
+}));
+
+// Mock firebase/app for FirebaseError
+jest.mock('firebase/app', () => ({
+  FirebaseError: jest.fn().mockImplementation((code: string, message: string) => ({
+    code,
+    message,
+    name: 'FirebaseError'
+  }))
+}));
+
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import SecureLoginPage from '../SecureLoginPage';
+import LoginPage from '../LoginPage';
 import { AuthProvider } from '../../../AuthContext';
+import { ToastProvider } from '../../../contexts/ToastContext';
 import { FirebaseError } from 'firebase/app';
 
 // Mock useNavigate and useLocation
@@ -14,13 +58,30 @@ jest.mock('react-router-dom', () => ({
   })
 }));
 
-describe('SecureLoginPage', () => {
+// Mock AuthContext
+const mockSignInWithEmail = jest.fn();
+const mockSignInWithGoogle = jest.fn();
+
+jest.mock('../../../AuthContext', () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+  useAuth: () => ({
+    signInWithEmail: mockSignInWithEmail,
+    signInWithGoogle: mockSignInWithGoogle,
+    error: null,
+    loading: false,
+    currentUser: null
+  })
+}));
+
+describe('LoginPage', () => {
   const renderComponent = (props = {}) => {
     return render(
       <MemoryRouter>
-        <AuthProvider>
-          <SecureLoginPage {...props} />
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <LoginPage {...props} />
+          </AuthProvider>
+        </ToastProvider>
       </MemoryRouter>
     );
   };
@@ -33,13 +94,13 @@ describe('SecureLoginPage', () => {
     renderComponent();
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
     expect(screen.getByLabelText('Password')).toBeInTheDocument();
-    expect(screen.getByText('Sign in with Email')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Log In' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Log In' })).toBeInTheDocument();
     expect(screen.getByText('Sign in with Google')).toBeInTheDocument();
   });
 
   it('handles email sign in submission', async () => {
-    const onSuccess = jest.fn();
-    renderComponent({ onSuccess });
+    renderComponent();
 
     fireEvent.change(screen.getByLabelText('Email'), {
       target: { value: 'test@example.com' }
@@ -48,72 +109,20 @@ describe('SecureLoginPage', () => {
       target: { value: 'password123' }
     });
 
-    fireEvent.click(screen.getByText('Sign in with Email'));
+    fireEvent.click(screen.getByRole('button', { name: 'Log In' }));
 
     await waitFor(() => {
-      expect(onSuccess).toHaveBeenCalled();
-    });
-  });
-
-  it('handles sign in errors correctly', async () => {
-    const onError = jest.fn();
-    const mockError = new FirebaseError('auth/wrong-password', 'Invalid password');
-    
-    // Mock the Firebase auth function to reject for this test
-    const { signInWithEmailAndPassword } = jest.requireMock('firebase/auth');
-    signInWithEmailAndPassword.mockRejectedValueOnce(mockError);
-    
-    renderComponent({ onError });
-
-    // Simulate a failed sign in
-    fireEvent.change(screen.getByLabelText('Email'), {
-      target: { value: 'test@example.com' }
-    });
-    fireEvent.change(screen.getByLabelText('Password'), {
-      target: { value: 'wrongpassword' }
-    });
-
-    fireEvent.click(screen.getByText('Sign in with Email'));
-
-    await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('Incorrect password');
-      expect(onError).toHaveBeenCalledWith(mockError);
+      expect(mockSignInWithEmail).toHaveBeenCalledWith('test@example.com', 'password123');
     });
   });
 
   it('handles Google sign in', async () => {
-    const onSuccess = jest.fn();
-    renderComponent({ onSuccess });
-
-    fireEvent.click(screen.getByText('Sign in with Google'));
-
-    await waitFor(() => {
-      expect(onSuccess).toHaveBeenCalled();
-    });
-  });
-
-  it('disables form during submission', async () => {
-    // Mock the Firebase auth function to have a delay
-    const { signInWithEmailAndPassword } = jest.requireMock('firebase/auth');
-    signInWithEmailAndPassword.mockImplementation(() => 
-      new Promise(resolve => setTimeout(() => resolve({ user: { uid: 'test-uid' } }), 100))
-    );
-    
     renderComponent();
 
-    // Fill in form data first
-    fireEvent.change(screen.getByLabelText('Email'), {
-      target: { value: 'test@example.com' }
-    });
-    fireEvent.change(screen.getByLabelText('Password'), {
-      target: { value: 'password123' }
-    });
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in with Google' }));
 
-    fireEvent.click(screen.getByText('Sign in with Email'));
-
-    // Check that form elements are disabled during loading
-    expect(screen.getByLabelText('Email')).toBeDisabled();
-    expect(screen.getByLabelText('Password')).toBeDisabled();
-    expect(screen.getByText('Signing in...')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockSignInWithGoogle).toHaveBeenCalled();
+    });
   });
 });

@@ -215,11 +215,20 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
               </h3>
               <div className="flex items-center gap-3 text-sm text-text-muted mb-2">
                 <span className="flex items-center gap-1">
-                  {item.sourceType === 'trade' ? '🤝' : '👥'} 
-                  {item.sourceType === 'trade' ? 'Trade' : 'Collaboration'}
+                  {item.sourceType === 'trade' ? '🤝' : item.sourceType === 'collaboration' ? '👥' : item.sourceType === 'challenge' ? '🎯' : '💼'} 
+                  {item.sourceType === 'trade' ? 'Trade' : item.sourceType === 'collaboration' ? 'Collaboration' : item.sourceType === 'challenge' ? 'Challenge' : 'Project'}
                 </span>
                 <span>•</span>
                 <span>📅 {formatDate(item.completedAt)}</span>
+                {item.rating && item.rating > 0 && (
+                  <>
+                    <span>•</span>
+                    <span className="flex items-center gap-1 text-yellow-500">
+                      {'★'.repeat(item.rating)}{'☆'.repeat(5 - item.rating)}
+                      <span className="text-text-muted">({item.rating}/5)</span>
+                    </span>
+                  </>
+                )}
                 {item.category && (
                   <>
                     <span>•</span>

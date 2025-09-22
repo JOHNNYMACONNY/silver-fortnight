@@ -33,33 +33,34 @@ export default defineConfig({
   build: {
     target: 'esnext',
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false, // Disable sourcemaps in production for faster builds
+    minify: 'terser', // Use terser for better compression
     rollupOptions: {
         output: {
         manualChunks(id: string) {
           if (!id) return undefined;
-          // vendor packages
+          
+          // Optimized vendor chunking for better caching
           if (id.includes('node_modules')) {
-            if (id.includes('@radix-ui/react-icons')) return 'radix-icons';
-            if (id.includes('tailwind-merge')) return 'tailwind-merge';
-            if (id.includes('framer-motion') || id.includes('motion-dom')) return 'vendor';
-            if (id.includes('react-router-dom')) return 'router';
-            if (id.includes('firebase')) return 'firebase';
+            if (id.includes('react') || id.includes('react-dom')) return 'vendor-react';
+            if (id.includes('firebase')) return 'vendor-firebase';
+            if (id.includes('@radix-ui')) return 'vendor-radix';
+            if (id.includes('framer-motion')) return 'vendor-motion';
+            if (id.includes('react-router')) return 'vendor-router';
+            // Group all other vendor packages
+            return 'vendor';
           }
 
-          // local heavy modules: performance utilities
-          if (id.includes('/src/services/performance/') || id.includes('/src/utils/performance/')) {
-            return 'performance';
-          }
+          // Split heavy pages into their own chunks
+          if (id.includes('/src/pages/ProfilePage')) return 'page-profile';
+          if (id.includes('/src/pages/TradeDetailPage')) return 'page-trade-detail';
+          if (id.includes('/src/pages/LoginPage')) return 'page-login';
 
-          // split heavy pages into their own chunks
-          if (id.includes('/src/pages/ProfilePage')) return 'profile-page';
-          if (id.includes('/src/pages/TradeDetailPage')) return 'trade-detail-page';
+          // Group UI components
+          if (id.includes('/src/components/gamification/')) return 'components-gamification';
+          if (id.includes('/src/components/ui/')) return 'components-ui';
 
-          // group gamification UI components into their own chunk
-          if (id.includes('/src/components/gamification/')) return 'gamification';
-
-          // default: let Rollup decide
+          // Default: let Rollup decide
           return undefined;
         }
       }

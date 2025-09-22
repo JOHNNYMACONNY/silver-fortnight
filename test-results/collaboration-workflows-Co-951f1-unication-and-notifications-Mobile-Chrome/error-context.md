@@ -1,0 +1,56 @@
+# Page snapshot
+
+```yaml
+- navigation:
+  - link "TradeYa Logo TradeYa":
+    - /url: /
+    - img "TradeYa Logo"
+    - text: TradeYa
+  - button "Open command palette"
+  - button "Open main menu"
+- heading "404" [level=1]
+- paragraph: Page not found
+- link "Go Home":
+  - /url: /
+- button "Open Dev Dashboard"
+- contentinfo:
+  - link "TradeYa Logo TradeYa":
+    - /url: /
+    - img "TradeYa Logo"
+    - text: TradeYa
+  - paragraph: Exchange skills and services with others in your community.
+  - heading "Resources" [level=3]
+  - list:
+    - listitem:
+      - link "Help Center":
+        - /url: /help
+    - listitem:
+      - link "Guides":
+        - /url: /uides
+    - listitem:
+      - link "Blog":
+        - /url: /blog
+  - heading "Company" [level=3]
+  - list:
+    - listitem:
+      - link "About":
+        - /url: /about
+    - listitem:
+      - link "Careers":
+        - /url: /careers
+    - listitem:
+      - link "Contact":
+        - /url: /contact
+  - heading "Legal" [level=3]
+  - list:
+    - listitem:
+      - link "Privacy Policy":
+        - /url: /privacy
+    - listitem:
+      - link "Terms of Service":
+        - /url: /terms
+    - listitem:
+      - link "Cookie Policy":
+        - /url: /cookies
+  - paragraph: "&copy: 2025 TradeYa. All rights reserved."
+```

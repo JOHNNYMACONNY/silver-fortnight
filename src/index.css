@@ -622,3 +622,13 @@ body {
     grid-template-columns: repeat(4, 1fr) !important;
   }
 }
+
+/* Skeleton loading animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}

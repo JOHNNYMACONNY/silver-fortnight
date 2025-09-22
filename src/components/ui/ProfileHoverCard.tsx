@@ -8,10 +8,10 @@ import ProfileImage from './ProfileImage';
 import JohnRobertsProfileImage from './JohnRobertsProfileImage';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import AnimatedList from './AnimatedList';
-import { X } from 'lucide-react';
+import { X, Check, Globe } from 'lucide-react';
 import { Button } from './Button';
 import { Card, CardContent, CardFooter, CardHeader } from './Card';
-import { User } from '../../services/firestore';
+import { User } from '../../services/entities/UserService';
 
 interface UserSkill extends Skill {
   isCommon?: boolean;
@@ -30,6 +30,11 @@ export interface ProfileHoverCardProps {
   delay?: number;
   user?: User;
   onClose?: () => void;
+  // New User fields
+  handle?: string;
+  verified?: boolean;
+  tagline?: string;
+  website?: string;
 }
 
 const cardVariants: Variants = {
@@ -58,7 +63,11 @@ export const ProfileHoverCard: React.FC<ProfileHoverCardProps> = ({
   className,
   delay = 500,
   user,
-  onClose
+  onClose,
+  handle,
+  verified = false,
+  tagline,
+  website
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -175,12 +184,25 @@ export const ProfileHoverCard: React.FC<ProfileHoverCardProps> = ({
                 />
               )}
               <div className="ml-3">
-                <motion.h3
-                  variants={itemVariants}
-                  className={`text-base font-medium text-text-primary`}
-                >
-                  {displayName}
-                </motion.h3>
+                <div className="flex items-center gap-2">
+                  <motion.h3
+                    variants={itemVariants}
+                    className={`text-base font-medium text-text-primary`}
+                  >
+                    {displayName}
+                  </motion.h3>
+                  {verified && (
+                    <Check className="w-4 h-4 text-success-600 dark:text-success-400" />
+                  )}
+                </div>
+                {handle && (
+                  <motion.p
+                    variants={itemVariants}
+                    className="text-sm text-muted-foreground"
+                  >
+                    @{handle}
+                  </motion.p>
+                )}
                 {reputationScore > 0 && (
                   <motion.div
                     variants={itemVariants}
@@ -194,6 +216,15 @@ export const ProfileHoverCard: React.FC<ProfileHoverCardProps> = ({
               </div>
             </motion.div>
 
+            {tagline && (
+              <motion.p
+                variants={itemVariants}
+                className={`mt-2 text-sm text-primary font-medium line-clamp-1`}
+              >
+                {tagline}
+              </motion.p>
+            )}
+
             {bio && (
               <motion.p
                 variants={itemVariants}
@@ -201,6 +232,24 @@ export const ProfileHoverCard: React.FC<ProfileHoverCardProps> = ({
               >
                 {bio}
               </motion.p>
+            )}
+
+            {website && (
+              <motion.div
+                variants={itemVariants}
+                className="mt-2 flex items-center text-sm text-muted-foreground"
+              >
+                <Globe className="mr-1.5 h-4 w-4" />
+                <a
+                  href={website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="truncate hover:text-primary transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {website.replace(/^https?:\/\//, '')}
+                </a>
+              </motion.div>
             )}
 
             {skills.length > 0 && (

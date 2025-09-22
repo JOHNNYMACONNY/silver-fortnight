@@ -168,14 +168,14 @@ describe("Service Architecture", () => {
         skillsOffered: [{ name: "React", level: "advanced" as const }],
         skillsWanted: [{ name: "UI Design", level: "intermediate" as const }],
         creatorId: "user123",
-        status: "pending" as const, // narrow to string literal so it matches TradeStatus
+        status: "open" as const, // Updated to match new TradeStatus values
       };
 
       const result = await tradeService.createTrade(tradeData);
 
       expect(result.error).toBeNull();
       expect(result.data).toBeDefined();
-      expect(result.data?.status).toBe("pending");
+      expect(result.data?.status).toBe("open");
     });
 
     it("should search trades by skills", async () => {

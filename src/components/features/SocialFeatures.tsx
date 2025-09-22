@@ -14,12 +14,12 @@ import {
 } from '../../types/gamification';
 import {
   followUser,
-  unfollowUser,
-  getUserSocialStats
+  unfollowUser
 } from '../../services/leaderboards';
 import { useAuth } from '../../AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { getProfileImageUrl } from '../../utils/imageUtils';
+import { useSocialStats } from '../../hooks/useSocialStats';
 
 interface SocialFeaturesProps {
   userId: string;
@@ -45,31 +45,17 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
 }) => {
   const { user } = useAuth();
   const { addToast } = useToast();
-  const [socialStats, setSocialStats] = useState<SocialStats | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [statsLoading, setStatsLoading] = useState(true);
 
   const isOwnProfile = user?.uid === userId;
 
-  useEffect(() => {
-    const fetchSocialStats = async () => {
-      try {
-        setStatsLoading(true);
-        const result = await getUserSocialStats(userId);
-        
-        if (result.success && result.data) {
-          setSocialStats(result.data);
-        }
-      } catch (error) {
-        console.error('Failed to load social stats:', error);
-      } finally {
-        setStatsLoading(false);
-      }
-    };
-
-    fetchSocialStats();
-  }, [userId]);
+  // Use standardized data fetching hook
+  const {
+    data: socialStats,
+    loading: statsLoading,
+    error: statsError
+  } = useSocialStats(userId);
 
   const handleFollow = async () => {
     if (!user?.uid) {
@@ -83,10 +69,8 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
       
       if (result.success) {
         setIsFollowing(true);
-        setSocialStats(prev => prev ? {
-          ...prev,
-          followersCount: prev.followersCount + 1
-        } : null);
+        // Note: We can't directly update the data from the hook
+        // The hook will refetch data automatically
         addToast('success', `You're now following ${userName}!`);
       } else {
         addToast('error', result.error || 'Failed to follow user');
@@ -108,10 +92,8 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
       
       if (result.success) {
         setIsFollowing(false);
-        setSocialStats(prev => prev ? {
-          ...prev,
-          followersCount: Math.max(0, prev.followersCount - 1)
-        } : null);
+        // Note: We can't directly update the data from the hook
+        // The hook will refetch data automatically
         addToast('success', `Unfollowed ${userName}`);
       } else {
         addToast('error', result.error || 'Failed to unfollow user');
@@ -128,8 +110,8 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
     if (!socialStats?.topRanks) return null;
     
     const topRanks = Object.entries(socialStats.topRanks)
-      .filter(([, rank]) => rank > 0)
-      .sort(([, a], [, b]) => a - b)
+      .filter(([, rank]) => (rank as number) > 0)
+      .sort(([, a], [, b]) => (a as number) - (b as number))
       .slice(0, 3);
 
     if (topRanks.length === 0) return null;
@@ -149,8 +131,8 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
       };
 
       return (
-        <div key={category} className={`px-2 py-1 rounded-full text-xs font-medium ${getRankColor(rank)}`}>
-          #{rank} {categoryNames[category] || category}
+        <div key={category} className={`px-2 py-1 rounded-full text-xs font-medium ${getRankColor(rank as number)}`}>
+          #{rank as number} {categoryNames[category] || category}
         </div>
       );
     });
@@ -337,25 +319,12 @@ export const UserSocialStats: React.FC<UserSocialStatsProps> = ({
   userId,
   compact = false
 }) => {
-  const [socialStats, setSocialStats] = useState<SocialStats | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const result = await getUserSocialStats(userId);
-        if (result.success && result.data) {
-          setSocialStats(result.data);
-        }
-      } catch (error) {
-        console.error('Failed to load social stats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, [userId]);
+  // Use standardized data fetching hook
+  const {
+    data: socialStats,
+    loading,
+    error
+  } = useSocialStats(userId);
 
   if (loading) {
     return (

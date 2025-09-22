@@ -11,14 +11,30 @@ import Stack from '../components/layout/primitives/Stack';
 import { themeClasses } from '../utils/themeUtils';
 import { semanticClasses } from '../utils/semanticColors';
 import { TopicLink } from '../components/ui/TopicLink';
+import { useSystemStats, useRecentActivityFeed } from '../hooks';
+import { RefreshCw, AlertCircle } from 'lucide-react';
 
 /**
  * HomePage component
  *
  * Landing page for the TradeYa application using asymmetric layout system
  * Following established card and BentoGrid standards
+ * Now with dynamic content and real-time updates
  */
 const HomePage: React.FC = () => {
+  // Fetch system statistics and recent activity
+  const { stats: systemStats, loading: statsLoading, error: statsError, refresh: refreshStats } = useSystemStats();
+  const { activities: recentActivities, loading: activitiesLoading, error: activitiesError } = useRecentActivityFeed(4);
+
+  // Format numbers for display
+  const formatNumber = (num: number | undefined): string => {
+    if (!num) return '0';
+    return num.toLocaleString();
+  };
+
+  // Get loading state for any critical data
+  const isLoading = statsLoading;
+  const hasError = statsError || activitiesError;
   return (
     <Box className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <PerformanceMonitor pageName="HomePage" />
@@ -113,12 +129,40 @@ const HomePage: React.FC = () => {
                 </p>
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   <div className={`text-center p-3 ${semanticClasses('trades').bgSubtle} rounded-lg`}>
-                    <div className={`text-lg font-bold ${semanticClasses('trades').text}`}>1,247</div>
+                    {isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : hasError ? (
+                      <div className="flex items-center justify-center">
+                        <AlertCircle className="h-4 w-4 text-destructive" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className={`text-lg font-bold ${semanticClasses('trades').text}`}>
+                          {formatNumber(systemStats?.totalTrades)}
+                        </div>
                     <div className="text-xs text-muted-foreground">Active Trades</div>
+                      </>
+                    )}
                   </div>
                   <div className={`text-center p-3 ${semanticClasses('community').bgSubtle} rounded-lg`}>
-                    <div className={`text-lg font-bold ${semanticClasses('community').text} dark:text-blue-400`}>892</div>
+                    {isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : hasError ? (
+                      <div className="flex items-center justify-center">
+                        <AlertCircle className="h-4 w-4 text-destructive" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className={`text-lg font-bold ${semanticClasses('community').text} dark:text-blue-400`}>
+                          {formatNumber(systemStats?.completedTrades)}
+                        </div>
                     <div className="text-xs text-muted-foreground">Completed</div>
+                      </>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -241,12 +285,40 @@ const HomePage: React.FC = () => {
               <CardContent className="flex-1 pb-3">
                 <div className="space-y-4">
                   <div className="text-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                    <div className="text-lg font-bold text-green-600 dark:text-green-400">5,892</div>
+                    {isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : hasError ? (
+                      <div className="flex items-center justify-center">
+                        <AlertCircle className="h-4 w-4 text-destructive" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                          {formatNumber(systemStats?.totalUsers)}
+                        </div>
                     <div className="text-xs text-muted-foreground">Active Users</div>
+                      </>
+                    )}
                   </div>
                   <div className="text-center p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
-                    <div className="text-lg font-bold text-purple-600 dark:text-purple-400">1,247</div>
+                    {isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : hasError ? (
+                      <div className="flex items-center justify-center">
+                        <AlertCircle className="h-4 w-4 text-destructive" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                          {formatNumber(systemStats?.totalTrades)}
+                        </div>
                     <div className="text-xs text-muted-foreground">Skills Traded</div>
+                      </>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -274,24 +346,53 @@ const HomePage: React.FC = () => {
                 </div>
               </CardHeader>
               <CardContent className="flex-1 pb-3">
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-3 p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-xs">New trade: Web Dev for UI Design</span>
+                {activitiesLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+                    <span className="ml-2 text-xs text-muted-foreground">Loading activity...</span>
                   </div>
-                  <div className="flex items-center space-x-3 p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-xs">Joined: Mobile App Team</span>
+                ) : activitiesError ? (
+                  <div className="flex items-center justify-center py-4">
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                    <span className="ml-2 text-xs text-destructive">Failed to load activity</span>
                   </div>
-                  <div className="flex items-center space-x-3 p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span className="text-xs">Completed: UI/UX Design Sprint</span>
+                ) : recentActivities.length > 0 ? (
+                  <div className="space-y-2">
+                    {recentActivities.map((activity) => {
+                      const getActivityColor = (type: string) => {
+                        switch (type) {
+                          case 'trade': return 'bg-green-500';
+                          case 'collaboration': return 'bg-blue-500';
+                          case 'challenge': return 'bg-purple-500';
+                          case 'user': return 'bg-primary';
+                          case 'xp': return 'bg-yellow-500';
+                          default: return 'bg-gray-500';
+                        }
+                      };
+                      const getActivityBg = (type: string) => {
+                        switch (type) {
+                          case 'trade': return 'bg-green-50 dark:bg-green-950/20';
+                          case 'collaboration': return 'bg-blue-50 dark:bg-blue-950/20';
+                          case 'challenge': return 'bg-purple-50 dark:bg-purple-950/20';
+                          case 'user': return 'bg-primary/10';
+                          case 'xp': return 'bg-yellow-50 dark:bg-yellow-950/20';
+                          default: return 'bg-gray-50 dark:bg-gray-950/20';
+                        }
+                      };
+                      
+                      return (
+                        <div key={activity.id} className={`flex items-center space-x-3 p-2 ${getActivityBg(activity.type)} rounded-lg`}>
+                          <div className={`w-2 h-2 ${getActivityColor(activity.type)} rounded-full`}></div>
+                          <span className="text-xs">{activity.description}</span>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div className="flex items-center space-x-3 p-2 bg-primary/10 rounded-lg">
-                    <div className="w-2 h-2 bg-primary rounded-full"></div>
-                    <span className="text-xs">New user: Sarah Chen (Designer)</span>
+                ) : (
+                  <div className="text-center py-4">
+                    <span className="text-xs text-muted-foreground">No recent activity</span>
                   </div>
-                </div>
+                )}
               </CardContent>
               <CardFooter>
                 <TopicLink to="/users" topic="community" className="w-full text-center text-sm font-medium transition-colors">

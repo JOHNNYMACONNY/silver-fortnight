@@ -14,7 +14,7 @@ if [ "$VERCEL" = "1" ] || [ "$CI" = "true" ]; then
     
     # Run only essential build steps for the main app (exclude functions)
     echo "🔨 Running build process..."
-    npm run build
+    vite build
     
     echo "✅ Vercel build completed successfully"
 else

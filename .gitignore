@@ -14,6 +14,13 @@
 /dist
 /storybook-static
 
+# Build artifacts and optimization files
+public/optimized/
+public/src/
+public/assets/
+*.asset-report.json
+public/asset-manifest.json
+
 # misc
 .DS_Store
 .env

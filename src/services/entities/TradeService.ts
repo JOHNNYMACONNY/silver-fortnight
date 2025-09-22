@@ -2,19 +2,15 @@ import { where, orderBy, limit as limitQuery, QueryConstraint, Timestamp } from 
 import { BaseService } from '../core/BaseService';
 import { ServiceResult } from '../../types/ServiceError';
 import { AppError, ErrorCode, ErrorSeverity } from '../../types/errors';
+import { TradeSkill } from '../../types/skill';
 
 // Collection name
 export const TRADES_COLLECTION = 'trades';
 
 // Trade types
-export type TradeStatus = 'pending' | 'active' | 'completed' | 'cancelled' | 'disputed';
+export type TradeStatus = 'open' | 'in-progress' | 'completed' | 'cancelled' | 'pending_confirmation' | 'pending_evidence' | 'disputed';
 
-export interface TradeSkill {
-  name: string;
-  level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  category?: string;
-  description?: string;
-}
+// TradeSkill interface is now imported from types/skill.ts
 
 export interface Trade {
   id?: string;
@@ -72,7 +68,7 @@ export class TradeService extends BaseService<Trade> {
 
       const tradeWithTimestamps = this.addTimestamps({
         ...tradeData,
-        status: 'pending' as TradeStatus,
+        status: 'open' as TradeStatus,
         skillsIndex: computeSkillsIndex(tradeData.skillsOffered, tradeData.skillsWanted)
       });
 
@@ -206,7 +202,7 @@ export class TradeService extends BaseService<Trade> {
       // Note: This is a simplified search. In production, you might want to use
       // a more sophisticated search solution like Algolia or Elasticsearch
       const constraints: QueryConstraint[] = [
-        where('status', '==', 'pending'),
+        where('status', '==', 'open'),
         orderBy('createdAt', 'desc'),
         limitQuery(limit)
       ];
@@ -253,14 +249,14 @@ export class TradeService extends BaseService<Trade> {
         // Note: This requires two separate queries in Firestore
         const locationConstraints: QueryConstraint[] = [
           where('location', '==', location),
-          where('status', '==', 'pending'),
+          where('status', '==', 'open'),
           orderBy('createdAt', 'desc'),
           limitQuery(Math.floor(limit / 2))
         ];
 
         const remoteConstraints: QueryConstraint[] = [
           where('isRemote', '==', true),
-          where('status', '==', 'pending'),
+          where('status', '==', 'open'),
           orderBy('createdAt', 'desc'),
           limitQuery(Math.floor(limit / 2))
         ];
@@ -286,7 +282,7 @@ export class TradeService extends BaseService<Trade> {
       } else {
         constraints = [
           where('location', '==', location),
-          where('status', '==', 'pending'),
+          where('status', '==', 'open'),
           orderBy('createdAt', 'desc'),
           limitQuery(limit)
         ];
@@ -319,7 +315,7 @@ export class TradeService extends BaseService<Trade> {
         participantId,
         participantName,
         participantPhotoURL,
-        status: 'active'
+        status: 'in-progress'
       };
 
       return await this.updateTrade(tradeId, updates);
@@ -390,7 +386,7 @@ export class TradeService extends BaseService<Trade> {
         async () => {
           const constraints: QueryConstraint[] = [
             where('creatorId', '==', userId),
-            where('status', 'in', ['active', 'pending'])
+            where('status', 'in', ['open', 'in-progress'])
           ];
           const result = await this.list(constraints);
           return result.data?.items || [];
@@ -403,7 +399,7 @@ export class TradeService extends BaseService<Trade> {
         async () => {
           const constraints: QueryConstraint[] = [
             where('participantId', '==', userId),
-            where('status', '==', 'active')
+            where('status', '==', 'in-progress')
           ];
           const result = await this.list(constraints);
           return result.data?.items || [];

@@ -99,11 +99,11 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
   // Determine input type for password toggle
   const inputType = type === 'password' && showPassword ? 'text' : type;
 
-  // Input variant styles
+  // Input variant styles with enhanced animations
   const inputVariants = {
-    glass: `glassmorphic`,
-    'elevated-glass': `glassmorphic shadow-lg focus:shadow-xl`,
-    'inset-glass': `glassmorphic shadow-inner focus:shadow-inner`
+    glass: `glassmorphic transition-all duration-300 ease-out hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.01] focus:shadow-xl focus:shadow-primary/20 focus:scale-[1.02]`,
+    'elevated-glass': `glassmorphic shadow-lg transition-all duration-300 ease-out hover:shadow-xl hover:shadow-primary/15 hover:scale-[1.02] focus:shadow-2xl focus:shadow-primary/25 focus:scale-[1.03]`,
+    'inset-glass': `glassmorphic shadow-inner transition-all duration-300 ease-out hover:shadow-lg hover:shadow-secondary/10 hover:scale-[1.01] focus:shadow-xl focus:shadow-secondary/20 focus:scale-[1.02]`
   };
 
   // Size classes

@@ -10,8 +10,6 @@ import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import ReputationBadge from '../components/ui/ReputationBadge';
 import { Tooltip } from '../components/ui/Tooltip';
-import { getDashboardStats } from '../services/dashboard';
-import { getUserSocialStats } from '../services/leaderboards';
 import { getRelatedUserIds, getUsersByIds } from '../services/firestore';
 import { UserSocialStats, SocialFeatures } from '../components/features/SocialFeatures';
 import { ProfileImage } from '../components/ui/ProfileImage';
@@ -25,10 +23,11 @@ import { useToast } from '../contexts/ToastContext';
 import { uploadProfileImage, uploadImage } from '../services/cloudinary/cloudinaryService';
 import { collaborationService } from '../services/entities/CollaborationService';
 import { tradeService } from '../services/entities/TradeService';
-import { getUserReviews } from '../services/firestore-exports';
+import { useUserProfileData } from '../hooks/useUserProfileData';
 import { logEvent } from '../services/analytics';
 import { CollaborationCard } from '../components/features/collaborations/CollaborationCard';
 import TradeCard from '../components/features/trades/TradeCard';
+import { UserProfileHeader } from '../components/features/UserProfileHeader';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { getSyncFirebaseDb } from '../firebase-config';
 import Box from '../components/layout/primitives/Box';
@@ -95,11 +94,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   // no navigation needed in this component
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<{ totalTrades: number; tradesThisWeek: number; currentXP?: number } | null>(null);
-  const [repScore, setRepScore] = useState<number | null>(null);
-  const [reviewsPreview, setReviewsPreview] = useState<Array<{ rating: number; comment: string }>>([]);
-  const [reviewsLoading, setReviewsLoading] = useState<boolean>(false);
-  const [reviewsMeta, setReviewsMeta] = useState<{ avg: number; count: number } | null>(null);
   const [mutualFollows, setMutualFollows] = useState<{ count: number; names: string[] }>({ count: 0, names: [] });
   const suppressSpyRef = React.useRef(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -144,6 +138,18 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   // Determine if this is the user's own profile
   const isOwnProfile = !userId || userId === currentUser?.uid;
   const targetUserId = userId || currentUser?.uid;
+
+  // Use standardized data fetching hook
+  const {
+    data: profileData,
+    loading: profileDataLoading,
+    error: profileDataError,
+    reputationScore,
+    reviewsMeta,
+    reviewsPreview
+  } = useUserProfileData(targetUserId || '', {
+    enabled: !!targetUserId
+  });
 
   // Note: Banner FX settings currently persist in localStorage client-side.
   useEffect(() => {
@@ -232,54 +238,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     } catch {}
   }, [userProfile]);
 
-  // Defer stats until header enters viewport
-  useEffect(() => {
-    if (!targetUserId) return;
-    const headerEl = document.getElementById('profile-header');
-    if (!headerEl || (stats && repScore !== null)) return;
-
-    const observer = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      if (entry.isIntersecting) {
-        (async () => {
-          try {
-            setReviewsLoading(true);
-            const [statsResult, socialResult, reviewsResult] = await Promise.all([
-              getDashboardStats(targetUserId),
-              getUserSocialStats(targetUserId),
-              getUserReviews(targetUserId)
-            ]);
-            if ((statsResult as any)?.data) {
-              const data = (statsResult as any).data;
-              setStats({ totalTrades: data.totalTrades, tradesThisWeek: data.tradesThisWeek, currentXP: data.currentXP });
-              // Composite reputation: XP (50%), trades (30%), followers (20%)
-              const xpNorm = Math.min(1, Number(data.currentXP || 0) / 5000);
-              const tradesNorm = Math.min(1, Number(data.totalTrades || 0) / 100);
-              const followersNorm = Math.min(1, Number((socialResult as any)?.data?.followersCount || 0) / 1000);
-              const composite = Math.round(100 * (0.5 * xpNorm + 0.3 * tradesNorm + 0.2 * followersNorm));
-              setRepScore(composite);
-            }
-            if ((reviewsResult as any)?.data && Array.isArray((reviewsResult as any).data)) {
-              const all = ((reviewsResult as any).data as Array<any>);
-              const count = all.length;
-              const avg = count > 0 ? (all.reduce((sum, r) => sum + Number(r.rating || 0), 0) / count) : 0;
-              setReviewsMeta({ avg, count });
-              const list = all.slice(0, 2).map(r => ({ rating: Number(r.rating || 0), comment: String(r.comment || '') }));
-              setReviewsPreview(list);
-            }
-          } catch {
-            // ignore
-          } finally {
-            setReviewsLoading(false);
-            observer.disconnect();
-          }
-        })();
-      }
-    }, { rootMargin: '0px', threshold: 0.2 });
-
-    observer.observe(headerEl);
-    return () => observer.disconnect();
-  }, [targetUserId, stats, repScore]);
+  // Extract stats from profile data for backward compatibility
+  const stats = profileData?.stats ? {
+    totalTrades: profileData.stats.totalTrades,
+    tradesThisWeek: profileData.stats.tradesThisWeek,
+    currentXP: profileData.stats.currentXP
+  } : null;
 
   const completenessPercent = React.useMemo(() => {
     if (!userProfile) return 0;
@@ -801,277 +765,34 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
       )}
 
       {/* Profile Header */}
-      <Box id="profile-header" className="relative -mt-6 sm:-mt-8 md:-mt-10 bg-card text-card-foreground rounded-lg shadow-sm border border-border mb-6 glassmorphic bg-gradient-to-r from-primary-500/5 via-accent-500/5 to-secondary-500/5">
-        <Box className="p-6">
-          <Cluster gap="md" align="center">
-            <Box className="relative -mt-12 w-24 h-24 rounded-full ring-4 ring-background shadow-md overflow-hidden bg-background shrink-0">
-            {userProfile.photoURL || userProfile.profilePicture ? (
-              <ProfileImage
-                photoURL={userProfile.photoURL}
-                profilePicture={userProfile.profilePicture}
-                displayName={userProfile.displayName}
-                size="xl"
-                  className="h-24 w-24"
-              />
-            ) : (
-                <Box className="w-24 h-24 rounded-full bg-muted flex items-center justify-center">
-                  <User className="w-10 h-10 text-muted-foreground" />
-              </Box>
-            )}
-            </Box>
-            <Stack gap="xs" className="min-w-0">
-              <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-3xl sm:text-4xl font-bold text-card-foreground truncate">
-                {userProfile.displayName || 'Anonymous User'}
-              </h1>
-                {userProfile.handle && (!userProfile.handlePrivate || isOwnProfile) && (
-                  <span className="inline-flex items-center gap-2 text-base text-muted-foreground truncate">
-                    @{userProfile.handle}
-                    {userProfile.verified && (
-                      <span className="inline-flex items-center gap-1 text-success-600 dark:text-success-400" aria-label="Verified account" title="Verified account">
-                        <Check className="w-4 h-4" />
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                    className="inline-flex items-center justify-center rounded p-2 hover:bg-muted/50 min-h-[44px] min-w-[44px]"
-                      aria-label="Copy profile link"
-                    title="Copy profile link"
-                      onClick={async () => {
-                        const path = userProfile.handle && !userProfile.handlePrivate ? `/u/${userProfile.handle}` : `/profile/${targetUserId}`;
-                        const url = `${window.location.origin}${path}`;
-                        await navigator.clipboard.writeText(url);
-                        showToast('Profile link copied', 'success');
-                        await logEvent('profile_share', { userId: targetUserId, hasHandle: true, method: 'clipboard', context: 'header' });
-                      }}
-                    >
-                      <CopyIcon className="w-4 h-4" />
-                    </button>
-                    {userProfile.handlePrivate && isOwnProfile && (
-                      <span className="text-xs text-muted-foreground" aria-label="Handle is private">(private)</span>
-                    )}
-                  </span>
-                )}
-                <Tooltip
-                  content={
-                    <span>
-                      Reputation is based on your XP (50%), completed trades (30%), and followers (20%).
-                      <a
-                        className="ml-2 underline text-primary"
-                        href="/docs/profile-reputation"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        What's reputation?
-                      </a>
-                    </span>
-                  }
-                  position="top"
-                >
-                  <span>
-                    <ReputationBadge score={repScore ?? 0} size="sm" showLabel={false} className="bg-transparent border-border text-muted-foreground cursor-help" />
-                  </span>
-                </Tooltip>
-              </div>
-              {isOwnProfile && (
-                <p className="text-sm text-muted-foreground truncate flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  <span>{userProfile.email}</span>
-                </p>
-              )}
-              {userProfile.tagline && (
-                <p className="text-text-secondary mt-1 truncate">{userProfile.tagline}</p>
-              )}
-
-              {/* Mutual followers snippet (viewer != owner) */}
-              {!isOwnProfile && mutualFollows.count > 0 && (
-                <p className="text-sm text-muted-foreground mt-2">
-                  Followed by {mutualFollows.names.join(', ')}{mutualFollows.count > mutualFollows.names.length ? ` and ${mutualFollows.count - mutualFollows.names.length} more` : ''}
-                </p>
-              )}
-              {userProfile.bio && (
-                <>
-                  <p className={`text-muted-foreground mt-2 ${isBioExpanded ? '' : 'line-clamp-3'}`}>{userProfile.bio}</p>
-                  {userProfile.bio.length > 140 && (
-                    <button
-                      type="button"
-                      className="text-sm text-primary hover:underline mt-1"
-                      onClick={() => setIsBioExpanded((v) => !v)}
-                      aria-expanded={isBioExpanded}
-                    >
-                      {isBioExpanded ? 'Show less' : 'Read more'}
-                    </button>
-                  )}
-                </>
-              )}
-
-              {/* Meta row: website, location, member since */}
-              <Cluster gap="sm" className="mt-3 flex-wrap">
-                {userProfile.website && (
-                  <a
-                    href={userProfile.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm text-foreground/80 hover:text-primary transition-colors rounded -m-1 p-2 min-h-[44px]"
-                    aria-label={`Visit ${formatWebsiteLabel(userProfile.website)}`}
-                  >
-                    <Globe className="w-4 h-4" />
-                    <span className="truncate max-w-[200px] sm:max-w-[280px]">{formatWebsiteLabel(userProfile.website)}</span>
-                  </a>
-                )}
-                {userProfile.location && (
-                  <span className="inline-flex items-center gap-2 text-sm text-muted-foreground rounded -m-1 p-2 min-h-[44px]">
-                    <MapPin className="w-4 h-4" />
-                    {userProfile.location}
-                  </span>
-                )}
-                {userProfile.metadata?.creationTime && (
-                  <Badge variant="outline" className="inline-flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    {`Joined ${new Date(userProfile.metadata.creationTime).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}`}
-                  </Badge>
-                )}
-              </Cluster>
-
-              {/* Skills */}
-              {Array.isArray(userProfile.skills) && userProfile.skills.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {userProfile.skills.slice(0, 6).map((skill, idx) => (
-                    <button
-                      key={`${skill}-${idx}`}
-                      type="button"
-                      onClick={() => {
+      <div id="profile-header" className="relative -mt-6 sm:-mt-8 md:-mt-10 mb-6">
+        <UserProfileHeader
+          user={{ ...userProfile, id: userProfile.uid }}
+          isOwnProfile={isOwnProfile}
+          reputationScore={reputationScore ?? 0}
+          mutualFollows={mutualFollows}
+          onEditProfile={() => setIsEditOpen(true)}
+          onShareProfile={() => showToast('Profile shared!', 'success')}
+          onMessageUser={() => (window.location.href = '/messages')}
+          onSkillClick={(skill) => {
                         setActiveTab('portfolio');
                         try { window.history.replaceState({}, '', `#portfolio`); } catch {}
                         const panel = document.getElementById('panel-portfolio');
                         const behavior = prefersReducedMotion ? 'auto' : 'smooth';
                         panel?.scrollIntoView({ behavior, block: 'start' });
                         window.dispatchEvent(new CustomEvent('portfolio:filter-skill', { detail: { skill } }));
-                        try { logEvent('profile_skill_chip_click', { skill }).catch(() => {}); } catch {}
-                      }}
-                      className="inline-flex items-center rounded-full border px-3 py-1 text-xs hover:bg-muted"
-                      aria-label={`Filter portfolio by ${skill}`}
-                    >
-                      {skill}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Rating summary chip */}
-              {reviewsMeta && reviewsMeta.count > 0 && (
-                <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-border/60 bg-muted/40 px-3 py-1 text-sm">
-                  <span className="inline-flex items-center gap-1">
-                    <Star className="w-4 h-4 text-warning-500" />
-                    <span className="text-foreground font-medium">{reviewsMeta.avg.toFixed(1)}</span>
-                  </span>
-                  <span className="text-muted-foreground">· {reviewsMeta.count}</span>
-                </div>
-              )}
-
-              {/* Reviews preview */}
-              {(reviewsLoading || reviewsPreview.length > 0) && (
-                <div className="mt-4 space-y-2">
-                  {reviewsLoading && reviewsPreview.length === 0 && (
-                    <>
-                      <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
-                      <div className="h-4 w-2/3 bg-muted rounded animate-pulse" />
-                    </>
-                  )}
-                  {reviewsPreview.map((rev, idx) => (
-                    <div key={`rev-${idx}`} className="text-sm text-muted-foreground flex items-start gap-2">
-                      <span className="inline-flex items-center gap-0.5 text-warning-500">
-                        {Array.from({ length: Math.min(5, Math.max(0, rev.rating)) }).map((_, i) => (
-                          <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                        ))}
-                      </span>
-                      <span className="truncate">{rev.comment}</span>
-                    </div>
-                  ))}
-                  {reviewsMeta && reviewsMeta.count > 0 && (
-                    <button
-                      type="button"
-                      className="text-xs text-primary hover:underline"
-                      onClick={() => { window.location.href = `/reviews?user=${targetUserId}`; }}
-                      aria-label="See all reviews"
-                    >
-                      See all reviews
-                    </button>
-                  )}
-                </div>
-              )}
-            </Stack>
-            <Cluster gap="sm" align="center" className="ml-auto">
-              {targetUserId && (
-                <Cluster gap="xs" className="hidden md:flex text-xs">
-                  <StreakWidgetCompact userId={targetUserId} type="login" />
-                  <span className="text-muted-foreground">•</span>
-                  <StreakWidgetCompact userId={targetUserId} type="challenge" />
-                </Cluster>
-              )}
-            </Cluster>
-          </Cluster>
-
-          {/* Actions */}
-          <Cluster gap="sm" className="mt-5 flex-wrap">
-            {isOwnProfile ? (
-              <>
-                <Button variant="outline" className="gap-2" onClick={() => setIsEditOpen(true)}>
-                <Edit3 className="w-4 h-4" />
-                Edit Profile
-              </Button>
-                <Button variant="ghost" className="gap-2" onClick={handleShareProfile}>
-                  <Share2 className="w-4 h-4" />
-                  Share profile
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button className="gap-2" onClick={() => (window.location.href = '/messages')}>
-                  <MessageSquare className="w-4 h-4" />
-                  Message
-                </Button>
-                <Button variant="ghost" className="gap-2" onClick={handleShareProfile}>
-                  <Share2 className="w-4 h-4" />
-                  Share profile
-                </Button>
-                <SocialFeatures
-                  userId={targetUserId!}
-                  userName={userProfile.displayName || 'User'}
-                  userAvatar={userProfile.profilePicture || userProfile.photoURL}
-                  compact
-                  showStats={false}
-                  showFollowButton
-                />
-              </>
-            )}
-          </Cluster>
-
-          {/* Compact Stats Strip using unified StatChip */}
-          <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-            {stats && (
-              <>
-                <StatChip label="Trades" value={stats.totalTrades} />
-                <StatChip label="This week" value={stats.tradesThisWeek} />
-              </>
-            )}
-            {targetUserId && (
-              <div className="hidden sm:block">
-                <button
-                  type="button"
-                  className="w-full"
-                onClick={() => { window.location.href = `/directory?relation=followers&user=${targetUserId}`; }}
-                aria-label="View followers"
-              >
-                  <div className="w-full">
-                <UserSocialStats userId={targetUserId} compact />
+          }}
+          onTabChange={(tab) => setActiveTab(tab as any)}
+          reviewsMeta={reviewsMeta ?? undefined}
+          reviewsPreview={reviewsPreview}
+          reviewsLoading={profileDataLoading}
+          showStreaks={true}
+          showSocialFeatures={!isOwnProfile}
+          showSkills={true}
+          showReviews={true}
+          showMeta={true}
+        />
                   </div>
-                </button>
-              </div>
-            )}
-          </div>
-        </Box>
-      </Box>
 
       {/* Tab Navigation */}
       <Box className="bg-card text-card-foreground rounded-lg shadow-sm border border-border">

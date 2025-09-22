@@ -83,6 +83,7 @@ describe('GlassmorphicInput', () => {
       
       const input = screen.getByPlaceholderText('Enter text...');
       expect(input).toHaveClass('glassmorphic');
+      expect(input).toHaveClass('transition-all', 'duration-300', 'ease-out');
     });
 
     it('applies elevated-glass variant styles', () => {
@@ -91,6 +92,7 @@ describe('GlassmorphicInput', () => {
       const input = screen.getByPlaceholderText('Enter text...');
       expect(input).toHaveClass('glassmorphic');
       expect(input).toHaveClass('shadow-lg');
+      expect(input).toHaveClass('hover:shadow-xl', 'hover:shadow-primary/15');
     });
 
     it('applies inset-glass variant styles', () => {
@@ -99,6 +101,52 @@ describe('GlassmorphicInput', () => {
       const input = screen.getByPlaceholderText('Enter text...');
       expect(input).toHaveClass('glassmorphic');
       expect(input).toHaveClass('shadow-inner');
+      expect(input).toHaveClass('hover:shadow-lg', 'hover:shadow-secondary/10');
+    });
+  });
+
+  describe('Phase 3 Hover Effects', () => {
+    it('applies hover scale effect to glass variant', () => {
+      render(<GlassmorphicInput {...defaultProps} />);
+      
+      const input = screen.getByPlaceholderText('Enter text...');
+      expect(input).toHaveClass('hover:scale-[1.01]');
+    });
+
+    it('applies focus scale effect to glass variant', () => {
+      render(<GlassmorphicInput {...defaultProps} />);
+      
+      const input = screen.getByPlaceholderText('Enter text...');
+      expect(input).toHaveClass('focus:scale-[1.02]');
+    });
+
+    it('applies hover shadow effects to glass variant', () => {
+      render(<GlassmorphicInput {...defaultProps} />);
+      
+      const input = screen.getByPlaceholderText('Enter text...');
+      expect(input).toHaveClass('hover:shadow-lg', 'hover:shadow-primary/10');
+    });
+
+    it('applies focus shadow effects to glass variant', () => {
+      render(<GlassmorphicInput {...defaultProps} />);
+      
+      const input = screen.getByPlaceholderText('Enter text...');
+      expect(input).toHaveClass('focus:shadow-xl', 'focus:shadow-primary/20');
+    });
+
+    it('applies enhanced hover effects to elevated-glass variant', () => {
+      render(<GlassmorphicInput {...defaultProps} variant="elevated-glass" />);
+      
+      const input = screen.getByPlaceholderText('Enter text...');
+      expect(input).toHaveClass('hover:scale-[1.02]');
+      expect(input).toHaveClass('focus:scale-[1.03]');
+    });
+
+    it('applies enhanced shadow effects to elevated-glass variant', () => {
+      render(<GlassmorphicInput {...defaultProps} variant="elevated-glass" />);
+      
+      const input = screen.getByPlaceholderText('Enter text...');
+      expect(input).toHaveClass('focus:shadow-2xl', 'focus:shadow-primary/25');
     });
   });
 

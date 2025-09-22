@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 import { GlassmorphicForm } from '../ui/GlassmorphicForm';
 import { GlassmorphicInput } from '../ui/GlassmorphicInput';
 import { AccessibleFormField } from '../ui/AccessibleFormField';
+import { createCSRFToken, validateCSRFToken, getCSRFToken, storeCSRFToken } from '../../utils/csrf';
 
 interface LoginFormData {
   email: string;
@@ -37,16 +38,28 @@ const LoginPage: React.FC = () => {
   // New state for input validation
   const [emailValid, setEmailValid] = useState<boolean | null>(null);
   const [passwordValid, setPasswordValid] = useState<boolean | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [csrfToken, setCsrfToken] = useState<string>('');
 
   const { addToast } = useToast();
 
   useEffect(() => {
+    // Navigate when we have a user and login was successful
     if (currentUser && loginSuccess) {
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         navigate('/dashboard');
       }, 1500); // 1.5 second delay
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [currentUser, loginSuccess, navigate]);
+
+  // Initialize CSRF token on component mount
+  useEffect(() => {
+    const token = createCSRFToken();
+    storeCSRFToken(token);
+    setCsrfToken(token.token);
+  }, []);
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -64,7 +77,7 @@ const LoginPage: React.FC = () => {
     const value = e.target.value;
     setPassword(value);
     if (value) {
-      setPasswordValid(value.length >= 6);
+      setPasswordValid(value.length >= 8);
     } else {
       setPasswordValid(null);
     }
@@ -72,30 +85,75 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signInWithEmail(email, password);
-
-    // Set login success flag to trigger the effect
-    setLoginSuccess(true);
+    
+    // CSRF validation
+    const storedToken = getCSRFToken();
+    if (!validateCSRFToken(csrfToken, storedToken)) {
+      addToast('error', 'Invalid security token. Please refresh the page and try again.');
+      return;
+    }
+    
+    try {
+      await signInWithEmail(email, password);
+      // Set login success flag to trigger the effect ONLY on successful login
+      setLoginSuccess(true);
+      
+      // Backup navigation in case useEffect doesn't trigger
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
+    } catch (error) {
+      // Error is already handled by AuthContext and displayed via error state
+      console.error('Login failed:', error);
+      // Don't set loginSuccess to true on error
+    }
   };
 
   // Handle Google sign-in with success feedback
   const handleGoogleSignIn = async () => {
-    await signInWithGoogle();
-
-    // Set login success flag to trigger the effect
-    setLoginSuccess(true);
+    try {
+      await signInWithGoogle();
+      // Set login success flag to trigger the effect ONLY on successful login
+      setLoginSuccess(true);
+      
+      // Backup navigation in case useEffect doesn't trigger
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
+    } catch (error) {
+      // Error is already handled by AuthContext and displayed via error state
+      console.error('Google sign-in failed:', error);
+      // Don't set loginSuccess to true on error
+    }
   };
 
-  // Security logging function
-  const logSecurityEvent = (event: SecurityLog) => {
-    const existingLogs = JSON.parse(localStorage.getItem('security_logs') || '[]');
-    const updatedLogs = [...existingLogs, event].slice(-100); // Keep last 100 logs
-    localStorage.setItem('security_logs', JSON.stringify(updatedLogs));
+  // Security logging function - now uses secure storage
+  const logSecurityEvent = async (event: SecurityLog) => {
+    try {
+      // Store in secure sessionStorage instead of localStorage (XSS protection)
+      const existingLogs = JSON.parse(sessionStorage.getItem('security_logs') || '[]');
+      const updatedLogs = [...existingLogs, event].slice(-50); // Keep last 50 logs
+      sessionStorage.setItem('security_logs', JSON.stringify(updatedLogs));
+      
+      // In production, also send to secure server endpoint
+      if (process.env.NODE_ENV === 'production') {
+        await fetch('/api/security-logs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(event)
+        }).catch(() => {}); // Fail silently if server is unavailable
+      }
+    } catch (error) {
+      console.warn('Failed to log security event:', error);
+    }
   };
 
   return (
     <div className="max-w-md mx-auto px-4 sm:px-6 py-12">
       <GlassmorphicForm onSubmit={handleSubmit} className="mt-0">
+        {/* CSRF Token */}
+        <input type="hidden" name="csrf_token" value={csrfToken} />
+        
         <div className="flex flex-col items-center mb-8">
           <Logo size="large" showText={true} linkTo={null} className="justify-center" />
           <motion.h1
@@ -131,17 +189,19 @@ const LoginPage: React.FC = () => {
             Forgot password?
           </Link>
         </div>
-        <AccessibleFormField id="password" label="Password" error={passwordValid === false ? 'Password must be at least 6 characters' : undefined}>
+        <AccessibleFormField id="password" label="Password" error={passwordValid === false ? 'Password must be at least 8 characters' : undefined}>
           <GlassmorphicInput
             id="password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="Password"
             value={password}
             onChange={handlePasswordChange}
             required
             icon={<LockIcon className="h-5 w-5" />}
-            error={passwordValid === false ? 'Password must be at least 6 characters' : undefined}
+            error={passwordValid === false ? 'Password must be at least 8 characters' : undefined}
             autoComplete="current-password"
+            showPasswordToggle={true}
+            onPasswordToggle={() => setShowPassword(!showPassword)}
           />
         </AccessibleFormField>
         <Button

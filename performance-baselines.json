@@ -1,7 +1,0 @@
-{
-  "date": "2025-06-19",
-  "tool": "Lighthouse CI (lhci)",
-  "url": "http://localhost:5174/",
-  "results": "See attached HTML report or .lighthouseci directory for full details.",
-  "notes": "Lighthouse CI was run to establish a performance baseline for the TradeYa Design System Phase 0. The development server started cleanly, and Tailwind CSS is confirmed to be working (no unstyled elements). For detailed metrics, see the generated Lighthouse HTML report in the project root or .lighthouseci directory if available. Key metrics: LCP, FID, CLS, FCP, TTFB."
-}

@@ -59,6 +59,7 @@ describe('GlassmorphicForm', () => {
       const form = document.querySelector('form');
       expect(form).toHaveClass('glassmorphic');
       expect(form).toHaveClass('rounded-2xl');
+      expect(form).toHaveClass('transition-all', 'duration-500', 'ease-out');
     });
 
     it('applies elevated variant styles', () => {
@@ -68,6 +69,7 @@ describe('GlassmorphicForm', () => {
       expect(form).toHaveClass('glassmorphic');
       expect(form).toHaveClass('rounded-3xl');
       expect(form).toHaveClass('shadow-2xl');
+      expect(form).toHaveClass('transition-all', 'duration-500', 'ease-out');
     });
 
     it('applies modal variant styles', () => {
@@ -76,6 +78,7 @@ describe('GlassmorphicForm', () => {
       const form = document.querySelector('form');
       expect(form).toHaveClass('glassmorphic');
       expect(form).toHaveClass('shadow-beautiful');
+      expect(form).toHaveClass('transition-all', 'duration-500', 'ease-out');
     });
 
     it('applies stepped variant styles', () => {
@@ -85,6 +88,41 @@ describe('GlassmorphicForm', () => {
       expect(form).toHaveClass('glassmorphic');
       expect(form).toHaveClass('border-l-4');
       expect(form).toHaveClass('rounded-r-2xl');
+      expect(form).toHaveClass('transition-all', 'duration-500', 'ease-out');
+    });
+  });
+
+  describe('Phase 3 Hover Effects', () => {
+    it('applies hover effects to standard variant', () => {
+      render(<GlassmorphicForm {...defaultProps} />);
+      
+      const form = document.querySelector('form');
+      expect(form).toHaveClass('hover:shadow-xl', 'hover:shadow-primary/10');
+      expect(form).toHaveClass('hover:scale-[1.01]');
+    });
+
+    it('applies enhanced hover effects to elevated variant', () => {
+      render(<GlassmorphicForm {...defaultProps} variant="elevated" />);
+      
+      const form = document.querySelector('form');
+      expect(form).toHaveClass('hover:shadow-2xl', 'hover:shadow-primary/15');
+      expect(form).toHaveClass('hover:scale-[1.02]');
+    });
+
+    it('applies hover effects to modal variant', () => {
+      render(<GlassmorphicForm {...defaultProps} variant="modal" />);
+      
+      const form = document.querySelector('form');
+      expect(form).toHaveClass('hover:shadow-xl', 'hover:shadow-secondary/10');
+      expect(form).toHaveClass('hover:scale-[1.01]');
+    });
+
+    it('applies hover effects to stepped variant', () => {
+      render(<GlassmorphicForm {...defaultProps} variant="stepped" />);
+      
+      const form = document.querySelector('form');
+      expect(form).toHaveClass('hover:shadow-xl', 'hover:shadow-purple/10');
+      expect(form).toHaveClass('hover:scale-[1.01]');
     });
   });
 

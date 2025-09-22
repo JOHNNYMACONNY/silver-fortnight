@@ -104,7 +104,7 @@ const LoginForm: React.FC = () => {
 };
 
 const SignUpForm: React.FC = () => {
-  const { user } = useAuth();
+  const { user, signUpWithEmail } = useAuth();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState("");
@@ -112,9 +112,9 @@ const SignUpForm: React.FC = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await mockSignUp(mockAuth, email, password); // Pass mockAuth instance
-    } catch {
-      setError("Sign up failed");
+      await signUpWithEmail(email, password); // Use new AuthContext method
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign up failed");
     }
   };
 
@@ -271,7 +271,7 @@ describe("Authentication Flow Integration Tests", () => {
       const signUpButton = screen.getByTestId("signup-button");
 
       await user.type(emailInput, "newuser@example.com");
-      await user.type(passwordInput, "newpassword123");
+      await user.type(passwordInput, "newpassword123"); // 8+ characters (updated from 6+)
       await user.click(signUpButton);
 
       expect(mockSignUp).toHaveBeenCalledWith(

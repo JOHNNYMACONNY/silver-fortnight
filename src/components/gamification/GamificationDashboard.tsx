@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../AuthContext';
-import { getUserXP, getUserXPHistory } from '../../services/gamification';
-import { getUserAchievements, ACHIEVEMENTS } from '../../services/achievements';
+import { ACHIEVEMENTS } from '../../services/achievements';
 import { UserXP, XPTransaction, Achievement, UserAchievement } from '../../types/gamification';
 import XPDisplay from './XPDisplay';
 import { WeeklyXPGoal } from './WeeklyXPGoal';
@@ -13,6 +12,7 @@ import { StreakWidget } from '../features/StreakWidget';
 import { StreakUpcomingMilestones } from '../features/StreakUpcomingMilestones';
 import { markSkillPracticeDay } from '../../services/streaks';
 import { useToast } from '../../contexts/ToastContext';
+import { useGamificationData } from '../../hooks/useGamificationData';
 
 interface GamificationDashboardProps {
   userId?: string;
@@ -25,61 +25,33 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
 }) => {
   const { currentUser } = useAuth();
   const { addToast } = useToast();
-  const [userXP, setUserXP] = useState<UserXP | null>(null);
-  const [xpHistory, setXPHistory] = useState<XPTransaction[]>([]);
-  const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'achievements' | 'history'>('overview');
   const [showBreakdown, setShowBreakdown] = useState(false);
 
   const targetUserId = userId || currentUser?.uid;
 
+  // Use standardized data fetching hook
+  const {
+    data: gamificationData,
+    loading,
+    error
+  } = useGamificationData(targetUserId || '', {
+    enabled: !!targetUserId
+  });
+
+  // Extract individual data for backward compatibility
+  const userXP = gamificationData?.xp || null;
+  const xpHistory = gamificationData?.history || [];
+  const userAchievements = gamificationData?.achievements || [];
+
+  // Load persisted XP breakdown visibility
   useEffect(() => {
-    const fetchGamificationData = async () => {
-      if (!targetUserId) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Fetch all gamification data in parallel
-        const [xpResult, historyResult, achievementsResult] = await Promise.all([
-          getUserXP(targetUserId),
-          getUserXPHistory(targetUserId, 10),
-          getUserAchievements(targetUserId)
-        ]);
-
-        if (xpResult.success && xpResult.data) {
-          setUserXP(xpResult.data);
-        }
-
-        if (historyResult.success && historyResult.data) {
-          setXPHistory(historyResult.data);
-        }
-
-        if (achievementsResult.success && achievementsResult.data) {
-          setUserAchievements(achievementsResult.data);
-        }
-      } catch (err: any) {
-        setError(err.message || 'Failed to load gamification data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Load persisted XP breakdown visibility
     try {
       if (typeof window !== 'undefined' && targetUserId) {
         const v = window.localStorage.getItem(`xp-breakdown-visible-${targetUserId}`);
         if (v === '1') setShowBreakdown(true);
       }
     } catch {}
-
-    fetchGamificationData();
   }, [targetUserId]);
 
   if (loading) {

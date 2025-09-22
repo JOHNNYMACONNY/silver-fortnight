@@ -1,0 +1,67 @@
+# Page snapshot
+
+```yaml
+- navigation:
+  - link "TradeYa Logo TradeYa":
+    - /url: /
+    - img "TradeYa Logo"
+    - text: TradeYa
+  - button "Open command palette"
+  - button "Open main menu"
+- text: Challenge not found
+- link "Back to Challenges":
+  - /url: /challenges
+- button "Open Dev Dashboard"
+- contentinfo:
+  - link "TradeYa Logo TradeYa":
+    - /url: /
+    - img "TradeYa Logo"
+    - text: TradeYa
+  - paragraph: Exchange skills and services with others in your community.
+  - heading "Resources" [level=3]
+  - list:
+    - listitem:
+      - link "Help Center":
+        - /url: /help
+    - listitem:
+      - link "Guides":
+        - /url: /uides
+    - listitem:
+      - link "Blog":
+        - /url: /blog
+  - heading "Company" [level=3]
+  - list:
+    - listitem:
+      - link "About":
+        - /url: /about
+    - listitem:
+      - link "Careers":
+        - /url: /careers
+    - listitem:
+      - link "Contact":
+        - /url: /contact
+  - heading "Legal" [level=3]
+  - list:
+    - listitem:
+      - link "Privacy Policy":
+        - /url: /privacy
+    - listitem:
+      - link "Terms of Service":
+        - /url: /terms
+    - listitem:
+      - link "Cookie Policy":
+        - /url: /cookies
+  - paragraph: "&copy: 2025 TradeYa. All rights reserved."
+- alert:
+  - img
+  - paragraph: Challenge not found
+  - button "Close":
+    - text: Close
+    - img
+- alert:
+  - img
+  - paragraph: Challenge not found
+  - button "Close":
+    - text: Close
+    - img
+```

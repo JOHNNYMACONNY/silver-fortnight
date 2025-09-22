@@ -489,18 +489,20 @@ The Evidence Embed System integrates with the Collaboration Roles System for:
 
 **Implementation Example:**
 ```tsx
-// In CollaborationDetailPage.tsx
+// In CollaborationDetailPage.tsx - ✅ IMPLEMENTED
 const handleRoleEvidenceSubmit = async (evidence: EmbeddedEvidence, roleId: string) => {
   if (!collaboration || !currentUser) return;
   
   try {
     await addCollaborationEvidence(collaboration.id, evidence, roleId);
-    fetchCollaborationDetails(); // Refresh collaboration data
+    await handleRolesUpdate(); // Refresh roles data using new service layer
   } catch (err: any) {
     setError(err.message || 'Failed to add evidence');
   }
 };
 ```
+
+**Status**: ✅ **INTEGRATED** - Evidence embed system now works with the updated CollaborationDetailPage using the new CollaborationRolesSection component and standardized service layer.
 
 ## Usage Examples
 

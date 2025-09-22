@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserPortfolioItems } from '../../../services/portfolio';
 import { PortfolioItem } from '../../../types/portfolio';
 import PortfolioItemComponent from './PortfolioItem';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,6 +10,7 @@ import Box from '../../layout/primitives/Box';
 import Stack from '../../layout/primitives/Stack';
 import Cluster from '../../layout/primitives/Cluster';
 import Grid from '../../layout/primitives/Grid';
+import { usePortfolioItems } from '../../../hooks/usePortfolioItems';
 
 interface PortfolioTabProps {
   userId: string;
@@ -18,36 +18,34 @@ interface PortfolioTabProps {
 }
 
 export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile }) => {
-  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [filter, setFilter] = useState<'all' | 'trades' | 'collaborations' | 'featured'>('all');
+  const [filter, setFilter] = useState<'all' | 'trades' | 'collaborations' | 'challenges' | 'featured'>('all');
   const [skillFilter, setSkillFilter] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [isManaging, setIsManaging] = useState(false);
   const navigate = useNavigate();
   const headingRef = React.useRef<HTMLHeadingElement>(null);
 
-  const fetchPortfolio = async () => {
-    setLoading(true);
-    const options = !isOwnProfile ? { onlyVisible: true } : {};
-    const items = await getUserPortfolioItems(userId, options);
-    setPortfolioItems(items);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchPortfolio();
-    // eslint-disable-next-line
-  }, [userId, isOwnProfile]);
+  // Use standardized data fetching hook
+  const {
+    data: portfolioItems = [],
+    loading,
+    error,
+    refetch
+  } = usePortfolioItems(userId, {
+    includePrivate: isOwnProfile
+  });
 
   const filteredItems = useMemo(() => {
-    let items = portfolioItems;
+    let items = portfolioItems || [];
     switch (filter) {
       case 'trades':
         items = items.filter(item => item.sourceType === 'trade');
         break;
       case 'collaborations':
         items = items.filter(item => item.sourceType === 'collaboration');
+        break;
+      case 'challenges':
+        items = items.filter(item => item.sourceType === 'challenge');
         break;
       case 'featured':
         items = items.filter(item => item.featured);
@@ -69,9 +67,9 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
   }, [filteredItems, filter, skillFilter]);
 
   const regularItems = useMemo(() => {
-    if (filter !== 'all' || skillFilter) return filteredItems;
+    if (filter !== 'all' || skillFilter) return filteredItems || [];
     const pinnedIds = new Set(pinnedItems.map(it => it.id));
-    return filteredItems.filter(it => !pinnedIds.has(it.id));
+    return (filteredItems || []).filter(it => !pinnedIds.has(it.id));
   }, [filteredItems, pinnedItems, filter, skillFilter]);
 
   // Listen for skill filter events from the Profile header
@@ -119,8 +117,8 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
                 Portfolio
               </h2>
               <p className="text-sm text-text-muted">
-                {portfolioItems.length} {portfolioItems.length === 1 ? 'item' : 'items'}
-                {filteredItems.length !== portfolioItems.length && ` • ${filteredItems.length} shown`}
+                {(portfolioItems || []).length} {(portfolioItems || []).length === 1 ? 'item' : 'items'}
+                {(filteredItems || []).length !== (portfolioItems || []).length && ` • ${(filteredItems || []).length} shown`}
               </p>
             </Stack>
           </Cluster>
@@ -176,6 +174,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
                 <option value="all">All Items</option>
                 <option value="trades">Trades</option>
                 <option value="collaborations">Collaborations</option>
+                <option value="challenges">Challenges</option>
                 <option value="featured">Featured</option>
               </select>
               <Filter className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
@@ -207,7 +206,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
               <span>Loading portfolio...</span>
             </Cluster>
           </motion.div>
-         ) : filteredItems.length === 0 ? (
+          ) : (filteredItems || []).length === 0 ? (
            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="glassmorphic text-center p-12">
             <Stack gap="lg" align="center">
               <Box className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center">
@@ -252,7 +251,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
                   {pinnedItems.map((item, index) => (
                     <motion.div key={`pinned-${item.id}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, delay: index * 0.06 }}>
                       <Box>
-                        <PortfolioItemComponent item={item} isOwnProfile={isOwnProfile} isManaging={isManaging} onChange={fetchPortfolio} />
+                        <PortfolioItemComponent item={item} isOwnProfile={isOwnProfile} isManaging={isManaging} onChange={refetch} />
                       </Box>
                     </motion.div>
                   ))}
@@ -266,14 +265,14 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
                 className="portfolio-items @container"
                 style={{ containerType: 'inline-size' }}
               >
-                {(filter === 'all' && !skillFilter ? regularItems : filteredItems).map((item, index) => (
+                {(filter === 'all' && !skillFilter ? regularItems : (filteredItems || [])).map((item, index) => (
                   <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: index * 0.1 }}>
                     <Box>
                       <PortfolioItemComponent
                         item={item}
                         isOwnProfile={isOwnProfile}
                         isManaging={isManaging}
-                        onChange={fetchPortfolio}
+                        onChange={refetch}
                       />
                     </Box>
                   </motion.div>

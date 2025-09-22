@@ -1,20 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import debounce from 'lodash.debounce';
 import { useAuth } from '../AuthContext';
 import { getAllUsers, getRelatedUserIds, getUsersByIds, User } from '../services/firestore-exports';
 import { useToast } from '../contexts/ToastContext';
-import { Search, Filter, AlertCircle } from '../utils/icons';
+import { AlertCircle } from '../utils/icons';
 import { ErrorBoundary } from '../components/ui/ErrorBoundary';
 import UserCardSkeleton from '../components/ui/UserCardSkeleton';
 import UserCard from '../components/features/users/UserCard';
 import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/Select';
+import { EnhancedSearchBar } from '../components/features/search/EnhancedSearchBar';
+import { EnhancedFilterPanel } from '../components/features/search/EnhancedFilterPanel';
 
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Modal } from '../components/ui/Modal';
@@ -25,10 +20,10 @@ export const UserDirectoryPage: React.FC = () => {
   const { addToast } = useToast();
 
   const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -37,7 +32,9 @@ export const UserDirectoryPage: React.FC = () => {
   // Filters
   const [selectedSkill, setSelectedSkill] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
+  const [minReputationScore, setMinReputationScore] = useState<number | null>(null);
+  const [hasSkills, setHasSkills] = useState<boolean | null>(null);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
   // Relation filter via query params (?relation=followers|following&user=ID)
   const [relationFilter, setRelationFilter] = useState<'followers' | 'following' | null>(null);
   const [relationUserId, setRelationUserId] = useState<string | null>(null);
@@ -46,36 +43,51 @@ export const UserDirectoryPage: React.FC = () => {
   const [availableSkills, setAvailableSkills] = useState<string[]>([]);
   const [availableLocations, setAvailableLocations] = useState<string[]>([]);
 
-  // Parse skills into array of skill objects
+  // Enhanced parseSkills function with better error handling and robustness
   const parseSkills = useCallback((skills?: string | string[] | any): { name: string; level?: string }[] => {
     if (!skills) return [];
 
     try {
+      // Handle null or undefined
+      if (skills === null || skills === undefined) return [];
+
       // If skills is already an array of objects
       if (Array.isArray(skills) && skills.length > 0 && typeof skills[0] === 'object') {
-        return skills.map(skill => ({
-          name: skill.name || skill.toString(),
-          level: skill.level
-        }));
+        return skills
+          .filter(skill => skill && typeof skill === 'object') // Filter out null/undefined items
+          .map(skill => ({
+            name: (skill.name || skill.toString() || '').trim(),
+            level: skill.level ? String(skill.level).trim() : undefined
+          }))
+          .filter(skill => skill.name.length > 0); // Filter out empty names
       }
 
       // If skills is an array of strings
       if (Array.isArray(skills)) {
-        return skills.map(skill => {
-          if (typeof skill === 'string') {
-            const parts = skill.split(':');
-            return {
-              name: parts[0].trim(),
-              level: parts.length > 1 ? parts[1].trim() : undefined
-            };
-          }
-          return { name: String(skill), level: undefined };
-        });
+        return skills
+          .filter(skill => skill !== null && skill !== undefined) // Filter out null/undefined
+          .map(skill => {
+            if (typeof skill === 'string') {
+              const trimmedSkill = skill.trim();
+              if (!trimmedSkill) return null;
+              
+              const parts = trimmedSkill.split(':');
+              return {
+                name: parts[0].trim(),
+                level: parts.length > 1 ? parts[1].trim() : undefined
+              };
+            }
+            return { name: String(skill).trim(), level: undefined };
+          })
+          .filter(skill => skill && skill.name.length > 0); // Filter out null and empty names
       }
 
       // If skills is a string
       if (typeof skills === 'string') {
-        return skills.split(',')
+        const trimmedSkills = skills.trim();
+        if (!trimmedSkills) return [];
+        
+        return trimmedSkills.split(',')
           .map(skill => skill.trim())
           .filter(skill => skill !== '')
           .map(skill => {
@@ -84,22 +96,48 @@ export const UserDirectoryPage: React.FC = () => {
               name: parts[0].trim(),
               level: parts.length > 1 ? parts[1].trim() : undefined
             };
-          });
+          })
+          .filter(skill => skill.name.length > 0); // Filter out empty names
+      }
+
+      // If skills is a number, convert to string
+      if (typeof skills === 'number') {
+        return [{ name: String(skills).trim(), level: undefined }];
+      }
+
+      // If skills is a boolean, convert to string
+      if (typeof skills === 'boolean') {
+        return [{ name: String(skills).trim(), level: undefined }];
       }
 
       // If we get here, skills is some other type
       console.warn('Unexpected skills type:', typeof skills, skills);
       return [];
     } catch (error) {
-      console.error('Error parsing skills:', error);
+      console.error('Error parsing skills:', error, 'Skills data:', skills);
       return [];
     }
   }, []);
 
+  // Debounced search effect
   useEffect(() => {
-    // Parse relation filter from query params
+    const debouncedSetSearch = debounce((term: string) => {
+      setDebouncedSearchTerm(term);
+    }, 300);
+
+    debouncedSetSearch(searchTerm);
+
+    return () => {
+      debouncedSetSearch.cancel();
+    };
+  }, [searchTerm]);
+
+  useEffect(() => {
+    // Parse relation filter and other params from query params
     try {
       const params = new URLSearchParams(window.location.search);
+      
+      // Parse relation filter
       const relation = params.get('relation');
       const user = params.get('user');
       if ((relation === 'followers' || relation === 'following') && user) {
@@ -109,6 +147,19 @@ export const UserDirectoryPage: React.FC = () => {
         setRelationFilter(null);
         setRelationUserId(null);
       }
+
+      // Parse search and filter params
+      const q = params.get('q') || '';
+      const skill = params.get('skill') || '';
+      const location = params.get('location') || '';
+      const reputation = params.get('reputation');
+      const hasSkillsParam = params.get('hasSkills');
+      
+      if (q) setSearchTerm(q);
+      if (skill) setSelectedSkill(skill);
+      if (location) setSelectedLocation(location);
+      if (reputation) setMinReputationScore(parseInt(reputation, 10));
+      if (hasSkillsParam) setHasSkills(hasSkillsParam === 'true');
     } catch (e) {}
 
     const fetchUsers = async () => {
@@ -122,19 +173,16 @@ export const UserDirectoryPage: React.FC = () => {
           if (rel.error) {
             setError(rel.error.message);
             setUsers([]);
-            setFilteredUsers([]);
             return;
           }
           const { data: relatedUsers, error: relatedErr } = await getUsersByIds(rel.data?.ids || []);
           if (relatedErr) {
             setError(relatedErr.message);
             setUsers([]);
-            setFilteredUsers([]);
             return;
           }
           const uniqueUsers = (relatedUsers || []).filter((user, index, self) => index === self.findIndex(u => u.id === user.id));
           setUsers(uniqueUsers);
-          setFilteredUsers(uniqueUsers);
         } else {
           const { data: usersList, error: usersError } = await getAllUsers();
 
@@ -144,10 +192,8 @@ export const UserDirectoryPage: React.FC = () => {
             return;
           }
 
-        console.log('[UserDirectoryPage] getAllUsers result:', { usersList, hasItems: !!usersList?.items });
 
         if (usersList?.items) {
-          console.log('[UserDirectoryPage] Raw usersList from getAllUsers:', JSON.stringify(usersList.items.map(u => ({ id: u.id, uid: u.uid, displayName: u.displayName }))));
 
           // Filter out anonymous users and current user
           const filteredList = usersList.items.filter(user => {
@@ -161,17 +207,14 @@ export const UserDirectoryPage: React.FC = () => {
             return hasValidDisplayName && isNotCurrentUser;
           });
 
-          console.log('[UserDirectoryPage] Filtered list (before dedupe):', JSON.stringify(filteredList.map(u => ({ id: u.id, uid: u.uid, displayName: u.displayName }))));
 
           // Deduplicate users by ID to prevent duplicate keys
           const uniqueUsers = filteredList.filter((user, index, self) =>
             index === self.findIndex(u => u.id === user.id)
           );
 
-          console.log('[UserDirectoryPage] Unique users (after dedupe):', JSON.stringify(uniqueUsers.map(u => ({ id: u.id, uid: u.uid, displayName: u.displayName }))));
 
           setUsers(uniqueUsers);
-          setFilteredUsers(uniqueUsers);
 
           // Extract unique skills and locations
           const skills = new Set<string>();
@@ -195,7 +238,6 @@ export const UserDirectoryPage: React.FC = () => {
         else {
           console.warn('[UserDirectoryPage] No users data received');
           setUsers([]);
-          setFilteredUsers([]);
         }
         
       }
@@ -210,20 +252,70 @@ export const UserDirectoryPage: React.FC = () => {
     fetchUsers();
   }, [currentUser, parseSkills]);
 
-  const applyFilters = useCallback(() => {
-    let result = [...users];
+  // Memoize parsed skills for each user to avoid re-parsing
+  const usersWithParsedSkills = useMemo(() => {
+    return users.map(user => ({
+      ...user,
+      parsedSkills: parseSkills(user.skills)
+    }));
+  }, [users, parseSkills]);
 
-    // Ensure no anonymous users (backup check) - use same logic as main filter
-    result = result.filter(user => {
-      const effectiveDisplayName = user.displayName || user.email || `User ${user.id.substring(0, 5)}`;
-      return effectiveDisplayName &&
-        effectiveDisplayName.toLowerCase() !== 'anonymous' &&
-        effectiveDisplayName !== 'Unknown User';
-    });
+  // Optimized filtering with useMemo and early returns
+  const filteredUsers = useMemo(() => {
+    // Early return if no users
+    if (usersWithParsedSkills.length === 0) return [];
 
-    // Apply search term filter
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
+    let result = [...usersWithParsedSkills];
+
+    // Apply filters in order of selectivity (most selective first)
+    
+    // 1. Reputation score filter (most selective)
+    if (minReputationScore !== null) {
+      result = result.filter(user =>
+        user.reputationScore !== undefined && user.reputationScore >= minReputationScore
+      );
+      // Early return if no users left
+      if (result.length === 0) return [];
+    }
+
+    // 2. Has skills filter (very selective)
+    if (hasSkills !== null) {
+      result = result.filter(user => {
+        if (hasSkills) {
+          return user.parsedSkills.length > 0;
+        } else {
+          return user.parsedSkills.length === 0;
+        }
+      });
+      // Early return if no users left
+      if (result.length === 0) return [];
+    }
+
+    // 3. Location filter (selective)
+    if (selectedLocation) {
+      const locationTerm = selectedLocation.toLowerCase();
+      result = result.filter(user =>
+        user.location && user.location.toLowerCase().includes(locationTerm)
+      );
+      // Early return if no users left
+      if (result.length === 0) return [];
+    }
+
+    // 4. Skill filter (moderately selective)
+    if (selectedSkill) {
+      const skillTerm = selectedSkill.toLowerCase();
+      result = result.filter(user =>
+        user.parsedSkills.some((skill: { name: string; level?: string }) => 
+          skill.name.toLowerCase().includes(skillTerm)
+        )
+      );
+      // Early return if no users left
+      if (result.length === 0) return [];
+    }
+
+    // 5. Search term filter (least selective, most expensive)
+    if (debouncedSearchTerm) {
+      const term = debouncedSearchTerm.toLowerCase();
       result = result.filter(user => {
         const effectiveDisplayName = user.displayName || user.email || `User ${user.id.substring(0, 5)}`;
         return (effectiveDisplayName && effectiveDisplayName.toLowerCase().includes(term)) ||
@@ -233,19 +325,13 @@ export const UserDirectoryPage: React.FC = () => {
       });
     }
 
-    // Apply skill filter
-    if (selectedSkill) {
-      result = result.filter(user =>
-        user.skills && parseSkills(user.skills).some((skill: { name: string; level?: string }) => skill.name.toLowerCase().includes(selectedSkill.toLowerCase()))
-      );
-    }
-
-    // Apply location filter
-    if (selectedLocation) {
-      result = result.filter(user =>
-        user.location && user.location.toLowerCase().includes(selectedLocation.toLowerCase())
-      );
-    }
+    // 6. Anonymous user filter (always last)
+    result = result.filter(user => {
+      const effectiveDisplayName = user.displayName || user.email || `User ${user.id.substring(0, 5)}`;
+      return effectiveDisplayName &&
+        effectiveDisplayName.toLowerCase() !== 'anonymous' &&
+        effectiveDisplayName !== 'Unknown User';
+    });
 
     // Apply relation filter if present (client-side placeholder for now)
     if (relationFilter && relationUserId) {
@@ -253,24 +339,38 @@ export const UserDirectoryPage: React.FC = () => {
       // For now, we keep the full list to avoid misleading filters without data
     }
 
-    setFilteredUsers(result);
-  }, [users, searchTerm, selectedSkill, selectedLocation, parseSkills, relationFilter, relationUserId]);
+    return result;
+  }, [usersWithParsedSkills, debouncedSearchTerm, selectedSkill, selectedLocation, minReputationScore, hasSkills, relationFilter, relationUserId]);
 
+  // Check if any filters are active
+  const hasActiveFilters = useMemo(() => {
+    return searchTerm !== '' || selectedSkill !== '' || selectedLocation !== '' || minReputationScore !== null || hasSkills !== null;
+  }, [searchTerm, selectedSkill, selectedLocation, minReputationScore, hasSkills]);
+
+  // Sync search and filters to URL on change
   useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
+    const params = new URLSearchParams();
+    if (searchTerm) params.set('q', searchTerm);
+    if (selectedSkill) params.set('skill', selectedSkill);
+    if (selectedLocation) params.set('location', selectedLocation);
+    if (minReputationScore !== null) params.set('reputation', minReputationScore.toString());
+    if (hasSkills !== null) params.set('hasSkills', hasSkills.toString());
+    
+    // Preserve relation filter params if they exist
+    if (relationFilter && relationUserId) {
+      params.set('relation', relationFilter);
+      params.set('user', relationUserId);
+    }
+    
+    const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+    window.history.replaceState({}, '', newUrl);
+  }, [searchTerm, selectedSkill, selectedLocation, minReputationScore, hasSkills, relationFilter, relationUserId]);
 
-  const resetFilters = () => {
-    setSearchTerm('');
-    setSelectedSkill('');
-    setSelectedLocation('');
-  };
 
   // Pagination logic
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
-  console.log('[UserDirectoryPage] currentUsers being mapped:', JSON.stringify(currentUsers.map(u => ({ id: u.id, uid: u.uid, displayName: u.displayName }))));
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
@@ -296,75 +396,46 @@ export const UserDirectoryPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="mt-4 md:mt-0">
-          <Button
-            variant="outline"
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <Filter className="mr-2 h-4 w-4" />
-            {showFilters ? 'Hide' : 'Show'} Filters
-          </Button>
-        </div>
       </div>
 
-      {showFilters && (
-        <div className="glassmorphic rounded-xl p-4 md:p-6 mb-6 transition">
-          <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
-            <div className="flex-1">
-              <label htmlFor="search" className="block text-sm font-medium text-foreground mb-1">
-                Search
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <Input
-                  id="search"
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                  placeholder="Search by name, skills, or interests..."
-                />
-              </div>
-            </div>
-
-            <div className="flex-1">
-              <label htmlFor="skill-filter" className="block text-sm font-medium text-foreground mb-1">Filter by Skill</label>
-              <Select value={selectedSkill} onValueChange={setSelectedSkill}>
-                <SelectTrigger id="skill-filter">
-                  <SelectValue placeholder="All Skills" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Skills</SelectItem>
-                  {availableSkills.map(skill => (
-                    <SelectItem key={skill} value={skill}>{skill}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex-1">
-              <label htmlFor="location-filter" className="block text-sm font-medium text-foreground mb-1">Filter by Location</label>
-              <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                <SelectTrigger id="location-filter">
-                  <SelectValue placeholder="All Locations" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Locations</SelectItem>
-                  {availableLocations.map(location => (
-                    <SelectItem key={location} value={location}>{location}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="mt-6 flex justify-end">
-            <Button variant="ghost" onClick={resetFilters} className="text-sm">
-              Reset Filters
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* Enhanced Search Section */}
+      <div className="mb-8">
+        <EnhancedSearchBar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onSearch={(term) => setSearchTerm(term)}
+          onToggleFilters={() => setShowFilterPanel(true)}
+          hasActiveFilters={hasActiveFilters}
+          resultsCount={filteredUsers.length}
+          isLoading={loading}
+          placeholder="Search users by name, skills, or interests..."
+        />
+        
+        <EnhancedFilterPanel
+          isOpen={showFilterPanel}
+          onClose={() => setShowFilterPanel(false)}
+          filters={{
+            skill: selectedSkill,
+            location: selectedLocation,
+            reputation: minReputationScore,
+            hasSkills: hasSkills
+          }}
+          onFiltersChange={(filters: any) => {
+            setSelectedSkill(filters.skill || '');
+            setSelectedLocation(filters.location || '');
+            setMinReputationScore(filters.reputation || null);
+            setHasSkills(filters.hasSkills || null);
+          }}
+          onClearFilters={() => {
+            setSelectedSkill('');
+            setSelectedLocation('');
+            setMinReputationScore(null);
+            setHasSkills(null);
+          }}
+          availableSkills={availableSkills}
+          persistenceKey="user-directory-filters"
+        />
+      </div>
 
       {loading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

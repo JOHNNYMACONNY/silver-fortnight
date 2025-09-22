@@ -58,7 +58,7 @@ jest.mock("../../services/collaboration", () => ({
   updateCollaborationStatus: jest.fn(),
 }));
 
-jest.mock("../../services/trades", () => ({
+jest.mock("../../services/entities/TradeService", () => ({
   getTrades: jest.fn(),
   createTrade: jest.fn(),
   updateTradeStatus: jest.fn(),

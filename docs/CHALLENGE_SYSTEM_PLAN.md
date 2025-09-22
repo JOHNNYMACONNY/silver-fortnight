@@ -898,11 +898,16 @@ updateUserChallengeStreak(userId: string, challengeCompletedDate: any): Promise<
 ```typescript
 // Add to portfolio service
 
-// Add challenge submission to portfolio
-addChallengeToPortfolio(userId: string, submissionId: string, challengeId: string): Promise<{ success: boolean; error: string | null }>
+// Generate portfolio item from completed challenge (IMPLEMENTED)
+generateChallengePortfolioItem(
+  challenge: Challenge,
+  userChallenge: UserChallenge,
+  userId: string,
+  defaultVisibility: boolean
+): Promise<{ success: boolean; error: string | null }>
 
-// Get portfolio items from challenges
-getChallengePortfolioItems(userId: string): Promise<{ items: PortfolioItem[]; error: string | null }>
+// Get portfolio items from challenges (via existing getUserPortfolioItems with type filter)
+getUserPortfolioItems(userId: string, { type: 'challenge' }): Promise<PortfolioItem[]>
 ```
 
 ### Evidence System Integration

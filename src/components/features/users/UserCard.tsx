@@ -1,12 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User } from '../../../services/firestore-exports';
+import { User } from '../../../services/entities/UserService';
 import { Card, CardHeader, CardContent, CardTitle } from '../../ui/Card';
 import ProfileAvatarButton from '../../ui/ProfileAvatarButton';
 import { ReputationBadge } from '../../ui/ReputationBadge';
 import SkillBadge from '../../ui/SkillBadge';
 import ConnectionButton from '../connections/ConnectionButton';
-import { MapPin } from 'lucide-react';
+import { MapPin, Check, Globe } from 'lucide-react';
 import { Badge } from '../../ui/Badge';
 import { cn } from '../../../utils/cn';
 
@@ -80,10 +80,22 @@ const UserCard: React.FC<UserCardProps> = ({
                 className="flex-shrink-0"
               />
               
-              {/* User Name (truncated) */}
-              <CardTitle className="truncate text-base font-semibold">
-                {effectiveDisplayName}
-              </CardTitle>
+              {/* User Name and Handle */}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="truncate text-base font-semibold">
+                    {effectiveDisplayName}
+                  </CardTitle>
+                  {user.verified && (
+                    <Check className="w-4 h-4 text-success-600 dark:text-success-400 flex-shrink-0" />
+                  )}
+                </div>
+                {user.handle && !user.handlePrivate && (
+                  <p className="text-sm text-muted-foreground truncate">
+                    @{user.handle}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Reputation Badge in status position */}
@@ -97,6 +109,13 @@ const UserCard: React.FC<UserCardProps> = ({
 
         {/* Content Section */}
         <CardContent className="flex-1 overflow-hidden px-4 pb-4">
+          {/* Tagline section */}
+          {user.tagline && (
+            <p className="text-sm text-primary font-medium line-clamp-1 mb-2">
+              {user.tagline}
+            </p>
+          )}
+
           {/* Bio section */}
           {user.bio && (
             <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
@@ -104,13 +123,29 @@ const UserCard: React.FC<UserCardProps> = ({
             </p>
           )}
 
-          {/* Location section */}
-          {user.location && (
-            <div className="flex items-center text-sm text-muted-foreground mb-4">
-              <MapPin className="mr-1.5 h-4 w-4 text-muted-foreground" />
-              <span className="truncate">{user.location}</span>
-            </div>
-          )}
+          {/* Location and Website section */}
+          <div className="space-y-2 mb-4">
+            {user.location && (
+              <div className="flex items-center text-sm text-muted-foreground">
+                <MapPin className="mr-1.5 h-4 w-4 text-muted-foreground" />
+                <span className="truncate">{user.location}</span>
+              </div>
+            )}
+            {user.website && (
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Globe className="mr-1.5 h-4 w-4 text-muted-foreground" />
+                <a
+                  href={user.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="truncate hover:text-primary transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {user.website.replace(/^https?:\/\//, '')}
+                </a>
+              </div>
+            )}
+          </div>
 
           {/* Skills section - styled to match ChallengeCard category pills (outlined, rounded, small) */}
           {user.skills && (

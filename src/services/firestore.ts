@@ -1786,20 +1786,26 @@ export const searchTrades = async (
     let searchQuery: Query<Trade> = query(tradesCollection, where('title', '>=', searchTerm), where('title', '<=', searchTerm + '\uf8ff'));
 
     // Apply filters...
+    const constraints: QueryConstraint[] = [];
+    
+    // Default to open trades if no status filter is provided
+    if (filters?.status) {
+      constraints.push(where('status', '==', filters.status));
+    } else {
+      constraints.push(where('status', '==', 'open'));
+    }
+    
     if (filters) {
-      const constraints: QueryConstraint[] = [];
       if (filters.category) {
         constraints.push(where('category', '==', filters.category));
-      }
-      if (filters.status) {
-        constraints.push(where('status', '==', filters.status));
       }
       if (filters.skills && filters.skills.length > 0) {
         const normalized = filters.skills.map(s => s.toLowerCase());
         constraints.push(where('skillsIndex', 'array-contains-any', normalized.slice(0, 10)));
       }
-      searchQuery = query(searchQuery, ...constraints);
     }
+    
+    searchQuery = query(searchQuery, ...constraints);
 
     const totalCountQuery = searchQuery;
 

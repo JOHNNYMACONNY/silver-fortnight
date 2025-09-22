@@ -507,6 +507,25 @@ describe('Collaboration Roles Service Integration Tests', () => {
       expect(result.error).toContain('permission');
     });
 
+    it('should handle application data access permissions correctly', async () => {
+      // Mock Firestore security rules behavior
+      const mockGetDocs = jest.fn();
+      (db.collection as jest.Mock).mockReturnValue({
+        withConverter: jest.fn().mockReturnValue({
+          getDocs: mockGetDocs
+        })
+      });
+
+      // Simulate permission denied for non-creator
+      mockGetDocs.mockRejectedValue(new Error('Missing or insufficient permissions'));
+
+      // Test that the service handles permission errors gracefully
+      const result = await getRoleApplications(mockCollaborationId, 'test-role-id');
+      
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Failed to get applications');
+    });
+
     it('should handle database transaction failures', async () => {
       // Mock transaction failure
       (db.runTransaction as jest.Mock).mockRejectedValue(

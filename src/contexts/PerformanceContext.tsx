@@ -10,6 +10,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { RUMService, initializeRUM, getRUMService, RUMConfig, RUMMetrics, SessionInfo } from '../services/performance/rumService';
 import { CriticalPathAnalyzer, CriticalPathAnalysis, CriticalPathConfig, analyzeCriticalPath } from '../utils/performance/criticalPathAnalyzer';
 import { PerformanceMetrics, getBasicPerformanceMetrics } from '../utils/performanceMetrics';
+import { analyticsService } from '../services/analytics/AnalyticsService';
 
 /**
  * Performance monitoring configuration
@@ -244,6 +245,13 @@ export const PerformanceProvider: React.FC<PerformanceProviderProps> = ({
 
       // Send to RUM service
       rumService.collectMetrics(pageId, combinedMetrics, userId);
+
+      // Track performance metrics in analytics
+      analyticsService.trackPerformance('page_performance', {
+        pageId,
+        metrics: combinedMetrics,
+        timestamp: new Date().toISOString()
+      });
 
       // Update session info
       const session = rumService.getSessionInfo();

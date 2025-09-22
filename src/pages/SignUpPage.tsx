@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { Input } from '../components/ui/Input';
+import { GlassmorphicInput } from '../components/ui/GlassmorphicInput';
+import { AccessibleFormField } from '../components/ui/AccessibleFormField';
 import { motion } from 'framer-motion';
 import { Card } from '../components/ui/Card';
 import { MailIcon, LockIcon, CheckIcon } from 'lucide-react';
@@ -9,7 +10,7 @@ import Logo from '../components/ui/Logo';
 import { Button } from '../components/ui/Button';
 
 export const SignUpPage: React.FC = () => {
-  const { signInWithGoogle, error, loading, currentUser } = useAuth();
+  const { signUpWithEmail, signInWithGoogle, error, loading, currentUser } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -109,9 +110,13 @@ export const SignUpPage: React.FC = () => {
       return;
     }
 
-    // For now, we'll use the signInWithEmail method since signUpWithEmail doesn't exist
-    // This would need to be implemented in AuthContext for proper signup
-    setFormError("Sign up functionality needs to be implemented in AuthContext");
+    try {
+      setFormError(null);
+      await signUpWithEmail(email, password);
+      setRegistrationSuccess(true);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Sign up failed. Please try again.');
+    }
   };
 
   return (
@@ -147,41 +152,87 @@ export const SignUpPage: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="space-y-6"
         >
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={handleEmailChange}
-            required
-            placeholder="Enter your email"
-          />
+          <AccessibleFormField 
+            id="email" 
+            label="Email" 
+            error={emailValid === false ? 'Please enter a valid email address' : undefined}
+          >
+            <GlassmorphicInput
+              id="email"
+              type="email"
+              value={email}
+              onChange={handleEmailChange}
+              required
+              placeholder="Enter your email"
+              icon={<MailIcon className="h-5 w-5" />}
+              error={emailValid === false ? 'Please enter a valid email address' : undefined}
+              success={emailValid === true ? 'Valid email address' : undefined}
+              animatedLabel={true}
+              realTimeValidation={true}
+              onValidationChange={(isValid) => setEmailValid(isValid)}
+            />
+          </AccessibleFormField>
 
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={handlePasswordChange}
-            required
-            placeholder="Enter your password"
-          />
+          <AccessibleFormField 
+            id="password" 
+            label="Password" 
+            error={passwordValid === false ? 'Password must be at least 8 characters' : undefined}
+          >
+            <GlassmorphicInput
+              id="password"
+              type="password"
+              value={password}
+              onChange={handlePasswordChange}
+              required
+              placeholder="Enter your password"
+              icon={<LockIcon className="h-5 w-5" />}
+              error={passwordValid === false ? 'Password must be at least 8 characters' : undefined}
+              success={passwordValid === true ? 'Strong password' : undefined}
+              animatedLabel={true}
+              realTimeValidation={true}
+              onValidationChange={(isValid) => setPasswordValid(isValid)}
+              showPasswordToggle={true}
+              onPasswordToggle={() => {}}
+            />
+          </AccessibleFormField>
 
-          <Input
-            id="confirmPassword"
-            type="password"
-            value={confirmPassword}
-            onChange={handleConfirmPasswordChange}
-            required
-            placeholder="Confirm your password"
-          />
+          <AccessibleFormField 
+            id="confirmPassword" 
+            label="Confirm Password" 
+            error={passwordsMatch === false ? 'Passwords do not match' : undefined}
+          >
+            <GlassmorphicInput
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={handleConfirmPasswordChange}
+              required
+              placeholder="Confirm your password"
+              icon={<LockIcon className="h-5 w-5" />}
+              error={passwordsMatch === false ? 'Passwords do not match' : undefined}
+              success={passwordsMatch === true ? 'Passwords match' : undefined}
+              animatedLabel={true}
+              realTimeValidation={true}
+              onValidationChange={(isValid) => setPasswordsMatch(isValid)}
+              showPasswordToggle={true}
+              onPasswordToggle={() => {}}
+            />
+          </AccessibleFormField>
 
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <motion.div 
+            whileHover={{ scale: 1.02 }} 
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.4 }}
+          >
             <Button
               type="submit"
               className="w-full"
-              disabled={loading}
+              disabled={loading || !emailValid || !passwordValid || !passwordsMatch}
               isLoading={loading}
             >
-              Sign Up
+              {loading ? 'Creating Account...' : 'Sign Up'}
             </Button>
           </motion.div>
         </motion.form>

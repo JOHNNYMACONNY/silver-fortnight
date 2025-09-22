@@ -1,6 +1,16 @@
 import { render, screen } from '@testing-library/react';
 import { TradeSkillDisplay } from '../TradeSkillDisplay';
 
+// Mock framer-motion to avoid animation issues in tests
+jest.mock('framer-motion', () => ({
+  motion: {
+    span: ({ children, ...props }: any) => {
+      const React = require('react');
+      return React.createElement('span', props, children);
+    }
+  }
+}));
+
 describe('TradeSkillDisplay', () => {
   const mockSkill = {
     name: 'React',
@@ -28,5 +38,27 @@ describe('TradeSkillDisplay', () => {
     
     rerender(<TradeSkillDisplay skill={intermediate} />);
     expect(screen.getByText('(intermediate)')).toBeInTheDocument();
+  });
+
+  it('renders with different variants', () => {
+    const { rerender } = render(<TradeSkillDisplay skill={mockSkill} variant="offered" />);
+    expect(screen.getByText('React')).toBeInTheDocument();
+    
+    rerender(<TradeSkillDisplay skill={mockSkill} variant="requested" />);
+    expect(screen.getByText('React')).toBeInTheDocument();
+  });
+
+  it('renders with different sizes', () => {
+    const { rerender } = render(<TradeSkillDisplay skill={mockSkill} size="sm" />);
+    expect(screen.getByText('React')).toBeInTheDocument();
+    
+    rerender(<TradeSkillDisplay skill={mockSkill} size="lg" />);
+    expect(screen.getByText('React')).toBeInTheDocument();
+  });
+
+  it('hides level when showLevel is false', () => {
+    render(<TradeSkillDisplay skill={mockSkill} showLevel={false} />);
+    expect(screen.getByText('React')).toBeInTheDocument();
+    expect(screen.queryByText('(expert)')).not.toBeInTheDocument();
   });
 });

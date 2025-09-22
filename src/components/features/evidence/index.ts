@@ -7,4 +7,3 @@
 export * from './EvidenceSubmitter';
 export * from './EvidenceDisplay';
 export * from './EvidenceGallery';
-export * from './EvidenceDemo';

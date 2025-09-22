@@ -13,7 +13,7 @@ export interface PortfolioItem {
   id: string;
   userId: string;
   sourceId: string;
-  sourceType: 'trade' | 'collaboration';
+  sourceType: 'trade' | 'collaboration' | 'manual' | 'challenge';
   title: string;
   description: string;
   skills: string[];
@@ -24,6 +24,7 @@ export interface PortfolioItem {
   pinned: boolean;
   category?: string;
   customOrder?: number;
+  rating?: number;
   evidence?: EmbeddedEvidence[];
   collaborators?: {
     id: string;

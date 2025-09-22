@@ -1,86 +1,139 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { User, Star, Calendar, Award, ExternalLink, Github, Globe } from 'lucide-react';
+import { User, Star, Calendar, Award, ExternalLink, Github, Globe, Loader2, AlertCircle, RefreshCw, Settings } from 'lucide-react';
+import { usePortfolioData } from '../hooks/usePortfolioData';
+import { PortfolioItem } from '../types/portfolio';
+import { PortfolioItemComponent } from '../components/features/portfolio/PortfolioItem';
+import { PortfolioCreationModal } from '../components/features/portfolio/PortfolioCreationModal';
+import { StandardPageHeader } from '../components/layout/StandardPageHeader';
+
 
 const PortfolioPage: React.FC = () => {
   const { currentUser } = useAuth();
-
-  // Mock portfolio data - in a real app, this would come from the user's profile
-  const portfolioItems = [
-    {
-      id: 1,
-      title: "Web Development Portfolio",
-      description: "Modern React applications with TypeScript and Tailwind CSS",
-      skills: ["React", "TypeScript", "Tailwind CSS", "Node.js"],
-      completedDate: "2024-01-15",
-      rating: 4.8,
-      link: "https://github.com/user/portfolio",
-      type: "project"
-    },
-    {
-      id: 2,
-      title: "Logo Design for Local Business",
-      description: "Complete brand identity design including logo, color scheme, and marketing materials",
-      skills: ["Adobe Illustrator", "Figma", "Brand Design"],
-      completedDate: "2024-02-20",
-      rating: 5.0,
-      link: "https://behance.net/user/project",
-      type: "design"
-    },
-    {
-      id: 3,
-      title: "Mobile App UI/UX Design",
-      description: "User interface design for iOS and Android fitness tracking app",
-      skills: ["UI/UX Design", "Figma", "Mobile Design", "User Research"],
-      completedDate: "2024-03-10",
-      rating: 4.9,
-      link: "https://figma.com/user/project",
-      type: "design"
-    }
-  ];
-
-  const stats = {
-    totalProjects: 15,
-    averageRating: 4.7,
-    skillsCount: 12,
-    completedTrades: 8
-  };
+  const [isManaging, setIsManaging] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  
+  // Use real portfolio data instead of hardcoded values
+  const {
+    portfolioItems,
+    portfolioItemsLoading,
+    portfolioItemsError,
+    stats,
+    statsLoading,
+    statsError,
+    refreshAll
+  } = usePortfolioData(currentUser?.uid || '', {
+    includePrivate: true, // Show all items for own portfolio
+    timeRange: 'all',
+    autoRefresh: false
+  });
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-foreground">
-          {currentUser ? `${currentUser.displayName}'s Portfolio` : 'Portfolio'}
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Showcase your best work and skills to attract potential trading partners
-        </p>
-      </div>
+      <StandardPageHeader
+        title={currentUser ? `${currentUser.displayName}'s Portfolio` : 'Portfolio'}
+        description="Showcase your best work and skills to attract potential trading partners"
+        variant="centered"
+        size="lg"
+        isLoading={portfolioItemsLoading}
+        loadingMessage="Loading portfolio..."
+        actions={
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsManaging(!isManaging)}
+              className="flex items-center gap-2"
+            >
+              <Settings className="w-4 h-4" />
+              {isManaging ? 'Done Managing' : 'Manage Portfolio'}
+            </Button>
+            <Button 
+              variant="primary" 
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-2"
+            >
+              <Award className="w-4 h-4" />
+              Add Project
+            </Button>
+          </div>
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="p-6 text-center">
-          <div className="text-2xl font-bold text-primary">{stats.totalProjects}</div>
-          <div className="text-sm text-muted-foreground">Total Projects</div>
+        <Card variant="glass" className="p-6 text-center">
+          {statsLoading ? (
+            <div className="flex items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : statsError ? (
+            <div className="flex items-center justify-center text-muted-foreground">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              <span className="text-sm">Error</span>
+            </div>
+          ) : (
+            <>
+              <div className="text-2xl font-bold text-primary">{stats.totalProjects}</div>
+              <div className="text-sm text-muted-foreground">Total Projects</div>
+            </>
+          )}
         </Card>
-        <Card className="p-6 text-center">
-          <div className="flex items-center justify-center text-2xl font-bold text-primary">
-            {stats.averageRating}
-            <Star className="h-5 w-5 ml-1 fill-current" />
-          </div>
-          <div className="text-sm text-muted-foreground">Average Rating</div>
+        <Card variant="glass" className="p-6 text-center">
+          {statsLoading ? (
+            <div className="flex items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : statsError ? (
+            <div className="flex items-center justify-center text-muted-foreground">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              <span className="text-sm">Error</span>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-center text-2xl font-bold text-primary">
+                {stats.averageRating > 0 ? stats.averageRating : 'N/A'}
+                {stats.averageRating > 0 && <Star className="h-5 w-5 ml-1 fill-current" />}
+              </div>
+              <div className="text-sm text-muted-foreground">Average Rating</div>
+            </>
+          )}
         </Card>
-        <Card className="p-6 text-center">
-          <div className="text-2xl font-bold text-primary">{stats.skillsCount}</div>
-          <div className="text-sm text-muted-foreground">Skills</div>
+        <Card variant="glass" className="p-6 text-center">
+          {statsLoading ? (
+            <div className="flex items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : statsError ? (
+            <div className="flex items-center justify-center text-muted-foreground">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              <span className="text-sm">Error</span>
+            </div>
+          ) : (
+            <>
+              <div className="text-2xl font-bold text-primary">{stats.skillsCount}</div>
+              <div className="text-sm text-muted-foreground">Skills</div>
+            </>
+          )}
         </Card>
-        <Card className="p-6 text-center">
-          <div className="text-2xl font-bold text-primary">{stats.completedTrades}</div>
-          <div className="text-sm text-muted-foreground">Completed Trades</div>
+        <Card variant="glass" className="p-6 text-center">
+          {statsLoading ? (
+            <div className="flex items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : statsError ? (
+            <div className="flex items-center justify-center text-muted-foreground">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              <span className="text-sm">Error</span>
+            </div>
+          ) : (
+            <>
+              <div className="text-2xl font-bold text-primary">{stats.completedTrades}</div>
+              <div className="text-sm text-muted-foreground">Completed Trades</div>
+            </>
+          )}
         </Card>
       </div>
 
@@ -88,60 +141,87 @@ const PortfolioPage: React.FC = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold text-foreground">Portfolio Items</h2>
-          <Button>
-            <Award className="h-4 w-4 mr-2" />
-            Add Project
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={isManaging ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsManaging(!isManaging)}
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              {isManaging ? 'Exit Management' : 'Manage Portfolio'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refreshAll}
+              disabled={portfolioItemsLoading || statsLoading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${(portfolioItemsLoading || statsLoading) ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button onClick={() => setShowCreateModal(true)}>
+              <Award className="h-4 w-4 mr-2" />
+              Add Project
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {portfolioItems.map((item) => (
-            <Card key={item.id} className="p-6 hover:shadow-lg transition-shadow">
-              <div className="space-y-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
-                  </div>
-                  <Badge variant="secondary" className="capitalize">
-                    {item.type}
-                  </Badge>
-                </div>
+        {/* Error State */}
+        {portfolioItemsError && (
+          <Card variant="glass" className="p-6 border-destructive/20 bg-destructive/5">
+            <div className="flex items-center text-destructive">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              <span className="font-medium">Error loading portfolio items</span>
+            </div>
+            <p className="text-sm text-destructive/80 mt-1">{portfolioItemsError}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              onClick={refreshAll}
+            >
+              Try Again
+            </Button>
+          </Card>
+        )}
 
-                <div className="flex flex-wrap gap-2">
-                  {item.skills.map((skill) => (
-                    <Badge key={skill} variant="outline" className="text-xs">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    {new Date(item.completedDate).toLocaleDateString()}
+        {/* Loading State */}
+        {portfolioItemsLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} variant="glass" className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   </div>
-                  <div className="flex items-center">
-                    <Star className="h-4 w-4 mr-1 fill-current text-yellow-400" />
-                    {item.rating}
+                  <div className="text-center text-sm text-muted-foreground">
+                    Loading portfolio items...
                   </div>
                 </div>
+              </Card>
+            ))}
+          </div>
+        )}
 
-                <Button variant="outline" className="w-full" asChild>
-                  <a href={item.link} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    View Project
-                  </a>
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
+        {/* Portfolio Items Grid */}
+        {!portfolioItemsLoading && !portfolioItemsError && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {portfolioItems.map((item) => (
+              <PortfolioItemComponent
+                key={item.id}
+                item={item}
+                isOwnProfile={true}
+                isManaging={isManaging}
+                onChange={refreshAll}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Empty State for New Users */}
-      {portfolioItems.length === 0 && (
-        <Card className="p-12 text-center">
+      {!portfolioItemsLoading && !portfolioItemsError && portfolioItems.length === 0 && (
+        <Card variant="glass" className="p-12 text-center">
           <User className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-xl font-semibold text-foreground mb-2">
             Build Your Portfolio
@@ -149,7 +229,7 @@ const PortfolioPage: React.FC = () => {
           <p className="text-muted-foreground mb-6 max-w-md mx-auto">
             Start showcasing your work to attract better trades and collaboration opportunities
           </p>
-          <Button>
+          <Button onClick={() => setShowCreateModal(true)}>
             <Award className="h-4 w-4 mr-2" />
             Add Your First Project
           </Button>
@@ -157,7 +237,7 @@ const PortfolioPage: React.FC = () => {
       )}
 
       {/* Call to Action */}
-      <Card className="p-8 text-center bg-gradient-to-r from-primary/10 to-secondary/10">
+      <Card variant="glass" className="p-8 text-center bg-gradient-to-r from-primary/10 to-secondary/10">
         <h3 className="text-xl font-semibold text-foreground mb-2">
           Ready to Start Trading?
         </h3>
@@ -173,6 +253,14 @@ const PortfolioPage: React.FC = () => {
           </Button>
         </div>
       </Card>
+
+      {/* Portfolio Creation Modal */}
+      <PortfolioCreationModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={refreshAll}
+        userId={currentUser?.uid || ''}
+      />
     </div>
   );
 };
