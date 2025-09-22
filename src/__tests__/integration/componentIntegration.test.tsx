@@ -2,119 +2,154 @@
  * @jest-environment jsdom
  */
 
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
+import React from "react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { BrowserRouter } from "react-router-dom";
 
 // Mock framer-motion
-jest.mock('framer-motion', () => {
-  const React = require('react');
+jest.mock("framer-motion", () => {
+  const React = require("react");
+  type MotionProps = { children?: React.ReactNode } & Record<string, unknown>;
   return {
     motion: {
-      div: ({ children, ...props }: any) => React.createElement('div', props, children),
-      form: ({ children, ...props }: any) => React.createElement('form', props, children),
-      section: ({ children, ...props }: any) => React.createElement('section', props, children),
+      div: ({ children, ...props }: MotionProps) =>
+        React.createElement(
+          "div",
+          props as Record<string, unknown>,
+          children as React.ReactNode
+        ),
+      form: ({ children, ...props }: MotionProps) =>
+        React.createElement(
+          "form",
+          props as Record<string, unknown>,
+          children as React.ReactNode
+        ),
+      section: ({ children, ...props }: MotionProps) =>
+        React.createElement(
+          "section",
+          props as Record<string, unknown>,
+          children as React.ReactNode
+        ),
     },
-    AnimatePresence: ({ children }: any) => children,
+    AnimatePresence: ({ children }: { children?: React.ReactNode }) =>
+      children as React.ReactNode,
   };
 });
 
 // Mock Firebase
-jest.mock('../../firebase-config', () => ({
+jest.mock("../../firebase-config", () => ({
   db: {},
   auth: {
-    currentUser: { uid: 'test-user-id', email: 'test@example.com' }
-  }
+    currentUser: { uid: "test-user-id", email: "test@example.com" },
+  },
 }));
 
 // Mock services
-jest.mock('../../services/challenges', () => ({
+jest.mock("../../services/challenges", () => ({
   createChallenge: jest.fn(),
   getThreeTierProgression: jest.fn(),
   updateChallengeProgress: jest.fn(),
 }));
 
-jest.mock('../../services/collaboration', () => ({
+jest.mock("../../services/collaboration", () => ({
   getCollaborations: jest.fn(),
   createCollaboration: jest.fn(),
   updateCollaborationStatus: jest.fn(),
 }));
 
-jest.mock('../../services/trades', () => ({
+jest.mock("../../services/trades", () => ({
   getTrades: jest.fn(),
   createTrade: jest.fn(),
   updateTradeStatus: jest.fn(),
 }));
 
 // Mock AuthContext
-jest.mock('../../AuthContext', () => ({
+jest.mock("../../AuthContext", () => ({
   useAuth: jest.fn(),
-  AuthProvider: ({ children }: any) => children,
+  AuthProvider: ({ children }: Record<string, unknown>) => children,
 }));
 
 // Mock lucide-react icons
-jest.mock('lucide-react', () => {
-  const React = require('react');
+jest.mock("lucide-react", () => {
+  const React = require("react");
   return {
-    Zap: () => React.createElement('div', { 'data-testid': 'zap-icon' }),
-    TrendingUp: () => React.createElement('div', { 'data-testid': 'trending-up-icon' }),
-    Users: () => React.createElement('div', { 'data-testid': 'users-icon' }),
-    Calendar: () => React.createElement('div', { 'data-testid': 'calendar-icon' }),
-    Target: () => React.createElement('div', { 'data-testid': 'target-icon' }),
-    Award: () => React.createElement('div', { 'data-testid': 'award-icon' }),
-    Search: () => React.createElement('div', { 'data-testid': 'search-icon' }),
-    Filter: () => React.createElement('div', { 'data-testid': 'filter-icon' }),
-    Plus: () => React.createElement('div', { 'data-testid': 'plus-icon' }),
-    X: () => React.createElement('div', { 'data-testid': 'x-icon' }),
+    Zap: () => React.createElement("div", { "data-testid": "zap-icon" }),
+    TrendingUp: () =>
+      React.createElement("div", { "data-testid": "trending-up-icon" }),
+    Users: () => React.createElement("div", { "data-testid": "users-icon" }),
+    Calendar: () =>
+      React.createElement("div", { "data-testid": "calendar-icon" }),
+    Target: () => React.createElement("div", { "data-testid": "target-icon" }),
+    Award: () => React.createElement("div", { "data-testid": "award-icon" }),
+    Search: () => React.createElement("div", { "data-testid": "search-icon" }),
+    Filter: () => React.createElement("div", { "data-testid": "filter-icon" }),
+    Plus: () => React.createElement("div", { "data-testid": "plus-icon" }),
+    X: () => React.createElement("div", { "data-testid": "x-icon" }),
   };
 });
 
 // Import components after mocks
-import { ChallengeCreationForm } from '../../components/challenges/ChallengeCreationForm';
-import { ThreeTierProgressionUI } from '../../components/challenges/ThreeTierProgressionUI';
-import { SimplifiedCollaborationInterface } from '../../components/collaboration/SimplifiedCollaborationInterface';
-import { useAuth } from '../../AuthContext';
-import { createChallenge, getThreeTierProgression } from '../../services/challenges';
-import { getCollaborations } from '../../services/collaboration';
+import { ChallengeCreationForm } from "../../components/challenges/ChallengeCreationForm";
+import { ThreeTierProgressionUI } from "../../components/challenges/ThreeTierProgressionUI";
+import { SimplifiedCollaborationInterface } from "../../components/collaboration/SimplifiedCollaborationInterface";
+import { useAuth } from "../../AuthContext";
+import { createChallenge } from "../../services/challenges";
+import { getCollaborations } from "../../services/collaboration";
 
-const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-const mockCreateChallenge = createChallenge as jest.MockedFunction<typeof createChallenge>;
-const mockGetThreeTierProgression = getThreeTierProgression as jest.MockedFunction<typeof getThreeTierProgression>;
-const mockGetCollaborations = getCollaborations as jest.MockedFunction<typeof getCollaborations>;
+// Retrieve mocked-only export safely (avoids TS error if module isn't typed to export it)
+const mockChallenges = jest.requireMock("../../services/challenges") as Record<
+  string,
+  jest.Mock
+>;
+const getThreeTierProgressionFn = (mockChallenges.getThreeTierProgression ??
+  jest.fn()) as jest.MockedFunction<(...args: unknown[]) => Promise<unknown>>;
+
+const mockUseAuth = useAuth as unknown as jest.Mock;
+const mockCreateChallenge = createChallenge as jest.MockedFunction<
+  (...args: unknown[]) => Promise<unknown>
+>;
+const mockGetThreeTierProgression = getThreeTierProgressionFn;
+const mockGetCollaborations = getCollaborations as jest.MockedFunction<
+  (...args: unknown[]) => Promise<unknown>
+>;
 
 // Test wrapper component
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <BrowserRouter>
-    {children}
-  </BrowserRouter>
+  <BrowserRouter>{children}</BrowserRouter>
 );
 
-describe('Component Integration Tests', () => {
-  const mockUser = {
-    uid: 'test-user-id',
-    email: 'test@example.com',
-    displayName: 'Test User',
-  };
+describe("Component Integration Tests", () => {
+  const mockUser: unknown = {
+    uid: "test-user-id",
+    email: "test@example.com",
+    displayName: "Test User",
+  } as unknown;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     mockUseAuth.mockReturnValue({
       user: mockUser,
       loading: false,
       signOut: jest.fn(),
-    });
+      // minimal additional fields to match expected shape (can be expanded as needed)
+      currentUser: null,
+      userProfile: null,
+      error: null,
+      isAdmin: false,
+      // any other methods/properties tests might read
+    } as unknown as ReturnType<typeof useAuth>);
   });
 
-  describe('Challenge System Integration', () => {
-    it('should integrate challenge creation with progression tracking', async () => {
+  describe("Challenge System Integration", () => {
+    it("should integrate challenge creation with progression tracking", async () => {
       const user = userEvent.setup();
-      
+
       // Mock successful challenge creation
       mockCreateChallenge.mockResolvedValue({
         success: true,
-        data: { id: 'new-challenge-id' },
+        data: { id: "new-challenge-id" },
         error: null,
       });
 
@@ -122,7 +157,7 @@ describe('Component Integration Tests', () => {
       mockGetThreeTierProgression.mockResolvedValue({
         success: true,
         data: {
-          currentTier: 'solo',
+          currentTier: "solo",
           soloTier: { unlocked: true, completed: 2, total: 5 },
           tradeTier: { unlocked: false, completed: 0, total: 3 },
           collaborationTier: { unlocked: false, completed: 0, total: 2 },
@@ -145,19 +180,24 @@ describe('Component Integration Tests', () => {
       // Fill out challenge creation form
       const titleInput = screen.getByLabelText(/title/i);
       const descriptionInput = screen.getByLabelText(/description/i);
-      const submitButton = screen.getByRole('button', { name: /create challenge/i });
+      const submitButton = screen.getByRole("button", {
+        name: /create challenge/i,
+      });
 
-      await user.type(titleInput, 'Integration Test Challenge');
-      await user.type(descriptionInput, 'A challenge created during integration testing');
-      
+      await user.type(titleInput, "Integration Test Challenge");
+      await user.type(
+        descriptionInput,
+        "A challenge created during integration testing"
+      );
+
       // Submit the form
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockCreateChallenge).toHaveBeenCalledWith(
           expect.objectContaining({
-            title: 'Integration Test Challenge',
-            description: 'A challenge created during integration testing',
+            title: "Integration Test Challenge",
+            description: "A challenge created during integration testing",
           })
         );
       });
@@ -169,14 +209,14 @@ describe('Component Integration Tests', () => {
       });
     });
 
-    it('should handle challenge creation errors gracefully', async () => {
+    it("should handle challenge creation errors gracefully", async () => {
       const user = userEvent.setup();
-      
+
       // Mock failed challenge creation
       mockCreateChallenge.mockResolvedValue({
         success: false,
         data: null,
-        error: 'Failed to create challenge',
+        error: "Failed to create challenge",
       });
 
       const onSubmit = jest.fn();
@@ -188,9 +228,11 @@ describe('Component Integration Tests', () => {
       );
 
       const titleInput = screen.getByLabelText(/title/i);
-      const submitButton = screen.getByRole('button', { name: /create challenge/i });
+      const submitButton = screen.getByRole("button", {
+        name: /create challenge/i,
+      });
 
-      await user.type(titleInput, 'Test Challenge');
+      await user.type(titleInput, "Test Challenge");
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -201,33 +243,33 @@ describe('Component Integration Tests', () => {
     });
   });
 
-  describe('Collaboration System Integration', () => {
-    it('should integrate collaboration interface with data fetching', async () => {
+  describe("Collaboration System Integration", () => {
+    it("should integrate collaboration interface with data fetching", async () => {
       const user = userEvent.setup();
-      
+
       // Mock collaboration data
-      mockGetCollaborations.mockResolvedValue({
+      mockGetCollaborations.mockResolvedValueOnce({
         success: true,
         data: [
           {
-            id: 'collab-1',
-            title: 'Web Development Project',
-            description: 'Building a modern web application',
-            status: 'active',
-            participants: ['user-1', 'user-2'],
+            id: "collab-1",
+            title: "Web Development Project",
+            description: "Building a modern web application",
+            status: "active",
+            participants: ["user-1", "user-2"],
             createdAt: new Date(),
           },
           {
-            id: 'collab-2',
-            title: 'Design System Creation',
-            description: 'Creating a comprehensive design system',
-            status: 'pending',
-            participants: ['user-3'],
+            id: "collab-2",
+            title: "Design System Creation",
+            description: "Creating a comprehensive design system",
+            status: "pending",
+            participants: ["user-3"],
             createdAt: new Date(),
           },
         ],
         error: null,
-      });
+      } as unknown as unknown);
 
       render(
         <TestWrapper>
@@ -238,27 +280,29 @@ describe('Component Integration Tests', () => {
       // Wait for data to load
       await waitFor(() => {
         expect(mockGetCollaborations).toHaveBeenCalled();
-        expect(screen.getByText('Web Development Project')).toBeInTheDocument();
-        expect(screen.getByText('Design System Creation')).toBeInTheDocument();
+        expect(screen.getByText("Web Development Project")).toBeInTheDocument();
+        expect(screen.getByText("Design System Creation")).toBeInTheDocument();
       });
 
       // Test search functionality
       const searchInput = screen.getByPlaceholderText(/search/i);
-      await user.type(searchInput, 'Web Development');
+      await user.type(searchInput, "Web Development");
 
       await waitFor(() => {
-        expect(screen.getByText('Web Development Project')).toBeInTheDocument();
+        expect(screen.getByText("Web Development Project")).toBeInTheDocument();
         // Design System should be filtered out
-        expect(screen.queryByText('Design System Creation')).not.toBeInTheDocument();
+        expect(
+          screen.queryByText("Design System Creation")
+        ).not.toBeInTheDocument();
       });
     });
 
-    it('should handle collaboration data loading errors', async () => {
+    it("should handle collaboration data loading errors", async () => {
       // Mock failed data fetching
       mockGetCollaborations.mockResolvedValue({
         success: false,
         data: null,
-        error: 'Failed to load collaborations',
+        error: "Failed to load collaborations",
       });
 
       render(
@@ -275,14 +319,18 @@ describe('Component Integration Tests', () => {
     });
   });
 
-  describe('Cross-Component Communication', () => {
-    it('should handle authentication state changes across components', async () => {
+  describe("Cross-Component Communication", () => {
+    it("should handle authentication state changes across components", async () => {
       // Start with authenticated user
       mockUseAuth.mockReturnValue({
         user: mockUser,
         loading: false,
         signOut: jest.fn(),
-      });
+        currentUser: null,
+        userProfile: null,
+        error: null,
+        isAdmin: false,
+      } as unknown as ReturnType<typeof useAuth>);
 
       const { rerender } = render(
         <TestWrapper>
@@ -294,14 +342,20 @@ describe('Component Integration Tests', () => {
       );
 
       // Verify components render for authenticated user
-      expect(screen.getByRole('button', { name: /create challenge/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /create challenge/i })
+      ).toBeInTheDocument();
 
       // Simulate user logout
       mockUseAuth.mockReturnValue({
         user: null,
         loading: false,
         signOut: jest.fn(),
-      });
+        currentUser: null,
+        userProfile: null,
+        error: null,
+        isAdmin: false,
+      } as unknown as ReturnType<typeof useAuth>);
 
       rerender(
         <TestWrapper>
@@ -315,18 +369,22 @@ describe('Component Integration Tests', () => {
       // Components should handle unauthenticated state
       await waitFor(() => {
         // Should show authentication required state or redirect
-        expect(screen.queryByRole('button', { name: /create challenge/i })).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole("button", { name: /create challenge/i })
+        ).not.toBeInTheDocument();
       });
     });
   });
 
-  describe('Error Boundary Integration', () => {
-    it('should handle component errors gracefully', async () => {
+  describe("Error Boundary Integration", () => {
+    it("should handle component errors gracefully", async () => {
       // Mock component error
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      
+      const consoleSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       // Force an error in the challenge creation component
-      mockCreateChallenge.mockRejectedValue(new Error('Network error'));
+      mockCreateChallenge.mockRejectedValue(new Error("Network error"));
 
       const user = userEvent.setup();
 
@@ -337,9 +395,11 @@ describe('Component Integration Tests', () => {
       );
 
       const titleInput = screen.getByLabelText(/title/i);
-      const submitButton = screen.getByRole('button', { name: /create challenge/i });
+      const submitButton = screen.getByRole("button", {
+        name: /create challenge/i,
+      });
 
-      await user.type(titleInput, 'Test Challenge');
+      await user.type(titleInput, "Test Challenge");
       await user.click(submitButton);
 
       await waitFor(() => {

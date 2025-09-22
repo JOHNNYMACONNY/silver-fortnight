@@ -11,14 +11,17 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { GlassmorphicForm, GlassmorphicFormSection, GlassmorphicFormActions } from '../GlassmorphicForm';
 
-// Mock framer-motion to avoid animation issues in tests
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: 'div',
-    form: 'form',
-  },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
-}));
+// Mock framer-motion
+jest.mock('framer-motion', () => {
+  const React = require('react');
+  return {
+    motion: {
+      div: ({ children, ...props }: any) => React.createElement('div', props, children),
+      form: ({ children, ...props }: any) => React.createElement('form', props, children),
+    },
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => React.createElement(React.Fragment, null, children),
+  };
+});
 
 describe('GlassmorphicForm', () => {
   const defaultProps = {

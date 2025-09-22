@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+
 import { getSyncFirebaseDb } from '../firebase-config';
 import {
   doc,
@@ -130,12 +132,14 @@ export const updateUserStreak = async (
         });
       } catch (e) {
         // Log but do not fail the core update
+        // eslint-disable-next-line no-console
         console.warn('Failed to award streak milestone XP', e);
       }
     }
 
     return { success: true, data: { streak: result, hitMilestone: milestoneHit } };
   } catch (error: any) {
+    // eslint-disable-next-line no-console
     console.error('updateUserStreak failed', error);
     return { success: false, error: error?.message || 'Failed to update streak' };
   }
@@ -171,6 +175,7 @@ export const getUserStreak = async (userId: string, type: StreakType): Promise<S
     if (!snap.exists()) return { success: true, data: null };
     return { success: true, data: snap.data() as UserStreak };
   } catch (error: any) {
+    // eslint-disable-next-line no-console
     console.error('getUserStreak failed', error);
     return { success: false, error: error?.message || 'Failed to load streak' };
   }

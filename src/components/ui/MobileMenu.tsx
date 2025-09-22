@@ -7,15 +7,19 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './Sh
 import { Button } from './Button';
 import { Avatar } from './Avatar';
 import Logo from './Logo';
+import { ThemeToggle } from './ThemeToggle';
+import { isThemeToggleEnabled } from '../../utils/featureFlags';
 import { cn } from '../../utils/cn';
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  showThemeToggle?: boolean;
 }
 
-export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
+export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, showThemeToggle }) => {
   const { currentUser, logout, isAdmin } = useAuth();
+  const displayThemeToggle = showThemeToggle ?? isThemeToggleEnabled();
   const [query, setQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
@@ -71,8 +75,13 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           // Glassmorphic sticky header
           "bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md"
         )}>
-          <SheetTitle className="flex items-center">
+          <SheetTitle className="flex items-center justify-between">
             <Logo size="medium" showText={true} />
+            {displayThemeToggle && (
+              <div className="ml-2">
+                <ThemeToggle />
+              </div>
+            )}
           </SheetTitle>
           <div className="mt-3">
             {isSearchOpen ? (

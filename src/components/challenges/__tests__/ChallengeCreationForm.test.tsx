@@ -6,14 +6,24 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-// Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    form: ({ children, ...props }: any) => <form {...props}>{children}</form>,
-  },
-  AnimatePresence: ({ children }: any) => children,
-}));
+// Mock framer-motion with a hoist-safe factory that strips animation props
+jest.mock('framer-motion', () => {
+  const React = require('react');
+  const STRIP_KEYS = ['initial','animate','exit','transition','variants','layout','layoutId','drag'];
+  const STRIP_PREFIXES = ['while','onPan','onDrag'];
+  const stripFramerProps = (props = {}) => {
+    const out: any = {};
+    Object.keys(props || {}).forEach((k) => {
+      if (STRIP_KEYS.includes(k)) return;
+      if (STRIP_PREFIXES.some(p => k.startsWith(p))) return;
+      out[k] = (props as any)[k];
+    });
+    return out;
+  };
+  const make = (tag: any) => (props: any) => React.createElement(String(tag), stripFramerProps(props), props.children);
+  const motion = { div: make('div'), form: make('form') };
+  return { motion, AnimatePresence: (props: any) => React.createElement(React.Fragment, null, props.children) };
+});
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({

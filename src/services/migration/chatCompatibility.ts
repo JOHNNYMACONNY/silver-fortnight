@@ -111,11 +111,19 @@ export class ChatCompatibilityService {
         // New format: simple ID array
         participantIds = data.participantIds.filter(id => typeof id === 'string' && id.length > 0);
         
-        // If we have legacy participant data, preserve it
+        // If we have legacy participant data, preserve it. Otherwise, create
+        // basic participant objects from IDs but avoid dropping optional
+        // legacy fields like `status` when present.
         if (data.participants_legacy && Array.isArray(data.participants_legacy)) {
           participants = data.participants_legacy;
         } else if (data.participants && Array.isArray(data.participants)) {
-          participants = data.participants;
+          participants = data.participants.map((p: any) => ({
+            id: p.id || p.userId || '',
+            name: p.name ?? p.displayName ?? '',
+            avatar: p.avatar ?? p.photoURL ?? '',
+            // preserve other legacy keys
+            ...p
+          })).filter((p: any) => p.id);
         } else {
           // Create basic participant objects from IDs
           participants = participantIds.map(id => ({
@@ -125,13 +133,18 @@ export class ChatCompatibilityService {
           }));
         }
       } else if (data.participants && Array.isArray(data.participants)) {
-        // Legacy format: complex participant objects
-        participants = data.participants.map(p => ({
-          id: p.id || p.userId || '',
-          name: p.name || p.displayName || '',
-          avatar: p.avatar || p.photoURL || ''
-        })).filter(p => p.id);
-        
+        // Legacy format: preserve original participant objects as-is where
+        // possible (including optional fields like `status`). Ensure each
+        // participant has an `id` field; skip entries without an id.
+        participants = data.participants
+          .map((p: any) => {
+            const id = p.id || p.userId || '';
+            if (!id) return null;
+            // Return the original object but guarantee `id` is set
+            return { ...p, id } as ChatParticipant;
+          })
+          .filter((p: any) => p !== null) as ChatParticipant[];
+
         participantIds = participants.map(p => p.id);
       }
 

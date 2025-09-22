@@ -9,6 +9,7 @@ import {
   Timestamp,
   query,
   where,
+  documentId,
   writeBatch,
   orderBy,
   arrayUnion,
@@ -822,7 +823,6 @@ export const getUsersByIds = async (ids: string[]): Promise<ServiceResult<User[]
     const results: User[] = [];
     for (const chunk of chunks) {
       // Use documentId() when fetching by Firestore doc ID
-      const { documentId } = await import('firebase/firestore');
       const q = query(usersCol as any, where(documentId(), 'in', chunk));
       const snap = await getDocs(q);
       results.push(...snap.docs.map(d => d.data() as User));

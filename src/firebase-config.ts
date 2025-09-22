@@ -110,6 +110,29 @@ const getFirebaseConfig = () => {
   }
 };
 
+// Safe mock factory used only in test environment.
+// Purpose: avoid referencing `jest` directly in production code paths while still
+// providing test-friendly mocks when running under Jest.
+const safeMock = (impl?: any) => {
+  if (typeof jest !== 'undefined' && typeof (jest as any).fn === 'function') {
+    const fn = (jest as any).fn(impl);
+    if (typeof fn.mockResolvedValue === 'undefined') {
+      (fn as any).mockResolvedValue = (v: any) => Promise.resolve(v);
+    }
+    if (typeof fn.mockReturnValue === 'undefined') {
+      (fn as any).mockReturnValue = (v: any) => v;
+    }
+    return fn;
+  }
+
+  // Fallback noop function with minimal mock helpers so consumers can call
+  // .mockResolvedValue / .mockReturnValue without runtime errors.
+  const fallback: any = (..._args: any[]) => undefined;
+  fallback.mockResolvedValue = (_v: any) => Promise.resolve(_v);
+  fallback.mockReturnValue = (_v: any) => _v;
+  return fallback;
+};
+
 // Global Firebase instances - initialized once
 let firebaseApp: FirebaseApp | null = null;
 let firebaseAuth: Auth | null = null;
@@ -207,8 +230,8 @@ const getFirebaseInstances = async () => {
       app: {} as FirebaseApp,
       auth: {
         currentUser: null,
-        onAuthStateChanged: jest.fn(),
-        signOut: jest.fn(),
+        onAuthStateChanged: safeMock(),
+        signOut: safeMock(),
       } as unknown as Auth,
       db: {} as Firestore,
       storage: {} as FirebaseStorage
@@ -238,8 +261,8 @@ const getSyncFirebaseAuth = (): Auth => {
   if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
     return {
       currentUser: null,
-      onAuthStateChanged: jest.fn(),
-      signOut: jest.fn(),
+      onAuthStateChanged: safeMock(),
+      signOut: safeMock(),
     } as unknown as Auth;
   }
 
@@ -286,8 +309,100 @@ export { firebaseAuth, firebaseDb };
 // Export db alias for backward compatibility with existing imports
 export const db = firebaseDb;
 
-// Export the db instance as default export for backward compatibility
+// Default export keeps prior behavior (backwards compatible)
 export default getSyncFirebaseDb;
+
+// Initialize Firebase only in browser non-test environments to avoid
+// running environment validation and initialization during SSR/build time.
+if (typeof window !== 'undefined' && (typeof process === 'undefined' || process.env.NODE_ENV !== 'test')) {
+  initializeFirebase().catch(error => {
+    // Non-fatal during build; surface the error in logs for debugging.
+    // Do not rethrow to avoid breaking SSR/build steps.
+    // eslint-disable-next-line no-console
+    console.error('Failed to initialize Firebase on module load:', error);
+  });
+}
+
+/**
+ * Provide a CommonJS export mapping that doesn't reference symbols declared later.
+ * This assigns a plain object composed of the already-declared getters/vars so that
+ * require(...) consumers receive usable function references in Jest/CJS interop.
+ */
+declare const module: any;
+if (typeof module !== 'undefined' && module.exports) {
+  try {
+    // Provide a plain object with __esModule to improve CJS/ESM interop.
+    // Export callable aliases and leave instance-backed getters separate so consumers can choose
+    // between calling `db()` (function) or reading `dbInstance`/`firebaseDbInstance` (object).
+    module.exports = {
+      __esModule: true,
+      getFirebaseConfig,
+      initializeFirebase,
+      getFirebaseInstances,
+      getSyncFirebaseAuth,
+      getSyncFirebaseDb,
+      getSyncFirebaseStorage,
+      // Callable alias for consumers that call db()
+      db: getSyncFirebaseDb,
+      // Default export (callable)
+      default: getSyncFirebaseDb,
+      // placeholders for instance-backed props (defined below)
+      firebaseAuth: undefined,
+      firebaseDb: undefined
+    };
+
+    // Keep named function exports available for require() consumers
+    module.exports.getSyncFirebaseDb = getSyncFirebaseDb;
+    module.exports.getSyncFirebaseAuth = getSyncFirebaseAuth;
+    module.exports.getSyncFirebaseStorage = getSyncFirebaseStorage;
+    module.exports.getFirebaseInstances = getFirebaseInstances;
+    module.exports.initializeFirebase = initializeFirebase;
+    module.exports.getFirebaseConfig = getFirebaseConfig;
+
+    // Define live getters for instance-backed properties so CJS consumers see usable values
+    Object.defineProperty(module.exports, 'firebaseAuthInstance', {
+      enumerable: true,
+      configurable: true,
+      get: () => {
+        try {
+          return firebaseAuth || (typeof getSyncFirebaseAuth === 'function' ? getSyncFirebaseAuth() : firebaseAuth);
+        } catch {
+          return firebaseAuth;
+        }
+      }
+    });
+
+    Object.defineProperty(module.exports, 'firebaseDbInstance', {
+      enumerable: true,
+      configurable: true,
+      get: () => {
+        try {
+          return firebaseDb || (typeof getSyncFirebaseDb === 'function' ? getSyncFirebaseDb() : firebaseDb);
+        } catch {
+          return firebaseDb;
+        }
+      }
+    });
+
+    // Backwards-compatible alias: dbInstance for consumers expecting an object, and db function for callable usage.
+    Object.defineProperty(module.exports, 'dbInstance', {
+      enumerable: true,
+      configurable: true,
+      get: () => {
+        try {
+          return firebaseDb || (typeof getSyncFirebaseDb === 'function' ? getSyncFirebaseDb() : firebaseDb);
+        } catch {
+          return firebaseDb;
+        }
+      }
+    });
+
+  } catch (e) {
+    // Non-fatal: ignored in strict ESM environments
+    // eslint-disable-next-line no-console
+    console.debug('CJS compatibility export failed (non-fatal):', e);
+  }
+}
 
 // Types and interfaces
 export interface AuthResult<T> {
@@ -492,11 +607,11 @@ export const requireAuth = (): User => {
       providerData: [],
       refreshToken: '',
       tenantId: null,
-      delete: jest.fn(),
-      getIdToken: jest.fn().mockResolvedValue('test-token'),
-      getIdTokenResult: jest.fn().mockResolvedValue({}),
-      reload: jest.fn(),
-      toJSON: jest.fn(),
+      delete: safeMock(),
+      getIdToken: safeMock().mockResolvedValue('test-token'),
+      getIdTokenResult: safeMock().mockResolvedValue({}),
+      reload: safeMock(),
+      toJSON: safeMock(),
       phoneNumber: null,
       photoURL: null,
       providerId: 'password'

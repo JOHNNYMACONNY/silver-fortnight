@@ -26,6 +26,7 @@ import {
 } from '../types/gamification';
 import { ServiceResponse } from '../types/services';
 import { createNotification } from './notifications';
+import { triggerLeaderboardUpdate, recomputeUserReputation } from './leaderboards';
 
 // Real-time notification support
 let notificationCallback: ((notification: any) => void) | null = null;
@@ -397,10 +398,9 @@ export const awardXPWithLeaderboardUpdate = async (
   // Update leaderboard stats if XP was successfully awarded
   if (result.success && result.xpAwarded > 0) {
     try {
-      const { triggerLeaderboardUpdate } = await import('./leaderboards');
+      // Use the statically imported functions to update leaderboard and reputation.
       await triggerLeaderboardUpdate(userId, result.xpAwarded);
       // Also recompute composite reputation since XP changed
-      const { recomputeUserReputation } = await import('./leaderboards');
       await recomputeUserReputation(userId);
     } catch (error) {
       console.warn('Failed to update leaderboard stats:', error);

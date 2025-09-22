@@ -11,17 +11,27 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { GlassmorphicDropdown, DropdownOption } from '../GlassmorphicDropdown';
 
-// Mock framer-motion to avoid animation issues in tests
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: 'div',
-    button: 'button',
-    p: 'p',
-    ul: 'ul',
-    li: 'li',
-  },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
-}));
+// Mock framer-motion with a hoist-safe factory that strips animation props
+jest.mock('framer-motion', () => {
+  const React = require('react');
+  const STRIP_KEYS = ['initial','animate','exit','transition','variants','layout','layoutId','drag'];
+  const STRIP_PREFIXES = ['while','onPan','onDrag'];
+  const stripFramerProps = (props = {}) => {
+    const out: any = {};
+    Object.keys(props || {}).forEach((k) => {
+      if (STRIP_KEYS.includes(k)) return;
+      if (STRIP_PREFIXES.some(p => k.startsWith(p))) return;
+      out[k] = (props as any)[k];
+    });
+    return out;
+  };
+  const make = (tag: any) => (props: any) => {
+    const { children } = props || {};
+    return React.createElement(String(tag), stripFramerProps(props), children);
+  };
+  const motion = new Proxy({}, { get: (_t, p) => make(p) });
+  return { __esModule: true, motion, AnimatePresence: (props: any) => React.createElement(React.Fragment, null, props.children) };
+});
 
 // Mock Heroicons
 jest.mock('@heroicons/react/24/outline', () => ({

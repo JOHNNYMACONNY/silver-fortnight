@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+
 import { doc, runTransaction, setDoc } from 'firebase/firestore';
 import { getSyncFirebaseDb } from '../firebase-config';
 
