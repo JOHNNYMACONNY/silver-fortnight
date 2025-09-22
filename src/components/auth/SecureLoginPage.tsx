@@ -9,7 +9,7 @@ import {
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
 import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
-import { Button } from "@/components/ui/Button";
+import { Button } from "../ui/Button";
 import { Lock, Eye, EyeOff } from "lucide-react";
 
 interface SecureLoginPageProps {

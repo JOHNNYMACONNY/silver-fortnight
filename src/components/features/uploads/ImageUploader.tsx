@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { User } from "firebase/auth";
-import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Progress } from "@/components/ui/Progress";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
+import { Button } from "../../ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/Card";
+import { Progress } from "../../ui/Progress";
+import { Alert, AlertDescription, AlertTitle } from "../../ui/Alert";
 import { Loader2, X, CheckCircle, AlertCircle } from "lucide-react";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { getSyncFirebaseStorage } from "@/firebase-config";
+import { getSyncFirebaseStorage } from "../../../firebase-config";
 
 interface ImageUploaderProps {
   onUploadSuccess: (url: string) => void;

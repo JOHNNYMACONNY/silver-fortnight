@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Textarea } from '@/components/ui/Textarea';
-import { useToast } from '@/contexts/ToastContext';
-import { Trade } from '@/services/firestore';
-import { EmbeddedEvidence } from '@/types/evidence';
-import { createTradeProposal } from '@/services/firestore-exports';
+import { Button } from '../../ui/Button';
+import { Card } from '../../ui/Card';
+import { Textarea } from '../../ui/Textarea';
+import { useToast } from '../../../contexts/ToastContext';
+import { Trade } from '../../../services/firestore';
+import { EmbeddedEvidence } from '../../../types/evidence';
+import { createTradeProposal } from '../../../services/firestore-exports';
 import { EvidenceSubmitter } from '../evidence/EvidenceSubmitter';
 import { PlusCircle, XCircle } from 'lucide-react';
 
