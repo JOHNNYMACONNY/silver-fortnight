@@ -65,7 +65,7 @@ import PortfolioPage from './pages/PortfolioPage';
 import LoginPage from './components/auth/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import { SignUpPage } from './pages/SignUpPage';
-// import PasswordResetPage from './pages/PasswordResetPage';
+import PasswordResetPage from './pages/PasswordResetPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 
 // Import Component Status Checker
@@ -168,7 +168,7 @@ function App() {
         <Route path="/profile-components" element={<RouteErrorBoundary><ProfileComponentsDemo /></RouteErrorBoundary>} />
         <Route path="/asymmetric" element={<RouteErrorBoundary><AsymmetricHomePageLayout /></RouteErrorBoundary>} />
         <Route path="/admin" element={<RouteErrorBoundary><AdminRoute><AdminDashboard /></AdminRoute></RouteErrorBoundary>} />
-        {/* <Route path="/reset-password" element={<RouteErrorBoundary><PasswordResetPage /></RouteErrorBoundary>} /> */}
+        <Route path="/reset-password" element={<RouteErrorBoundary><PasswordResetPage /></RouteErrorBoundary>} />
 
         {/* Protected routes */}
         <Route
