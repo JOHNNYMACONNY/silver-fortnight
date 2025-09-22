@@ -38,7 +38,8 @@ const config = {
           ['@babel/plugin-transform-modules-commonjs', { 'allowTopLevelThis': true }]
         ]
       }
-    }]
+    }],
+    '^.+\\.(js|jsx)$': 'babel-jest'
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   testMatch: [
