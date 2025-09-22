@@ -129,3 +129,9 @@ audit-report.json
 
 # Local Netlify folder
 .netlify
+
+# Build artifacts and generated assets (prevent future merge conflicts)
+functions/lib/
+public/icons/**/optimized/**
+public/icons/optimized/**
+public/asset-report.json
