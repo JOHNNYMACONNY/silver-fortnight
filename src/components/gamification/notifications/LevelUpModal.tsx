@@ -198,9 +198,9 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   animate={isReducedMotion ? {} : { opacity: 1, y: 0 }}
                   transition={{ delay: 0.8 }}
                 >
-                  <h3 className="text-xl font-bold mb-2 text-foreground">
-                    {levelTier.title}
-                  </h3>
+                      <h3 className="text-xl font-bold mb-2 text-foreground">
+                        {notification.levelTitle || levelTier.title}
+                      </h3>
                   {/* LevelTier has no description field in types; omit */}
                   
                   {notification.benefits && notification.benefits.length > 0 && (

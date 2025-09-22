@@ -8,13 +8,16 @@ import { AppError, ErrorCode, ErrorSeverity } from '../../types/errors';
 // Mock dependencies
 vi.mock('../../services/networkResilience');
 vi.mock('../../services/gracefulDegradation');
-vi.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    button: ({ children, ...props }: any) => <button {...props}>{children}</button>
-  },
-  AnimatePresence: ({ children }: any) => children
-}));
+vi.mock('framer-motion', () => {
+  const React = require('react');
+  return {
+    motion: {
+      div: ({ children, ...props }: any) => React.createElement('div', props, children),
+      button: ({ children, ...props }: any) => React.createElement('button', props, children),
+    },
+    AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children),
+  };
+});
 
 // Mock navigator APIs
 Object.defineProperty(navigator, 'onLine', {
@@ -179,7 +182,7 @@ describe('Error Recovery System', () => {
     it('displays correct styling for critical severity errors', () => {
       const criticalError = new AppError(
         'Critical error',
-        ErrorCode.SYSTEM_ERROR,
+        ErrorCode.SERVER_ERROR,
         ErrorSeverity.CRITICAL
       );
 

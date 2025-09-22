@@ -13,6 +13,7 @@ import { Menu, Command } from 'lucide-react';
 import { useNavigation } from '../../hooks/useNavigation';
 import { useMobileOptimization } from '../../hooks/useMobileOptimization';
 import { CommandPalette } from '../ui/CommandPalette';
+import { isThemeToggleEnabled } from '../../utils/featureFlags';
 
 const mainNavItems = [
   { to: '/trades', label: 'Trades' },
@@ -22,7 +23,9 @@ const mainNavItems = [
   { to: '/portfolio', label: 'Portfolio' },
 ];
 
-const Navbar: React.FC = () => {
+type NavbarProps = { showThemeToggle?: boolean };
+const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
+  const displayThemeToggle = showThemeToggle ?? isThemeToggleEnabled();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
@@ -114,11 +117,11 @@ const Navbar: React.FC = () => {
                   ⌘K
                 </kbd>
               </Button>
+<div className="border-l border-border h-6" />
 
-              <div className="border-l border-border h-6" />
-              
-              <ThemeToggle />
-              <NotificationBell />
+{displayThemeToggle && <ThemeToggle />}
+<NotificationBell />
+
               
               <div className="border-l border-border h-6" />
               
@@ -179,9 +182,10 @@ const Navbar: React.FC = () => {
       </nav>
 
       {/* Mobile Menu with enhanced animations */}
-      <MobileMenu 
-        isOpen={isMobileMenuOpen} 
-        onClose={closeMobileMenu} 
+      <MobileMenu
+        isOpen={isMobileMenuOpen}
+        onClose={closeMobileMenu}
+        showThemeToggle={displayThemeToggle}
       />
 
       {/* Command Palette */}

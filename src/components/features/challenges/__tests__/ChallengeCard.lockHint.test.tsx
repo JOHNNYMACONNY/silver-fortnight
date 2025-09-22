@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, act } from '@testing-library/react';
-import { ChallengeCard } from '../../ChallengeCard';
+import { ChallengeCard } from '../ChallengeCard';
 import { Challenge, ChallengeDifficulty, ChallengeType } from '../../../../types/gamification';
 
 jest.mock('../../../../AuthContext', () => ({

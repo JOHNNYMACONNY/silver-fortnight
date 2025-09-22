@@ -21,7 +21,7 @@ import { awardXP, XPSource } from './gamification';
 import { updateProgressionOnChallengeCompletion } from './threeTierProgression';
 import { ChallengeType } from '../types/gamification';
 
-const db = getSyncFirebaseDb;
+const db = getSyncFirebaseDb();
 
 // Challenge AI Integration Types
 export interface ChallengeSubmissionWithReview {
@@ -106,7 +106,7 @@ export const submitCodeForReview = async (
     };
 
     // Save to Firestore
-    const submissionRef = doc(db(), 'challengeSubmissions', submission.id);
+    const submissionRef = doc(db, 'challengeSubmissions', submission.id);
     await setDoc(submissionRef, submissionWithReview);
 
     // Award XP based on AI review score
@@ -133,7 +133,7 @@ export const getUserChallengeSubmissions = async (
   challengeId: string
 ): Promise<ServiceResponse<ChallengeSubmissionWithReview[]>> => {
   try {
-    const submissionsRef = collection(db(), 'challengeSubmissions');
+    const submissionsRef = collection(db, 'challengeSubmissions');
     const q = query(
       submissionsRef,
       where('userId', '==', userId),
@@ -175,9 +175,9 @@ export const approveSubmission = async (
   manualReview: Omit<ManualReview, 'reviewerId' | 'reviewerName' | 'reviewedAt'>
 ): Promise<ServiceResponse<ChallengeSubmissionWithReview>> => {
   try {
-    const submissionRef = doc(db(), 'challengeSubmissions', submissionId);
+    const submissionRef = doc(db, 'challengeSubmissions', submissionId);
     
-    return await runTransaction(db(), async (transaction) => {
+    return await runTransaction(db, async (transaction) => {
       const submissionDoc = await transaction.get(submissionRef);
       
       if (!submissionDoc.exists()) {
@@ -292,7 +292,7 @@ export const getAIReviewMetrics = async (
   timeRange?: { start: Date; end: Date }
 ): Promise<ServiceResponse<AIReviewMetrics>> => {
   try {
-    const submissionsRef = collection(db(), 'challengeSubmissions');
+    const submissionsRef = collection(db, 'challengeSubmissions');
     let q = query(submissionsRef);
 
     // Apply filters

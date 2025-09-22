@@ -10,14 +10,24 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 
-// Mock framer-motion to avoid animation issues in tests
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: 'div',
-    p: 'p',
-  },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
-}));
+// Mock framer-motion with a hoist-safe factory that strips animation props
+jest.mock('framer-motion', () => {
+  const React = require('react');
+  const STRIP_KEYS = ['initial','animate','exit','transition','variants','layout','layoutId','drag'];
+  const STRIP_PREFIXES = ['while','onPan','onDrag'];
+  const stripFramerProps = (props = {}) => {
+    const out: any = {};
+    Object.keys(props || {}).forEach((k) => {
+      if (STRIP_KEYS.includes(k)) return;
+      if (STRIP_PREFIXES.some(p => k.startsWith(p))) return;
+      out[k] = (props as any)[k];
+    });
+    return out;
+  };
+  const make = (tag: any) => (props: any) => React.createElement(String(tag), stripFramerProps(props), props.children);
+  const motion = { div: make('div'), p: make('p') };
+  return { motion, AnimatePresence: (props: any) => React.createElement(React.Fragment, null, props.children) };
+});
 
 import {
   ValidationProvider,

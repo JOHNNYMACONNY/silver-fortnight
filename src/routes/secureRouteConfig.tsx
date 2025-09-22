@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
 import DashboardPage from '../pages/DashboardPage';
-import ProfilePage from '../pages/ProfilePage';
+const ProfilePage = lazy(() => import('../pages/ProfilePage'));
 import SettingsPage from '../pages/SettingsPage';
 import SecureLoginPage from '../components/auth/SecureLoginPage';
 import { createSecureRoute } from '../auth/secureRoutes';

@@ -22,7 +22,7 @@ import { updateProgressionOnChallengeCompletion } from './threeTierProgression';
 import { checkAndUnlockAchievements } from './achievements';
 import { createNotification } from './notifications';
 
-const db = getSyncFirebaseDb;
+const db = getSyncFirebaseDb();
 
 export interface ChallengeCompletionData {
   completionMethod: 'manual' | 'ai-verified' | 'peer-reviewed' | 'time-based';
@@ -75,10 +75,10 @@ export const completeChallenge = async (
   completionData: ChallengeCompletionData
 ): Promise<ChallengeCompletionResult> => {
   try {
-    return await runTransaction(db(), async (transaction) => {
+    return await runTransaction(db, async (transaction) => {
       // Get challenge and user challenge data
-      const challengeRef = doc(db(), 'challenges', challengeId);
-      const userChallengeRef = doc(db(), 'userChallenges', `${userId}_${challengeId}`);
+      const challengeRef = doc(db, 'challenges', challengeId);
+      const userChallengeRef = doc(db, 'userChallenges', `${userId}_${challengeId}`);
       
       const [challengeDoc, userChallengeDoc] = await Promise.all([
         transaction.get(challengeRef),
@@ -172,7 +172,7 @@ export const completeChallenge = async (
         completedAt: Timestamp.now()
       };
 
-      const completionRef = doc(collection(db(), 'challengeCompletions'));
+      const completionRef = doc(collection(db, 'challengeCompletions'));
       transaction.set(completionRef, completionRecord);
 
       return {

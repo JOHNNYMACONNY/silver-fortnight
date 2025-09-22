@@ -155,7 +155,9 @@ export const LoadingSpinner: React.FC<LoadingStateProps> = ({
 
   return (
     <div className={cn(containerClasses[variant], className)}>
-      <Loader2 className={cn('animate-spin text-primary', sizeClasses[size])} />
+      <div role="status" aria-label={message ? `${message} loading` : 'loading'}>
+        <Loader2 className={cn('animate-spin text-primary', sizeClasses[size])} />
+      </div>
       {message && (
         <p className={classPatterns.bodyMedium + ' mt-3 text-center text-muted-foreground'}>
           {message}
@@ -297,10 +299,11 @@ const ContextualLoadingComponent: React.FC<ContextualLoadingProps> = ({
 
       {/* Time indicator */}
       <div className={classPatterns.caption + ' text-muted-foreground'}>
-        {Math.round(elapsedTime / 1000)}s elapsed
-        {estimatedTime && (
-          <span> • ~{Math.round((estimatedTime - elapsedTime) / 1000)}s remaining</span>
-        )}
+        <span aria-label="time-indicator">
+          {`${Math.round(elapsedTime / 1000)}s elapsed${
+            (estimatedTime ?? defaultEstimatedTime) ? ` • ~${Math.round(((estimatedTime ?? defaultEstimatedTime) - elapsedTime) / 1000)}s remaining` : ''
+          }`}
+        </span>
       </div>
     </motion.div>
   );
@@ -317,21 +320,21 @@ const SkeletonLoadingComponent: React.FC<{
     switch (type) {
       case 'card':
         return (
-          <div className={classPatterns.glassCard + ' p-6 space-y-4'}>
-            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
-            <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-3/4" />
-            <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-1/2" />
+          <div className={classPatterns.glassCard + ' p-6 space-y-4'} role="presentation">
+            <div role="presentation" className="h-4 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
+            <div role="presentation" className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-3/4" />
+            <div role="presentation" className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-1/2" />
           </div>
         );
       case 'list':
         return (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-full animate-pulse" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
-                  <div className="h-2 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-3/4" />
+              <div key={i} role="presentation" className="flex items-center space-x-3">
+                <div role="presentation" className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-full animate-pulse" />
+                <div role="presentation" className="flex-1 space-y-2">
+                  <div role="presentation" className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
+                  <div role="presentation" className="h-2 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-3/4" />
                 </div>
               </div>
             ))}
@@ -341,16 +344,16 @@ const SkeletonLoadingComponent: React.FC<{
         return (
           <div className={classPatterns.glassCard + ' p-6'}>
             <div className="flex items-center space-x-4 mb-4">
-              <div className="w-16 h-16 bg-gray-300 dark:bg-gray-600 rounded-full animate-pulse" />
-              <div className="space-y-2 flex-1">
-                <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-1/3" />
-                <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-1/2" />
+              <div role="presentation" className="w-16 h-16 bg-gray-300 dark:bg-gray-600 rounded-full animate-pulse" />
+              <div role="presentation" className="space-y-2 flex-1">
+                <div role="presentation" className="h-4 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-1/3" />
+                <div role="presentation" className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-1/2" />
               </div>
             </div>
             <div className="space-y-3">
-              <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
-              <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-5/6" />
-              <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-4/6" />
+              <div role="presentation" className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
+              <div role="presentation" className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-5/6" />
+              <div role="presentation" className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-4/6" />
             </div>
           </div>
         );
@@ -358,11 +361,11 @@ const SkeletonLoadingComponent: React.FC<{
         return (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="grid grid-cols-4 gap-4">
-                <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
-                <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
-                <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
-                <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-1/2" />
+              <div key={i} role="presentation" className="grid grid-cols-4 gap-4">
+                <div role="presentation" className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
+                <div role="presentation" className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
+                <div role="presentation" className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
+                <div role="presentation" className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse w-1/2" />
               </div>
             ))}
           </div>
@@ -377,8 +380,8 @@ const SkeletonLoadingComponent: React.FC<{
   return (
     <div className={className}>
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className={count > 1 ? 'mb-4' : ''}>
-          {renderSkeleton()}
+        <div key={i} className={count > 1 ? `mb-4 ${className}` : className}>
+          <div aria-label="loading">{renderSkeleton()}</div>
         </div>
       ))}
     </div>
@@ -396,48 +399,70 @@ const ProgressiveLoadingComponent: React.FC<{
   currentStage?: number;
   className?: string;
 }> = ({ stages, currentStage = 0, className = '' }) => {
+  const max = stages.length > 0 ? stages.length - 1 : 0;
+  const value = Math.max(0, Math.min(currentStage, max));
+
   return (
     <div className={cn(classPatterns.glassCard, 'p-6', className)}>
-      <div className="space-y-4">
-        {stages.map((stage, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0.5 }}
-            animate={{ 
-              opacity: index <= currentStage ? 1 : 0.5,
-              scale: index === currentStage ? 1.02 : 1,
-            }}
-            className="flex items-center space-x-3"
-          >
-            <div className={cn(
-              'w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium',
-              index < currentStage ? 'bg-green-500 text-white' :
-              index === currentStage ? 'bg-primary text-white' :
-              'bg-gray-300 text-gray-600'
-            )}>
-              {index < currentStage ? (
-                <CheckCircle className="w-4 h-4" />
-              ) : index === currentStage ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                index + 1
-              )}
-            </div>
-            <div className="flex-1">
-              <div className={cn(
-                classPatterns.bodyMedium,
-                index <= currentStage ? 'text-foreground' : 'text-muted-foreground'
-              )}>
-                {stage.name}
-              </div>
-              {stage.description && (
-                <div className={classPatterns.caption + ' text-muted-foreground'}>
-                  {stage.description}
-                </div>
-              )}
-            </div>
-          </motion.div>
-        ))}
+      <div
+        role="progressbar"
+        aria-label="stages progress"
+        aria-valuenow={value}
+        aria-valuemin={0}
+        aria-valuemax={max}
+      >
+        <div className="space-y-4">
+          {stages.length === 0 ? (
+            <div className="text-muted-foreground">No stages</div>
+          ) : (
+            stages.map((stage, index) => {
+              const isCompleted = index < currentStage;
+              const isCurrent = index === currentStage;
+              return (
+                <motion.div
+                  key={index}
+                  data-stage={stage.name}
+                  data-loading={isCurrent ? 'true' : 'false'}
+                  data-completed={isCompleted ? 'true' : 'false'}
+                  initial={{ opacity: 0.5 }}
+                  animate={{
+                    opacity: isCompleted || isCurrent ? 1 : 0.5,
+                    scale: isCurrent ? 1.02 : 1,
+                  }}
+                  className={cn('flex items-center space-x-3', isCompleted ? 'completed' : isCurrent ? 'current-stage' : '')}
+                >
+                  <div
+                    className={cn(
+                      'w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium',
+                      isCompleted ? 'bg-green-500 text-white' : isCurrent ? 'bg-primary text-white' : 'bg-gray-300 text-gray-600'
+                    )}
+                  >
+                    {isCompleted ? (
+                      <CheckCircle aria-hidden data-completed className="w-4 h-4" />
+                    ) : isCurrent ? (
+                      <Loader2 aria-hidden data-loading className="w-4 h-4 animate-spin" />
+                    ) : (
+                      index + 1
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className={cn(
+                      classPatterns.bodyMedium,
+                      isCompleted || isCurrent ? 'text-foreground' : 'text-muted-foreground'
+                    )}>
+                      {stage.name}
+                    </div>
+                    {stage.description && (
+                      <div className={classPatterns.caption + ' text-muted-foreground'}>
+                        {stage.description}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })
+          )}
+        </div>
       </div>
     </div>
   );

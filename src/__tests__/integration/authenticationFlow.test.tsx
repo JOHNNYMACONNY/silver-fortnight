@@ -2,68 +2,77 @@
  * @jest-environment jsdom
  */
 
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
+import React from "react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { BrowserRouter } from "react-router-dom";
 
-// Mock Firebase Auth
-const mockAuth = {
-  currentUser: null,
-  signInWithEmailAndPassword: jest.fn(),
-  createUserWithEmailAndPassword: jest.fn(),
-  signOut: jest.fn(),
-  onAuthStateChanged: jest.fn(),
-  updateProfile: jest.fn(),
-};
-
-jest.mock('../../firebase-config', () => ({
-  auth: mockAuth,
-  db: {},
-}));
-
-// Mock Firebase Auth functions
-jest.mock('firebase/auth', () => ({
-  signInWithEmailAndPassword: jest.fn(),
-  createUserWithEmailAndPassword: jest.fn(),
-  signOut: jest.fn(),
-  onAuthStateChanged: jest.fn(),
-  updateProfile: jest.fn(),
-}));
+// Use the centralized mock. Assumes the mock file is in the correct `__mocks__` directory.
+jest.mock("../../firebase-config");
+// We need to get the mockAuth object from the mock we just created.
+// The actual implementation of this will depend on your __mocks__/firebase-config.ts file.
+// Assuming it exports a mockAuth object and a way to control onAuthStateChanged.
+import { getSyncFirebaseAuth } from "../../firebase-config";
 
 // Mock framer-motion
-jest.mock('framer-motion', () => {
-  const React = require('react');
+jest.mock("framer-motion", () => {
+  const React = require("react");
+  type MotionProps = { children?: React.ReactNode } & Record<string, unknown>;
   return {
     motion: {
-      div: ({ children, ...props }: any) => React.createElement('div', props, children),
-      form: ({ children, ...props }: any) => React.createElement('form', props, children),
+      div: ({ children, ...props }: MotionProps) =>
+        React.createElement(
+          "div",
+          props as Record<string, unknown>,
+          children as React.ReactNode
+        ),
+      form: ({ children, ...props }: MotionProps) =>
+        React.createElement(
+          "form",
+          props as Record<string, unknown>,
+          children as React.ReactNode
+        ),
     },
-    AnimatePresence: ({ children }: any) => children,
+    AnimatePresence: ({ children }: { children?: React.ReactNode }) =>
+      children as React.ReactNode,
   };
 });
 
 // Import components after mocks
-import { AuthProvider, useAuth } from '../../AuthContext';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { AuthProvider, useAuth } from "../../AuthContext";
+import * as AuthFunctions from "firebase/auth";
 
-const mockSignIn = signInWithEmailAndPassword as jest.MockedFunction<typeof signInWithEmailAndPassword>;
-const mockSignUp = createUserWithEmailAndPassword as jest.MockedFunction<typeof createUserWithEmailAndPassword>;
-const mockSignOut = signOut as jest.MockedFunction<typeof signOut>;
+// Let's get a handle on the mock auth object and the auth state callback
+const mockAuth = getSyncFirebaseAuth();
+let authStateCallback: ((user: unknown) => void) | null = null;
+
+// Set up the mock for onAuthStateChanged once. Tests will trigger this.
+if (mockAuth && typeof mockAuth.onAuthStateChanged === "function") {
+  (mockAuth.onAuthStateChanged as jest.Mock).mockImplementation((callback) => {
+    authStateCallback = callback;
+    return () => {
+      authStateCallback = null;
+    }; // Return an unsubscribe function
+  });
+}
+// Relax the typed mocks to avoid strict Auth parameter typing in tests
+const mockSignIn = AuthFunctions.signInWithEmailAndPassword as jest.Mock;
+const mockSignUp = AuthFunctions.createUserWithEmailAndPassword as jest.Mock;
+const mockSignOut = AuthFunctions.signOut as jest.Mock;
 
 // Test components
 const LoginForm: React.FC = () => {
   const { user, loading } = useAuth();
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [error, setError] = React.useState('');
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [error, setError] = React.useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await mockSignIn(mockAuth, email, password);
-    } catch (err) {
-      setError('Login failed');
+      await mockSignIn(mockAuth, email, password); // Pass mockAuth instance
+    } catch {
+      setError("Login failed");
     }
   };
 
@@ -96,16 +105,16 @@ const LoginForm: React.FC = () => {
 
 const SignUpForm: React.FC = () => {
   const { user } = useAuth();
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [error, setError] = React.useState('');
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [error, setError] = React.useState("");
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await mockSignUp(mockAuth, email, password);
-    } catch (err) {
-      setError('Sign up failed');
+      await mockSignUp(mockAuth, email, password); // Pass mockAuth instance
+    } catch {
+      setError("Sign up failed");
     }
   };
 
@@ -154,31 +163,29 @@ const UserProfile: React.FC = () => {
 
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <BrowserRouter>
-    <AuthProvider>
-      {children}
-    </AuthProvider>
+    <AuthProvider>{children}</AuthProvider>
   </BrowserRouter>
 );
 
-describe('Authentication Flow Integration Tests', () => {
+describe("Authentication Flow Integration Tests", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockAuth.currentUser = null;
+    jest.clearAllMocks(); // This clears all mocks, including onAuthStateChanged implementation
+    (mockAuth as any).currentUser = null;
   });
 
-  describe('Login Flow', () => {
-    it('should handle successful login', async () => {
+  describe("Login Flow", () => {
+    it("should handle successful login", async () => {
       const user = userEvent.setup();
       const mockUser = {
-        uid: 'test-user-id',
-        email: 'test@example.com',
-        displayName: 'Test User',
+        uid: "test-user-id",
+        email: "test@example.com",
+        displayName: "Test User",
       };
 
       // Mock successful login
       mockSignIn.mockResolvedValue({
         user: mockUser,
-      } as any);
+      } as unknown);
 
       render(
         <TestWrapper>
@@ -187,30 +194,35 @@ describe('Authentication Flow Integration Tests', () => {
       );
 
       // Fill out login form
-      const emailInput = screen.getByTestId('email-input');
-      const passwordInput = screen.getByTestId('password-input');
-      const loginButton = screen.getByTestId('login-button');
+      const emailInput = screen.getByTestId("email-input");
+      const passwordInput = screen.getByTestId("password-input");
+      const loginButton = screen.getByTestId("login-button");
 
-      await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInput, 'password123');
+      await user.type(emailInput, "test@example.com");
+      await user.type(passwordInput, "password123");
       await user.click(loginButton);
 
       // Verify login was called
-      expect(mockSignIn).toHaveBeenCalledWith(mockAuth, 'test@example.com', 'password123');
+      expect(mockSignIn).toHaveBeenCalledWith(
+        mockAuth,
+        "test@example.com",
+        "password123"
+      );
 
-      // Simulate auth state change
-      mockAuth.currentUser = mockUser;
-
+      // Simulate auth state change by invoking the callback
       await waitFor(() => {
-        expect(screen.getByText('Welcome, test@example.com!')).toBeInTheDocument();
+        if (authStateCallback) authStateCallback(mockUser);
+        expect(
+          screen.getByText("Welcome, test@example.com!")
+        ).toBeInTheDocument();
       });
     });
 
-    it('should handle login failure', async () => {
+    it("should handle login failure", async () => {
       const user = userEvent.setup();
 
       // Mock failed login
-      mockSignIn.mockRejectedValue(new Error('Invalid credentials'));
+      mockSignIn.mockRejectedValue(new Error("Invalid credentials"));
 
       render(
         <TestWrapper>
@@ -218,33 +230,35 @@ describe('Authentication Flow Integration Tests', () => {
         </TestWrapper>
       );
 
-      const emailInput = screen.getByTestId('email-input');
-      const passwordInput = screen.getByTestId('password-input');
-      const loginButton = screen.getByTestId('login-button');
+      const emailInput = screen.getByTestId("email-input");
+      const passwordInput = screen.getByTestId("password-input");
+      const loginButton = screen.getByTestId("login-button");
 
-      await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInput, 'wrongpassword');
+      await user.type(emailInput, "test@example.com");
+      await user.type(passwordInput, "wrongpassword");
       await user.click(loginButton);
 
       await waitFor(() => {
-        expect(screen.getByTestId('error-message')).toHaveTextContent('Login failed');
+        expect(screen.getByTestId("error-message")).toHaveTextContent(
+          "Login failed"
+        );
       });
     });
   });
 
-  describe('Sign Up Flow', () => {
-    it('should handle successful sign up', async () => {
+  describe("Sign Up Flow", () => {
+    it("should handle successful sign up", async () => {
       const user = userEvent.setup();
       const mockUser = {
-        uid: 'new-user-id',
-        email: 'newuser@example.com',
+        uid: "new-user-id",
+        email: "newuser@example.com",
         displayName: null,
       };
 
       // Mock successful sign up
       mockSignUp.mockResolvedValue({
         user: mockUser,
-      } as any);
+      } as unknown);
 
       render(
         <TestWrapper>
@@ -252,29 +266,34 @@ describe('Authentication Flow Integration Tests', () => {
         </TestWrapper>
       );
 
-      const emailInput = screen.getByTestId('signup-email-input');
-      const passwordInput = screen.getByTestId('signup-password-input');
-      const signUpButton = screen.getByTestId('signup-button');
+      const emailInput = screen.getByTestId("signup-email-input");
+      const passwordInput = screen.getByTestId("signup-password-input");
+      const signUpButton = screen.getByTestId("signup-button");
 
-      await user.type(emailInput, 'newuser@example.com');
-      await user.type(passwordInput, 'newpassword123');
+      await user.type(emailInput, "newuser@example.com");
+      await user.type(passwordInput, "newpassword123");
       await user.click(signUpButton);
 
-      expect(mockSignUp).toHaveBeenCalledWith(mockAuth, 'newuser@example.com', 'newpassword123');
+      expect(mockSignUp).toHaveBeenCalledWith(
+        mockAuth,
+        "newuser@example.com",
+        "newpassword123"
+      );
 
-      // Simulate auth state change
-      mockAuth.currentUser = mockUser;
-
+      // Simulate auth state change by invoking the callback
       await waitFor(() => {
-        expect(screen.getByText('Account created for newuser@example.com!')).toBeInTheDocument();
+        if (authStateCallback) authStateCallback(mockUser);
+        expect(
+          screen.getByText("Account created for newuser@example.com!")
+        ).toBeInTheDocument();
       });
     });
 
-    it('should handle sign up failure', async () => {
+    it("should handle sign up failure", async () => {
       const user = userEvent.setup();
 
       // Mock failed sign up
-      mockSignUp.mockRejectedValue(new Error('Email already in use'));
+      mockSignUp.mockRejectedValue(new Error("Email already in use"));
 
       render(
         <TestWrapper>
@@ -282,31 +301,33 @@ describe('Authentication Flow Integration Tests', () => {
         </TestWrapper>
       );
 
-      const emailInput = screen.getByTestId('signup-email-input');
-      const passwordInput = screen.getByTestId('signup-password-input');
-      const signUpButton = screen.getByTestId('signup-button');
+      const emailInput = screen.getByTestId("signup-email-input");
+      const passwordInput = screen.getByTestId("signup-password-input");
+      const signUpButton = screen.getByTestId("signup-button");
 
-      await user.type(emailInput, 'existing@example.com');
-      await user.type(passwordInput, 'password123');
+      await user.type(emailInput, "existing@example.com");
+      await user.type(passwordInput, "password123");
       await user.click(signUpButton);
 
       await waitFor(() => {
-        expect(screen.getByTestId('signup-error-message')).toHaveTextContent('Sign up failed');
+        expect(screen.getByTestId("signup-error-message")).toHaveTextContent(
+          "Sign up failed"
+        );
       });
     });
   });
 
-  describe('Logout Flow', () => {
-    it('should handle successful logout', async () => {
+  describe("Logout Flow", () => {
+    it("should handle successful logout", async () => {
       const user = userEvent.setup();
       const mockUser = {
-        uid: 'test-user-id',
-        email: 'test@example.com',
-        displayName: 'Test User',
+        uid: "test-user-id",
+        email: "test@example.com",
+        displayName: "Test User",
       };
 
       // Start with authenticated user
-      mockAuth.currentUser = mockUser;
+      (mockAuth as any).currentUser = mockUser;
       mockSignOut.mockResolvedValue(undefined);
 
       render(
@@ -316,34 +337,33 @@ describe('Authentication Flow Integration Tests', () => {
       );
 
       // Should show user profile
-      expect(screen.getByText('Email: test@example.com')).toBeInTheDocument();
-      expect(screen.getByText('UID: test-user-id')).toBeInTheDocument();
+      expect(screen.getByText("Email: test@example.com")).toBeInTheDocument();
+      expect(screen.getByText("UID: test-user-id")).toBeInTheDocument();
 
       // Click logout
-      const logoutButton = screen.getByTestId('logout-button');
+      const logoutButton = screen.getByTestId("logout-button");
       await user.click(logoutButton);
 
       expect(mockSignOut).toHaveBeenCalledWith(mockAuth);
 
-      // Simulate auth state change
-      mockAuth.currentUser = null;
-
+      // Simulate auth state change for logout
       await waitFor(() => {
-        expect(screen.getByText('Please log in')).toBeInTheDocument();
+        if (authStateCallback) authStateCallback(null);
+        expect(screen.getByText("Please log in")).toBeInTheDocument();
       });
     });
   });
 
-  describe('Authentication State Persistence', () => {
-    it('should maintain authentication state across component remounts', async () => {
+  describe("Authentication State Persistence", () => {
+    it("should maintain authentication state across component remounts", async () => {
       const mockUser = {
-        uid: 'test-user-id',
-        email: 'test@example.com',
-        displayName: 'Test User',
+        uid: "test-user-id",
+        email: "test@example.com",
+        displayName: "Test User",
       };
 
       // Start with authenticated user
-      mockAuth.currentUser = mockUser;
+      (mockAuth as any).currentUser = mockUser;
 
       const { rerender } = render(
         <TestWrapper>
@@ -352,7 +372,7 @@ describe('Authentication Flow Integration Tests', () => {
       );
 
       // Should show user profile
-      expect(screen.getByText('Email: test@example.com')).toBeInTheDocument();
+      expect(screen.getByText("Email: test@example.com")).toBeInTheDocument();
 
       // Remount component
       rerender(
@@ -362,17 +382,12 @@ describe('Authentication Flow Integration Tests', () => {
       );
 
       // Should still show user profile
-      expect(screen.getByText('Email: test@example.com')).toBeInTheDocument();
+      expect(screen.getByText("Email: test@example.com")).toBeInTheDocument();
     });
 
-    it('should handle authentication state changes', async () => {
-      let authStateCallback: ((user: any) => void) | null = null;
-
+    it("should handle authentication state changes", async () => {
       // Mock onAuthStateChanged
-      mockAuth.onAuthStateChanged.mockImplementation((callback) => {
-        authStateCallback = callback;
-        return jest.fn(); // unsubscribe function
-      });
+      (mockAuth as any).currentUser = null;
 
       render(
         <TestWrapper>
@@ -381,13 +396,13 @@ describe('Authentication Flow Integration Tests', () => {
       );
 
       // Initially no user
-      expect(screen.getByTestId('email-input')).toBeInTheDocument();
+      expect(screen.getByTestId("email-input")).toBeInTheDocument();
 
       // Simulate user login
       const mockUser = {
-        uid: 'test-user-id',
-        email: 'test@example.com',
-        displayName: 'Test User',
+        uid: "test-user-id",
+        email: "test@example.com",
+        displayName: "Test User",
       };
 
       if (authStateCallback) {
@@ -395,7 +410,9 @@ describe('Authentication Flow Integration Tests', () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByText('Welcome, test@example.com!')).toBeInTheDocument();
+        expect(
+          screen.getByText("Welcome, test@example.com!")
+        ).toBeInTheDocument();
       });
 
       // Simulate user logout
@@ -404,12 +421,12 @@ describe('Authentication Flow Integration Tests', () => {
       }
 
       await waitFor(() => {
-        expect(screen.getByTestId('email-input')).toBeInTheDocument();
+        expect(screen.getByTestId("email-input")).toBeInTheDocument();
       });
     });
   });
 
-  describe('Protected Route Integration', () => {
+  describe("Protected Route Integration", () => {
     const ProtectedComponent: React.FC = () => {
       const { user, loading } = useAuth();
 
@@ -419,8 +436,8 @@ describe('Authentication Flow Integration Tests', () => {
       return <div>Protected content for {user.email}</div>;
     };
 
-    it('should redirect unauthenticated users', () => {
-      mockAuth.currentUser = null;
+    it("should redirect unauthenticated users", () => {
+      (mockAuth as any).currentUser = null;
 
       render(
         <TestWrapper>
@@ -428,17 +445,19 @@ describe('Authentication Flow Integration Tests', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText('Access denied. Please log in.')).toBeInTheDocument();
+      expect(
+        screen.getByText("Access denied. Please log in.")
+      ).toBeInTheDocument();
     });
 
-    it('should allow authenticated users', () => {
+    it("should allow authenticated users", () => {
       const mockUser = {
-        uid: 'test-user-id',
-        email: 'test@example.com',
-        displayName: 'Test User',
+        uid: "test-user-id",
+        email: "test@example.com",
+        displayName: "Test User",
       };
 
-      mockAuth.currentUser = mockUser;
+      (mockAuth as any).currentUser = mockUser;
 
       render(
         <TestWrapper>
@@ -446,7 +465,9 @@ describe('Authentication Flow Integration Tests', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText('Protected content for test@example.com')).toBeInTheDocument();
+      expect(
+        screen.getByText("Protected content for test@example.com")
+      ).toBeInTheDocument();
     });
   });
 });

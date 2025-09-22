@@ -84,6 +84,7 @@ const triggerChallengeNotification = (notification: ChallengeNotification) => {
       try {
         listener(notification);
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.warn('Challenge event listener failed', err);
       }
     }

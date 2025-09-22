@@ -12,14 +12,18 @@ import '@testing-library/jest-dom';
 import { GlassmorphicTextarea } from '../GlassmorphicTextarea';
 
 // Mock framer-motion to avoid animation issues in tests
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: 'div',
-    p: 'p',
-    textarea: 'textarea',
-  },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
-}));
+jest.mock('framer-motion', () => {
+  const React = require('react');
+  return {
+    __esModule: true,
+    motion: {
+      div: (props: any) => React.createElement('div', props, props.children),
+      p: (props: any) => React.createElement('p', props, props.children),
+      textarea: (props: any) => React.createElement('textarea', props, props.children),
+    },
+    AnimatePresence: (props: any) => React.createElement(React.Fragment, null, props.children),
+  };
+});
 
 // Mock Heroicons
 jest.mock('@heroicons/react/24/outline', () => ({

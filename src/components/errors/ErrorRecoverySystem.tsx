@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { AppError, ErrorSeverity } from '../../types/errors';
 import { errorService } from '../../services/errorService';
+import { logger } from '../../utils/logging/logger';
 
 interface ErrorRecoverySystemProps {
   error: AppError;
@@ -33,6 +34,22 @@ interface RecoveryStep {
   isAutomatic?: boolean;
 }
 
+interface SystemDiagnostics {
+  timestamp: string;
+  userAgent: string;
+  online: boolean;
+  cookiesEnabled: boolean;
+  localStorage: boolean;
+  sessionStorage: boolean;
+  serviceWorker: boolean;
+  webGL: boolean;
+  memory: {
+    used: number;
+    total: number;
+    limit: number;
+  } | null;
+}
+
 export const ErrorRecoverySystem: React.FC<ErrorRecoverySystemProps> = ({
   error,
   onRetry,
@@ -46,7 +63,7 @@ export const ErrorRecoverySystem: React.FC<ErrorRecoverySystemProps> = ({
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [failedSteps, setFailedSteps] = useState<Set<string>>(new Set());
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [diagnostics, setDiagnostics] = useState<any>(null);
+  const [diagnostics, setDiagnostics] = useState<SystemDiagnostics | null>(null);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -66,7 +83,11 @@ export const ErrorRecoverySystem: React.FC<ErrorRecoverySystemProps> = ({
     if (showDiagnostics) {
       runDiagnostics();
     }
-  }, [error, isOnline]);
+  }, [error, isOnline, onRetry, showDiagnostics]);
+
+  useEffect(() => {
+    logger.info('[ErrorRecovery] Initialized', 'ErrorRecovery', { severity: error.severity, steps: recoverySteps.map(s => s.id) });
+  }, [error.severity, recoverySteps]);
 
   const generateRecoverySteps = useCallback(() => {
     const steps: RecoveryStep[] = [];
@@ -79,7 +100,7 @@ export const ErrorRecoverySystem: React.FC<ErrorRecoverySystemProps> = ({
         description: 'Verify your internet connection is working',
         action: async () => {
           try {
-            await fetch('https://www.google.com/favicon.ico', { mode: 'no-cors' });
+            await fetch('/favicon.ico', { method: 'HEAD', mode: 'no-cors', cache: 'no-store' }); // Check against our own server
             return true;
           } catch {
             return false;
@@ -96,16 +117,31 @@ export const ErrorRecoverySystem: React.FC<ErrorRecoverySystemProps> = ({
         label: 'Clear Application Cache',
         description: 'Remove cached data that might be corrupted',
         action: async () => {
+          let cacheDeleted = false;
           try {
             if ('caches' in window) {
               const cacheNames = await caches.keys();
               await Promise.all(cacheNames.map(name => caches.delete(name)));
+              cacheDeleted = true;
             }
-            localStorage.clear();
-            sessionStorage.clear();
+          } catch (e) {
+            logger.warn('Cache deletion failed', 'ErrorRecovery', e);
+            cacheDeleted = false;
+          }
+
+          // Always attempt to clear storage even if cache deletion failed
+          try {
+            if (window.localStorage && typeof window.localStorage.clear === 'function') {
+              window.localStorage.clear();
+            }
+            if (window.sessionStorage && typeof window.sessionStorage.clear === 'function') {
+              window.sessionStorage.clear();
+            }
+            // Treat storage clear as success
             return true;
           } catch {
-            return false;
+            // If storage clear fails, return whether cache deletion succeeded
+            return cacheDeleted;
           }
         },
         icon: <RefreshCw className="w-4 h-4" />
@@ -123,7 +159,7 @@ export const ErrorRecoverySystem: React.FC<ErrorRecoverySystemProps> = ({
             if ('serviceWorker' in navigator) {
               const registrations = await navigator.serviceWorker.getRegistrations();
               await Promise.all(registrations.map(reg => reg.unregister()));
-              await navigator.serviceWorker.register('/sw.js');
+              await navigator.serviceWorker.register('/sw.js'); // Consider moving '/sw.js' to a constants file
             }
             return true;
           } catch {
@@ -164,11 +200,19 @@ export const ErrorRecoverySystem: React.FC<ErrorRecoverySystemProps> = ({
         label: 'Retry Operation',
         description: 'Attempt the failed operation again',
         action: async () => {
-          if (onRetry) {
-            onRetry();
-            return true;
-          }
-          return false;
+                if (onRetry) {
+                  logger.info('[ErrorRecovery] Executing onRetry', 'ErrorRecovery');
+                  try {
+                    // support sync or async onRetry implementations
+                    await Promise.resolve(onRetry());
+                    logger.info('[ErrorRecovery] onRetry succeeded', 'ErrorRecovery');
+                    return true;
+                  } catch (e) {
+                    logger.error('[ErrorRecovery] onRetry threw', 'ErrorRecovery', undefined, e as Error);
+                    return false;
+                  }
+                }
+                return false;
         },
         icon: <RefreshCw className="w-4 h-4" />
       });
@@ -178,7 +222,7 @@ export const ErrorRecoverySystem: React.FC<ErrorRecoverySystemProps> = ({
   }, [error, isOnline, onRetry]);
 
   const runDiagnostics = useCallback(async () => {
-    const diagnosticResults = {
+    const diagnosticResults: SystemDiagnostics = {
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       online: navigator.onLine,
@@ -204,8 +248,11 @@ export const ErrorRecoverySystem: React.FC<ErrorRecoverySystemProps> = ({
       serviceWorker: 'serviceWorker' in navigator,
       webGL: (() => {
         try {
-          const canvas = document.createElement('canvas');
-          return !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+          if (typeof HTMLCanvasElement !== 'undefined' && typeof HTMLCanvasElement.prototype.getContext === 'function') {
+            const canvas = document.createElement('canvas');
+            return !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+          }
+          return false;
         } catch {
           return false;
         }
@@ -223,8 +270,10 @@ export const ErrorRecoverySystem: React.FC<ErrorRecoverySystemProps> = ({
   const executeRecoveryStep = async (step: RecoveryStep) => {
     setIsRecovering(true);
     
+    logger.info(`[ErrorRecovery] Executing step: ${step.id}`, 'ErrorRecovery');
     try {
       const success = await step.action();
+      logger.info(`[ErrorRecovery] Step ${step.id} result: ${success}`, 'ErrorRecovery');
       
       if (success) {
         setCompletedSteps(prev => new Set([...prev, step.id]));
@@ -238,7 +287,7 @@ export const ErrorRecoverySystem: React.FC<ErrorRecoverySystemProps> = ({
       }
     } catch (error) {
       setFailedSteps(prev => new Set([...prev, step.id]));
-      console.error(`Recovery step ${step.id} failed:`, error);
+      logger.error(`Recovery step ${step.id} failed`, 'ErrorRecovery', undefined, error as Error);
     } finally {
       setIsRecovering(false);
     }
@@ -298,14 +347,16 @@ export const ErrorRecoverySystem: React.FC<ErrorRecoverySystemProps> = ({
       >
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Header */}
-          <div className={`p-6 border-b border-gray-200 dark:border-gray-700 ${getSeverityColor(error.severity)}`}>
-            <div className="flex items-center gap-3">
-              {getSeverityIcon(error.severity)}
-              <div>
-                <h1 className="text-xl font-semibold">Error Recovery System</h1>
-                <p className="text-sm opacity-80">
-                  {error.userMessage || error.message}
-                </p>
+          <div className={`p-6 border-b border-gray-200 dark:border-gray-700`}>
+            <div>
+              <div className={`flex items-center gap-3`}>
+                {getSeverityIcon(error.severity)}
+                <div className={getSeverityColor(error.severity)} data-testid="error-severity">
+                  <h1 className="text-xl font-semibold">Error Recovery System</h1>
+                  <p className="text-sm opacity-80">
+                    {error.userMessage || error.message}
+                  </p>
+                </div>
               </div>
             </div>
           </div>

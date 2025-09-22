@@ -22,7 +22,7 @@ import { getUserThreeTierProgress } from './threeTierProgression';
 import { getUserSkillAssessments } from './skillAssessment';
 import { SkillLevel } from '../types/gamification';
 
-const db = getSyncFirebaseDb;
+const db = getSyncFirebaseDb();
 
 // Advanced filtering types
 export interface ChallengeDiscoveryFilters {
@@ -109,7 +109,7 @@ export const discoverChallenges = async (
     const userContext = await buildUserContext(userId);
     
     // Build base query
-    const challengesQuery = collection(db(), 'challenges');
+    const challengesQuery = collection(db, 'challenges');
     const constraints: any[] = [];
 
     // Apply filters

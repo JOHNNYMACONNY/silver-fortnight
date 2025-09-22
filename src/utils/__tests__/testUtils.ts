@@ -210,14 +210,15 @@ export const mockFramerMotion = () => {
   jest.mock('framer-motion', () => {
     const React = require('react');
     return {
+      __esModule: true,
       motion: {
-        div: ({ children, ...props }: any) => React.createElement('div', props, children),
-        button: ({ children, ...props }: any) => React.createElement('button', props, children),
-        form: ({ children, ...props }: any) => React.createElement('form', props, children),
-        span: ({ children, ...props }: any) => React.createElement('span', props, children),
-        section: ({ children, ...props }: any) => React.createElement('section', props, children),
+        div: (props: any) => React.createElement('div', props, props.children),
+        button: (props: any) => React.createElement('button', props, props.children),
+        form: (props: any) => React.createElement('form', props, props.children),
+        span: (props: any) => React.createElement('span', props, props.children),
+        section: (props: any) => React.createElement('section', props, props.children),
       },
-      AnimatePresence: ({ children }: any) => children,
+      AnimatePresence: (props: any) => React.createElement(React.Fragment, null, props.children),
       useAnimation: () => ({
         start: jest.fn(),
         stop: jest.fn(),

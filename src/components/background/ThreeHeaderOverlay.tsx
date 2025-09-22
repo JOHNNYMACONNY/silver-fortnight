@@ -1,5 +1,6 @@
-import React from 'react';
-import WebGLCanvas from './WebGLCanvas';
+import React, { Suspense, lazy } from 'react';
+
+const WebGLCanvas = lazy(() => import('./WebGLCanvas'));
 
 export type EffectsPreset = 'ribbons' | 'aurora' | 'metaballs' | 'audio';
 export type EffectsBlendMode = 'screen' | 'soft-light' | 'overlay' | 'plus-lighter';
