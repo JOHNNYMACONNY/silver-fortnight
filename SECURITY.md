@@ -77,6 +77,16 @@ All commits must pass:
 - Dependency vulnerability scans
 - Unit tests including security tests
 
+### CI Security Checks
+
+Our CI runs `scripts/security-checks.sh`, which performs:
+- npm audit (warn on low-severity issues, fail on high)
+- ESLint security rules (treated as warnings in CI to avoid blocking deploys; details reported)
+- Sensitive files detection
+  - Fails only if sensitive files are tracked in git
+  - Untracked local files like `.env` are warnings
+- Security tests via `jest.config.security.cjs`
+
 ### Code Review Requirements
 
 Security-related changes require:
@@ -85,6 +95,11 @@ Security-related changes require:
 2. Passing CI/CD security checks
 3. Documentation updates if applicable
 4. Security test coverage
+
+### Environment Files
+
+- Example env: `.env.example` must exist and be kept up-to-date
+- Local env: `.env` must never be committed; CI treats presence as a warning only if untracked
 
 ## Security Best Practices
 

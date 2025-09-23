@@ -502,3 +502,24 @@ You can always set the exit code when leaks are encountered with the --exit-code
 1 - leaks or error encountered
 126 - unknown flag
 ```
+
+---
+
+## Project Testing and CI (Repository-Specific)
+
+This repository uses Jest with TypeScript in an ESM setup and a two-tier CI strategy for tests.
+
+- Fast CI (default for PRs)
+  - `npm run test:ci`
+  - Runs unit, migration, and security suites; skips heavy integration/UI tests for speed
+  - Uses `babel.config.cjs` to support TS/JS/JSX transforms alongside ts-jest
+
+- Full Test Suite (manual/nightly)
+  - `npm run test:ci:full`
+  - Runs all tests, including integration/UI
+
+Notes
+- The repo is ESM (`"type": "module"`), and Babel config is in CommonJS format: `babel.config.cjs`.
+- Security checks are executed via `scripts/security-checks.sh` in CI.
+  - Untracked local secrets (e.g., `.env`) are reported as warnings.
+  - CI fails only if sensitive files are tracked in git.
