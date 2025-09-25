@@ -23,6 +23,14 @@ import { CollaborationRoleData, RoleState, Skill } from '../types/collaboration'
 
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
+import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '../components/ui/Card';
+import { BentoGrid, BentoItem } from '../components/ui/BentoGrid';
+import AnimatedHeading from '../components/ui/AnimatedHeading';
+import GradientMeshBackground from '../components/ui/GradientMeshBackground';
+import Box from '../components/layout/primitives/Box';
+import Stack from '../components/layout/primitives/Stack';
+import { TopicLink } from '../components/ui/TopicLink';
+import { semanticClasses } from '../utils/semanticColors';
 import { formatDate } from '../utils/dateUtils';
 import { getProfileImageUrl } from '../utils/imageUtils';
 
@@ -266,270 +274,354 @@ export const CollaborationDetailPage: React.FC = () => {
   }
 
   return (
-    <>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="mb-6">
-        <Link
-          to="/collaborations"
-            className="inline-flex items-center text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
-        >
-          <ArrowLeft className="mr-1 h-4 w-4" />
-          Back to Collaborations
-        </Link>
-      </div>
+    <Box className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Stack gap="lg">
+        {/* Back Navigation */}
+        <Box className="mb-4">
+          <TopicLink 
+            to="/collaborations" 
+            topic="collaboration"
+            className="inline-flex items-center text-sm font-medium hover:opacity-80 transition-opacity"
+          >
+            <ArrowLeft className="mr-1 h-4 w-4" />
+            Back to Collaborations
+          </TopicLink>
+        </Box>
 
-      <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
-        {/* Collaboration Header */}
-        <div className="p-6 border-b border-border">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between">
-            <div>
-              <div className="flex items-center">
-                <h1 className="text-2xl font-bold text-foreground">{collaboration.title}</h1>
-                <span className={`ml-3 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
-                  collaboration.status === 'open' ? 'bg-success/10 text-success-foreground border-success/20' :
-                  collaboration.status === 'in-progress' ? 'bg-info/10 text-info-foreground border-info/20' :
-                  collaboration.status === 'completed' ? 'bg-muted text-muted-foreground border-border' :
-                  'bg-destructive/10 text-destructive-foreground border-destructive/20'
-                }`}>
-                  {collaboration.status === 'open' ? 'Open' :
-                   collaboration.status === 'in-progress' ? 'In Progress' :
-                   collaboration.status === 'completed' ? 'Completed' :
-                   'Cancelled'}
-                </span>
-              </div>
+        {/* Hero Section with GradientMeshBackground */}
+        <Box className="relative rounded-2xl overflow-hidden mb-8">
+          <GradientMeshBackground variant="primary" intensity="medium" className="p-8 md:p-12">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between">
+              <div className="flex-1">
+                <div className="flex items-center mb-4">
+                  <AnimatedHeading as="h1" animation="kinetic" className="text-3xl md:text-4xl font-bold text-foreground mr-4">
+                    {collaboration.title}
+                  </AnimatedHeading>
+                  <Badge 
+                    variant={collaboration.status === 'open' ? 'default' : 
+                            collaboration.status === 'in-progress' ? 'default' : 
+                            collaboration.status === 'completed' ? 'secondary' : 'destructive'}
+                    topic={collaboration.status === 'open' ? 'success' : 
+                           collaboration.status === 'in-progress' ? 'info' : 
+                           collaboration.status === 'completed' ? 'muted' : 'destructive'}
+                    className="text-sm"
+                  >
+                    {collaboration.status === 'open' ? 'Open' :
+                     collaboration.status === 'in-progress' ? 'In Progress' :
+                     collaboration.status === 'completed' ? 'Completed' :
+                     'Cancelled'}
+                  </Badge>
+                </div>
 
-              <div className="mt-2 flex items-center">
-                <ProfileHoverCard
-                  userId={creatorProfile?.id || (collaboration as any).creatorId || (collaboration as any).ownerId || ''}
-                  displayName={creatorProfile?.displayName || (collaboration as any).creatorName || (collaboration as any).ownerName || 'Owner'}
-                  photoURL={creatorProfile?.photoURL || creatorProfile?.profilePicture || (collaboration as any).creatorPhotoURL || (collaboration as any).ownerPhotoURL || ''}
-                >
-                  <div className="flex items-center">
-                    <img
-                      src={
-                        getProfileImageUrl(
-                          creatorProfile?.profilePicture || 
-                          (collaboration as any).creatorPhotoURL || 
-                          (collaboration as any).ownerPhotoURL,
-                          32
-                        ) || 
-                        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                <div className="flex items-center mb-4">
+                  <ProfileHoverCard
+                    userId={creatorProfile?.id || (collaboration as any).creatorId || (collaboration as any).ownerId || ''}
+                    displayName={creatorProfile?.displayName || (collaboration as any).creatorName || (collaboration as any).ownerName || 'Owner'}
+                    photoURL={creatorProfile?.photoURL || creatorProfile?.profilePicture || (collaboration as any).creatorPhotoURL || (collaboration as any).ownerPhotoURL || ''}
+                  >
+                    <div className="flex items-center">
+                      <img
+                        src={
+                          getProfileImageUrl(
+                            creatorProfile?.profilePicture || 
+                            (collaboration as any).creatorPhotoURL || 
+                            (collaboration as any).ownerPhotoURL,
+                            40
+                          ) || 
+                          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            creatorProfile?.displayName || 
+                            (collaboration as any).creatorName || 
+                            (collaboration as any).ownerName || 
+                            'Owner'
+                          )}&background=random`
+                        }
+                        alt={
                           creatorProfile?.displayName || 
                           (collaboration as any).creatorName || 
                           (collaboration as any).ownerName || 
                           'Owner'
-                        )}&background=random`
-                      }
-                      alt={
-                        creatorProfile?.displayName || 
-                        (collaboration as any).creatorName || 
-                        (collaboration as any).ownerName || 
-                        'Owner'
-                      }
-                      className="h-6 w-6 rounded-full mr-2"
-                    />
-                    <span className="text-sm font-medium text-foreground">
-                      {creatorProfile?.displayName || 
-                       (collaboration as any).creatorName || 
-                       (collaboration as any).ownerName || 
-                       'Owner'}
-                    </span>
-                  </div>
-                </ProfileHoverCard>
-                <span className="mx-2 text-muted-foreground">&middot;</span>
-                <span className="text-sm text-muted-foreground">{formattedDate}</span>
+                        }
+                        className="h-8 w-8 rounded-full mr-3"
+                      />
+                      <span className="text-lg font-medium text-foreground">
+                        {creatorProfile?.displayName || 
+                         (collaboration as any).creatorName || 
+                         (collaboration as any).ownerName || 
+                         'Owner'}
+                      </span>
+                    </div>
+                  </ProfileHoverCard>
+                  <span className="mx-3 text-muted-foreground">&middot;</span>
+                  <span className="text-muted-foreground">{formattedDate}</span>
+                </div>
+
+                <p className="text-lg text-muted-foreground max-w-3xl">
+                  {collaboration.description}
+                </p>
               </div>
-            </div>
 
-            {isOwner && (
-              <div className="mt-4 md:mt-0 flex-shrink-0 flex items-center space-x-2">
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="inline-flex items-center px-3 py-1.5 border border-border rounded-md shadow-sm text-sm font-medium text-foreground bg-card hover:bg-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
-                >
-                  <Edit className="-ml-0.5 mr-2 h-4 w-4" />
-                  Edit
-                </button>
-                <button
-                  onClick={() => setIsDeleting(true)}
-                  className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-destructive"
-                >
-                  <Trash2 className="-ml-0.5 mr-2 h-4 w-4" />
-                  Delete
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="p-6">
-          <div className="mb-6">
-            <h2 className="text-lg font-medium text-foreground">About this Collaboration</h2>
-            <p className="mt-2 text-base text-muted-foreground whitespace-pre-wrap">{collaboration.description}</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-lg font-medium text-foreground">Details</h3>
-              <dl className="mt-2 space-y-4">
-                {collaboration.location && (
-                  <div className="flex">
-                    <dt className="flex-shrink-0">
-                      <MapPin className="h-5 w-5 text-muted-foreground" />
-                    </dt>
-                    <dd className="ml-3 text-base text-foreground">{collaboration.location}</dd>
-                  </div>
-                )}
-                {collaboration.timeline && (
-                  <div className="flex">
-                    <dt className="flex-shrink-0">
-                      <Clock className="h-5 w-5 text-muted-foreground" />
-                    </dt>
-                    <dd className="ml-3 text-base text-foreground">{collaboration.timeline}</dd>
-                  </div>
-                )}
-                {collaboration.compensation && (
-                  <div className="flex">
-                    <dt className="flex-shrink-0">
-                      <DollarSign className="h-5 w-5 text-muted-foreground" />
-                    </dt>
-                    <dd className="ml-3 text-base text-foreground">{collaboration.compensation}</dd>
-                  </div>
-                )}
-                {collaboration.maxParticipants > 0 && (
-                  <div className="flex">
-                    <dt className="flex-shrink-0">
-                      <Users className="h-5 w-5 text-muted-foreground" />
-                    </dt>
-                    <dd className="ml-3 text-base text-foreground">
-                      Up to {collaboration.maxParticipants} collaborators
-                    </dd>
-                  </div>
-                )}
-              </dl>
+              {isOwner && (
+                <div className="mt-6 md:mt-0 flex-shrink-0 flex items-center space-x-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditing(true)}
+                    className="flex items-center"
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => setIsDeleting(true)}
+                    className="flex items-center"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </Button>
+                </div>
+              )}
             </div>
-            <div>
-              <h3 className="text-lg font-medium text-foreground">Skills Needed</h3>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {collaboration.skillsNeeded && collaboration.skillsNeeded.length > 0 ? (
-                  collaboration.skillsNeeded.map(skill => (
-                    <Badge key={skill} variant="outline" className="text-xs rounded-full px-3 py-1">
-                      {skill}
-                    </Badge>
-                  ))
-                ) : (
-                  <p className="text-muted-foreground">No specific skills required</p>
-                )}
-              </div>
-            </div>
-          </div>
+          </GradientMeshBackground>
+        </Box>
 
-          {/* Roles Section */}
-          {collaborationId && ((collaboration as any).roles && Array.isArray((collaboration as any).roles) && (collaboration as any).roles.length > 0) && (
-            <div className="mt-8">
-              <h3 className="text-lg font-medium text-foreground mb-4">Available Roles</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {transformLegacyRoles((collaboration as any).roles, collaborationId).map((role) => (
-                  <RoleCard
-                    key={role.id}
-                    role={role}
-                    collaborationId={collaborationId}
-                    isCreator={isOwner}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {!isOwner && !isCollaborator && (
-            <div className="mt-8">
-              <Button
-                className="w-full"
-                topic="collaboration"
-                onClick={() => setShowApplicationForm(true)}
-                disabled={hasApplied}
-              >
-                {hasApplied ? 'Application Submitted' : 'Apply to Collaborate'}
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Tabs for Details/Applications */}
-      <div className="mt-8">
-        <div className="border-b border-border">
-          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-            <button
-              onClick={() => setActiveTab('details')}
-              className={`${
-                activeTab === 'details'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+        {/* Main Content with BentoGrid Layout */}
+        <BentoGrid
+          layoutPattern="asymmetric"
+          visualRhythm="alternating"
+          contentAwareLayout={true}
+          className="mb-8"
+          gap="lg"
+        >
+          {/* Details Card - Large */}
+          <BentoItem
+            asymmetricSize="large"
+            contentType="mixed"
+            layoutRole="complex"
+          >
+            <Card 
+              variant="premium" 
+              depth="lg"
+              glow="subtle"
+              glowColor="blue"
+              className="h-[300px] flex flex-col"
             >
-              Collaborators
-            </button>
-            {isOwner && (
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl font-semibold">Collaboration Details</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 pb-4">
+                <div className="space-y-4">
+                  {collaboration.location && (
+                    <div className="flex items-center space-x-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                      <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <span className="text-sm font-medium text-foreground">{collaboration.location}</span>
+                    </div>
+                  )}
+                  {collaboration.timeline && (
+                    <div className="flex items-center space-x-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                      <Clock className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <span className="text-sm font-medium text-foreground">{collaboration.timeline}</span>
+                    </div>
+                  )}
+                  {collaboration.compensation && (
+                    <div className="flex items-center space-x-3 p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
+                      <DollarSign className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      <span className="text-sm font-medium text-foreground">{collaboration.compensation}</span>
+                    </div>
+                  )}
+                  {collaboration.maxParticipants > 0 && (
+                    <div className="flex items-center space-x-3 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
+                      <Users className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                      <span className="text-sm font-medium text-foreground">
+                        Up to {collaboration.maxParticipants} collaborators
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </BentoItem>
+
+          {/* Skills Card - Small */}
+          <BentoItem
+            asymmetricSize="small"
+            contentType="feature"
+            layoutRole="simple"
+          >
+            <Card 
+              variant="premium" 
+              depth="lg"
+              glow="subtle"
+              glowColor="purple"
+              className="h-[300px] flex flex-col"
+            >
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold">Skills Needed</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 pb-4">
+                <div className="space-y-3">
+                  {collaboration.skillsNeeded && collaboration.skillsNeeded.length > 0 ? (
+                    collaboration.skillsNeeded.map(skill => (
+                      <Badge 
+                        key={skill} 
+                        variant="outline" 
+                        topic="collaboration"
+                        className="text-xs rounded-full px-3 py-1 mr-2 mb-2"
+                      >
+                        {skill}
+                      </Badge>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No specific skills required</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </BentoItem>
+
+          {/* Roles Section - Full Width */}
+          {collaborationId && ((collaboration as any).roles && Array.isArray((collaboration as any).roles) && (collaboration as any).roles.length > 0) && (
+            <BentoItem
+              asymmetricSize="full"
+              contentType="mixed"
+              layoutRole="complex"
+            >
+              <Card 
+                variant="premium" 
+                depth="lg"
+                glow="subtle"
+                glowColor="green"
+                className="min-h-[200px]"
+              >
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-xl font-semibold">Available Roles</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {transformLegacyRoles((collaboration as any).roles, collaborationId).map((role) => (
+                      <RoleCard
+                        key={role.id}
+                        role={role}
+                        collaborationId={collaborationId}
+                        isCreator={isOwner}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </BentoItem>
+          )}
+
+          {/* Application Button - Full Width */}
+          {!isOwner && !isCollaborator && (
+            <BentoItem
+              asymmetricSize="full"
+              contentType="feature"
+              layoutRole="simple"
+            >
+              <Card 
+                variant="premium" 
+                depth="lg"
+                glow="subtle"
+                glowColor="purple"
+                className="min-h-[100px] flex items-center justify-center"
+              >
+                <CardContent className="text-center">
+                  <Button
+                    size="lg"
+                    topic="collaboration"
+                    onClick={() => setShowApplicationForm(true)}
+                    disabled={hasApplied}
+                    className="px-8 py-3 text-lg"
+                  >
+                    {hasApplied ? 'Application Submitted' : 'Apply to Collaborate'}
+                  </Button>
+                </CardContent>
+              </Card>
+            </BentoItem>
+          )}
+        </BentoGrid>
+
+        {/* Tabs for Details/Applications */}
+        <Box className="mt-8">
+          <div className="border-b border-border">
+            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
               <button
-                onClick={() => setActiveTab('applications')}
+                onClick={() => setActiveTab('details')}
                 className={`${
-                  activeTab === 'applications'
+                  activeTab === 'details'
                     ? 'border-primary text-primary'
                     : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               >
-                Applications ({applications.filter(app => app.status === 'pending').length})
+                Collaborators
               </button>
+              {isOwner && (
+                <button
+                  onClick={() => setActiveTab('applications')}
+                  className={`${
+                    activeTab === 'applications'
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                >
+                  Applications ({applications.filter(app => app.status === 'pending').length})
+                </button>
+              )}
+            </nav>
+          </div>
+          <div className="mt-6">
+            {activeTab === 'details' && (
+              <Card variant="premium" depth="md" glow="subtle" glowColor="blue">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold">Current Collaborators</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {collaboration.collaborators && collaboration.collaborators.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                      {collaboration.collaborators.map(userId => (
+                        <ProfileHoverCard key={userId} userId={userId}>
+                          <div className="bg-muted/50 p-4 rounded-lg flex items-center space-x-3 hover:bg-muted/70 transition-colors cursor-pointer">
+                            <div className="h-10 w-10 rounded-full bg-muted"></div>
+                            <span className="text-sm font-medium text-foreground">User {userId.substring(0, 5)}</span>
+                          </div>
+                        </ProfileHoverCard>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-center py-8">No collaborators have joined yet.</p>
+                  )}
+                </CardContent>
+              </Card>
             )}
-          </nav>
-        </div>
-        <div className="mt-6">
-          {activeTab === 'details' && (
-            <div>
-              <h3 className="text-lg font-medium text-foreground mb-4">Current Collaborators</h3>
-              {collaboration.collaborators && collaboration.collaborators.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {collaboration.collaborators.map(userId => (
-                    <ProfileHoverCard key={userId} userId={userId}>
-                      <div className="bg-muted/50 p-3 rounded-lg flex items-center space-x-3">
-                        {/* Placeholder for user avatar */}
-                        <div className="h-10 w-10 rounded-full bg-muted"></div>
-                        {/* Placeholder for user name */}
-                        <span className="text-sm font-medium text-foreground">User {userId.substring(0, 5)}</span>
-                      </div>
-                    </ProfileHoverCard>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground">No collaborators have joined yet.</p>
-              )}
-            </div>
-          )}
-          {activeTab === 'applications' && isOwner && (
-            <div>
-              <h3 className="text-lg font-medium text-foreground mb-4">Pending Applications</h3>
-              {applications.filter(app => app.status === 'pending').length > 0 ? (
-                <div className="space-y-4">
-                  {applications
-                    .filter(app => app.status === 'pending' && app.id)
-                    .map(application => (
-                      <CollaborationApplicationCard
-                        key={application.id}
-                        application={application}
-                        isOwner={isOwner}
-                        onAccept={() => handleAcceptApplication(application.id!)}
-                        onReject={() => handleRejectApplication(application.id!)}
-                      />
-                    ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground">No pending applications.</p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+            {activeTab === 'applications' && isOwner && (
+              <Card variant="premium" depth="md" glow="subtle" glowColor="purple">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold">Pending Applications</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {applications.filter(app => app.status === 'pending').length > 0 ? (
+                    <div className="space-y-4">
+                      {applications
+                        .filter(app => app.status === 'pending' && app.id)
+                        .map(application => (
+                          <CollaborationApplicationCard
+                            key={application.id}
+                            application={application}
+                            isOwner={isOwner}
+                            onAccept={() => handleAcceptApplication(application.id!)}
+                            onReject={() => handleRejectApplication(application.id!)}
+                          />
+                        ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-center py-8">No pending applications.</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </Box>
+      </Stack>
 
       <Modal
         isOpen={isDeleting}
@@ -559,8 +651,7 @@ export const CollaborationDetailPage: React.FC = () => {
           />
         )}
       </Modal>
-      </div>
-    </>
+    </Box>
   );
 };
 
