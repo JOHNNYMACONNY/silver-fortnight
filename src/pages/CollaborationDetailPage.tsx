@@ -303,7 +303,7 @@ export const CollaborationDetailPage: React.FC = () => {
                             collaboration.status === 'completed' ? 'secondary' : 'destructive'}
                     topic={collaboration.status === 'open' ? 'success' : 
                            collaboration.status === 'in-progress' ? 'collaboration' : 
-                           collaboration.status === 'completed' ? 'muted' : 'destructive'}
+                           collaboration.status === 'completed' ? 'community' : undefined}
                     className="text-sm"
                   >
                     {collaboration.status === 'open' ? 'Open' :
