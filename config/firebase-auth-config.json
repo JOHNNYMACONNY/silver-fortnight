@@ -1,0 +1,23 @@
+{
+  "projectId": "tradeya-45ede",
+  "authDomains": [
+    "tradeya-45ede.firebaseapp.com",
+    "tradeya-45ede.web.app",
+    "tradeya.com",
+    "www.tradeya.com"
+  ],
+  "previewDomains": [
+    "*.vercel.app",
+    "*.netlify.app",
+    "*.github.io",
+    "*.web.app",
+    "*.firebaseapp.com"
+  ],
+  "instructions": {
+    "step1": "Go to Firebase Console > Authentication > Settings > Authorized domains",
+    "step2": "Add your PR preview domain to the authorized domains list",
+    "step3": "Add wildcard domains for preview URLs (*.vercel.app, *.netlify.app)",
+    "step4": "Save the configuration",
+    "step5": "Test authentication on your PR preview"
+  }
+}
