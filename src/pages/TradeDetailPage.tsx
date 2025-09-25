@@ -29,6 +29,15 @@ import { ReviewForm } from '../components/features/reviews/ReviewForm';
 import { MultipleImageUploader } from '../components/features/uploads/MultipleImageUploader';
 import PerformanceMonitor from '../components/ui/PerformanceMonitor';
 
+// Import home page design components
+import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import AnimatedHeading from '../components/ui/AnimatedHeading';
+import GradientMeshBackground from '../components/ui/GradientMeshBackground';
+import Box from '../components/layout/primitives/Box';
+import Stack from '../components/layout/primitives/Stack';
+import { semanticClasses } from '../utils/semanticColors';
+
 import TradeProposalDashboard from '../components/features/trades/TradeProposalDashboard';
 import TradeStatusTimeline from '../components/features/trades/TradeStatusTimeline';
 import TradeCompletionForm from '../components/features/trades/TradeCompletionForm';
@@ -468,168 +477,225 @@ export const TradeDetailPage: React.FC = () => {
       {/* Performance monitoring (invisible) */}
       <PerformanceMonitor pageName={`TradeDetailPage-${tradeId}`} />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 mb-6">
-          <Link to="/trades" className="font-medium text-primary hover:text-primary/90">
-            ← Back to Trades
-          </Link>
-        </div>
-
-      <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
-        {/* Trade header */}
-        <div className="p-6 border-b border-border">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">{trade.title}</h1>
+      <Box className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Stack gap="md">
+          {/* Hero Section with GradientMeshBackground */}
+          <Box className="relative rounded-2xl overflow-hidden mb-8">
+            <GradientMeshBackground variant="primary" intensity="medium" className="p-8 md:p-12">
+              <div className="flex items-center justify-between mb-4">
+                <Link to="/trades" className="font-medium text-primary hover:text-primary/90 flex items-center">
+                  ← Back to Trades
+                </Link>
+              </div>
+              <AnimatedHeading as="h1" animation="kinetic" className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+                {trade.title}
+              </AnimatedHeading>
               <div className="flex items-center text-muted-foreground text-sm">
                 <span>Posted by {tradeCreator?.displayName || 'Unknown User'}</span>
                 <span className="mx-2">•</span>
                 <span>{formatDate(trade.createdAt.toDate())}</span>
               </div>
-            </div>
-            <div className="flex flex-col gap-2 items-end">
-              <span className="bg-primary/10 text-primary-foreground text-sm font-medium px-2.5 py-0.5 rounded">
-                {trade.category}
-              </span>
-              <span className={`${getTradeStatusClasses(trade.status)} text-sm font-medium px-2.5 py-0.5 rounded`}>
-                {formatStatus(trade.status)}
-              </span>
-            </div>
-          </div>
-        </div>
+            </GradientMeshBackground>
+          </Box>
 
-        {/* Trade creator profile */}
-        <div className="p-6 border-b border-border">
-          <h2 className="text-xl font-semibold text-foreground mb-4">Posted By</h2>
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              {loadingCreator ? (
-                <div className="w-16 h-16 rounded-full bg-muted animate-pulse"></div>
-              ) : (
-                <ProfileImageWithUser
-                  userId={trade.creatorId || ''}
-                  profileUrl={tradeCreator?.profilePicture || tradeCreator?.photoURL}
-                  size="medium"
-                  className="w-16 h-16 rounded-full"
+          {/* Trade Status and Category Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <Card 
+              variant="premium" 
+              tilt={true}
+              depth="lg"
+              glow="subtle"
+              glowColor="orange"
+              interactive={true}
+              className="h-[120px] flex flex-col"
+            >
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-semibold">Category</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 pb-3">
+                <Badge variant="default" topic="trades" className="text-sm">
+                  {trade.category}
+                </Badge>
+              </CardContent>
+            </Card>
+
+            <Card 
+              variant="premium" 
+              tilt={true}
+              depth="lg"
+              glow="subtle"
+              glowColor="blue"
+              interactive={true}
+              className="h-[120px] flex flex-col"
+            >
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-semibold">Status</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 pb-3">
+                <span className={`${getTradeStatusClasses(trade.status)} text-sm font-medium px-3 py-1 rounded-full`}>
+                  {formatStatus(trade.status)}
+                </span>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Trade Creator Profile Card */}
+          <Card 
+            variant="premium" 
+            tilt={true}
+            depth="lg"
+            glow="subtle"
+            glowColor="purple"
+            interactive={true}
+            className="mb-6"
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl font-semibold">Posted By</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 pb-3">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  {loadingCreator ? (
+                    <div className="w-16 h-16 rounded-full bg-muted animate-pulse"></div>
+                  ) : (
+                    <ProfileImageWithUser
+                      userId={trade.creatorId || ''}
+                      profileUrl={tradeCreator?.profilePicture || tradeCreator?.photoURL}
+                      size="medium"
+                      className="w-16 h-16 rounded-full"
+                    />
+                  )}
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-lg font-medium text-foreground">{tradeCreator?.displayName || 'Unknown User'}</h3>
+                  {tradeCreator && (
+                    <p className="text-muted-foreground text-sm">
+                      {tradeCreator.location || 'No location provided'}
+                    </p>
+                  )}
+                  <div className="mt-2">
+                    <Link
+                      to={`/profile/${trade.creatorId}`}
+                      className={`${semanticClasses('community').link} text-sm font-medium`}
+                    >
+                      View Profile →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Trade Status Timeline Card */}
+          <Card 
+            variant="premium" 
+            tilt={true}
+            depth="lg"
+            glow="subtle"
+            glowColor="blue"
+            interactive={true}
+            className="mb-6"
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl font-semibold">Trade Status</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 pb-3">
+              <TradeStatusTimeline status={trade.status} />
+
+              {/* Status explanation based on current status */}
+              {trade.status === 'open' && (
+                <div className="mt-4 bg-info/10 border border-info/20 text-info-foreground px-4 py-3 rounded-lg">
+                  <p className="font-medium">Open for Proposals</p>
+                  <p>This trade is open and accepting proposals from interested users.</p>
+                </div>
+              )}
+
+              {trade.status === 'in-progress' && (
+                <div className="mt-4 bg-warning/10 border border-warning/20 text-warning-foreground px-4 py-3 rounded-lg">
+                  <p className="font-medium">In Progress</p>
+                  <p>This trade is currently in progress. When work is completed, either participant can request completion.</p>
+                </div>
+              )}
+
+              {trade.status === 'pending_evidence' && (
+                <div className="mt-4 bg-warning/10 border border-warning/20 text-warning-foreground px-4 py-3 rounded-lg">
+                  <p className="font-medium">Waiting for Evidence</p>
+                  <p>One user has submitted evidence. Waiting for the other user to submit their evidence.</p>
+                </div>
+              )}
+
+              {trade.status === 'pending_confirmation' && (
+                <div className="mt-4 bg-primary/10 border border-primary/20 text-primary-foreground px-4 py-3 rounded-lg">
+                  <p className="font-medium">Pending Confirmation</p>
+                  <p>Evidence has been submitted and the trade is awaiting final confirmation.</p>
+
+                  {/* Direct confirmation button */}
+                  {currentUser && trade.completionRequestedBy !== currentUser.uid && (
+                    <div className="mt-4">
+                      <button
+                        onClick={handleConfirmCompletion}
+                        className="w-full bg-success text-success-foreground px-4 py-2 rounded-md hover:bg-success/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors duration-200"
+                      >
+                        Confirm Trade Completion
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Auto-completion countdown for pending confirmation trades */}
+              {trade.status === 'pending_confirmation' && trade.completionRequestedAt && (
+                <ConfirmationCountdown
+                  completionRequestedAt={trade.completionRequestedAt}
+                  className="mt-4"
                 />
               )}
-            </div>
-            <div className="ml-4">
-              <h3 className="text-lg font-medium text-foreground">{tradeCreator?.displayName || 'Unknown User'}</h3>
-              {tradeCreator && (
-                <p className="text-muted-foreground text-sm">
-                  {tradeCreator.location || 'No location provided'}
-                </p>
-              )}
-              <div className="mt-2">
-                <Link
-                  to={`/profile/${trade.creatorId}`}
-                  className="text-primary hover:text-primary/90 text-sm font-medium"
-                >
-                  View Profile
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Trade Status Timeline */}
-        <div className="p-6 border-b border-border">
-          <h2 className="text-xl font-semibold text-foreground mb-4">Trade Status</h2>
-          <TradeStatusTimeline status={trade.status} />
-
-          {/* Status explanation based on current status */}
-          {trade.status === 'open' && (
-            <div className="mt-4 bg-info/10 border border-info/20 text-info-foreground px-4 py-3 rounded-lg">
-              <p className="font-medium">Open for Proposals</p>
-              <p>This trade is open and accepting proposals from interested users.</p>
-            </div>
-          )}
-
-          {trade.status === 'in-progress' && (
-            <div className="mt-4 bg-warning/10 border border-warning/20 text-warning-foreground px-4 py-3 rounded-lg">
-              <p className="font-medium">In Progress</p>
-              <p>This trade is currently in progress. When work is completed, either participant can request completion.</p>
-            </div>
-          )}
-
-          {trade.status === 'pending_evidence' && (
-            <div className="mt-4 bg-warning/10 border border-warning/20 text-warning-foreground px-4 py-3 rounded-lg">
-              <p className="font-medium">Waiting for Evidence</p>
-              <p>One user has submitted evidence. Waiting for the other user to submit their evidence.</p>
-            </div>
-          )}
-
-          {trade.status === 'pending_confirmation' && (
-            <div className="mt-4 bg-primary/10 border border-primary/20 text-primary-foreground px-4 py-3 rounded-lg">
-              <p className="font-medium">Pending Confirmation</p>
-              <p>Evidence has been submitted and the trade is awaiting final confirmation.</p>
-
-              {/* Direct confirmation button */}
-              {currentUser && trade.completionRequestedBy !== currentUser.uid && (
-                <div className="mt-4">
-                  <button
-                    onClick={handleConfirmCompletion}
-                    className="w-full bg-success text-success-foreground px-4 py-2 rounded-md hover:bg-success/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors duration-200"
-                  >
-                    Confirm Trade Completion
-                  </button>
+              {trade.status === 'completed' && (
+                <div className="mt-4 bg-success/10 border border-success/20 text-success-foreground px-4 py-3 rounded-lg">
+                  <p className="font-medium">Completed</p>
+                  <p>This trade has been successfully completed by both parties.</p>
+                  {trade.autoCompleted && (
+                    <div className="mt-2 p-2 bg-info/10 border border-info/20 rounded text-info-foreground">
+                      <p className="text-sm font-medium">Auto-Completed</p>
+                      <p className="text-xs">{trade.autoCompletionReason}</p>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Auto-completion countdown for pending confirmation trades */}
-          {trade.status === 'pending_confirmation' && trade.completionRequestedAt && (
-            <ConfirmationCountdown
-              completionRequestedAt={trade.completionRequestedAt}
-              className="mt-4"
-            />
-          )}
-
-          {trade.status === 'completed' && (
-            <div className="mt-4 bg-success/10 border border-success/20 text-success-foreground px-4 py-3 rounded-lg">
-              <p className="font-medium">Completed</p>
-              <p>This trade has been successfully completed by both parties.</p>
-              {trade.autoCompleted && (
-                <div className="mt-2 p-2 bg-info/10 border border-info/20 rounded text-info-foreground">
-                  <p className="text-sm font-medium">Auto-Completed</p>
-                  <p className="text-xs">{trade.autoCompletionReason}</p>
+              {trade.status === 'cancelled' && (
+                <div className="mt-4 bg-muted border border-border text-muted-foreground px-4 py-3 rounded-lg">
+                  <p className="font-medium">Cancelled</p>
+                  <p>This trade has been cancelled and is no longer active.</p>
                 </div>
               )}
-            </div>
-          )}
 
-          {trade.status === 'cancelled' && (
-            <div className="mt-4 bg-muted border border-border text-muted-foreground px-4 py-3 rounded-lg">
-              <p className="font-medium">Cancelled</p>
-              <p>This trade has been cancelled and is no longer active.</p>
-            </div>
-          )}
+              {trade.status === 'disputed' && (
+                <div className="mt-4 bg-destructive/10 border border-destructive/20 text-destructive-foreground px-4 py-3 rounded-lg">
+                  <p className="font-medium">Disputed</p>
+                  <p>This trade is currently disputed and requires resolution.</p>
+                </div>
+              )}
 
-          {trade.status === 'disputed' && (
-            <div className="mt-4 bg-destructive/10 border border-destructive/20 text-destructive-foreground px-4 py-3 rounded-lg">
-              <p className="font-medium">Disputed</p>
-              <p>This trade is currently disputed and requires resolution.</p>
-            </div>
-          )}
-
-          {/* Completion Form - Only show when explicitly triggered */}
-          {showCompletionForm && currentUser && (trade.status === 'in-progress' || trade.status === 'pending_evidence') &&
-            (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid) && (
-            <div className="mt-6 border-t border-border pt-6">
-              <h3 className="text-lg font-medium text-foreground mb-4">Request Trade Completion</h3>
-              <TradeCompletionForm
-                tradeId={trade.id!}
-                tradeName={trade.title}
-                onSuccess={() => {
-                  setShowCompletionForm(false);
-                  fetchTrade();
-                }}
-                onCancel={() => setShowCompletionForm(false)}
-              />
-            </div>
-          )}
+              {/* Completion Form - Only show when explicitly triggered */}
+              {showCompletionForm && currentUser && (trade.status === 'in-progress' || trade.status === 'pending_evidence') &&
+                (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid) && (
+                <div className="mt-6 border-t border-border pt-6">
+                  <h3 className="text-lg font-medium text-foreground mb-4">Request Trade Completion</h3>
+                  <TradeCompletionForm
+                    tradeId={trade.id!}
+                    tradeName={trade.title}
+                    onSuccess={() => {
+                      setShowCompletionForm(false);
+                      fetchTrade();
+                    }}
+                    onCancel={() => setShowCompletionForm(false)}
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Confirmation Form */}
           {(() => {
@@ -856,52 +922,78 @@ export const TradeDetailPage: React.FC = () => {
           </div>
         )}
 
-        {/* Trade details */}
-        <div className="p-6 border-b border-border">
-          <h2 className="text-xl font-semibold text-foreground mb-4">Description</h2>
-          <p className="text-muted-foreground mb-6 whitespace-pre-line">{trade.description}</p>
+          {/* Trade Details Card */}
+          <Card 
+            variant="premium" 
+            tilt={true}
+            depth="lg"
+            glow="subtle"
+            glowColor="orange"
+            interactive={true}
+            className="mb-6"
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl font-semibold">Description</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 pb-3">
+              <p className="text-muted-foreground mb-6 whitespace-pre-line">{trade.description}</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Offering</h3>
-              <div className="flex flex-wrap gap-2">
-                {Array.isArray(trade.offeredSkills) && trade.offeredSkills.length > 0 ? (
-                  trade.offeredSkills.map((skill: any, index: number) => (
-                    <TradeSkillDisplay
-                      key={index}
-                      skill={skill} // Pass TradeSkill object directly
-                      className="bg-success/10 text-success-foreground"
-                    />
-                  ))
-                ) : (
-                  <span className="text-muted-foreground">No skills offered</span>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Offering</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.isArray(trade.offeredSkills) && trade.offeredSkills.length > 0 ? (
+                      trade.offeredSkills.map((skill: any, index: number) => (
+                        <TradeSkillDisplay
+                          key={index}
+                          skill={skill} // Pass TradeSkill object directly
+                          className="bg-success/10 text-success-foreground"
+                        />
+                      ))
+                    ) : (
+                      <span className="text-muted-foreground">No skills offered</span>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Seeking</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.isArray(trade.requestedSkills) && trade.requestedSkills.length > 0 ? (
+                      trade.requestedSkills.map((skill: any, index: number) => (
+                        <TradeSkillDisplay
+                          key={index}
+                          skill={skill} // Pass TradeSkill object directly
+                          className="bg-info/10 text-info-foreground"
+                        />
+                      ))
+                    ) : (
+                      <span className="text-muted-foreground">No skills requested</span>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Seeking</h3>
-              <div className="flex flex-wrap gap-2">
-                {Array.isArray(trade.requestedSkills) && trade.requestedSkills.length > 0 ? (
-                  trade.requestedSkills.map((skill: any, index: number) => (
-                    <TradeSkillDisplay
-                      key={index}
-                      skill={skill} // Pass TradeSkill object directly
-                      className="bg-info/10 text-info-foreground"
-                    />
-                  ))
-                ) : (
-                  <span className="text-muted-foreground">No skills requested</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Contact section */}
-        <div className="p-6">
-          {isOwner ? (
-            <div className="bg-muted/50 p-4 rounded-lg">
+          {/* Contact/Actions Card */}
+          <Card 
+            variant="premium" 
+            tilt={true}
+            depth="lg"
+            glow="subtle"
+            glowColor="purple"
+            interactive={true}
+            className="mb-6"
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl font-semibold">
+                {isOwner ? 'Manage Trade' : 'Get in Touch'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 pb-3">
+              {isOwner ? (
+                <div className="bg-muted/50 p-4 rounded-lg">
               {isEditing ? (
                 <form onSubmit={handleSaveTrade}>
                   <h3 className="text-xl font-semibold text-foreground mb-4">Edit Trade</h3>
@@ -1243,82 +1335,147 @@ export const TradeDetailPage: React.FC = () => {
                   </p>
                 </div>
               )}
-            </div>
-          )}
-        </div>
-      </div>
+            </CardContent>
+          </Card>
+        </Stack>
+      </Box>
 
       {/* Proposal section for trade creators */}
       {currentUser && trade && trade.creatorId === currentUser.uid && trade.status === 'open' && (
-        <div id="proposals-section" className="mt-12">
-          <h2 className="text-2xl font-bold text-foreground mb-6">Trade Proposals</h2>
+        <Box className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Stack gap="md">
+            <AnimatedHeading as="h2" animation="slide" className="text-2xl md:text-3xl font-semibold text-foreground mb-6">
+              Trade Proposals
+            </AnimatedHeading>
 
-          <TradeProposalDashboard
-            tradeId={trade.id!}
-            onProposalAccepted={() => {
-              // Refresh trade data to get updated status
-              if (tradeId) {
-                getTrade(tradeId).then(({ data }) => {
-                  if (data) {
-                    setTrade(data as Trade);
-                  }
-                });
-              }
-            }}
-          />
-        </div>
+            <Card 
+              variant="premium" 
+              tilt={true}
+              depth="lg"
+              glow="subtle"
+              glowColor="blue"
+              interactive={true}
+            >
+              <CardContent className="p-6">
+                <TradeProposalDashboard
+                  tradeId={trade.id!}
+                  onProposalAccepted={() => {
+                    // Refresh trade data to get updated status
+                    if (tradeId) {
+                      getTrade(tradeId).then(({ data }) => {
+                        if (data) {
+                          setTrade(data as Trade);
+                        }
+                      });
+                    }
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </Stack>
+        </Box>
       )}
 
       {/* Proposal form for other users */}
       {currentUser && trade && trade.status === 'open' && trade.creatorId !== currentUser.uid && (
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-foreground mb-6">Submit a Proposal</h2>
+        <Box className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Stack gap="md">
+            <AnimatedHeading as="h2" animation="slide" className="text-2xl md:text-3xl font-semibold text-foreground mb-6">
+              Submit a Proposal
+            </AnimatedHeading>
 
-          {!showProposalForm ? (
-            <div className="bg-card border border-border rounded-lg p-6 text-center transition-colors duration-200">
-              <h3 className="text-lg font-medium text-foreground mb-2">Interested in this trade?</h3>
-              <p className="text-muted-foreground mb-4">Submit a proposal to let the trade creator know you're interested.</p>
-              <Button variant="primary" onClick={() => setShowProposalForm(true)}>
-                Submit Proposal
-              </Button>
-            </div>
-          ) : (
-            <TradeProposalForm
-              trade={trade as any}
-              onSuccess={() => {
-                setShowProposalForm(false);
-                addToast('success', 'Proposal submitted successfully!');
-              }}
-              onCancel={() => setShowProposalForm(false)}
-            />
-          )}
-        </div>
+            {!showProposalForm ? (
+              <Card 
+                variant="premium" 
+                tilt={true}
+                depth="lg"
+                glow="subtle"
+                glowColor="orange"
+                interactive={true}
+                className="text-center"
+              >
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-medium text-foreground mb-2">Interested in this trade?</h3>
+                  <p className="text-muted-foreground mb-4">Submit a proposal to let the trade creator know you're interested.</p>
+                  <Button variant="primary" onClick={() => setShowProposalForm(true)}>
+                    Submit Proposal
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card 
+                variant="premium" 
+                tilt={true}
+                depth="lg"
+                glow="subtle"
+                glowColor="orange"
+                interactive={true}
+              >
+                <CardContent className="p-6">
+                  <TradeProposalForm
+                    trade={trade as any}
+                    onSuccess={() => {
+                      setShowProposalForm(false);
+                      addToast('success', 'Proposal submitted successfully!');
+                    }}
+                    onCancel={() => setShowProposalForm(false)}
+                  />
+                </CardContent>
+              </Card>
+            )}
+          </Stack>
+        </Box>
       )}
 
       {/* Review section */}
       {currentUser && trade && trade.id && currentUser.uid !== (trade.creatorId) && (
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-foreground mb-6">Leave a Review</h2>
+        <Box className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Stack gap="md">
+            <AnimatedHeading as="h2" animation="slide" className="text-2xl md:text-3xl font-semibold text-foreground mb-6">
+              Leave a Review
+            </AnimatedHeading>
 
-          {showReviewForm ? (
-            <ReviewForm
-              tradeId={trade.id!}
-              tradeName={trade.title}
-              receiverId={trade.creatorId || trade.participantId || ''}
-              receiverName={tradeCreator?.displayName || 'User'}
-              onSuccess={() => setShowReviewForm(false)}
-              onCancel={() => setShowReviewForm(false)}
-            />
-          ) : (
-            <div className="bg-card border border-border rounded-lg p-6 text-center transition-colors duration-200">
-              <h3 className="text-lg font-medium text-foreground mb-2">Have you completed a trade with this user?</h3>
-              <p className="text-muted-foreground mb-4">Share your experience and help others in the community.</p>
-              <Button variant="primary" onClick={() => setShowReviewForm(true)}>
-                Write a Review
-              </Button>
-            </div>
-          )}
-        </div>
+            {showReviewForm ? (
+              <Card 
+                variant="premium" 
+                tilt={true}
+                depth="lg"
+                glow="subtle"
+                glowColor="purple"
+                interactive={true}
+              >
+                <CardContent className="p-6">
+                  <ReviewForm
+                    tradeId={trade.id!}
+                    tradeName={trade.title}
+                    receiverId={trade.creatorId || trade.participantId || ''}
+                    receiverName={tradeCreator?.displayName || 'User'}
+                    onSuccess={() => setShowReviewForm(false)}
+                    onCancel={() => setShowReviewForm(false)}
+                  />
+                </CardContent>
+              </Card>
+            ) : (
+              <Card 
+                variant="premium" 
+                tilt={true}
+                depth="lg"
+                glow="subtle"
+                glowColor="purple"
+                interactive={true}
+                className="text-center"
+              >
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-medium text-foreground mb-2">Have you completed a trade with this user?</h3>
+                  <p className="text-muted-foreground mb-4">Share your experience and help others in the community.</p>
+                  <Button variant="primary" onClick={() => setShowReviewForm(true)}>
+                    Write a Review
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </Stack>
+        </Box>
       )}
 
       {/* Related trades section (could be added in the future) */}
@@ -1328,7 +1485,6 @@ export const TradeDetailPage: React.FC = () => {
           {/* Related trades would go here */}
       {/* </div>
       </div> */}
-    </div>
     </>
   );
 };
