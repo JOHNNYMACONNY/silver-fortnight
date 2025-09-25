@@ -10,7 +10,7 @@ import { getSyncFirebaseDb } from '../firebase-config';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Alert, AlertDescription } from '../components/ui/Alert';
+import { Alert, AlertDescription, AlertTitle } from '../components/ui/Alert';
 
 export const TestMessagesPage: React.FC = () => {
   const { currentUser } = useAuth();
