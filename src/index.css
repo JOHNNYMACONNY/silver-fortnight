@@ -96,6 +96,8 @@
   --nav-background-dark: rgba(17, 24, 39, 0.8);
   --nav-border: rgba(229,231,235,0.5); /* gray-200/50 */
   --nav-border-dark: rgba(55,65,81,0.5); /* gray-700/50 */
+  --navbar-glass-border: rgba(229,231,235,0.5); /* gray-200/50 */
+  --navbar-glass-border-dark: rgba(55,65,81,0.5); /* gray-700/50 */
 }
 
 @theme dark {
@@ -133,6 +135,8 @@
   --nav-background-dark: rgba(17, 24, 39, 0.8);
   --nav-border: rgba(55,65,81,0.5); /* gray-700/50 */
   --nav-border-dark: rgba(55,65,81,0.5); /* gray-700/50 */
+  --navbar-glass-border: rgba(55,65,81,0.5); /* gray-700/50 */
+  --navbar-glass-border-dark: rgba(55,65,81,0.5); /* gray-700/50 */
 }
 
 :root {

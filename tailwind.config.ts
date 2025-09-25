@@ -226,8 +226,8 @@ const config = {
         },
         'navbar-glass': 'var(--nav-background)',
         'navbar-glass-dark': 'var(--nav-background-dark)',
-        'navbar-glass-border': 'var(--nav-border)',
-        'navbar-glass-border-dark': 'var(--nav-border-dark)',
+        'navbar-glass-border': 'var(--navbar-glass-border)',
+        'navbar-glass-border-dark': 'var(--navbar-glass-border-dark)',
         // Border token colors
         'border-default': 'var(--border-default)',
         'border-strong': 'var(--border-strong)',
