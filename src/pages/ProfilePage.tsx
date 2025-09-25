@@ -30,11 +30,19 @@ import { logEvent } from '../services/analytics';
 import { CollaborationCard } from '../components/features/collaborations/CollaborationCard';
 import TradeCard from '../components/features/trades/TradeCard';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { getSyncFirebaseDb } from '../firebase-config';
+import { getFirebaseInstances, initializeFirebase } from '../firebase-config';
 import Box from '../components/layout/primitives/Box';
 import Stack from '../components/layout/primitives/Stack';
 import Cluster from '../components/layout/primitives/Cluster';
 import Grid from '../components/layout/primitives/Grid';
+// HomePage patterns imports
+import PerformanceMonitor from '../components/ui/PerformanceMonitor';
+import AnimatedHeading from '../components/ui/AnimatedHeading';
+import GradientMeshBackground from '../components/ui/GradientMeshBackground';
+import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '../components/ui/Card';
+import { classPatterns, animations } from '../utils/designSystem';
+import { semanticClasses } from '../utils/semanticColors';
+import { motion } from 'framer-motion';
 
 
 type TabType = 'about' | 'portfolio' | 'gamification' | 'collaborations' | 'trades';
@@ -398,20 +406,23 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           return;
         }
         try {
-          const db = getSyncFirebaseDb();
-          const usersRef = collection(db, 'users');
-          const qh = query(usersRef, where('handle', '==', candidate));
-          const snap = await getDocs(qh);
-          const taken = snap.docs.some((d) => d.id !== targetUserId);
-          if (taken) {
-            setHandleError('This handle is already taken');
-            setSavingEdit(false);
-            return;
+          await initializeFirebase();
+          const { db } = await getFirebaseInstances();
+          if (db) {
+            const usersRef = collection(db, 'users');
+            const qh = query(usersRef, where('handle', '==', candidate));
+            const snap = await getDocs(qh);
+            const taken = snap.docs.some((d) => d.id !== targetUserId);
+            if (taken) {
+              setHandleError('This handle is already taken');
+              setSavingEdit(false);
+              return;
+            }
           }
           updates.handle = candidate;
           setHandleError(null);
-        } catch {
-          // ignore lookup failures; still try to set
+        } catch (err) {
+          console.warn('Handle availability check failed', err);
           updates.handle = candidate;
         }
       }
@@ -466,10 +477,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   useEffect(() => {
     if (!roleEnrichmentEnabled) return;
     if (!targetUserId || !collaborations || collaborations.length === 0) return;
-    const db = getSyncFirebaseDb();
     let isCancelled = false;
     (async () => {
       try {
+        await initializeFirebase();
+        const { db } = await getFirebaseInstances();
+        if (!db || isCancelled) return;
         const roleMap: Record<string, string> = {};
         // Fetch roles for currently visible set first to avoid excessive reads
         const slice = collaborations.slice(0, collabVisibleCount);
@@ -721,7 +734,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
 
   if (loading) {
     return (
-      <Box className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <Box className={classPatterns.homepageContainer}>
+        <PerformanceMonitor pageName="ProfilePage" />
         <div className="animate-pulse">
           <div className="bg-muted h-48 rounded mb-6" />
           <div className="bg-card rounded-lg shadow-sm border border-border p-6">
@@ -740,17 +754,26 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
 
   if (!userProfile) {
     return (
-      <Box className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-4">User Not Found</h1>
-        <p className="text-muted-foreground">The requested user profile could not be found.</p>
+      <Box className={classPatterns.homepageContainer}>
+        <PerformanceMonitor pageName="ProfilePage" />
+        <Card variant="glass" className="text-center p-12">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-foreground">User Not Found</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">The requested user profile could not be found.</p>
+          </CardContent>
+        </Card>
       </Box>
     );
   }
 
   return (
-    <Box className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Banner */}
-      <ProfileBanner
+    <Box className={classPatterns.homepageContainer}>
+      <PerformanceMonitor pageName="ProfilePage" />
+      <Stack gap="md">
+        {/* Banner */}
+        <ProfileBanner
         height="md"
         bannerUrl={userProfile.banner as any}
         isEditable={isOwnProfile}
@@ -773,37 +796,39 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         }}
       />
 
-      {/* Profile completeness banner (own profile) */}
-      {isOwnProfile && completenessPercent < 100 && (
-        <Box className="mt-4 mb-6 rounded-lg border border-border bg-muted/40 p-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-foreground">Complete your profile</p>
-              <p className="text-sm text-muted-foreground truncate">
-                {completenessPercent}% complete • Add {
-                  (() => {
-                    const display = missingFields.slice(0, 3).join(', ');
-                    const remaining = Math.max(0, missingFields.length - 3);
-                    return remaining > 0 ? `${display} and ${remaining} more` : display;
-                  })()
-                }
-              </p>
-              <div className="mt-2 h-2 w-full rounded bg-muted">
-                <div className="h-2 rounded bg-primary" style={{ width: `${completenessPercent}%` }} />
+        {/* Profile completeness banner (own profile) */}
+        {isOwnProfile && completenessPercent < 100 && (
+          <Card variant="glass" className="border-amber-200/20 bg-amber-50/5 dark:bg-amber-950/5">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground">Complete your profile</p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {completenessPercent}% complete • Add {
+                      (() => {
+                        const display = missingFields.slice(0, 3).join(', ');
+                        const remaining = Math.max(0, missingFields.length - 3);
+                        return remaining > 0 ? `${display} and ${remaining} more` : display;
+                      })()
+                    }
+                  </p>
+                  <div className="mt-2 h-2 w-full rounded bg-muted">
+                    <div className="h-2 rounded bg-primary" style={{ width: `${completenessPercent}%` }} />
+                  </div>
+                </div>
+                <Button variant="outline" className="shrink-0" onClick={() => setIsEditOpen(true)}>
+                  <Edit3 className="w-4 h-4 mr-2" />
+                  Complete now
+                </Button>
               </div>
-            </div>
-            <Button variant="outline" className="shrink-0" onClick={() => setIsEditOpen(true)}>
-              <Edit3 className="w-4 h-4 mr-2" />
-              Complete now
-            </Button>
-          </div>
-        </Box>
-      )}
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Profile Header */}
-      <Box id="profile-header" className="relative -mt-6 sm:-mt-8 md:-mt-10 bg-card text-card-foreground rounded-lg shadow-sm border border-border mb-6 glassmorphic bg-gradient-to-r from-primary-500/5 via-accent-500/5 to-secondary-500/5">
-        <Box className="p-6">
-          <Cluster gap="md" align="center">
+        {/* Profile Header */}
+        <Card variant="glass" className="relative -mt-6 sm:-mt-8 md:-mt-10 mb-6 bg-gradient-to-r from-primary-500/5 via-accent-500/5 to-secondary-500/5">
+          <CardContent className="p-6">
+            <Cluster gap="md" align="center">
             <Box className="relative -mt-12 w-24 h-24 rounded-full ring-4 ring-background shadow-md overflow-hidden bg-background shrink-0">
             {userProfile.photoURL || userProfile.profilePicture ? (
               <ProfileImage
@@ -1070,12 +1095,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
               </div>
             )}
           </div>
-        </Box>
-      </Box>
+          </CardContent>
+        </Card>
 
-      {/* Tab Navigation */}
-      <Box className="bg-card text-card-foreground rounded-lg shadow-sm border border-border">
-        <Box className="border-b border-border">
+        {/* Tab Navigation */}
+        <Card variant="glass" className="rounded-lg shadow-sm border border-border">
+          <Box className="border-b border-border">
           <div className="-mb-px sticky top-16 z-sticky bg-card/95 backdrop-blur-sm">
             <div className="relative">
               <div
@@ -1181,10 +1206,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
               </div>
             </div>
           </div>
-        </Box>
+          </Box>
+        </Card>
 
         {/* Tab Content */}
-        <Box className="p-6">
+        <Card variant="glass" className="rounded-lg shadow-sm border border-border">
+          <CardContent className="p-6">
           {activeTab === 'about' && (
             <Box id="panel-about" role="tabpanel" aria-labelledby="about">
             <Stack gap="lg">
@@ -1444,10 +1471,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
               )}
             </Box>
           )}
-        </Box>
-      </Box>
+          </CardContent>
+        </Card>
 
-      {/* Edit profile modal */}
+        {/* Edit profile modal */}
       <SimpleModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} title="Edit Profile">
         <form
           onSubmit={(e) => {
@@ -1665,6 +1692,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           </div>
         </form>
       </SimpleModal>
+      </Stack>
     </Box>
   );
 };

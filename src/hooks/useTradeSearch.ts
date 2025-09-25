@@ -12,6 +12,7 @@ import {
 export interface UseTradeSearchOptions {
   enablePersistence?: boolean;
   pagination?: PaginationOptions;
+  includeNonPublic?: boolean;
 }
 
 export interface UseTradeSearchReturn {
@@ -29,7 +30,7 @@ export interface UseTradeSearchReturn {
 }
 
 export function useTradeSearch(options: UseTradeSearchOptions = {}): UseTradeSearchReturn {
-  const { enablePersistence = true, pagination } = options;
+  const { enablePersistence = true, pagination, includeNonPublic = false } = options;
 
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filters, setFilters] = useState<Partial<TradeFilters>>({});
@@ -106,7 +107,8 @@ export function useTradeSearch(options: UseTradeSearchOptions = {}): UseTradeSea
             orderByField: pagination?.orderByField ?? 'title',
             orderDirection: pagination?.orderDirection ?? 'asc',
           },
-          filterOptions as TradeFilters
+          filterOptions as TradeFilters,
+          { includeNonPublic }
         );
         if (id !== requestIdRef.current) return;
         if (result.error) throw new Error(result.error.message);
@@ -169,5 +171,4 @@ export function useTradeSearch(options: UseTradeSearchOptions = {}): UseTradeSea
     clearSearch,
   };
 }
-
 

@@ -1,4 +1,4 @@
-import { getSyncFirebaseDb, requireAuth } from '../firebase-config';
+import { getSyncFirebaseDb, requireAuth, initializeFirebase, getFirebaseInstances } from '../firebase-config';
 import { 
   doc, 
   setDoc, 
@@ -45,6 +45,19 @@ import {
 import { ChatMessage } from '../types/chat';
 import type { BannerData } from '../utils/imageUtils';
 import { MessageType } from './firestoreConverters';
+
+const getDbWithInitialization = async (): Promise<Firestore> => {
+  try {
+    return getSyncFirebaseDb();
+  } catch (error) {
+    await initializeFirebase();
+    const { db } = await getFirebaseInstances();
+    if (!db) {
+      throw (error instanceof Error ? error : new Error('Failed to initialize Firestore'));
+    }
+    return db;
+  }
+};
 
 // Collection names
 export const COLLECTIONS = {
@@ -112,6 +125,7 @@ export interface UserFilters {
   hasSkills?: string[];
   location?: string;
   reputationScore?: { min?: number; max?: number };
+  includePrivate?: boolean;
 }
 
 export interface NotificationFilters {
@@ -145,6 +159,7 @@ export interface User {
   reputationScore?: number;
   interests?: string;
   role?: UserRole;
+  public?: boolean;
   createdAt?: Timestamp;
 }
 
@@ -347,6 +362,8 @@ export interface Collaboration {
   collaborators?: string[];
   images?: string[];
   category?: string;
+  visibility?: 'public' | 'private' | 'unlisted';
+  public?: boolean;
 }
 
 export interface Connection {
@@ -438,6 +455,7 @@ export interface Trade {
   disputeReason?: string;
   disputeDetails?: string;
   changeRequests?: ChangeRequest[];
+  visibility?: 'public' | 'private' | 'unlisted';
 }
 
 export interface CollaborationApplication {
@@ -539,7 +557,8 @@ export const createUserProfile = async (
     const userWithId: User = {
       ...profileData,
       id: uid,
-      uid: uid
+      uid: uid,
+      public: profileData.public ?? true
     };
     await setDoc(doc(db, COLLECTIONS.USERS, uid).withConverter(userConverter), userWithId);
     return { data: null, error: null };
@@ -551,11 +570,33 @@ export const createUserProfile = async (
 
 export const getUserProfile = async (uid: string): Promise<ServiceResult<User | undefined>> => {
   try {
-    const db = getSyncFirebaseDb();
-    const docSnap = await getDoc(doc(db, COLLECTIONS.USERS, uid).withConverter(userConverter));
-    const userData = docSnap.exists() ? docSnap.data() as User : undefined;
-    return { data: userData, error: null };
+    const db = await getDbWithInitialization();
+    const ref = doc(db, COLLECTIONS.USERS, uid).withConverter(userConverter);
+    const docSnap = await getDoc(ref);
+
+    if (!docSnap.exists()) {
+      return { data: undefined, error: null };
+    }
+
+    const data = docSnap.data() as User;
+    let canViewPrivate = false;
+    try {
+      const authUser = requireAuth();
+      canViewPrivate = authUser.uid === uid;
+    } catch {
+      canViewPrivate = false;
+    }
+
+    if (data && (data.public === true || canViewPrivate)) {
+      return { data, error: null };
+    }
+
+    // Private profile: treat as hidden for callers without access.
+    return { data: undefined, error: null };
   } catch (error: any) {
+    if (error?.code === 'permission-denied') {
+      return { data: undefined, error: null };
+    }
     console.error('Error getting user profile:', error);
     return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to get user profile' } };
   }
@@ -566,19 +607,21 @@ export const getAllUsers = async (
   filters?: UserFilters
 ): Promise<ServiceResult<PaginatedResult<User>>> => {
   try {
-    const db = getSyncFirebaseDb();
+    const db = await getDbWithInitialization();
     const usersCollection = collection(db, COLLECTIONS.USERS).withConverter(userConverter);
-    let usersQuery: Query<User> = query(usersCollection);
+    const baseConstraints: QueryConstraint[] = [];
 
-    // Apply filters
-    if (filters) {
-      const constraints: QueryConstraint[] = [];
-      if (filters.role) {
-        constraints.push(where('role', '==', filters.role));
-      }
-      // Add other filters as needed
-      usersQuery = query(usersCollection, ...constraints);
+    if (!filters?.includePrivate) {
+      baseConstraints.push(where('public', '==', true));
     }
+
+    if (filters?.role) {
+      baseConstraints.push(where('role', '==', filters.role));
+    }
+
+    let usersQuery: Query<User> = baseConstraints.length > 0
+      ? query(usersCollection, ...baseConstraints)
+      : query(usersCollection);
     
     // Apply pagination
     if (pagination) {
@@ -602,19 +645,31 @@ export const getAllUsers = async (
     return { data: { items: users, hasMore, lastDoc }, error: null };
   } catch (error) {
     console.error('Error getting all users:', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to get all users' } };
+    return {
+      data: null,
+      error: {
+        code: (error as any)?.code || 'unknown',
+        message: (error as any)?.message || 'Failed to get all users'
+      }
+    };
   }
 };
 
 export const getAllUsersLegacy = async (): Promise<ServiceResult<User[]>> => {
   try {
-    const db = getSyncFirebaseDb();
+    const db = await getDbWithInitialization();
     const querySnapshot = await getDocs(collection(db, COLLECTIONS.USERS).withConverter(userConverter));
     const users = querySnapshot.docs.map((doc) => doc.data() as User);
     return { data: users, error: null };
   } catch (error) {
     console.error('Error getting all users (legacy):', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to get all users' } };
+    return {
+      data: null,
+      error: {
+        code: (error as any)?.code || 'unknown',
+        message: (error as any)?.message || 'Failed to get all users'
+      }
+    };
   }
 };
 
@@ -645,7 +700,11 @@ export const createTrade = async (tradeData: Omit<Trade, 'id'>): Promise<Service
   try {
     const db = getSyncFirebaseDb();
     const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(tradeConverter);
-    const docRef = await addDoc(tradesCollection, tradeData as Trade);
+    const payload: Trade = {
+      ...tradeData,
+      visibility: tradeData.visibility ?? 'public'
+    } as Trade;
+    const docRef = await addDoc(tradesCollection, payload);
     return { data: docRef.id, error: null };
   } catch (error) {
     console.error('Error creating trade:', error);
@@ -691,24 +750,27 @@ export const deleteTrade = async (tradeId: string): Promise<ServiceResult<void>>
 
 export const getAllTrades = async (
   pagination?: PaginationOptions,
-  filters?: TradeFilters
+  filters?: TradeFilters,
+  options: { includeNonPublic?: boolean } = {}
 ): Promise<ServiceResult<PaginatedResult<Trade>>> => {
   try {
-    const db = getSyncFirebaseDb();
+    const db = await getDbWithInitialization();
     const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(tradeConverter);
-    let tradesQuery: Query<Trade> = query(tradesCollection);
-    
-    // Apply filters
-    if (filters) {
-      const constraints: QueryConstraint[] = [];
-      if (filters.category) {
-        constraints.push(where('category', '==', filters.category));
-      }
-      if (filters.status) {
-        constraints.push(where('status', '==', filters.status));
-      }
-      tradesQuery = query(tradesCollection, ...constraints);
+
+    const baseConstraints: QueryConstraint[] = [];
+    if (!options.includeNonPublic) {
+      baseConstraints.push(where('visibility', '==', 'public'));
     }
+    if (filters?.status) {
+      baseConstraints.push(where('status', '==', filters.status));
+    }
+    if (filters?.category) {
+      baseConstraints.push(where('category', '==', filters.category));
+    }
+
+    let tradesQuery: Query<Trade> = baseConstraints.length > 0
+      ? query(tradesCollection, ...baseConstraints)
+      : query(tradesCollection);
 
     // Apply pagination
     if (pagination) {
@@ -737,13 +799,18 @@ export const getAllTrades = async (
   }
 };
 
-export const getAllTradesLegacy = async (category?: string, limit?: number): Promise<ServiceResult<Trade[]>> => {
+export const getAllTradesLegacy = async (category?: string, limit?: number, options: { includeNonPublic?: boolean } = {}): Promise<ServiceResult<Trade[]>> => {
   try {
-    const db = getSyncFirebaseDb();
+    const db = await getDbWithInitialization();
     const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(tradeConverter);
-    const q = category 
-      ? query(tradesCollection, where("category", "==", category), limitQuery(limit || 10))
-      : query(tradesCollection, limitQuery(limit || 10));
+    const base: QueryConstraint[] = [];
+    if (!options.includeNonPublic) {
+      base.push(where('visibility', '==', 'public'));
+    }
+    if (category) {
+      base.push(where('category', '==', category));
+    }
+    const q = query(tradesCollection, ...base, limitQuery(limit || 10));
     const querySnapshot = await getDocs(q);
     const trades = querySnapshot.docs.map(doc => doc.data() as Trade);
     return { data: trades, error: null };
@@ -753,16 +820,18 @@ export const getAllTradesLegacy = async (category?: string, limit?: number): Pro
   }
 };
 
-export const getUserTrades = async (userId: string): Promise<ServiceResult<Trade[]>> => {
+export const getUserTrades = async (userId: string, options: { includeNonPublic?: boolean } = {}): Promise<ServiceResult<Trade[]>> => {
   try {
-    const db = getSyncFirebaseDb();
+    const db = await getDbWithInitialization();
     const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(tradeConverter);
 
-    const createdTradesQuery = query(tradesCollection, where('creatorId', '==', userId));
+    const visibilityConstraint = options.includeNonPublic ? [] : [where('visibility', '==', 'public')];
+
+    const createdTradesQuery = query(tradesCollection, where('creatorId', '==', userId), ...visibilityConstraint);
     const createdTradesSnapshot = await getDocs(createdTradesQuery);
     const createdTrades = createdTradesSnapshot.docs.map(doc => doc.data() as Trade);
 
-    const participatingTradesQuery = query(tradesCollection, where('participantId', '==', userId));
+    const participatingTradesQuery = query(tradesCollection, where('participantId', '==', userId), ...visibilityConstraint);
     const participatingTradesSnapshot = await getDocs(participatingTradesQuery);
     const participatingTrades = participatingTradesSnapshot.docs.map(doc => doc.data() as Trade);
 
@@ -816,14 +885,17 @@ export const getRelatedUserIds = async (
 export const getUsersByIds = async (ids: string[]): Promise<ServiceResult<User[]>> => {
   try {
     if (!ids.length) return { data: [], error: null };
-    const db = getSyncFirebaseDb();
+    const db = await getDbWithInitialization();
     const usersCol = collection(db, COLLECTIONS.USERS).withConverter(userConverter);
     const chunks: string[][] = [];
     for (let i = 0; i < ids.length; i += 10) chunks.push(ids.slice(i, i + 10));
     const results: User[] = [];
     for (const chunk of chunks) {
-      // Use documentId() when fetching by Firestore doc ID
-      const q = query(usersCol as any, where(documentId(), 'in', chunk));
+      const q = query(
+        usersCol as any,
+        where(documentId(), 'in', chunk),
+        where('public', '==', true)
+      );
       const snap = await getDocs(q);
       results.push(...snap.docs.map(d => d.data() as User));
     }
@@ -964,7 +1036,12 @@ export const createCollaboration = async (collaborationData: Omit<Collaboration,
   try {
     const db = getSyncFirebaseDb();
     const collsCollection = collection(db, COLLECTIONS.COLLABORATIONS).withConverter(collaborationConverter);
-    const docRef = await addDoc(collsCollection, collaborationData as Collaboration);
+    const payload: Collaboration = {
+      ...collaborationData,
+      public: collaborationData.public ?? true,
+      visibility: collaborationData.visibility ?? 'public'
+    } as Collaboration;
+    const docRef = await addDoc(collsCollection, payload);
     return { data: docRef.id, error: null };
   } catch (error) {
     console.error('Error creating collaboration:', error);
@@ -988,7 +1065,8 @@ export const getCollaboration = async (collaborationId: string): Promise<Service
 // Fix getAllCollaborations function with proper null checks
 export const getAllCollaborations = async (
   pagination?: PaginationOptions,
-  filters?: CollaborationFilters
+  filters?: CollaborationFilters,
+  options: { includeNonPublic?: boolean } = {}
 ): Promise<ServiceResult<PaginatedResult<Collaboration>>> => {
   try {
     const db = getSyncFirebaseDb();
@@ -1006,7 +1084,12 @@ export const getAllCollaborations = async (
       ? new CollaborationQueryBuilder(collsCollection, effectiveFilters)
       : queryBuilder;
     
+    const visibilityConstraints = options.includeNonPublic ? [] : [where('visibility', '==', 'public')];
+
     let collsQuery = simplifiedQueryBuilder.buildQuery();
+    if (visibilityConstraints.length > 0) {
+      collsQuery = query(collsQuery, ...visibilityConstraints);
+    }
 
     // Apply pagination with smart ordering
     const paginationConstraints: QueryConstraint[] = [];
@@ -1305,10 +1388,13 @@ function applyClientSideFilters(
 }
 
 // Fix getAllCollaborationsLegacy function
-export const getAllCollaborationsLegacy = async (): Promise<ServiceResult<Collaboration[]>> => {
+export const getAllCollaborationsLegacy = async (options: { includeNonPublic?: boolean } = {}): Promise<ServiceResult<Collaboration[]>> => {
   try {
     const db = getSyncFirebaseDb();
-    const querySnapshot = await getDocs(collection(db, COLLECTIONS.COLLABORATIONS).withConverter(collaborationConverter));
+    const collsCollection = collection(db, COLLECTIONS.COLLABORATIONS).withConverter(collaborationConverter);
+    const visibilityConstraints = options.includeNonPublic ? [] : [where('visibility', '==', 'public')];
+    const q = visibilityConstraints.length > 0 ? query(collsCollection, ...visibilityConstraints) : collsCollection;
+    const querySnapshot = await getDocs(q);
     const collaborations = querySnapshot.docs.map(doc => doc.data() as Collaboration);
     return { data: collaborations, error: null };
   } catch (error) {
@@ -1778,12 +1864,20 @@ export const searchUsers = async (
 export const searchTrades = async (
   searchTerm: string,
   pagination?: PaginationOptions,
-  filters?: TradeFilters
+  filters?: TradeFilters,
+  options: { includeNonPublic?: boolean } = {}
 ): Promise<ServiceResult<PaginatedResult<Trade>>> => {
   try {
-    const db = getSyncFirebaseDb();
+    const db = await getDbWithInitialization();
     const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(tradeConverter);
-    let searchQuery: Query<Trade> = query(tradesCollection, where('title', '>=', searchTerm), where('title', '<=', searchTerm + '\uf8ff'));
+    const baseConstraints: QueryConstraint[] = [];
+    if (!options.includeNonPublic) {
+      baseConstraints.push(where('visibility', '==', 'public'));
+    }
+    baseConstraints.push(where('title', '>=', searchTerm));
+    baseConstraints.push(where('title', '<=', searchTerm + '\uf8ff'));
+
+    let searchQuery: Query<Trade> = query(tradesCollection, ...baseConstraints);
 
     // Apply filters...
     if (filters) {

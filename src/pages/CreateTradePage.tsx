@@ -11,7 +11,7 @@ import {
 import { useToast } from '../contexts/ToastContext';
 import { Button } from '../components/ui/Button';
 import { ProposalSubmitButton, AnimatedButton } from '../components/animations';
-import { Input } from '../components/ui/Input';
+import { GlassmorphicInput } from '../components/ui/GlassmorphicInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/Select';
 import { Textarea } from '../components/ui/Textarea';
 import { X, AlertCircle } from 'lucide-react';
@@ -144,6 +144,7 @@ const CreateTradePage: React.FC = () => {
         interestedUsers: [],
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
+        visibility: 'public' as const,
       };
 
       // Create the trade
@@ -195,16 +196,18 @@ const CreateTradePage: React.FC = () => {
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <label htmlFor="title" className="block text-sm font-medium text-muted-foreground mb-1">
-                Trade Title <span className="text-destructive">*</span>
-              </label>
-              <Input
+              <GlassmorphicInput
                 type="text"
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Logo Design for Website Development"
+                label="Trade Title"
                 required
+                variant="glass"
+                size="lg"
+                animatedLabel
+                realTimeValidation
               />
             </div>
 
@@ -247,12 +250,16 @@ const CreateTradePage: React.FC = () => {
             
             {/* Add skill form */}
             <div className="flex gap-2 mb-3">
-              <Input
+              <GlassmorphicInput
                 type="text"
                 value={newOfferedSkill}
                 onChange={(e) => setNewOfferedSkill(e.target.value)}
                 placeholder="Enter a skill you can offer"
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addOfferedSkill())}
+                variant="glass"
+                size="md"
+                animatedLabel
+                realTimeValidation
               />
               <Select value={newOfferedSkillLevel} onValueChange={(value) => setNewOfferedSkillLevel(value as 'beginner' | 'intermediate' | 'expert')}>
                 <SelectTrigger>
@@ -293,12 +300,16 @@ const CreateTradePage: React.FC = () => {
             
             {/* Add skill form */}
             <div className="flex gap-2 mb-3">
-              <Input
+              <GlassmorphicInput
                 type="text"
                 value={newRequestedSkill}
                 onChange={(e) => setNewRequestedSkill(e.target.value)}
                 placeholder="Enter a skill you are looking for"
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addRequestedSkill())}
+                variant="glass"
+                size="md"
+                animatedLabel
+                realTimeValidation
               />
               <Select value={newRequestedSkillLevel} onValueChange={(value) => setNewRequestedSkillLevel(value as 'beginner' | 'intermediate' | 'expert')}>
                 <SelectTrigger>

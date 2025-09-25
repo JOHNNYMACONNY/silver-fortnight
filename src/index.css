@@ -45,6 +45,23 @@
   --color-accent-900: #4c1d95;
   --color-accent-950: #2e1065;
 
+  /* Success colors (Green) */
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-300: #86efac;
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-success-800: #166534;
+  --color-success-900: #14532d;
+  --color-success-950: #052e16;
+
+  /* Success colors with alpha values */
+  --color-success-500-20: rgba(34, 197, 94, 0.2);
+  --color-success-500-40: rgba(34, 197, 94, 0.4);
+
   /* Light mode semantic colors */
   --color-background: hsl(0 0% 100%);
   --color-foreground: hsl(222.2 84% 4.9%);
@@ -463,6 +480,40 @@ body {
   .border-success { border-color: var(--border-success); }
   .border-warning { border-color: var(--border-warning); }
   .border-error { border-color: var(--border-error); }
+
+  /* Badge background utilities */
+  .bg-primary-transparent { 
+    background-color: rgba(249, 115, 22, 0.2); 
+  }
+  
+  .bg-purple-transparent { 
+    background-color: rgba(139, 92, 246, 0.2); 
+  }
+  
+  .bg-secondary-transparent { 
+    background-color: rgba(14, 165, 233, 0.2); 
+  }
+  
+  .bg-success-transparent { 
+    background-color: var(--color-success-500-20); 
+  }
+  
+  /* Dark mode badge backgrounds */
+  .dark .bg-primary-transparent { 
+    background-color: rgba(249, 115, 22, 0.15); 
+  }
+  
+  .dark .bg-purple-transparent { 
+    background-color: rgba(139, 92, 246, 0.15); 
+  }
+  
+  .dark .bg-secondary-transparent { 
+    background-color: rgba(14, 165, 233, 0.15); 
+  }
+  
+  .dark .bg-success-transparent { 
+    background-color: rgba(34, 197, 94, 0.15); 
+  }
 
   .touch-manipulation {
     touch-action: manipulation;

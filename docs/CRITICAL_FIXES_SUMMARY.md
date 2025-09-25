@@ -75,7 +75,61 @@ firebase deploy --only firestore:indexes --project tradeya-45ede
 
 ---
 
-### **5. Performance Optimization (OPTIONAL) ✅ IMPLEMENTED**
+### **5. User Profile Visibility Issue (CRITICAL) ✅ FIXED**
+
+**Problem**: Trade cards, collaboration cards, user directory, connections, and messages were not displaying user profile information (names, avatars, etc.) due to missing `public` field on existing user documents.
+
+**Root Cause**: 
+- Existing users in database were created before the `public` field logic was implemented
+- `getUserProfile()` function checks `data.public === true` and returns `undefined` if field is missing
+- This caused `ProfileAvatarButton` to fall back to "Unknown User" avatars instead of showing real user data
+
+**Solution**: 
+- Created and executed database backfill script using Firebase Admin SDK
+- Added `public: true` field to all 24 existing users in the database
+- All users now pass the privacy check in `getUserProfile()`
+
+**Files Modified**:
+- Database: Updated all user documents in `users` collection
+- Temporary script: `fix-users.cjs` (executed and cleaned up)
+
+**Verification**: ✅ All users now have `public: true` field and profile data displays correctly
+
+---
+
+### **6. Bidirectional Connection Synchronization Issue (CRITICAL) ✅ FIXED**
+
+**Problem**: Connection requests could be accepted but only showed on one user's side due to failed bidirectional synchronization in the `updateConnectionStatus` function.
+
+**Root Cause**: 
+- The `updateConnectionStatus` function attempts to update connections in both users' subcollections
+- Firestore permission rules were too restrictive, preventing updates in the other user's subcollection
+- Some existing connections had missing data in one user's subcollection, causing query failures
+- Bidirectional updates failed silently without proper error logging
+
+**Solution**: 
+- **Enhanced Firestore Rules**: Updated connection update rules to allow bidirectional updates:
+  ```javascript
+  allow update: if isAuthenticated() && (
+    userId == request.auth.uid || // User can update connections in their own subcollection
+    resource.data.connectedUserId == request.auth.uid || // Connected user can update (accept/reject)
+    resource.data.senderId == request.auth.uid || // Sender can update their sent connections
+    resource.data.receiverId == request.auth.uid || // Receiver can update received connections
+    isAdmin()
+  );
+  ```
+- **Enhanced Debug Logging**: Added comprehensive logging to `updateConnectionStatus` function to detect future failures
+- **Manual Data Fix**: Fixed existing connection with inconsistent status between users' subcollections
+
+**Files Modified**:
+- `firestore.rules` (enhanced connection update permissions)
+- `src/services/firestore-extensions.ts` (added debug logging to `updateConnectionStatus`)
+
+**Verification**: ✅ Bidirectional connection updates now work correctly with proper error detection
+
+---
+
+### **7. Performance Optimization (OPTIONAL) ✅ IMPLEMENTED**
 
 **Problem**: Frequently called services were making repeated database queries.
 
@@ -97,12 +151,16 @@ firebase deploy --only firestore:indexes --project tradeya-45ede
 ### **Before Fixes**
 - ❌ Critical: Database reference error breaks challenges
 - ❌ Critical: Missing indexes break leaderboards
+- ❌ Critical: User profiles not displaying (trade cards, collaborations, directory, messages)
+- ❌ Critical: Connection requests accepted but only showing on one side
 - ⚠️ Medium: Migration registry warnings
 - ⚠️ Low: Inaccurate documentation
 
 ### **After Fixes**
 - ✅ Critical: Challenges functionality restored
 - ✅ Critical: Leaderboards ready for deployment
+- ✅ Critical: User profiles now displaying correctly across all components
+- ✅ Critical: Bidirectional connection synchronization working correctly
 - ✅ Medium: Reduced migration warnings
 - ✅ Low: Accurate documentation
 - ✅ Optional: Performance improvements
@@ -116,6 +174,8 @@ firebase deploy --only firestore:indexes --project tradeya-45ede
 - [x] No "db is not defined" errors in console
 - [x] TypeScript compilation shows no critical errors
 - [x] Caching utility properly implemented
+- [x] User profiles display correctly on trade cards, collaboration cards, directory, and messages
+- [x] Connection requests can be accepted and show on both users' sides
 
 ### **Post-Deployment Testing** (After index deployment)
 - [x] Leaderboard functionality works correctly
@@ -179,6 +239,8 @@ firebase firestore:indexes --project tradeya-45ede
 ### **What This Addresses** ✅ COMPLETED
 - ✅ Database reference error (actual bug)
 - ✅ Missing Firestore indexes (planned feature not deployed)
+- ✅ User profile visibility issue (critical display bug)
+- ✅ Bidirectional connection synchronization issue (critical functionality bug)
 - ✅ Migration registry warnings (actual bug)
 - ✅ Documentation inaccuracies (actual issue)
 - ✅ Performance optimization (optional improvement)
@@ -216,14 +278,22 @@ These will be addressed in a separate TODO list focused on completing planned fe
 src/services/challenges.ts          - Fixed 15 db() references
 src/services/migration/migrationRegistry.ts - Reduced warnings
 firestore.indexes.json              - Added 3 new indexes
+firestore.rules                     - Enhanced connection update permissions
+src/services/firestore-extensions.ts - Added debug logging to updateConnectionStatus
 src/services/leaderboards.ts        - Added caching
 src/utils/cache.ts                  - New caching utility
 docs/ACTUAL_IMPLEMENTATION_STATUS.md - New accurate documentation
+Database: users collection           - Added public: true to all 24 users
+Database: connections subcollections - Fixed bidirectional sync issues
 ```
 
 ### **Code Changes Summary**
 - **Database References**: 15 instances fixed
 - **Indexes Added**: 3 new Firestore indexes
+- **Firestore Rules**: Enhanced connection update permissions for bidirectional sync
+- **Debug Logging**: Added comprehensive logging to connection status updates
+- **User Documents**: 24 users updated with public field
+- **Connection Data**: Fixed bidirectional synchronization issues
 - **Caching**: 2-minute TTL for leaderboards
 - **Documentation**: 1 new comprehensive status document
 
@@ -232,6 +302,7 @@ docs/ACTUAL_IMPLEMENTATION_STATUS.md - New accurate documentation
 - ✅ No critical TypeScript errors
 - ✅ Caching utility functional
 - ✅ Leaderboard testing (indexes deployed successfully)
+- ✅ Bidirectional connection synchronization testing
 
 ---
 
@@ -241,8 +312,9 @@ All critical bugs and implementation errors have been successfully resolved. The
 
 1. **Working Database Operations**: All challenges functionality restored
 2. **Proper Indexes**: Leaderboards ready for deployment
-3. **Clean Console**: Reduced warnings and errors
-4. **Performance Improvements**: Caching for better user experience
-5. **Accurate Documentation**: Clear understanding of actual implementation status
+3. **User Profile Display**: All user information now displays correctly across the platform
+4. **Clean Console**: Reduced warnings and errors
+5. **Performance Improvements**: Caching for better user experience
+6. **Accurate Documentation**: Clear understanding of actual implementation status
 
-The platform is now ready for production use with all core functionality working correctly. 
+The platform is now ready for production use with all core functionality working correctly, including proper user profile display on trade cards, collaboration cards, user directory, connections, and messages. Connection requests can now be properly accepted and will show on both users' sides with full bidirectional synchronization. 

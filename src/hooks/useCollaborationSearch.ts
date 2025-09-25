@@ -32,6 +32,7 @@ interface SearchOptions {
     orderByField?: string;
     orderDirection?: 'asc' | 'desc';
   };
+  includeNonPublic?: boolean;
 }
 
 export const useCollaborationSearch = (options: SearchOptions = {}): UseCollaborationSearchReturn => {
@@ -39,7 +40,8 @@ export const useCollaborationSearch = (options: SearchOptions = {}): UseCollabor
     enablePersistence = true,
     enableAnalytics = true,
     userId,
-    pagination = { limit: 50, orderByField: 'createdAt', orderDirection: 'desc' }
+    pagination = { limit: 50, orderByField: 'createdAt', orderDirection: 'desc' },
+    includeNonPublic = false,
   } = options;
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -108,7 +110,8 @@ export const useCollaborationSearch = (options: SearchOptions = {}): UseCollabor
             orderByField: pagination.orderByField || 'createdAt', 
             orderDirection: pagination.orderDirection || 'desc' 
           },
-          searchFilters
+          searchFilters,
+          { includeNonPublic }
         );
 
         if (id !== requestIdRef.current) return;

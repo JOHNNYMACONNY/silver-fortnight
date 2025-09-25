@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { Input } from '../components/ui/Input';
+import { GlassmorphicInput } from '../components/ui/GlassmorphicInput';
 import { motion } from 'framer-motion';
 import { Card } from '../components/ui/Card';
 import { MailIcon, LockIcon, CheckIcon } from 'lucide-react';
@@ -147,31 +147,57 @@ export const SignUpPage: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="space-y-6"
         >
-          <Input
+          <GlassmorphicInput
             id="email"
             type="email"
             value={email}
             onChange={handleEmailChange}
             required
             placeholder="Enter your email"
+            label="Email"
+            icon={<MailIcon className="h-5 w-5" />}
+            variant="glass"
+            size="lg"
+            animatedLabel
+            realTimeValidation
+            onValidationChange={setEmailValid}
+            validationState={emailValid === false ? 'error' : emailValid === true ? 'success' : 'default'}
           />
 
-          <Input
+          <GlassmorphicInput
             id="password"
             type="password"
             value={password}
             onChange={handlePasswordChange}
             required
-            placeholder="Enter your password"
+            placeholder="Create a password"
+            label="Password"
+            icon={<LockIcon className="h-5 w-5" />}
+            variant="glass"
+            size="lg"
+            animatedLabel
+            realTimeValidation
+            onValidationChange={setPasswordValid}
+            validationState={passwordValid === false ? 'error' : passwordValid === true ? 'success' : 'default'}
+            showPasswordToggle
           />
 
-          <Input
+          <GlassmorphicInput
             id="confirmPassword"
             type="password"
             value={confirmPassword}
             onChange={handleConfirmPasswordChange}
             required
             placeholder="Confirm your password"
+            label="Confirm Password"
+            icon={<LockIcon className="h-5 w-5" />}
+            variant="glass"
+            size="lg"
+            animatedLabel
+            realTimeValidation
+            onValidationChange={setPasswordsMatch}
+            validationState={passwordsMatch === false ? 'error' : passwordsMatch === true ? 'success' : 'default'}
+            showPasswordToggle
           />
 
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>

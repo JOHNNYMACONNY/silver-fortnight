@@ -12,7 +12,7 @@ import { AnimatePresence } from 'framer-motion';
 import { RoleDefinitionForm } from '../../collaboration/RoleDefinitionForm';
 import { Modal } from '../../ui/Modal';
 import { Button } from '../../ui/Button';
-import { Input } from '../../ui/Input';
+import { GlassmorphicInput } from '../../ui/GlassmorphicInput';
 import { Textarea } from '../../ui/Textarea';
 import { Label } from '../../ui/Label';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../ui/Card';
@@ -513,12 +513,17 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
         <CardContent className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="title">Collaboration Title</Label>
-            <Input
+            <GlassmorphicInput
               id="title"
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder="Enter collaboration title"
+              label="Collaboration Title"
+              variant="glass"
+              size="lg"
+              animatedLabel
+              realTimeValidation
               required
             />
           </div>

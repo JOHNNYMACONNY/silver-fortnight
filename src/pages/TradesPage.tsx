@@ -21,7 +21,7 @@ import Stack from "../components/layout/primitives/Stack";
 import Cluster from "../components/layout/primitives/Cluster";
 import Grid from "../components/layout/primitives/Grid";
 import { useTradeSearch } from "../hooks/useTradeSearch";
-import { getSyncFirebaseDb } from "../firebase-config";
+import { getFirebaseInstances, initializeFirebase } from "../firebase-config";
 import {
   collection,
   query as fsQuery,
@@ -30,6 +30,15 @@ import {
   limit,
   onSnapshot,
 } from "firebase/firestore";
+// HomePage patterns imports
+import AnimatedHeading from "../components/ui/AnimatedHeading";
+import GradientMeshBackground from "../components/ui/GradientMeshBackground";
+import { BentoGrid, BentoItem } from "../components/ui/BentoGrid";
+import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "../components/ui/Card";
+import { Badge } from "../components/ui/Badge";
+import { classPatterns, animations } from "../utils/designSystem";
+import { semanticClasses } from "../utils/semanticColors";
+import { TopicLink } from "../components/ui/TopicLink";
 
 export const TradesPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -55,6 +64,7 @@ export const TradesPage: React.FC = () => {
   } = useTradeSearch({
     enablePersistence: false,
     pagination: { limit: 20, orderByField: "title", orderDirection: "asc" },
+    includeNonPublic: !!currentUser,
   });
 
   // Fetch trade creators
@@ -77,22 +87,29 @@ export const TradesPage: React.FC = () => {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    const db = getSyncFirebaseDb();
-    const tradesCol = collection(db, "trades");
-    const q = fsQuery(
-      tradesCol,
-      where("status", "==", "open"),
-      orderBy("createdAt", "desc"),
-      limit(20)
-    );
+    let unsubscribe: (() => void) | null = null;
+    let isSubscribed = true;
+    const includeNonPublic = !!currentUser;
 
-    const unsubscribe = onSnapshot(
-      q,
-      async (snapshot) => {
-        try {
-          const items = snapshot.docs
-            .map((doc) => ({ id: doc.id, ...(doc.data() as any) }))
-            .filter((trade) => !!trade.id) as ExtendedTrade[];
+    (async () => {
+      try {
+        await initializeFirebase();
+        const { db } = await getFirebaseInstances();
+        if (!db || !isSubscribed) {
+          return;
+        }
+        const tradesCol = collection(db, "trades");
+        const constraints = [where("status", "==", "open"), orderBy("createdAt", "desc"), limit(20)];
+        const visibilityConstraint = includeNonPublic ? [] : [where("visibility", "==", "public")];
+        const q = fsQuery(tradesCol, ...visibilityConstraint, ...constraints);
+
+        unsubscribe = onSnapshot(
+          q,
+          async (snapshot) => {
+            try {
+              const items = snapshot.docs
+                .map((doc) => ({ id: doc.id, ...(doc.data() as any) }))
+                .filter((trade) => !!trade.id) as ExtendedTrade[];
           setTrades(items);
 
           // Fetch creators for the trades
@@ -110,18 +127,25 @@ export const TradesPage: React.FC = () => {
           setError(err.message || "Failed to process trades");
           setLoading(false);
         }
-      },
-      (err) => {
-        console.error("Error subscribing to trades:", err);
-        setError(err.message || "Failed to subscribe to trades");
+          },
+          (err) => {
+            console.error("Error subscribing to trades:", err);
+            setError(err.message || "Failed to subscribe to trades");
+            setLoading(false);
+          }
+        );
+      } catch (err: any) {
+        console.error("Error initializing trade listener:", err);
+        setError(err.message || "Failed to load trades");
         setLoading(false);
       }
-    );
+    })();
 
     return () => {
-      unsubscribe();
+      isSubscribed = false;
+      if (unsubscribe) unsubscribe();
     };
-  }, [fetchTradeCreators]);
+  }, [fetchTradeCreators, currentUser]);
 
   // Load search and filters from URL on mount
   useEffect(() => {
@@ -329,45 +353,84 @@ export const TradesPage: React.FC = () => {
   };
 
   return (
-    <Box className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <Stack gap="lg">
-        <Cluster
-          justify="between"
-          align="center"
-          gap="md"
-          className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 mb-6 flex-col md:flex-row"
-        >
-          <h1 className="text-3xl font-bold text-foreground">
-            Available Trades
-          </h1>
-          <Cluster gap="sm" align="center">
-            <PerformanceMonitor pageName="TradesPage" />
-            <AnimatedButton
-              onClick={() => navigate("/trades/new")}
-              className="whitespace-nowrap"
-              tradingContext="proposal"
-              variant="primary"
+    <Box className={classPatterns.homepageContainer}>
+      <PerformanceMonitor pageName="TradesPage" />
+      <Stack gap="md">
+        {/* Hero Section with HomePage-style gradient background */}
+        <Box className={classPatterns.homepageHero}>
+          <GradientMeshBackground 
+            variant="primary" 
+            intensity="medium" 
+            className={classPatterns.homepageHeroContent}
+          >
+            <AnimatedHeading 
+              as="h1" 
+              animation="kinetic" 
+              className="text-4xl md:text-5xl font-bold text-foreground mb-4"
             >
-              Create New Trade
-            </AnimatedButton>
-          </Cluster>
-        </Cluster>
+              Available Trades
+            </AnimatedHeading>
+            <p className="text-xl text-muted-foreground max-w-2xl animate-fadeIn mb-6">
+              Discover skill exchanges and connect with talented individuals ready to trade expertise.
+            </p>
+            <Cluster gap="sm" align="center">
+              <AnimatedButton
+                onClick={() => navigate("/trades/new")}
+                className="whitespace-nowrap"
+                tradingContext="proposal"
+                variant="primary"
+              >
+                Create New Trade
+              </AnimatedButton>
+              <Badge variant="default" topic="trades" className="text-xs">
+                {enhancedTrades.length} Active Trades
+              </Badge>
+            </Cluster>
+          </GradientMeshBackground>
+        </Box>
 
-        <Box className="glassmorphic rounded-xl p-4 md:p-6 mb-8">
-          <EnhancedSearchBar
-            searchTerm={searchTerm}
-            onSearchChange={handleSearchTermChange}
-            onSearch={(term) => search(term, filters)}
-            onToggleFilters={() => setShowFilterPanel(true)}
-            hasActiveFilters={hasActiveFilters}
-            resultsCount={
-              searchTerm || hasActiveFilters
-                ? totalCount
-                : enhancedTrades.length
-            }
-            isLoading={loading || searchLoading}
-            placeholder="Search trades by title, offered or wanted skills..."
-          />
+        {/* Search Section with HomePage-style card */}
+        <Card variant="glass" className="rounded-xl p-4 md:p-6 mb-8">
+          <CardHeader className={classPatterns.homepageCardHeader}>
+            <CardTitle className="text-lg font-semibold flex items-center justify-between">
+              Find Your Perfect Trade
+              <Badge variant="secondary" className="text-xs">
+                {searchTerm || hasActiveFilters
+                  ? totalCount
+                  : enhancedTrades.length} Results
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className={classPatterns.homepageCardContent}>
+            <EnhancedSearchBar
+              searchTerm={searchTerm}
+              onSearchChange={handleSearchTermChange}
+              onSearch={(term) => search(term, filters)}
+              onToggleFilters={() => setShowFilterPanel(true)}
+              hasActiveFilters={hasActiveFilters}
+              resultsCount={
+                searchTerm || hasActiveFilters
+                  ? totalCount
+                  : enhancedTrades.length
+              }
+              isLoading={loading || searchLoading}
+              placeholder="Type here to search trades..."
+              topic="trades"
+            />
+
+            {searchTerm && (
+              <div className="mt-2 text-right">
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  className="text-sm text-primary hover:text-primary/80 underline"
+                  aria-label="Clear search"
+                >
+                  Clear search
+                </button>
+              </div>
+            )}
+          </CardContent>
 
           <EnhancedFilterPanel
             isOpen={showFilterPanel}
@@ -384,62 +447,60 @@ export const TradesPage: React.FC = () => {
             availableSkills={availableSkills}
             persistenceKey="trades-filters"
           />
+        </Card>
 
-          {searchTerm && (
-            <div className="mt-2 text-right">
-              <button
-                type="button"
-                onClick={() => setSearchTerm("")}
-                className="text-sm text-primary hover:text-primary/80 underline"
-                aria-label="Clear search"
-              >
-                Clear search
-              </button>
-            </div>
-          )}
-        </Box>
+        {/* Featured Trades Section with HomePage-style asymmetric layout */}
+        <AnimatedHeading as="h2" animation="slide" className="text-2xl md:text-3xl font-semibold text-foreground mb-6">
+          Featured Trades
+        </AnimatedHeading>
 
         {loading ? (
           <TradeListSkeleton count={5} />
         ) : error ? (
-          <Box className="col-span-full bg-card text-card-foreground p-6 rounded-lg shadow-sm border border-border text-center">
-            <p className="text-destructive-foreground">{error}</p>
-            <AnimatedButton
-              onClick={() => window.location.reload()}
-              className="mt-4"
-              tradingContext="general"
-              variant="secondary"
-            >
-              Try Again
-            </AnimatedButton>
-          </Box>
+          <Card variant="glass" className="text-center p-6">
+            <CardContent>
+              <p className="text-destructive-foreground mb-4">{error}</p>
+              <AnimatedButton
+                onClick={() => window.location.reload()}
+                tradingContext="general"
+                variant="secondary"
+              >
+                Try Again
+              </AnimatedButton>
+            </CardContent>
+          </Card>
         ) : enhancedTrades.length === 0 ? (
-          <Box className="col-span-full bg-card text-card-foreground p-6 rounded-lg shadow-sm border border-border text-center">
-            <h3 className="text-xl font-semibold text-foreground">
-              No Trades Found
-            </h3>
-            <p className="text-muted-foreground mt-2">
-              No trades match your search criteria. Try a different search term
-              or create a new trade!
-            </p>
-            <AnimatedButton
-              onClick={() => navigate("/trades/new")}
-              className="mt-4"
-              tradingContext="proposal"
-              variant="primary"
-            >
-              Create Your First Trade
-            </AnimatedButton>
-          </Box>
+          <Card variant="glass" className="text-center p-6">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold text-foreground">
+                No Trades Found
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                No trades match your search criteria. Try a different search term
+                or create a new trade!
+              </p>
+              <AnimatedButton
+                onClick={() => navigate("/trades/new")}
+                tradingContext="proposal"
+                variant="primary"
+              >
+                Create Your First Trade
+              </AnimatedButton>
+            </CardContent>
+          </Card>
         ) : (
           <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="lg">
-            {enhancedTrades.map((trade) => (
+            {enhancedTrades.map((trade, index) => (
               <motion.div
                 key={trade.id}
                 className="h-full"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
+                {...animations.homepageCardEntrance}
+                transition={{
+                  ...animations.homepageCardEntrance.transition,
+                  delay: index * 0.1
+                }}
               >
                 <TradeCard
                   trade={trade}
@@ -451,15 +512,24 @@ export const TradesPage: React.FC = () => {
           </Grid>
         )}
 
-        {/* Pagination */}
-        <Cluster justify="center" gap="md" className="mt-8">
-          <AnimatedButton variant="outline" disabled tradingContext="general">
-            Previous
-          </AnimatedButton>
-          <AnimatedButton variant="outline" disabled tradingContext="general">
-            Next
-          </AnimatedButton>
-        </Cluster>
+        {/* Enhanced Pagination with HomePage styling */}
+        {enhancedTrades.length > 0 && (
+          <Card variant="glass" className="mt-8">
+            <CardContent className="p-4">
+              <Cluster justify="center" gap="md">
+                <AnimatedButton variant="outline" disabled tradingContext="general">
+                  Previous
+                </AnimatedButton>
+                <Badge variant="secondary" className="text-xs">
+                  Page 1 of 1
+                </Badge>
+                <AnimatedButton variant="outline" disabled tradingContext="general">
+                  Next
+                </AnimatedButton>
+              </Cluster>
+            </CardContent>
+          </Card>
+        )}
       </Stack>
     </Box>
   );

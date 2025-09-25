@@ -36,7 +36,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
+import { GlassmorphicInput } from '../ui/GlassmorphicInput';
 import { Badge } from '../ui/Badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 
@@ -358,12 +358,16 @@ export const ChallengeManagementDashboard: React.FC<ChallengeManagementDashboard
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
-                  <Input
-                  placeholder="Search challenges..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                    className="glassmorphic"
-                />
+                  <GlassmorphicInput
+                    placeholder="Search challenges..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    label="Search Challenges"
+                    variant="glass"
+                    size="md"
+                    animatedLabel
+                    realTimeValidation
+                  />
               </div>
               <select
                 value={filterDifficulty}

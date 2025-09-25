@@ -16,7 +16,7 @@ import { submitToChallenge } from '../../services/challenges';
 import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
-import { Input } from '../ui/Input';
+import { GlassmorphicInput } from '../ui/GlassmorphicInput';
 import EvidenceSubmitter from '../evidence/EvidenceSubmitter';
 import EvidenceGallery from '../evidence/EvidenceGallery';
 import { EmbeddedEvidence } from '../../types/evidence';
@@ -245,12 +245,16 @@ export const ChallengeCompletionInterface: React.FC<ChallengeCompletionInterface
               <Link className="w-4 h-4 inline mr-1" aria-hidden="true" />
               Links (GitHub, Demo, etc.)
             </label>
-            <Input
+            <GlassmorphicInput
               id="links-submission"
               value={completionData.submissionData?.links?.[0] || ''}
               onChange={(e) => handleSubmissionChange('links', [e.target.value])}
-              placeholder="https://github.com/username/project"
-              className="bg-gray-800 border-gray-600 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter your submission link (GitHub, Figma, etc.)"
+              label="Submission Link"
+              variant="glass"
+              size="md"
+              animatedLabel
+              realTimeValidation
               type="url"
               aria-describedby="links-submission-hint"
             />

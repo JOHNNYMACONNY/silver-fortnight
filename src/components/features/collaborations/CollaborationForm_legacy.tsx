@@ -86,6 +86,8 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
         status: 'open' as const,
+        public: true,
+        visibility: 'public' as const,
       };
 
       let result;

@@ -1,5 +1,5 @@
 // Simple utility to create sample XP data for testing leaderboard
-import { db } from './src/firebase-config.js';
+import { initializeFirebase, getFirebaseInstances } from './src/firebase-config';
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
 
 const sampleUsers = [
@@ -13,7 +13,10 @@ const sampleUsers = [
 async function createSampleData() {
   try {
     console.log('Creating sample XP data...');
-    
+
+    await initializeFirebase();
+    const { db } = await getFirebaseInstances();
+
     for (const user of sampleUsers) {
       // Create userXP document
       await setDoc(doc(db, 'userXP', user.id), {

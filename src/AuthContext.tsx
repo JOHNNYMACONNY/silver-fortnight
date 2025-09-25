@@ -5,12 +5,14 @@ import {
   onAuthStateChanged, 
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
   GoogleAuthProvider,
   signOut as firebaseSignOut
 } from 'firebase/auth';
 import { autoCreateUserProfile } from './utils/autoCreateUserProfile';
 import { markLoginDay } from './services/streaks';
 import { User as FirestoreUser, getUserProfile } from './services/firestore-exports';
+import { signInWithGoogleFirebase, handleGoogleRedirectResult, isReturningFromRedirect } from './utils/firebaseGoogleAuth';
 
 // Admin configuration - can be moved to environment variables later
 const ADMIN_UIDS: string[] = [
@@ -60,6 +62,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     console.log('AuthProvider: Setting up auth state listener');
+    
+    // Check for redirect result first
+    const checkRedirectResult = async () => {
+      if (isReturningFromRedirect()) {
+        console.log('AuthProvider: Detected return from OAuth redirect, handling result...');
+        try {
+          const result = await handleGoogleRedirectResult();
+          if (result) {
+            console.log('AuthProvider: Redirect sign-in successful');
+            setUser(result.user);
+            setIsAdmin(checkIsAdmin(result.user));
+            const { data: profile } = await getUserProfile(result.user.uid);
+            setUserProfile(profile || null);
+            await autoCreateUserProfile();
+            try { await markLoginDay(result.user.uid); } catch { /* non-blocking */ }
+          }
+        } catch (error) {
+          console.error('AuthProvider: Error handling redirect result', error);
+          setError(error as Error);
+        }
+      }
+    };
+    
+    checkRedirectResult();
     
     const unsubscribe = onAuthStateChanged(auth,
       async (user) => {
@@ -120,20 +146,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     try {
-      console.log('AuthProvider: Attempting Google sign in');
+      console.log('AuthProvider: Attempting Google sign in with SIMPLE FIREBASE APPROACH');
       setLoading(true);
       setError(null);
-      const result = await signInWithPopup(auth, googleProvider);
-      setUser(result.user);
-      setIsAdmin(checkIsAdmin(result.user));
-      const { data: profile } = await getUserProfile(result.user.uid);
-      setUserProfile(profile || null);
-      await autoCreateUserProfile(); // Ensure Firestore user doc exists
-      // Update login streak on successful Google sign-in
-      try { await markLoginDay(result.user.uid); } catch { /* non-blocking */ }
-      console.log('AuthProvider: Google sign in successful');
-    } catch (err) {
-      console.error('AuthProvider: Google sign in error', err);
+      
+      // Use only Firebase's built-in OAuth
+      const result = await signInWithGoogleFirebase();
+      
+      if (result && result.user) {
+        setUser(result.user);
+        setIsAdmin(checkIsAdmin(result.user));
+        const { data: profile } = await getUserProfile(result.user.uid);
+        setUserProfile(profile || null);
+        await autoCreateUserProfile(); // Ensure Firestore user doc exists
+        // Update login streak on successful Google sign-in
+        try { await markLoginDay(result.user.uid); } catch { /* non-blocking */ }
+        console.log('AuthProvider: Google sign in successful!');
+      } else if (result && result.error && result.error.code === 'auth/redirect-initiated') {
+        // Redirect was initiated, the user will be redirected
+        console.log('AuthProvider: Redirect initiated, user will be redirected');
+        return;
+      }
+
+    } catch (err: any) {
+      console.error('AuthProvider: Google sign-in failed', err);
       setError(err as Error);
       throw err;
     } finally {

@@ -3,7 +3,7 @@ import { useAuth } from '../AuthContext';
 import { getChallenges, joinChallenge, getUserChallenges, onActiveChallenges, getRecommendedChallenges, getFeaturedDaily, getFeaturedWeekly } from '../services/challenges';
 import { Challenge, ChallengeFilters, ChallengeSortBy, ChallengeStatus, ChallengeType, ChallengeDifficulty, ChallengeCategory } from '../types/gamification';
 import { useToast } from '../contexts/ToastContext';
-import { Award, Filter, Search, Clock, Calendar, Users, Trophy, Dumbbell } from 'lucide-react';
+import { Award, Filter, Search, Clock, Calendar, Users, Trophy, Dumbbell, ArrowRight } from 'lucide-react';
 import { ChallengeCalendar } from '../components/features/challenges/ChallengeCalendar';
 import { ChallengeCard } from '../components/features/challenges/ChallengeCard';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -12,6 +12,20 @@ import { cn } from '../utils/cn';
 import { useBusinessMetrics } from '../contexts/PerformanceContext';
 import { Button } from '../components/ui/Button';
 import { markSkillPracticeDay, hasPracticedToday } from '../services/streaks';
+// HomePage patterns imports
+import PerformanceMonitor from '../components/ui/PerformanceMonitor';
+import AnimatedHeading from '../components/ui/AnimatedHeading';
+import GradientMeshBackground from '../components/ui/GradientMeshBackground';
+import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import { classPatterns, animations } from '../utils/designSystem';
+import { semanticClasses } from '../utils/semanticColors';
+import Box from '../components/layout/primitives/Box';
+import Stack from '../components/layout/primitives/Stack';
+import Cluster from '../components/layout/primitives/Cluster';
+import Grid from '../components/layout/primitives/Grid';
+import { motion } from 'framer-motion';
+import { EnhancedSearchBar } from '../components/features/search/EnhancedSearchBar';
 
 
 export const ChallengesPage: React.FC = () => {
@@ -40,6 +54,25 @@ export const ChallengesPage: React.FC = () => {
   const [selectedType, setSelectedType] = useState<ChallengeType | ''>('');
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'mine'>('all');
+  
+  // EnhancedSearchBar state
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
+  
+  // Search handler
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+  };
+  
+  // Calculate active filters count
+  useEffect(() => {
+    let count = 0;
+    if (selectedCategory) count++;
+    if (selectedDifficulty) count++;
+    if (selectedStatus) count++;
+    if (selectedType) count++;
+    setActiveFiltersCount(count);
+  }, [selectedCategory, selectedDifficulty, selectedStatus, selectedType]);
 
   // Categories using the new enum
   const categories = Object.values(ChallengeCategory);
@@ -248,58 +281,80 @@ export const ChallengesPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-text-primary">Challenges</h1>
-            {liveCount !== null && (
-              <span
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200"
-                title="Live active challenges"
-                aria-live="polite"
-              >
-                Live: {liveCount}
-              </span>
-            )}
-          </div>
-          <p className="mt-1 text-sm text-text-muted">Participate in coding challenges to improve your skills</p>
-        </div>
-
-        <div className="mt-4 md:mt-0">
-          <Button variant="outline" size="md" onClick={() => setShowFilters(!showFilters)}>
-            <Filter className="mr-2 h-4 w-4" />
-            Filters
-          </Button>
-        </div>
-      </div>
-
-      {/* Tabs: All / Active / My Challenges */}
-      <div className="mb-4 flex items-center gap-2">
-        {[
-          { key: 'all', label: 'All' },
-          { key: 'active', label: 'Active' },
-          { key: 'mine', label: 'My Challenges' },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key as any)}
-            className={`px-3 py-1.5 rounded-md text-sm border transition-colors ${
-              activeTab === tab.key
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-background-secondary text-text-secondary border-border-primary hover:bg-background-tertiary'
-            }`}
-            aria-pressed={activeTab === tab.key}
+    <Box className={classPatterns.homepageContainer}>
+      <PerformanceMonitor pageName="ChallengesPage" />
+      <Stack gap="md">
+        {/* Hero Section */}
+        <Box className={classPatterns.homepageHero}>
+          <GradientMeshBackground 
+            variant="secondary" 
+            intensity="medium" 
+            className={classPatterns.homepageHeroContent}
           >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+            <div className="flex items-center gap-3 mb-4">
+              <AnimatedHeading 
+                as="h1" 
+                animation="kinetic" 
+                className="text-4xl md:text-5xl font-bold text-foreground"
+              >
+                Challenges
+              </AnimatedHeading>
+              {liveCount !== null && (
+                <Badge variant="default" topic="success" className="text-xs animate-pulse">
+                  Live: {liveCount}
+                </Badge>
+              )}
+            </div>
+            <p className="text-xl text-muted-foreground max-w-2xl animate-fadeIn mb-6">
+              Participate in coding challenges to improve your skills and compete with the community.
+            </p>
+            <Cluster gap="sm" align="center">
+              <Button 
+                variant="default" 
+                size="md" 
+                onClick={() => navigate('/challenges/create')}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Trophy className="mr-2 h-4 w-4" />
+                Create Challenge
+              </Button>
+              <Button variant="outline" size="md" onClick={() => setShowFilters(!showFilters)}>
+                <Filter className="mr-2 h-4 w-4" />
+                Filters
+              </Button>
+              <Badge variant="secondary" className="text-xs">
+                {filteredChallenges.length} Challenges
+              </Badge>
+            </Cluster>
+          </GradientMeshBackground>
+        </Box>
 
-      <div className="glassmorphic rounded-xl p-4 md:p-6 mb-6">
-        {/* Daily Practice quick action */}
+        {/* Tabs: All / Active / My Challenges */}
+        <Card variant="glass" className="rounded-lg shadow-sm border border-border">
+          <CardContent className="p-4">
+            <Cluster gap="sm" justify="center">
+              {[
+                { key: 'all', label: 'All' },
+                { key: 'active', label: 'Active' },
+                { key: 'mine', label: 'My Challenges' },
+              ].map((tab) => (
+                <Button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key as any)}
+                  variant={activeTab === tab.key ? 'default' : 'outline'}
+                  size="sm"
+                  aria-pressed={activeTab === tab.key}
+                >
+                  {tab.label}
+                </Button>
+              ))}
+            </Cluster>
+          </CardContent>
+        </Card>
+
+        {/* Daily Practice Quick Action */}
         {currentUser?.uid && (
-          <div className="mb-6">
+          <Card variant="glass" className="rounded-xl p-4 md:p-6 mb-6 ">
             <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-card/50">
               <div className="flex items-center gap-3">
                 <Dumbbell className="h-5 w-5 text-primary" />
@@ -332,81 +387,139 @@ export const ChallengesPage: React.FC = () => {
                 Log practice
               </Button>
             </div>
-          </div>
+          </Card>
         )}
 
+        {/* Featured Challenges */}
         {(featuredDaily || featuredWeekly) && (
-          <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
-            {featuredDaily && (
-              <Tooltip content={<div>Today’s featured daily challenge. Base + bonus XP available.</div>}>
-                <Link to={`/challenges/${featuredDaily.id}`} className="inline-flex items-center gap-1 text-primary hover:underline" onClick={(e) => e.stopPropagation()}>
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
-                  Featured today
-                </Link>
-              </Tooltip>
-            )}
-            {featuredWeekly && (
-              <Tooltip content={<div>This week’s featured challenge. Complete for base + bonus XP.</div>}>
-                <Link to={`/challenges/${featuredWeekly.id}`} className="inline-flex items-center gap-1 text-primary hover:underline" onClick={(e) => e.stopPropagation()}>
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
-                  Featured this week
-                </Link>
-              </Tooltip>
-            )}
-          </div>
-        )}
-
-        {/* Minimal calendar strip */}
-        <div className="mb-6">
-          <ChallengeCalendar />
-        </div>
-
-        {recommended.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-text-primary mb-2">Recommended for you</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {recommended.map((challenge) => (
-                <ChallengeCard
-                  key={challenge.id}
-                  challenge={challenge}
-                  onSelect={() => navigate(`/challenges/${challenge.id}`)}
-                  footer={
-                    <div className="flex items-center justify-between">
-                      <Link
-                        to={`/challenges/${challenge.id}`}
-                        className="text-sm font-medium text-primary hover:underline"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        View Details
-                      </Link>
-                      <span className="text-xs inline-flex items-center px-2 py-1 bg-background-secondary text-text-secondary rounded-full">
-                        <Trophy className="h-3 w-3 mr-1" />
-                        {(challenge.rewards && typeof challenge.rewards.xp === 'number') ? challenge.rewards.xp : 0} XP
-                      </span>
-                    </div>
-                  }
-                />
-              ))}
+          <Card variant="glass" className="rounded-xl p-4 md:p-6 mb-6 ">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              {featuredDaily && (
+                <Tooltip content={<div>Today's featured daily challenge. Base + bonus XP available.</div>}>
+                  <Link to={`/challenges/${featuredDaily.id}`} className="inline-flex items-center gap-1 text-primary hover:underline" onClick={(e) => e.stopPropagation()}>
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
+                    Featured today
+                  </Link>
+                </Tooltip>
+              )}
+              {featuredWeekly && (
+                <Tooltip content={<div>This week's featured challenge. Complete for base + bonus XP.</div>}>
+                  <Link to={`/challenges/${featuredWeekly.id}`} className="inline-flex items-center gap-1 text-primary hover:underline" onClick={(e) => e.stopPropagation()}>
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
+                    Featured this week
+                  </Link>
+                </Tooltip>
+              )}
             </div>
-          </div>
+          </Card>
         )}
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-text-tertiary" />
-          </div>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 border border-border-primary rounded-md leading-5 bg-background-secondary text-text-primary placeholder-text-tertiary focus:outline-none focus:placeholder-text-tertiary focus:ring-1 focus:ring-ring focus:border-ring sm:text-sm transition-colors duration-200"
-            placeholder="Search challenges..."
-          />
-        </div>
-      </div>
 
-      {showFilters && (
-        <div className="glassmorphic rounded-xl p-4 md:p-6 mb-6 transition-all">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Challenge Calendar */}
+        <Card variant="glass" className="rounded-xl p-4 md:p-6 mb-6 ">
+          <ChallengeCalendar />
+        </Card>
+
+        {/* Enhanced Search Section with HomePage-style card */}
+        <Card variant="glass" className="rounded-xl p-4 md:p-6 mb-6 ">
+          <CardHeader className={classPatterns.homepageCardHeader}>
+            <CardTitle className="text-lg font-semibold flex items-center justify-between">
+              Find Your Perfect Challenge
+              <Badge variant="secondary" className="text-xs">
+                {filteredChallenges.length} Challenges
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className={classPatterns.homepageCardContent}>
+            <EnhancedSearchBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              onSearch={handleSearch}
+              onToggleFilters={() => setShowFilterPanel(true)}
+              hasActiveFilters={activeFiltersCount > 0}
+              activeFiltersCount={activeFiltersCount}
+              resultsCount={filteredChallenges.length}
+              isLoading={loading}
+              placeholder="Search challenges by title, description, or skills..."
+              topic="success"
+            />
+          </CardContent>
+        </Card>
+
+        {/* Recommended Challenges */}
+        {recommended.length > 0 && (
+          <Card variant="glass" className="rounded-xl p-6 md:p-8 mb-8">
+            <CardHeader className="pb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl font-bold text-foreground mb-2">
+                    Recommended for you
+                  </CardTitle>
+                  <p className="text-muted-foreground text-sm">
+                    Personalized challenges based on your skills and interests
+                  </p>
+                </div>
+                <Badge variant="secondary" topic="success" className={cn("text-xs", semanticClasses('success').badge)}>
+                  {recommended.length} Challenges
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="lg">
+                {recommended.map((challenge, index) => {
+                  const successClasses = semanticClasses('success');
+                  return (
+                    <motion.div
+                      key={challenge.id}
+                      className="h-full"
+                      {...animations.homepageCardEntrance}
+                      transition={{
+                        ...animations.homepageCardEntrance.transition,
+                        delay: index * 0.1
+                      }}
+                    >
+                      <ChallengeCard
+                        challenge={challenge}
+                        onSelect={() => navigate(`/challenges/${challenge.id}`)}
+                        footer={
+                          <div className="flex items-center justify-between">
+                            <Link
+                              to={`/challenges/${challenge.id}`}
+                              className={cn("text-sm font-medium hover:underline", successClasses.link)}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              View Details
+                            </Link>
+                            <Badge 
+                              variant="secondary" 
+                              topic="success" 
+                              className={cn("text-xs", successClasses.badge)}
+                            >
+                              <Trophy className="h-3 w-3 mr-1" />
+                              {(challenge.rewards && typeof challenge.rewards.xp === 'number') ? challenge.rewards.xp : 0} XP
+                            </Badge>
+                          </div>
+                        }
+                      />
+                    </motion.div>
+                  );
+                })}
+              </Grid>
+            </CardContent>
+          </Card>
+        )}
+
+        {showFilters && (
+          <Card variant="glass" className="rounded-lg shadow-sm border border-border transition-all">
+            <CardHeader className={classPatterns.homepageCardHeader}>
+              <CardTitle className="text-lg font-semibold flex items-center justify-between">
+                Filter Challenges
+                <Badge variant="secondary" className="text-xs">
+                  {categories.length + difficulties.length + statuses.length + types.length} Options
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className={classPatterns.homepageCardContent}>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label htmlFor="category" className="block text-sm font-medium text-text-primary mb-1">
                 Category
@@ -483,13 +596,14 @@ export const ChallengesPage: React.FC = () => {
               </select>
             </div>
           </div>
-          <div className="mt-4 flex justify-end">
-            <Button variant="ghost" size="sm" onClick={resetFilters}>
-              Reset
-            </Button>
-          </div>
-        </div>
-      )}
+              <div className="mt-4 flex justify-end">
+                <Button variant="ghost" size="sm" onClick={resetFilters}>
+                  Reset
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
       {loading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -532,41 +646,56 @@ export const ChallengesPage: React.FC = () => {
         </div>
       )}
 
-      {!loading && !error && filteredChallenges.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredChallenges.map((challenge) => {
-            const isUserJoined = userChallenges.some((uc: any) => (uc.id || uc.challengeId) === challenge.id);
-            const difficultyValue = challenge.difficulty || ChallengeDifficulty.BEGINNER;
-            return (
-              <ChallengeCard
-                key={challenge.id}
-                challenge={{ ...challenge, difficulty: difficultyValue }}
-                onSelect={() => navigate(`/challenges/${challenge.id}`)}
-                footer={
-                  <div className="flex items-center justify-between">
-                    <Link
-                      to={`/challenges/${challenge.id}`}
-                      className="text-sm font-medium text-primary hover:underline"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      View Details
-                    </Link>
-                    <Button
-                      onClick={(e) => { e.stopPropagation(); handleJoinChallenge(challenge.id); }}
-                      disabled={isUserJoined}
-                      variant={isUserJoined ? 'secondary' : 'primary'}
-                      size="sm"
-                    >
-                      {isUserJoined ? 'Joined' : 'Join Challenge'}
-                    </Button>
-                  </div>
-                }
-              />
-            );
-          })}
-        </div>
-      )}
-    </div>
+        {!loading && !error && filteredChallenges.length > 0 && (
+          <>
+            <AnimatedHeading as="h2" animation="slide" className="text-2xl md:text-3xl font-semibold text-foreground mb-6">
+              Available Challenges
+            </AnimatedHeading>
+            <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="lg">
+              {filteredChallenges.map((challenge, index) => {
+                const isUserJoined = userChallenges.some((uc: any) => (uc.id || uc.challengeId) === challenge.id);
+                const difficultyValue = challenge.difficulty || ChallengeDifficulty.BEGINNER;
+                return (
+                  <motion.div
+                    key={challenge.id}
+                    className="h-full"
+                    {...animations.homepageCardEntrance}
+                    transition={{
+                      ...animations.homepageCardEntrance.transition,
+                      delay: index * 0.1
+                    }}
+                  >
+                    <ChallengeCard
+                      challenge={{ ...challenge, difficulty: difficultyValue }}
+                      onSelect={() => navigate(`/challenges/${challenge.id}`)}
+                      footer={
+                        <div className="flex items-center justify-between">
+                          <Link
+                            to={`/challenges/${challenge.id}`}
+                            className="text-sm font-medium text-primary hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            View Details
+                          </Link>
+                          <Button
+                            onClick={(e) => { e.stopPropagation(); handleJoinChallenge(challenge.id); }}
+                            disabled={isUserJoined}
+                            variant={isUserJoined ? 'secondary' : 'primary'}
+                            size="sm"
+                          >
+                            {isUserJoined ? 'Joined' : 'Join Challenge'}
+                          </Button>
+                        </div>
+                      }
+                    />
+                  </motion.div>
+                );
+              })}
+            </Grid>
+          </>
+        )}
+      </Stack>
+    </Box>
   );
 };
 

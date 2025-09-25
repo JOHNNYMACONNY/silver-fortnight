@@ -18,7 +18,8 @@ export async function autoCreateUserProfile() {
       name: user.displayName || user.email || user.uid,
       email: user.email,
       createdAt: serverTimestamp(),
-      roles: ['user']
+      roles: ['user'],
+      public: true
     });
     logger.info('Created Firestore user profile', 'USER_PROFILE', { userId: user.uid });
   }
