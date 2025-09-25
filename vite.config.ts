@@ -2,8 +2,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
+  
+  // Load environment variables based on mode
+  envDir: './',
+  envPrefix: ['VITE_', 'NODE_ENV'],
   
   resolve: {
     alias: {
@@ -69,6 +73,28 @@ export default defineConfig({
   },
 
   define: {
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
-  }
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+    'process.env.VITE_ENVIRONMENT': JSON.stringify(mode || 'development')
+  },
+
+  // PR-specific configuration
+  ...(mode === 'pr' && {
+    build: {
+      target: 'esnext',
+      outDir: 'dist',
+      sourcemap: true, // Enable sourcemaps for PR debugging
+      minify: false, // Disable minification for easier debugging
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+            router: ['react-router-dom'],
+            ui: ['@radix-ui/react-slot', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-checkbox', '@radix-ui/react-label', '@radix-ui/react-select'],
+            firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
+            utils: ['date-fns', 'clsx', 'tailwind-merge', 'zod']
+          }
+        }
+      }
+    }
+  })
 });

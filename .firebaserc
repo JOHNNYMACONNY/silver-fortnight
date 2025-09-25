@@ -1,7 +1,17 @@
 {
   "projects": {
-    "staging": "tradeya-45ede"
+    "default": "tradeya-45ede",
+    "staging": "tradeya-45ede",
+    "pr": "tradeya-45ede"
   },
-  "targets": {},
+  "targets": {
+    "tradeya-45ede": {
+      "hosting": {
+        "pr-preview": [
+          "tradeya-45ede"
+        ]
+      }
+    }
+  },
   "etags": {}
 }
