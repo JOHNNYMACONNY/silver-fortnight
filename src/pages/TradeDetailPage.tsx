@@ -697,68 +697,93 @@ export const TradeDetailPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Confirmation Form */}
-          {(() => {
-            // Always show the confirmation form if the conditions are met
-            if (currentUser &&
-                trade.status === 'pending_confirmation' &&
-                trade.completionRequestedBy !== currentUser.uid &&
-                (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid)) {
-              return (
-                <div className="mt-6 border-t border-border pt-6">
-                  <h3 className="text-lg font-medium text-foreground mb-4">Confirm Trade Completion</h3>
-                  <TradeConfirmationForm
-                    trade={trade}
-                    initialMode={confirmationInitialMode} // Pass the initial mode
-                    onSuccess={() => {
-                      setShowConfirmationForm(false);
-                      fetchTrade();
-                    }}
-                    onCancel={() => setShowConfirmationForm(false)}
-                    onRequestChanges={() => {
-                      setShowConfirmationForm(false);
-                      fetchTrade();
-                    }}
-                  />
-                </div>
-              );
-            }
+              {/* Confirmation Form */}
+              {(() => {
+                // Always show the confirmation form if the conditions are met
+                if (currentUser &&
+                    trade.status === 'pending_confirmation' &&
+                    trade.completionRequestedBy !== currentUser.uid &&
+                    (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid)) {
+                  return (
+                    <div className="mt-6 border-t border-border pt-6">
+                      <h3 className="text-lg font-medium text-foreground mb-4">Confirm Trade Completion</h3>
+                      <TradeConfirmationForm
+                        trade={trade}
+                        initialMode={confirmationInitialMode} // Pass the initial mode
+                        onSuccess={() => {
+                          setShowConfirmationForm(false);
+                          fetchTrade();
+                        }}
+                        onCancel={() => setShowConfirmationForm(false)}
+                        onRequestChanges={() => {
+                          setShowConfirmationForm(false);
+                          fetchTrade();
+                        }}
+                      />
+                    </div>
+                  );
+                }
 
-            // Otherwise, only show if showConfirmationForm is true
-            return showConfirmationForm && currentUser && trade.status === 'pending_confirmation' &&
-              trade.completionRequestedBy !== currentUser.uid &&
-              (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid) && (
-              <div className="mt-6 border-t border-border pt-6">
-                <h3 className="text-lg font-medium text-foreground mb-4">Confirm Trade Completion</h3>
-                <TradeConfirmationForm
-                  trade={trade}
-                  initialMode={confirmationInitialMode} // Pass the initial mode
-                  onSuccess={() => {
-                    setShowConfirmationForm(false);
-                    fetchTrade();
-                  }}
-                  onCancel={() => setShowConfirmationForm(false)}
-                  onRequestChanges={() => {
-                    setShowConfirmationForm(false);
-                    fetchTrade();
-                  }}
-                />
-              </div>
-            );
-          })()}
-        </div>
+                // Otherwise, only show if showConfirmationForm is true
+                return showConfirmationForm && currentUser && trade.status === 'pending_confirmation' &&
+                  trade.completionRequestedBy !== currentUser.uid &&
+                  (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid) && (
+                  <div className="mt-6 border-t border-border pt-6">
+                    <h3 className="text-lg font-medium text-foreground mb-4">Confirm Trade Completion</h3>
+                    <TradeConfirmationForm
+                      trade={trade}
+                      initialMode={confirmationInitialMode} // Pass the initial mode
+                      onSuccess={() => {
+                        setShowConfirmationForm(false);
+                        fetchTrade();
+                      }}
+                      onCancel={() => setShowConfirmationForm(false)}
+                      onRequestChanges={() => {
+                        setShowConfirmationForm(false);
+                        fetchTrade();
+                      }}
+                    />
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
 
-        {/* Change Request History */}
-        {Array.isArray(trade.changeRequests) && trade.changeRequests.length > 0 && (
-          <div className="p-6 border-b border-border">
-            <ChangeRequestHistory changeRequests={trade.changeRequests} />
-          </div>
-        )}
+          {/* Change Request History Card */}
+          {Array.isArray(trade.changeRequests) && trade.changeRequests.length > 0 && (
+            <Card 
+              variant="premium" 
+              tilt={true}
+              depth="lg"
+              glow="subtle"
+              glowColor="blue"
+              interactive={true}
+              className="mb-6"
+            >
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl font-semibold">Change Request History</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 pb-3">
+                <ChangeRequestHistory changeRequests={trade.changeRequests} />
+              </CardContent>
+            </Card>
+          )}
 
-        {/* Completion Evidence Section - Visible for completed, pending_confirmation, and pending_evidence trades */}
-        {(trade.status === 'completed' || trade.status === 'pending_confirmation' || trade.status === 'pending_evidence') && (
-          <div id="evidence-section" className="p-6 border-b border-border">
-            <h2 className="text-xl font-semibold text-foreground mb-4">Trade Evidence</h2>
+          {/* Completion Evidence Card - Visible for completed, pending_confirmation, and pending_evidence trades */}
+          {(trade.status === 'completed' || trade.status === 'pending_confirmation' || trade.status === 'pending_evidence') && (
+            <Card 
+              variant="premium" 
+              tilt={true}
+              depth="lg"
+              glow="subtle"
+              glowColor="purple"
+              interactive={true}
+              className="mb-6"
+            >
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl font-semibold">Trade Evidence</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 pb-3">
 
             {/* Status explanation */}
             {trade.status === 'pending_evidence' && (
@@ -911,16 +936,17 @@ export const TradeDetailPage: React.FC = () => {
               </div>
             )}
 
-            {/* Display completion confirmation timestamp */}
-            {trade.status === 'completed' && trade.completionConfirmedAt && (
-              <div className="mt-4 text-sm text-muted-foreground">
-                <p>
-                  <strong>Confirmed at:</strong> {new Date(trade.completionConfirmedAt.toDate()).toLocaleString()}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+                {/* Display completion confirmation timestamp */}
+                {trade.status === 'completed' && trade.completionConfirmedAt && (
+                  <div className="mt-4 text-sm text-muted-foreground">
+                    <p>
+                      <strong>Confirmed at:</strong> {new Date(trade.completionConfirmedAt.toDate()).toLocaleString()}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Trade Details Card */}
           <Card 
@@ -1139,8 +1165,8 @@ export const TradeDetailPage: React.FC = () => {
                   </div>
                 </>
               )}
-            </div>
-          ) : (
+                </div>
+              ) : (
             <div>
 
               {/* Dynamic action buttons based on trade status and user role */}
@@ -1335,6 +1361,8 @@ export const TradeDetailPage: React.FC = () => {
                   </p>
                 </div>
               )}
+            </div>
+          )}
             </CardContent>
           </Card>
         </Stack>
