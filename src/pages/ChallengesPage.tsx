@@ -306,7 +306,7 @@ export const ChallengesPage: React.FC = () => {
               )}
             </div>
             <p className="text-xl text-muted-foreground max-w-2xl animate-fadeIn mb-6">
-              Participate in coding challenges to improve your skills and compete with the community.
+              Participate in challenges to improve your skills and compete with the community.
             </p>
             <Cluster gap="sm" align="center">
               <Button 
