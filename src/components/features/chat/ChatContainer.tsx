@@ -117,64 +117,73 @@ export const ChatContainer: React.FC = () => {
       //   clearResetFlags();
       // }
 
-      const loadMessages = async () => {
+      console.log('ChatContainer: Setting up real-time message listener...');
+      
+      // Use real-time listener for messages
+      const messagesRef = collection(getSyncFirebaseDb(), 'conversations', activeConversation.id!, 'messages');
+      const q = query(messagesRef, orderBy('createdAt', 'asc'));
+      
+      const unsubscribe = onSnapshot(q, (snapshot) => {
         try {
-          console.log('ChatContainer: Loading messages offline to avoid Firebase internal errors...');
+          const messagesList: ChatMessage[] = [];
           
-          // Use direct message loading instead of real-time listeners
-          const result = await testMessagesDirectly(activeConversation.id!);
+          snapshot.forEach((doc) => {
+            const messageData = {
+              id: doc.id,
+              ...doc.data()
+            } as ChatMessage;
+            messagesList.push(messageData);
+          });
           
-          if (result.success) {
-            console.log(`ChatContainer: Successfully loaded ${result.messages.length} messages offline`);
-            setMessages(result.messages);
-            setLoading(false);
-            setError(null);
+          console.log(`ChatContainer: Received ${messagesList.length} messages via real-time listener`);
+          setMessages(messagesList);
+          setLoading(false);
+          setError(null);
+          
+          // Mark messages as read if needed
+          if (messagesList.length > 0 && isUserParticipant(activeConversation)) {
+            const unreadMessageIds = messagesList
+              .filter(msg => !msg.readBy?.includes(currentUser.uid) && msg.senderId !== currentUser.uid)
+              .map(msg => msg.id)
+              .filter(Boolean);
             
-            // Mark messages as read if needed
-            if (result.messages.length > 0 && isUserParticipant(activeConversation)) {
-              const unreadMessageIds = result.messages
-                .filter(msg => !msg.readBy?.includes(currentUser.uid) && msg.senderId !== currentUser.uid)
-                .map(msg => msg.id)
-                .filter(Boolean);
-              
-              if (unreadMessageIds.length > 0) {
-                const markAsReadDebounced = () => {
-                  markConversationAsRead(activeConversation.id!, currentUser.uid)
-                    .catch((error: any) => {
-                      console.log('Error marking messages as read:', error.message);
-                      if (!error.message?.includes('permission') && toastContext) {
-                        toastContext.addToast('error', 'Failed to mark messages as read');
-                      }
-                    });
-                };
+            if (unreadMessageIds.length > 0) {
+              const markAsReadDebounced = () => {
+                markConversationAsRead(activeConversation.id!, currentUser.uid)
+                  .catch((error: any) => {
+                    console.log('Error marking messages as read:', error.message);
+                    if (!error.message?.includes('permission') && toastContext) {
+                      toastContext.addToast('error', 'Failed to mark messages as read');
+                    }
+                  });
+              };
 
-                if (lastMarkAsReadAttemptRef.current) {
-                  clearTimeout(lastMarkAsReadAttemptRef.current);
-                }
-
-                lastMarkAsReadAttemptRef.current = setTimeout(markAsReadDebounced, 1000);
+              if (lastMarkAsReadAttemptRef.current) {
+                clearTimeout(lastMarkAsReadAttemptRef.current);
               }
+
+              lastMarkAsReadAttemptRef.current = setTimeout(markAsReadDebounced, 1000);
             }
-          } else {
-            console.error('ChatContainer: Offline message loading failed:', result.error);
-            setError(result.error || 'Failed to load messages');
-            setLoading(false);
           }
-        } catch (error: any) {
-          console.error('ChatContainer: Error loading messages offline:', error);
-          setError(error.message || 'Failed to load messages');
+        } catch (err: any) {
+          console.error('ChatContainer: Error processing real-time messages:', err);
+          setError(err.message || 'Failed to process messages');
           setLoading(false);
         }
-      };
+      }, (err: any) => {
+        console.error('ChatContainer: Real-time listener error:', err);
+        setError(err.message || 'Failed to load messages');
+        setLoading(false);
+      });
 
-      loadMessages();
-
-      // Clean up timeout on unmount
+      // Clean up on unmount
       return () => {
+        console.log('ChatContainer: Cleaning up message listener');
         if (lastMarkAsReadAttemptRef.current) {
           clearTimeout(lastMarkAsReadAttemptRef.current);
           lastMarkAsReadAttemptRef.current = null;
         }
+        unsubscribe();
       };
     }, [activeConversation, currentUser, markMessagesAsRead, isUserParticipant]);
 
@@ -345,9 +354,27 @@ export const ChatContainer: React.FC = () => {
     return (
       <div className="p-4">
         <Alert variant="destructive">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertTitle>Error Loading Messages</AlertTitle>
+          <AlertDescription>
+            {error}
+            <div className="mt-2 text-sm">
+              <p>Debug Info:</p>
+              <ul className="list-disc list-inside">
+                <li>Current User: {currentUser?.uid || 'Not authenticated'}</li>
+                <li>Active Conversation: {activeConversation?.id || 'None'}</li>
+                <li>Conversations Count: {conversations.length}</li>
+                <li>Messages Count: {messages.length}</li>
+              </ul>
+            </div>
+          </AlertDescription>
         </Alert>
+        <Button 
+          onClick={() => window.location.reload()} 
+          className="mt-4"
+          variant="outline"
+        >
+          Reload Page
+        </Button>
       </div>
     );
   }
