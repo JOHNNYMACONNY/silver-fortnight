@@ -27,6 +27,7 @@ export interface User {
   role?: UserRole;
   createdAt?: any;
   updatedAt?: any;
+  public?: boolean;
   // Optional profile banner (Cloudinary publicId data or legacy string URL)
   banner?: BannerData | string | null;
   // Optional FX settings for banner overlay
@@ -57,7 +58,8 @@ export class UserService extends BaseService<User> {
         ...userData,
         id: userData.uid,
         reputationScore: 0,
-        role: 'user' as UserRole
+        role: 'user' as UserRole,
+        public: userData.public ?? true
       });
 
       return await this.create(userWithTimestamps, userData.uid);

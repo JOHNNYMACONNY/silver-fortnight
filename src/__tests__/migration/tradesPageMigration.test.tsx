@@ -154,13 +154,15 @@ const mockUserProfiles = {
     uid: 'user-123',
     displayName: 'John Developer',
     profilePicture: 'https://example.com/john.jpg',
-    location: 'San Francisco, CA'
+    location: 'San Francisco, CA',
+    public: true // Added to match real user profile structure
   },
   'user-456': {
     uid: 'user-456',
     displayName: 'Sarah Analyst',
     profilePicture: 'https://example.com/sarah.jpg',
-    location: 'New York, NY'
+    location: 'New York, NY',
+    public: true // Added to match real user profile structure
   }
 };
 

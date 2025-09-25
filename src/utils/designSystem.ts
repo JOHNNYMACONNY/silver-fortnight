@@ -143,6 +143,32 @@ export const classPatterns = {
   fadeIn: 'animate-in fade-in duration-300',
   slideUp: 'animate-in slide-in-from-bottom-4 duration-300',
   scaleIn: 'animate-in zoom-in-95 duration-200',
+
+  // HomePage-specific patterns (based on successful HomePage implementation)
+  homepageContainer: 'w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8',
+  homepageHero: 'relative rounded-2xl overflow-hidden mb-12',
+  homepageHeroContent: 'p-12 md:p-16',
+  homepageSection: 'mb-8',
+  homepageGrid: 'mb-8',
+  homepageCard: 'h-[280px] flex flex-col cursor-pointer overflow-hidden',
+  homepageCardHeader: 'pb-2',
+  homepageCardContent: 'flex-1 pb-3',
+  homepageCardFooter: 'pt-3',
+  
+  // HomePage layout patterns
+  homepageAsymmetricGrid: 'layoutPattern="asymmetric" visualRhythm="alternating" contentAwareLayout={true}',
+  homepageBentoItem: 'asymmetricSize="small" contentType="feature" layoutRole="simple"',
+  homepageBentoItemLarge: 'asymmetricSize="large" contentType="mixed" layoutRole="complex"',
+  
+  // HomePage card variants
+  homepagePremiumCard: 'variant="premium" tilt={true} depth="lg" glow="subtle"',
+  homepagePremiumCardOrange: 'variant="premium" tilt={true} depth="lg" glow="subtle" glowColor="orange"',
+  homepagePremiumCardPurple: 'variant="premium" tilt={true} depth="lg" glow="subtle" glowColor="purple"',
+  homepagePremiumCardBlue: 'variant="premium" tilt={true} depth="lg" glow="subtle" glowColor="blue"',
+  
+  // HomePage background patterns
+  homepageGradientBackground: 'variant="primary" intensity="medium"',
+  homepageGradientBackgroundSecondary: 'variant="secondary" intensity="medium"',
 } as const;
 
 // Component Variants
@@ -227,6 +253,59 @@ export const animations = {
       transition: { duration: 0.1 }
     },
   },
+
+  // HomePage-specific animations (based on successful HomePage implementation)
+  kineticHeading: {
+    // AnimatedHeading with kinetic animation
+    initial: { opacity: 0, y: -20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { 
+      duration: 0.6,
+      ease: [0.25, 0.46, 0.45, 0.94]
+    },
+  },
+
+  slideHeading: {
+    // AnimatedHeading with slide animation
+    initial: { opacity: 0, x: -30 },
+    animate: { opacity: 1, x: 0 },
+    transition: { 
+      duration: 0.5,
+      ease: [0.25, 0.46, 0.45, 0.94]
+    },
+  },
+
+  homepageCardEntrance: {
+    // HomePage card entrance animation
+    initial: { opacity: 0, y: 30, scale: 0.95 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    transition: { 
+      duration: 0.4,
+      ease: [0.25, 0.46, 0.45, 0.94]
+    },
+  },
+
+  homepageGridStagger: {
+    // Staggered grid item animation
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { 
+      duration: 0.3,
+      ease: [0.25, 0.46, 0.45, 0.94]
+    },
+  },
+
+  homepagePremiumCardHover: {
+    // Enhanced hover for premium cards
+    whileHover: { 
+      scale: 1.03,
+      y: -5,
+      transition: { 
+        duration: 0.2,
+        ease: [0.25, 0.46, 0.45, 0.94]
+      }
+    },
+  },
 } as const;
 
 // Layout Utilities
@@ -246,6 +325,35 @@ export const layouts = {
   // Flex layouts
   navbar: 'flex items-center justify-between px-6 py-4',
   sidebar: 'flex flex-col h-full w-64 glassmorphic',
+
+  // HomePage-specific layouts (based on successful HomePage implementation)
+  homepageLayout: 'w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8',
+  homepageHeroSection: 'relative rounded-2xl overflow-hidden mb-12',
+  homepageContentSection: 'mb-8',
+  homepageAsymmetricGrid: {
+    layoutPattern: 'asymmetric',
+    visualRhythm: 'alternating',
+    contentAwareLayout: true,
+    gap: 'lg'
+  },
+  homepageBentoItemSmall: {
+    asymmetricSize: 'small',
+    contentType: 'feature',
+    layoutRole: 'simple'
+  },
+  homepageBentoItemLarge: {
+    asymmetricSize: 'large',
+    contentType: 'mixed',
+    layoutRole: 'complex'
+  },
+  homepagePremiumCardLayout: {
+    variant: 'premium',
+    tilt: true,
+    depth: 'lg',
+    glow: 'subtle',
+    interactive: true,
+    className: 'h-[280px] flex flex-col cursor-pointer overflow-hidden'
+  },
 } as const;
 
 // Validation Functions

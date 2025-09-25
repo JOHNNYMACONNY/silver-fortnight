@@ -17,9 +17,8 @@ import NetworkStatusIndicator from './components/ui/NetworkStatusIndicator';
 import NotificationContainer from './components/gamification/notifications/NotificationContainer';
 import GamificationIntegration from './components/gamification/GamificationIntegration';
 import { initializeMigrationRegistry } from './services/migration';
-import { getSyncFirebaseDb } from './firebase-config';
+import { getFirebaseInstances, initializeFirebase } from './firebase-config';
 import { GamificationNotificationProvider } from './contexts/GamificationNotificationContext';
-import { initializeFirebase } from './firebase-config';
 import ConsistencyCheckerPage from './pages/ConsistencyCheckerPage';
 import DevDashboard from './components/development/DevDashboard';
 import { StyleGuide } from './components/ui/StyleGuide';
@@ -83,7 +82,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 // Initialize Firebase before the app renders
 const firebaseInitializationPromise = initializeFirebase();
-const db = getSyncFirebaseDb();
 
 function App() {
   const [firebaseInitialized, setFirebaseInitialized] = useState(false);
@@ -95,7 +93,11 @@ function App() {
       userId: 'anonymous', // Will be updated when user logs in
     });
 
-    firebaseInitializationPromise.then(() => {
+    let isMounted = true;
+
+    firebaseInitializationPromise.then(async () => {
+      const { db } = await getFirebaseInstances();
+      if (!isMounted) return;
       initializeMigrationRegistry(db, true);
       setFirebaseInitialized(true);
       logger.info("Firebase has been initialized successfully", 'FIREBASE');
@@ -107,6 +109,10 @@ function App() {
         action: 'firebase_initialization',
       });
     });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const isBootstrapping = !firebaseInitialized || authLoading;
@@ -238,6 +244,7 @@ function App() {
 
         {/* Development Dashboard - only in development */}
         <DevDashboard />
+
         </MainLayout>
         </GamificationNotificationProvider>
       </NotificationsProvider>

@@ -17,13 +17,11 @@ import {
   limit,
   serverTimestamp,
   setDoc,
-  deleteField,
-  Timestamp,
-  orderBy
+  deleteField
 } from 'firebase/firestore';
-import { initializeFirebase, getSyncFirebaseDb } from '../src/firebase-config.js';
+import { getSyncFirebaseDb } from '../src/firebase-config';
 import { performanceLogger } from '../src/utils/performance/structuredLogger.js';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 

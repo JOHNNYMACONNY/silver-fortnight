@@ -17,6 +17,11 @@ import { useMessageContext } from '../../../contexts/MessageContext';
 import { markMessagesAsRead as markConversationAsRead } from '../../../services/chat/chatService';
 import { ChatConversation, ChatMessage } from '../../../types/chat';
 import { ToastContext } from '../../../contexts/ToastContext';
+import { performQuickHealthCheck, getHealthStatus } from '../../../utils/firebaseHealthCheck';
+import { createRobustListener, FirebaseConnectionManager } from '../../../utils/firebaseConnectionManager';
+import { testMessagesDirectly } from '../../../utils/testMessagesDirectly';
+// import { loadMessagesOffline } from '../../../utils/offlineMessageLoader';
+// import { resetFirebaseConnections, wasResetRequested, clearResetFlags } from '../../../utils/firebaseConnectionReset';
 import { Card } from '../../ui/Card';
 import { Alert, AlertDescription, AlertTitle } from '../../ui/Alert';
 import { Skeleton } from '../../ui/skeletons/Skeleton';
@@ -96,86 +101,82 @@ export const ChatContainer: React.FC = () => {
     return () => unsubscribe();
   }, [currentUser, conversationId]);
 
-  // Fetch messages for active conversation with real-time updates
-  useEffect(() => {
-    if (!activeConversation || !currentUser) {
-      setMessages([]);
-      return;
-    }
+    // Load messages using offline approach to avoid Firebase internal assertion failures
+    useEffect(() => {
+      if (!activeConversation || !currentUser) {
+        setMessages([]);
+        return;
+      }
 
-    setLoading(true);
-    setError(null);
+      setLoading(true);
+      setError(null);
 
-    // Fetch messages for the active conversation
-    const messagesRef = collection(getSyncFirebaseDb(), 'conversations', activeConversation.id!, 'messages');
-    const q = query(messagesRef, orderBy('createdAt', 'asc'));
+      // Check if a Firebase reset was recently requested
+      // if (wasResetRequested()) {
+      //   console.log('ChatContainer: Firebase reset was requested, clearing flags');
+      //   clearResetFlags();
+      // }
 
-    // Set up real-time listener
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      try {
-        const messagesList: ChatMessage[] = [];
-        const unreadMessageIds: string[] = [];
+      const loadMessages = async () => {
+        try {
+          console.log('ChatContainer: Loading messages offline to avoid Firebase internal errors...');
+          
+          // Use direct message loading instead of real-time listeners
+          const result = await testMessagesDirectly(activeConversation.id!);
+          
+          if (result.success) {
+            console.log(`ChatContainer: Successfully loaded ${result.messages.length} messages offline`);
+            setMessages(result.messages);
+            setLoading(false);
+            setError(null);
+            
+            // Mark messages as read if needed
+            if (result.messages.length > 0 && isUserParticipant(activeConversation)) {
+              const unreadMessageIds = result.messages
+                .filter(msg => !msg.readBy?.includes(currentUser.uid) && msg.senderId !== currentUser.uid)
+                .map(msg => msg.id)
+                .filter(Boolean);
+              
+              if (unreadMessageIds.length > 0) {
+                const markAsReadDebounced = () => {
+                  markConversationAsRead(activeConversation.id!, currentUser.uid)
+                    .catch((error: any) => {
+                      console.log('Error marking messages as read:', error.message);
+                      if (!error.message?.includes('permission') && toastContext) {
+                        toastContext.addToast('error', 'Failed to mark messages as read');
+                      }
+                    });
+                };
 
-        snapshot.forEach((doc) => {
-          const messageData = {
-            id: doc.id,
-            ...(doc.data() as any)
-          } as ChatMessage;
-          messagesList.push(messageData);
-
-          // Check if this message is unread (not in readBy array) and not from the current user
-          const isUnread = !messageData.readBy?.includes(currentUser.uid);
-          if (isUnread && messageData.senderId !== currentUser.uid) {
-            if (messageData.id) {
-              unreadMessageIds.push(messageData.id);
-            }
-          }
-        });
-
-        setMessages(messagesList);
-        setLoading(false);
-
-        // Only mark messages as read if there are unread messages and user is a participant
-        if (unreadMessageIds.length > 0 && isUserParticipant(activeConversation)) {
-          // Use a debounced approach instead of arbitrary rate limiting
-          const markAsReadDebounced = () => {
-            markConversationAsRead(activeConversation.id!, currentUser.uid)
-              .catch((error: any) => {
-                console.log('Error marking messages as read:', error.message);
-                // Only show user-facing errors for critical failures, not permission issues
-                if (!error.message?.includes('permission') && toastContext) {
-                  toastContext.addToast('error', 'Failed to mark messages as read');
+                if (lastMarkAsReadAttemptRef.current) {
+                  clearTimeout(lastMarkAsReadAttemptRef.current);
                 }
-              });
-          };
 
-          // Clear any existing timeout
-          if (lastMarkAsReadAttemptRef.current) {
-            clearTimeout(lastMarkAsReadAttemptRef.current);
+                lastMarkAsReadAttemptRef.current = setTimeout(markAsReadDebounced, 1000);
+              }
+            }
+          } else {
+            console.error('ChatContainer: Offline message loading failed:', result.error);
+            setError(result.error || 'Failed to load messages');
+            setLoading(false);
           }
-
-          // Set a new timeout for 1 second debounce
-          lastMarkAsReadAttemptRef.current = setTimeout(markAsReadDebounced, 1000);
+        } catch (error: any) {
+          console.error('ChatContainer: Error loading messages offline:', error);
+          setError(error.message || 'Failed to load messages');
+          setLoading(false);
         }
+      };
 
-      } catch (err: any) {
-        setError(err.message || 'Failed to process messages');
-        setLoading(false);
-      }
-    }, (err: any) => {
-      setError(err.message || 'Failed to fetch messages');
-      setLoading(false);
-    });
+      loadMessages();
 
-    // Clean up listener and any pending timeout on unmount
-    return () => {
-      unsubscribe();
-      if (lastMarkAsReadAttemptRef.current) {
-        clearTimeout(lastMarkAsReadAttemptRef.current);
-        lastMarkAsReadAttemptRef.current = null;
-      }
-    };
-  }, [activeConversation, currentUser, markMessagesAsRead, isUserParticipant]);
+      // Clean up timeout on unmount
+      return () => {
+        if (lastMarkAsReadAttemptRef.current) {
+          clearTimeout(lastMarkAsReadAttemptRef.current);
+          lastMarkAsReadAttemptRef.current = null;
+        }
+      };
+    }, [activeConversation, currentUser, markMessagesAsRead, isUserParticipant]);
 
   // Memoize the fetchParticipantsData function to prevent unnecessary re-renders
   const fetchParticipantsData = useCallback(async () => {

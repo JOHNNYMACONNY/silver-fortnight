@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/Card";
-import { Input } from "../ui/Input";
+import { GlassmorphicInput } from "../ui/GlassmorphicInput";
 import { Label } from "../ui/Label";
 import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -66,29 +66,21 @@ const SecureLoginPage = ({ onLoginSuccess, onError }: SecureLoginPageProps) => {
             <div className="space-y-4">
               <div className="relative">
                 <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="pl-10"
-                    placeholder="Enter your password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </button>
-                </div>
+                <GlassmorphicInput
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Enter your password"
+                  label="Password"
+                  icon={<Lock className="h-5 w-5" />}
+                  variant="glass"
+                  size="lg"
+                  animatedLabel
+                  realTimeValidation
+                  showPasswordToggle
+                />
               </div>
               <Button type="submit" className="w-full" isLoading={isLoading}>
                 Login

@@ -31,7 +31,7 @@ export const processAutoResolution = async (): Promise<AutoResolutionResult> => 
 
   try {
     // Get all trades to check for pending confirmations
-    const { data: trades, error } = await getAllTrades();
+    const { data: trades, error } = await getAllTrades(undefined, undefined, { includeNonPublic: true });
     
     if (error) {
       result.errors.push(`Failed to fetch trades: ${error.message}`);

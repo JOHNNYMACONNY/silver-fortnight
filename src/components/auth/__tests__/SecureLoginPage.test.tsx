@@ -81,14 +81,40 @@ describe('SecureLoginPage', () => {
     });
   });
 
-  it('handles Google sign in', async () => {
+  it('handles Google sign in successfully', async () => {
     const onSuccess = jest.fn();
+    const mockUser = { uid: 'test-uid', email: 'test@example.com' };
+    
+    // Mock successful Google sign-in
+    const { signInWithGoogle } = jest.requireMock('firebase/auth');
+    signInWithGoogle.mockResolvedValue({ user: mockUser });
+    
     renderComponent({ onSuccess });
 
     fireEvent.click(screen.getByText('Sign in with Google'));
 
     await waitFor(() => {
       expect(onSuccess).toHaveBeenCalled();
+    });
+  });
+
+  it('handles Google sign in redirect', async () => {
+    const onSuccess = jest.fn();
+    
+    // Mock redirect scenario
+    const { signInWithGoogle } = jest.requireMock('firebase/auth');
+    signInWithGoogle.mockResolvedValue({ 
+      user: null, 
+      error: { code: 'auth/redirect-initiated', message: 'Redirect sign-in initiated' }
+    });
+    
+    renderComponent({ onSuccess });
+
+    fireEvent.click(screen.getByText('Sign in with Google'));
+
+    await waitFor(() => {
+      // Should not call onSuccess for redirect scenario
+      expect(onSuccess).not.toHaveBeenCalled();
     });
   });
 

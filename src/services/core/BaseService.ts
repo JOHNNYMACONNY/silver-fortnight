@@ -25,7 +25,7 @@ import {
    Firestore,
    FirestoreDataConverter
 } from 'firebase/firestore';
-import * as firebaseConfig from '../../firebase-config';
+import { getFirebaseInstances, initializeFirebase, getSyncFirebaseDb } from '../../firebase-config';
 import { ServiceResult } from '../../types/ServiceError';
 import { errorService } from '../errorService';
 import { AppError, ErrorCode, ErrorSeverity } from '../../types/errors';
@@ -35,24 +35,31 @@ import { AppError, ErrorCode, ErrorSeverity } from '../../types/errors';
  * All service classes should extend this to get consistent error handling and logging
  */
 export abstract class BaseService<T> {
-  protected db: Firestore;
+  protected db: Firestore | null = null;
   protected collectionName: string;
   protected converter?: FirestoreDataConverter<T, DocumentData, DocumentData>;
 
   constructor(collectionName: string, converter?: FirestoreDataConverter<T, DocumentData, DocumentData>) {
     // Support both ESM and CommonJS interop for firebase config used in tests.
     // Prefer named getSyncFirebaseDb, otherwise try default/db aliases provided by the CJS fallback.
-    const getDb =
-      (firebaseConfig as any).getSyncFirebaseDb ||
-      (firebaseConfig as any).getSyncFirebaseDb?.default ||
-      (firebaseConfig as any).default ||
-      (firebaseConfig as any).db ||
-      (() => {
-        throw new Error('getSyncFirebaseDb not available from firebase-config');
-      });
-    this.db = typeof getDb === 'function' ? getDb() : getDb;
     this.collectionName = collectionName;
     this.converter = converter;
+  }
+
+  protected async resolveDb(): Promise<Firestore> {
+    if (this.db) return this.db;
+    try {
+      this.db = getSyncFirebaseDb();
+      return this.db;
+    } catch {
+      await initializeFirebase();
+      const { db } = await getFirebaseInstances();
+      if (!db) {
+        throw new Error('Firestore not initialized');
+      }
+      this.db = db;
+      return db;
+    }
   }
 
   /**
@@ -84,16 +91,18 @@ export abstract class BaseService<T> {
   /**
    * Get collection reference with optional converter
    */
-  protected getCollection(): CollectionReference<T> {
-    const collectionRef = collection(this.db, this.collectionName);
+  protected async getCollection(): Promise<CollectionReference<T>> {
+    const db = await this.resolveDb();
+    const collectionRef = collection(db, this.collectionName);
     return this.converter ? (collectionRef.withConverter(this.converter) as unknown as CollectionReference<T>) : (collectionRef as CollectionReference<T>);
   }
 
   /**
    * Get document reference with optional converter
    */
-  protected getDocRef(id: string) {
-    const docRef = doc(this.db, this.collectionName, id);
+  protected async getDocRef(id: string) {
+    const db = await this.resolveDb();
+    const docRef = doc(db, this.collectionName, id);
     return this.converter ? docRef.withConverter(this.converter) : docRef;
   }
 
@@ -103,10 +112,10 @@ export abstract class BaseService<T> {
   protected async create(data: Partial<T>, id?: string): Promise<ServiceResult<T>> {
     try {
       const cleanData = this.sanitizeData(data as Record<string, any>);
-      const collectionRef = this.getCollection();
+      const collectionRef = await this.getCollection();
       
       if (id) {
-        const docRef = this.getDocRef(id);
+        const docRef = await this.getDocRef(id);
         await setDoc(docRef as any, cleanData as any);
         return { data: { ...cleanData, id } as T, error: null };
       } else {
@@ -131,7 +140,7 @@ export abstract class BaseService<T> {
    */
   protected async read(id: string): Promise<ServiceResult<T>> {
     try {
-      const docRef = this.getDocRef(id);
+      const docRef = await this.getDocRef(id);
       const docSnap = await getDoc(docRef);
       
       if (!docSnap.exists()) {
@@ -161,7 +170,7 @@ export abstract class BaseService<T> {
   protected async update(id: string, data: Partial<T>): Promise<ServiceResult<T>> {
     try {
       const cleanData = this.sanitizeData(data as Record<string, any>);
-      const docRef = this.getDocRef(id);
+      const docRef = await this.getDocRef(id);
       await updateDoc(docRef, cleanData as any);
       
       // Return updated document
@@ -185,7 +194,7 @@ export abstract class BaseService<T> {
    */
   protected async delete(id: string): Promise<ServiceResult<boolean>> {
     try {
-      const docRef = this.getDocRef(id);
+      const docRef = await this.getDocRef(id);
       await deleteDoc(docRef);
       return { data: true, error: null };
     } catch (error) {
@@ -209,7 +218,7 @@ export abstract class BaseService<T> {
     pagination?: { limit?: number; startAfter?: QueryDocumentSnapshot<T, DocumentData> | DocumentSnapshot<DocumentData, DocumentData, DocumentData> }
   ): Promise<ServiceResult<{ items: T[]; hasMore: boolean; lastDoc?: QueryDocumentSnapshot<T, DocumentData> }>> {
     try {
-      const collectionRef = this.getCollection();
+      const collectionRef = await this.getCollection();
       let queryRef: Query<T> = collectionRef;
 
       // Apply constraints
@@ -257,25 +266,26 @@ export abstract class BaseService<T> {
     data?: Partial<T>;
   }>): Promise<ServiceResult<boolean>> {
     try {
-      const batch = writeBatch(this.db);
+      const db = await this.resolveDb();
+      const batch = writeBatch(db);
 
       for (const operation of operations) {
         switch (operation.type) {
           case 'create':
             if (operation.id && operation.data) {
-              const docRef = this.getDocRef(operation.id);
+              const docRef = await this.getDocRef(operation.id);
               batch.set(docRef as any, this.sanitizeData(operation.data as Record<string, any>) as any);
             }
             break;
           case 'update':
             if (operation.id && operation.data) {
-              const docRef = this.getDocRef(operation.id);
+              const docRef = await this.getDocRef(operation.id);
               batch.update(docRef as any, this.sanitizeData(operation.data as Record<string, any>) as any);
             }
             break;
           case 'delete':
             if (operation.id) {
-              const docRef = this.getDocRef(operation.id);
+              const docRef = await this.getDocRef(operation.id);
               batch.delete(docRef as any);
             }
             break;

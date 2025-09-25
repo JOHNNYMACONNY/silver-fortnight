@@ -20,7 +20,7 @@ import { SkillLevel, UserSkill } from '../types/gamification';
 import { awardXP } from './gamification';
 import { XPSource } from '../types/gamification';
 
-const db = getSyncFirebaseDb();
+const getDb = () => getSyncFirebaseDb();
 
 // Skill Assessment Types
 export interface SkillAssessment {
@@ -114,6 +114,7 @@ export const createSkillAssessment = async (
   assessment: Omit<SkillAssessment, 'id' | 'createdAt'>
 ): Promise<ServiceResponse<SkillAssessment>> => {
   try {
+    const db = getDb();
     const assessmentId = `assessment_${assessment.userId}_${assessment.skillName}_${Date.now()}`;
     const fullAssessment: SkillAssessment = {
       ...assessment,
@@ -160,6 +161,7 @@ export const getUserSkillAssessments = async (
   skillName?: string
 ): Promise<ServiceResponse<SkillAssessment[]>> => {
   try {
+    const db = getDb();
     const assessmentsRef = collection(db, 'skillAssessments');
     let q = query(
       assessmentsRef,
@@ -196,6 +198,7 @@ const updateUserSkill = async (
   level: SkillLevel
 ): Promise<void> => {
   try {
+    const db = getDb();
     const skillId = `${userId}_${skillName.toLowerCase().replace(/\s+/g, '_')}`;
     const skillRef = doc(db, 'userSkills', skillId);
     
@@ -236,6 +239,7 @@ export const getSkillProgressAnalytics = async (
   skillName: string
 ): Promise<ServiceResponse<SkillProgressAnalytics>> => {
   try {
+    const db = getDb();
     // Get skill assessments
     const assessmentsResponse = await getUserSkillAssessments(userId, skillName);
     if (!assessmentsResponse.success || !assessmentsResponse.data) {

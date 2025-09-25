@@ -25,7 +25,7 @@ export const getDashboardStats = async (userId: string): Promise<ServiceResponse
   try {
     // Fetch all data in parallel, but handle errors gracefully
     const [tradesResult, xpResult, connectionsResult] = await Promise.allSettled([
-      getUserTrades(userId),
+      getUserTrades(userId, { includeNonPublic: true }),
       getUserXP(userId),
       getConnections(userId)
     ]);
@@ -129,7 +129,7 @@ export const getRecentActivity = async (userId: string, limit: number = 10): Pro
 
     // Get recent trades with error handling
     try {
-      const tradesResult = await getUserTrades(userId);
+      const tradesResult = await getUserTrades(userId, { includeNonPublic: true });
       if (tradesResult.data) {
         const recentTrades = tradesResult.data
           .sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime())

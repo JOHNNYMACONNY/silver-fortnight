@@ -1,116 +1,286 @@
+/**
+ * Migration Management Page
+ * 
+ * Admin page for managing Firestore database migration
+ */
+
 import React, { useState } from 'react';
-import { useAuth } from '../AuthContext';
-import { useToast } from '../contexts/ToastContext';
-import { runMigration } from '../scripts/migrateCollaborations';
+import { MigrationStatusComponent } from '../components/migration/MigrationStatus';
+import { useMigration } from '../hooks/useMigration';
 
-const MigrationPage: React.FC = () => {
-  const { currentUser } = useAuth();
-  const { addToast } = useToast();
-  const [isRunning, setIsRunning] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+export const MigrationPage: React.FC = () => {
+  const { status, results, isRunning, startMigration, rollbackMigration, resetMigration } = useMigration();
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [migrationConfig, setMigrationConfig] = useState({
+    batchSize: 50,
+    maxRetries: 3,
+    retryDelay: 1000,
+    enableValidation: true,
+    enableRollback: true,
+    dryRun: false
+  });
 
-  // Only allow admin users to run migrations
-  const isAdmin = currentUser?.uid === 'TozfQg0dAHe4ToLyiSnkDqe3ECj2'; // Replace with your admin user ID
+  const handleMigrationComplete = (results: any[]) => {
+    console.log('Migration completed:', results);
+    // Show success notification
+  };
 
-  const handleRunMigration = async () => {
-    if (!isAdmin) {
-      addToast('error', 'Only administrators can run migrations');
-      return;
-    }
+  const handleMigrationError = (error: string) => {
+    console.error('Migration error:', error);
+    // Show error notification
+  };
 
-    setIsRunning(true);
-    setResult(null);
-    setError(null);
-
+  const handleStartMigration = async () => {
     try {
-      // Create a proxy for console.log to capture output
-      const originalConsoleLog = console.log;
-      const originalConsoleError = console.error;
-      const logs: string[] = [];
-
-      console.log = (...args) => {
-        logs.push(args.join(' '));
-        originalConsoleLog(...args);
-      };
-
-      console.error = (...args) => {
-        logs.push(`ERROR: ${args.join(' ')}`);
-        originalConsoleError(...args);
-      };
-
-      // Run the migration
-      await runMigration();
-
-      // Restore console functions
-      console.log = originalConsoleLog;
-      console.error = originalConsoleError;
-
-      // Set the result
-      setResult(logs.join('\n'));
-      addToast('success', 'Migration completed');
-    } catch (err) {
-      console.error('Error running migration:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error occurred');
-      addToast('error', 'Migration failed');
-    } finally {
-      setIsRunning(false);
+      await startMigration(migrationConfig);
+    } catch (error) {
+      console.error('Failed to start migration:', error);
     }
   };
 
-  if (!isAdmin) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
-          Access denied. Only administrators can access this page.
-        </div>
-      </div>
-    );
-  }
+  const handleRollback = async () => {
+    if (window.confirm('Are you sure you want to rollback the migration? This action cannot be undone.')) {
+      const success = await rollbackMigration();
+      if (success) {
+        console.log('Rollback completed successfully');
+      } else {
+        console.error('Rollback failed');
+      }
+    }
+  };
+
+  const handleReset = () => {
+    if (window.confirm('Are you sure you want to reset the migration status?')) {
+      resetMigration();
+    }
+  };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl font-bold mb-6 text-foreground">Database Migrations</h1>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Database Migration</h1>
+          <p className="mt-2 text-gray-600">
+            Manage Firestore database schema migration from legacy to optimized format
+          </p>
+        </div>
 
-      <div className="bg-card p-6 mb-6 rounded-lg border border-border">
-        <h2 className="text-xl font-semibold mb-4 text-card-foreground">Collaboration Roles Migration</h2>
-        <p className="mb-4 text-foreground">
-          This migration will update existing collaborations to use the new roles subcollection structure.
-          It will create role documents for each role in the collaboration and update the collaboration document.
-        </p>
-        <p className="mb-6 text-muted-foreground">
-          <strong>Warning:</strong> Make sure you have a backup of your data before running this migration.
-        </p>
+        {/* Migration Status */}
+        <div className="mb-8">
+          <MigrationStatusComponent
+            onMigrationComplete={handleMigrationComplete}
+            onMigrationError={handleMigrationError}
+          />
+        </div>
 
-        <button
-          onClick={handleRunMigration}
-          disabled={isRunning}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-70 disabled:cursor-not-allowed"
-        >
-          {isRunning ? (
-            <span className="flex items-center">
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Running Migration...
-            </span>
-          ) : (
-            'Run Migration'
-          )}
-        </button>
-
-        {error && (
-          <div className="mt-6 bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
-            <h3 className="text-lg font-medium mb-2">Error</h3>
-            <p className="whitespace-pre-wrap">{error}</p>
+        {/* Migration Controls */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Migration Controls</h2>
+          
+          <div className="flex flex-wrap gap-4 mb-6">
+            <button
+              onClick={handleStartMigration}
+              disabled={isRunning || status.phase === 'migrating'}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isRunning ? 'Migration in Progress...' : 'Start Migration'}
+            </button>
+            
+            <button
+              onClick={handleRollback}
+              disabled={status.phase === 'idle' || status.phase === 'migrating'}
+              className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Rollback Migration
+            </button>
+            
+            <button
+              onClick={handleReset}
+              disabled={isRunning}
+              className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Reset Status
+            </button>
           </div>
-        )}
 
-        {result && (
-          <div className="mt-6 bg-success/10 border border-success/20 text-success px-4 py-3 rounded-lg">
-            <h3 className="text-lg font-medium mb-2">Result</h3>
-            <pre className="whitespace-pre-wrap text-sm overflow-auto max-h-96">{result}</pre>
+          {/* Advanced Configuration */}
+          <div className="border-t pt-6">
+            <button
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              {showAdvanced ? 'Hide' : 'Show'} Advanced Configuration
+            </button>
+            
+            {showAdvanced && (
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Batch Size
+                  </label>
+                  <input
+                    type="number"
+                    value={migrationConfig.batchSize}
+                    onChange={(e) => setMigrationConfig(prev => ({
+                      ...prev,
+                      batchSize: parseInt(e.target.value) || 50
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Max Retries
+                  </label>
+                  <input
+                    type="number"
+                    value={migrationConfig.maxRetries}
+                    onChange={(e) => setMigrationConfig(prev => ({
+                      ...prev,
+                      maxRetries: parseInt(e.target.value) || 3
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Retry Delay (ms)
+                  </label>
+                  <input
+                    type="number"
+                    value={migrationConfig.retryDelay}
+                    onChange={(e) => setMigrationConfig(prev => ({
+                      ...prev,
+                      retryDelay: parseInt(e.target.value) || 1000
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                <div className="flex items-center space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={migrationConfig.enableValidation}
+                      onChange={(e) => setMigrationConfig(prev => ({
+                        ...prev,
+                        enableValidation: e.target.checked
+                      }))}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-gray-700">Enable Validation</span>
+                  </label>
+                  
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={migrationConfig.enableRollback}
+                      onChange={(e) => setMigrationConfig(prev => ({
+                        ...prev,
+                        enableRollback: e.target.checked
+                      }))}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-gray-700">Enable Rollback</span>
+                  </label>
+                  
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={migrationConfig.dryRun}
+                      onChange={(e) => setMigrationConfig(prev => ({
+                        ...prev,
+                        dryRun: e.target.checked
+                      }))}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-gray-700">Dry Run</span>
+                  </label>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Migration Information */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Migration Information</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">What This Migration Does</h3>
+              <ul className="space-y-2 text-gray-600">
+                <li>• Updates trades collection with optimized schema</li>
+                <li>• Migrates conversations to new participant format</li>
+                <li>• Normalizes user profiles for better performance</li>
+                <li>• Adds search optimization fields</li>
+                <li>• Implements new indexing strategy</li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">Safety Features</h3>
+              <ul className="space-y-2 text-gray-600">
+                <li>• Zero-downtime migration process</li>
+                <li>• Automatic rollback on failure</li>
+                <li>• Data validation at each step</li>
+                <li>• Progress monitoring and logging</li>
+                <li>• Backup verification</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Results Summary */}
+        {results.length > 0 && (
+          <div className="bg-white rounded-lg shadow-lg p-6 mt-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Migration Results</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {results.map((result, index) => (
+                <div key={index} className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-medium text-gray-900 mb-3">
+                    {index === 0 ? 'Trades Collection' : 
+                     index === 1 ? 'Conversations Collection' : 
+                     'Users Collection'}
+                  </h3>
+                  
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Total Documents:</span>
+                      <span className="font-medium">{result.totalDocuments}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Migrated:</span>
+                      <span className="font-medium text-green-600">{result.migratedDocuments}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Failed:</span>
+                      <span className="font-medium text-red-600">{result.failedDocuments}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Skipped:</span>
+                      <span className="font-medium text-yellow-600">{result.skippedDocuments}</span>
+                    </div>
+                    {result.durationMs && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Duration:</span>
+                        <span className="font-medium">{Math.round(result.durationMs / 1000)}s</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className={`mt-3 px-3 py-1 rounded-full text-xs font-medium ${
+                    result.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {result.success ? 'Success' : 'Failed'}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

@@ -63,14 +63,14 @@ const AdminDashboard: React.FC = () => {
           }
 
           case 'trades': {
-            const { data: tradesList, error: tradesError } = await getAllTrades();
+            const { data: tradesList, error: tradesError } = await getAllTrades(undefined, undefined, { includeNonPublic: true });
             if (tradesError) throw new Error(tradesError.message);
             setTrades(tradesList?.items || []);
             break;
           }
 
           case 'collaborations': {
-            const { data: collaborationsList, error: collaborationsError } = await getAllCollaborations();
+            const { data: collaborationsList, error: collaborationsError } = await getAllCollaborations(undefined, undefined, { includeNonPublic: true });
             if (collaborationsError) throw new Error(collaborationsError.message);
             setCollaborations(collaborationsList?.items || []);
             break;

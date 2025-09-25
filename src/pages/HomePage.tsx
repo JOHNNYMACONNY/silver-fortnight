@@ -104,7 +104,7 @@ const HomePage: React.FC = () => {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold">Skill Trades</CardTitle>
-                  <Badge variant="outline" topic="trades" className="text-xs">Active</Badge>
+                  <Badge variant="default" topic="trades" className="text-xs">Active</Badge>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 pb-3">
@@ -148,7 +148,7 @@ const HomePage: React.FC = () => {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold">Collaborations</CardTitle>
-                  <Badge variant="outline" topic="collaboration" className="text-xs">Team</Badge>
+                  <Badge variant="default" topic="collaboration" className="text-xs">Team</Badge>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 pb-3">
@@ -195,7 +195,7 @@ const HomePage: React.FC = () => {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold">Challenges</CardTitle>
-                  <Badge variant="outline" topic="success" className="text-xs">Rewards</Badge>
+                  <Badge variant="default" topic="success" className="text-xs">Rewards</Badge>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 pb-3">
@@ -235,7 +235,7 @@ const HomePage: React.FC = () => {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold">Community Stats</CardTitle>
-                  <Badge variant="outline" topic="community" className="text-xs">Live</Badge>
+                  <Badge variant="status-glow" className="text-xs">Live</Badge>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 pb-3">
@@ -270,24 +270,43 @@ const HomePage: React.FC = () => {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
-                  <Badge variant="outline" topic="community" className="text-xs">Real-time</Badge>
+                  <Badge variant="status-glow" className="text-xs">Real-time</Badge>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 pb-3">
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-3 p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-xs">New trade: Web Dev for UI Design</span>
+                <div className="space-y-1">
+                  {/* Activity item with gradient border to next */}
+                  <div className="relative">
+                    <div className="flex items-center space-x-3 p-2 bg-green-50 dark:bg-green-950/20 rounded-lg transition-all duration-300 hover:bg-green-100 dark:hover:bg-green-950/30">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-xs">New trade: Web Dev for UI Design</span>
+                    </div>
+                    {/* Gradient connector to next item */}
+                    <div className="absolute left-4 top-full w-px h-2 bg-gradient-to-b from-green-500/60 to-blue-500/60 animate-pulse"></div>
                   </div>
-                  <div className="flex items-center space-x-3 p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-xs">Joined: Mobile App Team</span>
+                  
+                  {/* Activity item with gradient border to next */}
+                  <div className="relative">
+                    <div className="flex items-center space-x-3 p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg transition-all duration-300 hover:bg-blue-100 dark:hover:bg-blue-950/30">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-xs">Joined: Mobile App Team</span>
+                    </div>
+                    {/* Gradient connector to next item */}
+                    <div className="absolute left-4 top-full w-px h-2 bg-gradient-to-b from-blue-500/60 to-purple-500/60 animate-pulse"></div>
                   </div>
-                  <div className="flex items-center space-x-3 p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span className="text-xs">Completed: UI/UX Design Sprint</span>
+                  
+                  {/* Activity item with gradient border to next */}
+                  <div className="relative">
+                    <div className="flex items-center space-x-3 p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg transition-all duration-300 hover:bg-purple-100 dark:hover:bg-purple-950/30">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <span className="text-xs">Completed: UI/UX Design Sprint</span>
+                    </div>
+                    {/* Gradient connector to next item */}
+                    <div className="absolute left-4 top-full w-px h-2 bg-gradient-to-b from-purple-500/60 to-primary/60 animate-pulse"></div>
                   </div>
-                  <div className="flex items-center space-x-3 p-2 bg-primary/10 rounded-lg">
+                  
+                  {/* Final activity item */}
+                  <div className="flex items-center space-x-3 p-2 bg-primary/10 rounded-lg transition-all duration-300 hover:bg-primary/15">
                     <div className="w-2 h-2 bg-primary rounded-full"></div>
                     <span className="text-xs">New user: Sarah Chen (Designer)</span>
                   </div>

@@ -29,7 +29,7 @@ jest.mock('../../components/layout/primitives/Grid', () => {
   return { __esModule: true, default: (props: any) => React.createElement('div', props, props.children) };
 });
 jest.mock('../../services/firestore-exports', () => ({
-  getUserProfile: async () => ({ data: { uid: 'u1', email: 'u1@test.com' } }),
+  getUserProfile: async () => ({ data: { uid: 'u1', email: 'u1@test.com', public: true } }),
 }));
 const ProfilePage = require('../ProfilePage').default;
 

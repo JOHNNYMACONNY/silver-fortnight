@@ -164,9 +164,36 @@ This document serves as the master index for all TradeYa production migration an
 **Purpose**: Manual database index deployment procedures  
 **Key Content**:
 - Manual index creation procedures
-- Emergency database management
-- Index validation and verification
-- Recovery and rollback procedures
+
+#### 🔗 [Bidirectional Connection Troubleshooting Guide](./BIDIRECTIONAL_CONNECTION_TROUBLESHOOTING.md)
+**Audience**: Technical Support, Developers, QA Teams  
+**Purpose**: Comprehensive guide for diagnosing and fixing bidirectional connection synchronization issues  
+**Key Content**:
+- Connection synchronization troubleshooting
+- Diagnostic steps and solutions
+- Prevention measures and monitoring
+- Emergency procedures for systematic failures
+
+#### 🔧 [Critical Fixes Summary](./CRITICAL_FIXES_SUMMARY.md)
+**Audience**: Development Teams, Technical Leadership  
+**Purpose**: Comprehensive summary of all critical bug fixes and their resolutions  
+**Key Content**:
+- Database reference error fixes
+- Missing Firestore indexes resolution
+- User profile visibility issue fix
+- Migration registry warnings resolution
+- Performance optimization implementations
+- Complete verification checklists
+
+#### 👤 [User Profile Visibility Fix](./USER_PROFILE_VISIBILITY_FIX.md)
+**Audience**: Development Teams, Database Teams  
+**Purpose**: Detailed documentation of the user profile display issue and resolution  
+**Key Content**:
+- Root cause analysis of profile display issues
+- Database backfill script implementation
+- Privacy logic explanation
+- Prevention strategies for similar issues
+- Complete troubleshooting guide
 
 ## Supporting Documentation
 

@@ -40,6 +40,8 @@ export interface Collaboration {
   category?: string;
   // Normalized skills index for server-side filtering (lowercased unique names)
   skillsIndex?: string[];
+  public?: boolean;
+  visibility?: 'public' | 'private' | 'unlisted';
 }
 
 export interface CollaborationFilters {
@@ -88,6 +90,8 @@ export class CollaborationService extends BaseService<Collaboration> {
         status: 'open' as CollaborationStatus,
         participants: [],
         collaborators: [],
+        public: collaborationData.public ?? true,
+        visibility: collaborationData.visibility ?? 'public',
         skillsIndex: computeSkillsIndex(collaborationData.skillsRequired, collaborationData.skillsNeeded)
       });
 

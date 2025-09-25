@@ -22,7 +22,7 @@ import { updateProgressionOnChallengeCompletion } from './threeTierProgression';
 import { checkAndUnlockAchievements } from './achievements';
 import { createNotification } from './notifications';
 
-const db = getSyncFirebaseDb();
+const getDb = () => getSyncFirebaseDb();
 
 export interface ChallengeCompletionData {
   completionMethod: 'manual' | 'ai-verified' | 'peer-reviewed' | 'time-based';
@@ -75,6 +75,7 @@ export const completeChallenge = async (
   completionData: ChallengeCompletionData
 ): Promise<ChallengeCompletionResult> => {
   try {
+    const db = getDb();
     return await runTransaction(db, async (transaction) => {
       // Get challenge and user challenge data
       const challengeRef = doc(db, 'challenges', challengeId);

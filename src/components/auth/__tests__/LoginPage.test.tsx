@@ -141,15 +141,9 @@ describe('LoginPage', () => {
     });
   });
 
-  it('handles Google sign-in redirect', async () => {
-    const redirectError = new Error('Redirect sign-in initiated') as Error & { code: string };
-    redirectError.code = 'auth/redirect-initiated';
-    mockSignInWithGoogle.mockRejectedValue(redirectError);
-
-    // Mock localStorage.setItem to track calls
-    (localStorage.setItem as jest.Mock).mockImplementation(() => {});
-    // Ensure localStorage.getItem returns null initially (no existing redirect)
-    (localStorage.getItem as jest.Mock).mockReturnValue(null);
+  it('handles Google sign-in successfully', async () => {
+    const mockUser = { uid: 'test-uid', email: 'test@example.com' };
+    mockSignInWithGoogle.mockResolvedValue({ user: mockUser });
 
     renderLoginPage();
     
@@ -158,7 +152,27 @@ describe('LoginPage', () => {
 
     await waitFor(() => {
       expect(mockSignInWithGoogle).toHaveBeenCalled();
-      expect(localStorage.setItem).toHaveBeenCalledWith('auth_redirect', 'true');
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+    });
+  });
+
+  it('handles Google sign-in redirect', async () => {
+    const redirectError = new Error('Redirect sign-in initiated') as Error & { code: string };
+    redirectError.code = 'auth/redirect-initiated';
+    mockSignInWithGoogle.mockResolvedValue({ 
+      user: null, 
+      error: { code: 'auth/redirect-initiated', message: 'Redirect sign-in initiated' }
+    });
+
+    renderLoginPage();
+    
+    const googleButton = screen.getByRole('button', { name: /sign in with google/i });
+    fireEvent.click(googleButton);
+
+    await waitFor(() => {
+      expect(mockSignInWithGoogle).toHaveBeenCalled();
+      // Should not navigate on redirect initiation
+      expect(mockNavigate).not.toHaveBeenCalled();
     });
   });
 });

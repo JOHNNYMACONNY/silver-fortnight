@@ -7,10 +7,8 @@
  * migration deployment with enterprise-grade safety mechanisms.
  */
 
-import { initializeApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import { collection, query, where, limit, getDocs, doc, getDoc } from 'firebase/firestore';
-import { initializeFirebase, getSyncFirebaseDb } from '../../src/firebase-config.js';
+import { collection, query, where, limit, getDocs } from 'firebase/firestore';
+import { getSyncFirebaseDb } from '../../src/firebase-config';
 import { performanceLogger } from '../../src/utils/performance/structuredLogger.js';
 import { migrationRegistry } from '../../src/services/migration/migrationRegistry.js';
 import { readFileSync, existsSync } from 'fs';

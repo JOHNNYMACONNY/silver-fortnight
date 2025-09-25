@@ -7,7 +7,7 @@ import { ErrorBoundary } from '../components/ui/ErrorBoundary';
 import UserCardSkeleton from '../components/ui/UserCardSkeleton';
 import UserCard from '../components/features/users/UserCard';
 import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
+import { EnhancedSearchBar } from '../components/features/search/EnhancedSearchBar';
 import {
   Select,
   SelectContent,
@@ -19,6 +19,19 @@ import {
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Modal } from '../components/ui/Modal';
 import ProfilePage from '../pages/ProfilePage';
+// HomePage patterns imports
+import PerformanceMonitor from '../components/ui/PerformanceMonitor';
+import AnimatedHeading from '../components/ui/AnimatedHeading';
+import GradientMeshBackground from '../components/ui/GradientMeshBackground';
+import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import { classPatterns, animations } from '../utils/designSystem';
+import { semanticClasses } from '../utils/semanticColors';
+import Box from '../components/layout/primitives/Box';
+import Stack from '../components/layout/primitives/Stack';
+import Cluster from '../components/layout/primitives/Cluster';
+import Grid from '../components/layout/primitives/Grid';
+import { motion } from 'framer-motion';
 
 export const UserDirectoryPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -33,6 +46,15 @@ export const UserDirectoryPage: React.FC = () => {
   const [usersPerPage] = useState(10);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // EnhancedSearchBar state
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
+  
+  // Search handler
+  const handleSearch = useCallback((term: string) => {
+    setSearchTerm(term);
+  }, []);
 
   // Filters
   const [selectedSkill, setSelectedSkill] = useState('');
@@ -261,6 +283,15 @@ export const UserDirectoryPage: React.FC = () => {
   useEffect(() => {
     applyFilters();
   }, [applyFilters]);
+  
+  // Calculate active filters count
+  useEffect(() => {
+    let count = 0;
+    if (selectedSkill) count++;
+    if (selectedLocation) count++;
+    if (relationFilter && relationUserId) count++;
+    setActiveFiltersCount(count);
+  }, [selectedSkill, selectedLocation, relationFilter, relationUserId]);
 
   const resetFilters = () => {
     setSearchTerm('');
@@ -285,174 +316,181 @@ export const UserDirectoryPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">User Directory</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {relationFilter && relationUserId
-              ? relationFilter === 'followers'
-                ? `Followers of ${relationUserId}`
-                : `Following of ${relationUserId}`
-              : 'Find and connect with other users'}
-          </p>
-        </div>
-
-        <div className="mt-4 md:mt-0">
-          <Button
-            variant="outline"
-            onClick={() => setShowFilters(!showFilters)}
+    <Box className={classPatterns.homepageContainer}>
+      <PerformanceMonitor pageName="UserDirectoryPage" />
+      <Stack gap="md">
+        {/* Hero Section with HomePage-style gradient background */}
+        <Box className={classPatterns.homepageHero}>
+          <GradientMeshBackground 
+            variant="secondary" 
+            intensity="medium" 
+            className={classPatterns.homepageHeroContent}
           >
-            <Filter className="mr-2 h-4 w-4" />
-            {showFilters ? 'Hide' : 'Show'} Filters
-          </Button>
-        </div>
-      </div>
+            <AnimatedHeading 
+              as="h1" 
+              animation="kinetic" 
+              className="text-4xl md:text-5xl font-bold text-foreground mb-4"
+            >
+              User Directory
+            </AnimatedHeading>
+            <p className="text-xl text-muted-foreground max-w-2xl animate-fadeIn mb-6">
+              {relationFilter && relationUserId
+                ? relationFilter === 'followers'
+                  ? `Followers of ${relationUserId}`
+                  : `Following of ${relationUserId}`
+                : 'Find and connect with talented users, discover new skills, and build meaningful connections.'}
+            </p>
+            <Cluster gap="sm" align="center">
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                <Filter className="mr-2 h-4 w-4" />
+                {showFilters ? 'Hide' : 'Show'} Filters
+              </Button>
+              <Badge variant="default" topic="community" className="text-xs">
+                {filteredUsers.length} Users
+              </Badge>
+            </Cluster>
+          </GradientMeshBackground>
+        </Box>
 
-      {showFilters && (
-        <div className="glassmorphic rounded-xl p-4 md:p-6 mb-6 transition">
-          <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
-            <div className="flex-1">
-              <label htmlFor="search" className="block text-sm font-medium text-foreground mb-1">
-                Search
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-muted-foreground" />
+        {/* Search Section with HomePage-style card */}
+        <Card variant="glass" className="rounded-xl p-4 md:p-6 mb-6 ">
+          <CardHeader className={classPatterns.homepageCardHeader}>
+            <CardTitle className="text-lg font-semibold flex items-center justify-between">
+              Find Users
+              <Badge variant="secondary" className="text-xs">
+                {filteredUsers.length} Users
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className={classPatterns.homepageCardContent}>
+            <EnhancedSearchBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              onSearch={handleSearch}
+              onToggleFilters={() => setShowFilterPanel(true)}
+              hasActiveFilters={activeFiltersCount > 0}
+              activeFiltersCount={activeFiltersCount}
+              resultsCount={filteredUsers.length}
+              isLoading={loading}
+              placeholder="Search users by name, skills, or location..."
+              topic="community"
+            />
+          </CardContent>
+        </Card>
+
+        {/* Users Section with HomePage-style layout */}
+        <AnimatedHeading as="h2" animation="slide" className="text-2xl md:text-3xl font-semibold text-foreground mb-6">
+          Discover Users
+        </AnimatedHeading>
+
+        {loading && (
+          <Grid columns={{ base: 1, sm: 2, lg: 3, xl: 4 }} gap="lg">
+            {Array.from({ length: usersPerPage }).map((_, index) => (
+              <UserCardSkeleton key={index} />
+            ))}
+          </Grid>
+        )}
+
+        {error && (
+          <Card variant="glass" className="border-destructive/20">
+            <CardContent className="p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <AlertCircle className="h-5 w-5 text-destructive" />
                 </div>
-                <Input
-                  id="search"
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                  placeholder="Search by name, skills, or interests..."
-                />
+                <div className="ml-3">
+                  <p className="text-sm text-destructive">
+                    {error}
+                  </p>
+                </div>
               </div>
-            </div>
+            </CardContent>
+          </Card>
+        )}
 
-            <div className="flex-1">
-              <label htmlFor="skill-filter" className="block text-sm font-medium text-foreground mb-1">Filter by Skill</label>
-              <Select value={selectedSkill} onValueChange={setSelectedSkill}>
-                <SelectTrigger id="skill-filter">
-                  <SelectValue placeholder="All Skills" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Skills</SelectItem>
-                  {availableSkills.map(skill => (
-                    <SelectItem key={skill} value={skill}>{skill}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex-1">
-              <label htmlFor="location-filter" className="block text-sm font-medium text-foreground mb-1">Filter by Location</label>
-              <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                <SelectTrigger id="location-filter">
-                  <SelectValue placeholder="All Locations" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Locations</SelectItem>
-                  {availableLocations.map(location => (
-                    <SelectItem key={location} value={location}>{location}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="mt-6 flex justify-end">
-            <Button variant="ghost" onClick={resetFilters} className="text-sm">
-              Reset Filters
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {loading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {Array.from({ length: usersPerPage }).map((_, index) => (
-            <UserCardSkeleton key={index} />
-          ))}
-        </div>
-      )}
-
-      {error && (
-        <div className="bg-destructive/10 border-l-4 border-destructive p-4 rounded-md">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <AlertCircle className="h-5 w-5 text-destructive" />
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-destructive">
-                {error}
+        {!loading && !error && filteredUsers.length === 0 && (
+          <Card variant="glass" className="text-center p-12">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold text-foreground">No Users Found</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Try adjusting your search or filters to find more users.
               </p>
-            </div>
-          </div>
-        </div>
-      )}
+            </CardContent>
+          </Card>
+        )}
 
-      {!loading && !error && filteredUsers.length === 0 && (
-        <div className="text-center py-12">
-          <h2 className="text-xl font-semibold text-foreground">No Users Found</h2>
-          <p className="mt-2 text-muted-foreground">
-            Try adjusting your search or filters.
-          </p>
-        </div>
-      )}
+        {!loading && !error && filteredUsers.length > 0 && (
+          <>
+            <ErrorBoundary>
+              <Grid columns={{ base: 1, sm: 2, lg: 3, xl: 4 }} gap="lg">
+                {currentUsers.map((user, index) => (
+                  <motion.div
+                    key={user.id}
+                    className="h-full"
+                    {...animations.homepageCardEntrance}
+                    transition={{
+                      ...animations.homepageCardEntrance.transition,
+                      delay: index * 0.1
+                    }}
+                  >
+                    <UserCard 
+                      user={user} 
+                      currentUserId={currentUser?.uid}
+                      parseSkills={parseSkills}
+                    />
+                  </motion.div>
+                ))}
+              </Grid>
+            </ErrorBoundary>
 
-      {!loading && !error && filteredUsers.length > 0 && (
-        <>
-          <ErrorBoundary>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {currentUsers.map((user) => (
-                <UserCard 
-                  key={user.id} 
-                  user={user} 
-                  currentUserId={currentUser?.uid}
-                  parseSkills={parseSkills}
-                />
-              ))}
-            </div>
-          </ErrorBoundary>
+            {totalPages > 1 && (
+              <Card variant="glass" className="mt-8">
+                <CardContent className="p-4">
+                  <Cluster justify="center" gap="md">
+                    <Button
+                      variant="outline"
+                      onClick={() => paginate(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      <ArrowLeft className="mr-2 h-5 w-5" />
+                      Previous
+                    </Button>
+                    <Badge variant="secondary" className="text-xs">
+                      Page {currentPage} of {totalPages}
+                    </Badge>
+                    <Button
+                      variant="outline"
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </Cluster>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        )}
 
-          {totalPages > 1 && (
-            <div className="mt-8 flex justify-between items-center">
-              <Button
-                variant="outline"
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                <ArrowLeft className="mr-2 h-5 w-5" />
-                Previous
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
-                Next
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
-          )}
-        </>
-      )}
-      
-      {selectedUser && (
-        <Modal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          title={selectedUser.displayName || 'User Profile'}
-          size="xl"
-        >
-          <ProfilePage userId={selectedUser.id} />
-        </Modal>
-      )}
-
-    </div>
+        {/* User Profile Modal */}
+        {selectedUser && (
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title={selectedUser.displayName || 'User Profile'}
+            size="xl"
+          >
+            <ProfilePage userId={selectedUser.id} />
+          </Modal>
+        )}
+      </Stack>
+    </Box>
   );
 };
 

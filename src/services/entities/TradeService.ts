@@ -44,6 +44,7 @@ export interface Trade {
   compensation?: string;
   // Normalized skills index for server-side filtering (lowercased unique names)
   skillsIndex?: string[];
+  visibility: 'public' | 'private' | 'unlisted';
 }
 
 /**
@@ -73,6 +74,7 @@ export class TradeService extends BaseService<Trade> {
       const tradeWithTimestamps = this.addTimestamps({
         ...tradeData,
         status: 'pending' as TradeStatus,
+        visibility: tradeData.visibility ?? 'public',
         skillsIndex: computeSkillsIndex(tradeData.skillsOffered, tradeData.skillsWanted)
       });
 

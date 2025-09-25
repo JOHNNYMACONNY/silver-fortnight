@@ -30,7 +30,7 @@ jest.mock('../../components/layout/primitives/Grid', () => {
 });
 // Import lazily to avoid early Firebase initialization in test env
 jest.mock('../../services/firestore-exports', () => ({
-  getUserProfile: async () => ({ data: { uid: 'u1', email: 'u1@test.com' } }),
+  getUserProfile: async () => ({ data: { uid: 'u1', email: 'u1@test.com', public: true } }),
 }));
 const ProfilePage = require('../ProfilePage').default;
 

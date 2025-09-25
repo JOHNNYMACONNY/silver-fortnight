@@ -5,7 +5,7 @@ import { useAuth } from '../../AuthContext';
 import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
-import { Input } from '../ui/Input';
+import { GlassmorphicInput } from '../ui/GlassmorphicInput';
 import { ImprovedProjectCreationWizard } from './ImprovedProjectCreationWizard';
 import {
   Users,
@@ -269,15 +269,17 @@ export const SimplifiedCollaborationInterface: React.FC<SimplifiedCollaborationI
     <div className="space-y-6">
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="Search projects by title, skills, or description..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 glassmorphic"
-          />
-        </div>
+        <GlassmorphicInput
+          placeholder="Search projects by title, skills, or description..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          label="Search Projects"
+          icon={<Search className="w-4 h-4" />}
+          variant="glass"
+          size="md"
+          animatedLabel
+          realTimeValidation
+        />
         <div className="flex gap-2 overflow-x-auto">
           {categories.map((category) => (
             <Button

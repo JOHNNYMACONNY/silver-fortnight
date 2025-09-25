@@ -20,10 +20,25 @@ import { useCollaborationSearch } from '../hooks/useCollaborationSearch';
 import { AdvancedSearch } from '../components/features/search/AdvancedSearch';
 import { getFirebaseInstances } from '../firebase-config';
 import { collection, query as fsQuery, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { useAuth } from '../AuthContext';
+// HomePage patterns imports
+import AnimatedHeading from '../components/ui/AnimatedHeading';
+import GradientMeshBackground from '../components/ui/GradientMeshBackground';
+import { BentoGrid, BentoItem } from '../components/ui/BentoGrid';
+import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import { classPatterns, animations } from '../utils/designSystem';
+import { semanticClasses } from '../utils/semanticColors';
+import { TopicLink } from '../components/ui/TopicLink';
+import Box from '../components/layout/primitives/Box';
+import Stack from '../components/layout/primitives/Stack';
+import Cluster from '../components/layout/primitives/Cluster';
+import Grid from '../components/layout/primitives/Grid';
 
 
 export const CollaborationsPage: React.FC = () => {
   const { addToast } = useToast();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
 
   // Enhanced search functionality with backend integration
@@ -48,12 +63,13 @@ export const CollaborationsPage: React.FC = () => {
   } = useCollaborationSearch({
     enablePersistence: true,
     enableAnalytics: true,
-    userId: 'current-user-id', // TODO: Get from auth context
+    userId: currentUser?.uid,
     pagination: {
       limit: 50,
       orderByField: 'createdAt',
       orderDirection: 'desc'
-    }
+    },
+    includeNonPublic: !!currentUser
   });
 
   // Handle filter changes from AdvancedSearch
@@ -90,17 +106,17 @@ export const CollaborationsPage: React.FC = () => {
     }
 
     let unsubscribe: (() => void) | null = null;
+    const includeNonPublic = !!currentUser;
+
     (async () => {
       try {
         setLoading(true);
         setError(null);
         const { db } = await getFirebaseInstances();
         const collabCol = collection(db, 'collaborations');
-        const q = fsQuery(
-          collabCol,
-          orderBy('createdAt', 'desc'),
-          limit(50)
-        );
+        const constraints = [orderBy('createdAt', 'desc'), limit(50)];
+        const visibilityConstraint = includeNonPublic ? [] : [where('visibility', '==', 'public')];
+        const q = fsQuery(collabCol, ...visibilityConstraint, ...constraints);
 
         unsubscribe = onSnapshot(q, (snapshot) => {
           try {
@@ -128,7 +144,7 @@ export const CollaborationsPage: React.FC = () => {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, []);
+  }, [currentUser]);
 
   // Handle search
   const handleSearch = async (term: string, searchFilters: any) => {
@@ -198,47 +214,86 @@ export const CollaborationsPage: React.FC = () => {
 
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Performance monitoring (invisible) */}
+    <Box className={classPatterns.homepageContainer}>
       <PerformanceMonitor pageName="CollaborationsPage" />
-        <div className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Collaborations</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Join forces with other creators to bring your ideas to life.
+      <Stack gap="md">
+        {/* Hero Section with HomePage-style gradient background */}
+        <Box className={classPatterns.homepageHero}>
+          <GradientMeshBackground 
+            variant="secondary" 
+            intensity="medium" 
+            className={classPatterns.homepageHeroContent}
+          >
+            <AnimatedHeading 
+              as="h1" 
+              animation="kinetic" 
+              className="text-4xl md:text-5xl font-bold text-foreground mb-4"
+            >
+              Collaborations
+            </AnimatedHeading>
+            <p className="text-xl text-muted-foreground max-w-2xl animate-fadeIn mb-6">
+              Join forces with other creators to bring your ideas to life and build amazing projects together.
             </p>
-          </div>
-
-        <div className="mt-4 md:mt-0 flex space-x-3">
-          <Button asChild topic="collaboration">
+            <Cluster gap="sm" align="center">
+              <Button asChild topic="collaboration" variant="primary">
             <Link to="/collaborations/new">
               <PlusCircle className="me-2 h-4 w-4" />
               Create Collaboration
             </Link>
           </Button>
-        </div>
-      </div>
+              <Badge variant="default" topic="collaboration" className="text-xs">
+                {displayCollaborations.length} Active Collaborations
+              </Badge>
+            </Cluster>
+          </GradientMeshBackground>
+        </Box>
 
-      {/* Summary chips */}
-      <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <StatChip label="Results" value={totalVisible} />
-        <StatChip label="Saved" value={savedCount} className="hidden sm:inline-flex" />
-        <StatChip label="Joined" value={joinedCount} className="hidden sm:inline-flex" />
-      </div>
+        {/* Summary Stats with HomePage-style cards */}
+        <Grid columns={{ base: 2, md: 3 }} gap="sm" className="mb-6">
+          <Card variant="glass" className="p-4">
+            <CardContent className="text-center">
+              <div className="text-2xl font-bold text-foreground">{totalVisible}</div>
+              <div className="text-sm text-muted-foreground">Results</div>
+            </CardContent>
+          </Card>
+          <Card variant="glass" className="p-4 hidden sm:block">
+            <CardContent className="text-center">
+              <div className="text-2xl font-bold text-foreground">{savedCount}</div>
+              <div className="text-sm text-muted-foreground">Saved</div>
+            </CardContent>
+          </Card>
+          <Card variant="glass" className="p-4 hidden sm:block">
+            <CardContent className="text-center">
+              <div className="text-2xl font-bold text-foreground">{joinedCount}</div>
+              <div className="text-sm text-muted-foreground">Joined</div>
+            </CardContent>
+          </Card>
+        </Grid>
 
-      {/* Enhanced Search Section (sticky on mobile) */}
-      <div className="glassmorphic sm:static sticky top-16 z-sticky bg-card/80 backdrop-blur-sm rounded-xl p-4 md:p-6 mb-8 border border-border/60">
-        <EnhancedSearchBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearch={(term) => handleSearch(term, filters)}
-          onToggleFilters={() => setShowFilterPanel(true)}
-          hasActiveFilters={hasActiveFilters}
-          activeFiltersCount={activeFiltersCount}
-          resultsCount={displayCollaborations.length}
-          isLoading={searchLoading}
-          placeholder="Search collaborations by title, description, or participants..."
-        />
+        {/* Enhanced Search Section with HomePage-style card */}
+        <Card variant="glass" className="static rounded-xl p-4 md:p-6 mb-8">
+          <CardHeader className={classPatterns.homepageCardHeader}>
+            <CardTitle className="text-lg font-semibold flex items-center justify-between">
+              Find Your Perfect Collaboration
+              <Badge variant="secondary" className="text-xs">
+                {displayCollaborations.length} Results
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className={classPatterns.homepageCardContent}>
+            <EnhancedSearchBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              onSearch={(term) => handleSearch(term, filters)}
+              onToggleFilters={() => setShowFilterPanel(true)}
+              hasActiveFilters={hasActiveFilters}
+              activeFiltersCount={activeFiltersCount}
+              resultsCount={displayCollaborations.length}
+              isLoading={searchLoading}
+              placeholder="Type here to search collaborations..."
+              topic="collaboration"
+            />
+          </CardContent>
         
         <EnhancedFilterPanel
           isOpen={showFilterPanel}
@@ -271,9 +326,7 @@ export const CollaborationsPage: React.FC = () => {
           }, [displayCollaborations])}
           persistenceKey="collabs-filters"
         />
-
-        {/* Page-level clear handled below in summary section to avoid duplication */}
-      </div>
+        </Card>
 
       {/* Mobile helper: show applied filters + clear beneath sticky search */}
       {hasActiveFilters && (
@@ -322,8 +375,13 @@ export const CollaborationsPage: React.FC = () => {
         </div>
       )}
 
+        {/* Featured Collaborations Section with HomePage-style asymmetric layout */}
+        <AnimatedHeading as="h2" animation="slide" className="text-2xl md:text-3xl font-semibold text-foreground mb-6">
+          Featured Collaborations
+        </AnimatedHeading>
+
       {displayLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="lg">
           {[...Array(6)].map((_, index) => (
             <SearchResultPreviewSkeleton
               key={index}
@@ -331,13 +389,21 @@ export const CollaborationsPage: React.FC = () => {
               showQuickActions={true}
             />
           ))}
-        </div>
+          </Grid>
       ) : displayCollaborations.length > 0 ? (
         <>
-        <div id="collaborations-list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayCollaborations.slice(0, visibleCount).map((collab) => (
+            <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="lg">
+              {displayCollaborations.slice(0, visibleCount).map((collab, index) => (
+                <motion.div
+                  key={collab.id}
+                  className="h-full"
+                  {...animations.homepageCardEntrance}
+                  transition={{
+                    ...animations.homepageCardEntrance.transition,
+                    delay: index * 0.1
+                  }}
+                >
             <SearchResultPreview
-              key={collab.id}
               collaboration={collab}
               variant="default"
               showQuickActions={false}
@@ -348,10 +414,14 @@ export const CollaborationsPage: React.FC = () => {
               isSaved={savedCollaborations.has(collab.id!)}
               isJoined={joinedCollaborations.has(collab.id!)}
             />
+                </motion.div>
           ))}
-        </div>
+            </Grid>
+
         {visibleCount < displayCollaborations.length && (
-          <div className="flex items-center justify-between mt-4">
+              <Card variant="glass" className="mt-8">
+                <CardContent className="p-4">
+                  <Cluster justify="center" gap="md">
             <div className="text-sm text-muted-foreground" aria-live="polite">
               Showing {Math.min(visibleCount, displayCollaborations.length)} of {displayCollaborations.length}
             </div>
@@ -362,10 +432,13 @@ export const CollaborationsPage: React.FC = () => {
             >
               Load more
             </Button>
-          </div>
+                  </Cluster>
+                </CardContent>
+              </Card>
         )}
         </>
       ) : (
+          <Card variant="glass" className="text-center p-8">
         <SearchEmptyState
           searchTerm={searchTerm}
           hasActiveFilters={hasActiveFilters}
@@ -379,8 +452,10 @@ export const CollaborationsPage: React.FC = () => {
             'Create your own collaboration'
           ]}
         />
+          </Card>
       )}
-    </div>
+      </Stack>
+    </Box>
   );
 };
 

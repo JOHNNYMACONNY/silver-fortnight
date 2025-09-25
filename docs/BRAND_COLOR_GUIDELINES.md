@@ -27,15 +27,32 @@ This project uses topic-driven color semantics for consistent styling across pag
 
 ### Usage Examples
 
+#### Badge Component with Semantic Topics
 ```tsx
-<Badge topic="trades">Active</Badge>
-<Badge topic="collaboration">Team</Badge>
-<Badge topic="success">Rewards</Badge>
-<Badge topic="community">Live</Badge>
+// Semantic topic badges with transparent backgrounds
+<Badge variant="default" topic="trades">Active</Badge>
+<Badge variant="default" topic="collaboration">Team</Badge>
+<Badge variant="default" topic="success">Rewards</Badge>
+<Badge variant="default" topic="community">Community</Badge>
 
+// Special status badges for live indicators
+<Badge variant="status-glow">Live</Badge>
+<Badge variant="status-glow">Real-time</Badge>
+
+// Standard badge variants
+<Badge variant="secondary">Popular</Badge>
+<Badge variant="outline">Outline</Badge>
+<Badge variant="success">Success</Badge>
+```
+
+#### Button Component with Semantic Topics
+```tsx
 <Button topic="trades">Browse Trades</Button>
 <Button topic="collaboration">Start Collaboration</Button>
+```
 
+#### TopicLink Component
+```tsx
 <TopicLink to="/trades" topic="trades">Browse Trades</TopicLink>
 <TopicLink to="/users" topic="community">Browse Users</TopicLink>
 ```

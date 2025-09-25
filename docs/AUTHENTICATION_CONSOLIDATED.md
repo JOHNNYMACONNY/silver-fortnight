@@ -157,7 +157,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
 ### Google Authentication Implementation
 
-Google authentication includes redirect handling and proper error management:
+Google authentication uses Firebase's built-in OAuth with proper error management:
 
 ```typescript
 const handleGoogleSignIn = async () => {
@@ -165,10 +165,18 @@ const handleGoogleSignIn = async () => {
   setError(null);
   
   try {
-    localStorage.setItem('auth_redirect', 'true');
-    await signInWithGoogle();
+    const result = await signInWithGoogle();
+    
+    if (result && result.user) {
+      // Success - user is authenticated
+      setUser(result.user);
+      navigate('/dashboard');
+    } else if (result && result.error && result.error.code === 'auth/redirect-initiated') {
+      // Redirect was initiated, user will be redirected
+      console.log('Redirect initiated, user will be redirected');
+      return;
+    }
   } catch (error) {
-    localStorage.removeItem('auth_redirect');
     const errorMessage = error instanceof Error ? error.message : 'Google sign-in failed';
     setError(errorMessage);
     logSecurityEvent(/* failure event */);
@@ -177,6 +185,12 @@ const handleGoogleSignIn = async () => {
   }
 };
 ```
+
+**Key Features:**
+- Uses Firebase's built-in OAuth client ID (no manual configuration needed)
+- Popup-first approach with automatic redirect fallback
+- Proper Content Security Policy (CSP) configuration for Google APIs
+- Comprehensive error handling for OAuth scenarios
 
 ### Input Validation
 

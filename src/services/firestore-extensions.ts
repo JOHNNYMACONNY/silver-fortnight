@@ -191,6 +191,14 @@ export const updateConnectionStatus = async (
         status,
         updatedAt: Timestamp.now()
       });
+      console.log('✅ updateConnectionStatus: Updated connection in other user\'s subcollection');
+    } else {
+      console.warn('⚠️ updateConnectionStatus: No matching connection found in other user\'s subcollection');
+      console.log('Query details:', {
+        otherUserId,
+        userId: connectionData.userId,
+        connectedUserId: connectionData.connectedUserId
+      });
     }
     
     return { data: undefined, error: null };

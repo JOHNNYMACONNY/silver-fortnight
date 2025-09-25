@@ -21,7 +21,7 @@ import { awardXP, XPSource } from './gamification';
 import { updateProgressionOnChallengeCompletion } from './threeTierProgression';
 import { ChallengeType } from '../types/gamification';
 
-const db = getSyncFirebaseDb();
+const getDb = () => getSyncFirebaseDb();
 
 // Challenge AI Integration Types
 export interface ChallengeSubmissionWithReview {
@@ -71,6 +71,7 @@ export const submitCodeForReview = async (
   description?: string
 ): Promise<ServiceResponse<ChallengeSubmissionWithReview>> => {
   try {
+    const db = getDb();
     const submission: CodeSubmission = {
       id: `submission_${userId}_${challengeId}_${Date.now()}`,
       userId,
@@ -133,6 +134,7 @@ export const getUserChallengeSubmissions = async (
   challengeId: string
 ): Promise<ServiceResponse<ChallengeSubmissionWithReview[]>> => {
   try {
+    const db = getDb();
     const submissionsRef = collection(db, 'challengeSubmissions');
     const q = query(
       submissionsRef,
@@ -175,6 +177,7 @@ export const approveSubmission = async (
   manualReview: Omit<ManualReview, 'reviewerId' | 'reviewerName' | 'reviewedAt'>
 ): Promise<ServiceResponse<ChallengeSubmissionWithReview>> => {
   try {
+    const db = getDb();
     const submissionRef = doc(db, 'challengeSubmissions', submissionId);
     
     return await runTransaction(db, async (transaction) => {
@@ -292,6 +295,7 @@ export const getAIReviewMetrics = async (
   timeRange?: { start: Date; end: Date }
 ): Promise<ServiceResponse<AIReviewMetrics>> => {
   try {
+    const db = getDb();
     const submissionsRef = collection(db, 'challengeSubmissions');
     let q = query(submissionsRef);
 

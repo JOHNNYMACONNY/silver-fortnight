@@ -9,9 +9,10 @@ This document provides comprehensive documentation for the TradeYa design system
 3. [Theme Utilities](#theme-utilities)
 4. [Core Components](#core-components)
 5. [Advanced Components](#advanced-components)
-6. [Responsive Design](#responsive-design)
-7. [Accessibility Guidelines](#accessibility-guidelines)
-8. [Usage Examples](#usage-examples)
+6. [HomePage Patterns](#homepage-patterns)
+7. [Responsive Design](#responsive-design)
+8. [Accessibility Guidelines](#accessibility-guidelines)
+9. [Usage Examples](#usage-examples)
 
 ## Color System
 
@@ -104,6 +105,144 @@ Or through theme utilities:
 ```jsx
 <div className={themeClasses.primaryButton}>Primary Button</div>
 ```
+
+### Topic-Based Semantic Colors
+
+The design system includes a sophisticated topic-based semantic color system for consistent branding across different content types:
+
+#### Available Topics
+
+- **trades**: Orange theme for trading-related content
+- **collaboration**: Purple theme for collaboration features  
+- **community**: Blue theme for community features
+- **success**: Green theme for achievements and success states
+
+#### Usage with semanticClasses()
+
+```jsx
+import { semanticClasses } from '../utils/semanticColors';
+
+// Get all semantic classes for a topic
+const classes = semanticClasses('trades');
+
+// Apply to different elements
+<div className={classes.bgSolid}>Solid background</div>
+<div className={classes.bgSubtle}>Subtle background</div>
+<div className={classes.text}>Colored text</div>
+<div className={classes.badge}>Badge styling</div>
+<div className={classes.link}>Link styling</div>
+<div className={classes.ring}>Focus ring</div>
+```
+
+#### Common Usage Patterns
+
+**Badge Components:**
+```jsx
+// Status badges with topic colors
+<Badge className={semanticClasses('trades').badge}>Active Trade</Badge>
+<Badge className={semanticClasses('collaboration').badge}>In Progress</Badge>
+<Badge className={semanticClasses('community').badge}>Verified User</Badge>
+<Badge className={semanticClasses('success').badge}>Completed</Badge>
+```
+
+**Button Components:**
+```jsx
+// Topic-themed buttons
+<Button className={semanticClasses('trades').bgSolid + ' text-white'}>
+  Create Trade
+</Button>
+<Button className={semanticClasses('collaboration').bgSubtle + ' ' + semanticClasses('collaboration').text}>
+  Start Collaboration
+</Button>
+```
+
+**Card Components:**
+```jsx
+// Topic-themed cards
+<Card className={semanticClasses('success').bgSubtle + ' border-l-4 ' + semanticClasses('success').ring}>
+  <CardContent>
+    <h3 className={semanticClasses('success').text}>Challenge Complete!</h3>
+  </CardContent>
+</Card>
+```
+
+**Search Components:**
+```jsx
+// EnhancedSearchBar with topic theming
+<EnhancedSearchBar 
+  topic="trades"
+  placeholder="Search trades..."
+  // Automatically applies orange theme
+/>
+
+<EnhancedSearchBar 
+  topic="community"
+  placeholder="Search users..."
+  // Automatically applies blue theme
+/>
+```
+
+**Link Components:**
+```jsx
+// Topic-themed links
+<Link className={semanticClasses('trades').link}>View Trade Details</Link>
+<Link className={semanticClasses('collaboration').link}>Join Collaboration</Link>
+```
+
+#### Advanced Usage Examples
+
+**Dynamic Topic Selection:**
+```jsx
+const getTopicForContent = (contentType) => {
+  switch(contentType) {
+    case 'trade': return 'trades';
+    case 'collaboration': return 'collaboration';
+    case 'user': return 'community';
+    case 'achievement': return 'success';
+    default: return 'trades';
+  }
+};
+
+const ContentCard = ({ contentType, title }) => {
+  const topic = getTopicForContent(contentType);
+  const classes = semanticClasses(topic);
+  
+  return (
+    <Card className={classes.bgSubtle}>
+      <CardHeader>
+        <CardTitle className={classes.text}>{title}</CardTitle>
+        <Badge className={classes.badge}>{contentType}</Badge>
+      </CardHeader>
+    </Card>
+  );
+};
+```
+
+**Conditional Styling:**
+```jsx
+const StatusIndicator = ({ status, type }) => {
+  const topic = type === 'trade' ? 'trades' : 'collaboration';
+  const classes = semanticClasses(topic);
+  
+  return (
+    <div className={`
+      ${status === 'active' ? classes.bgSolid : classes.bgSubtle}
+      ${classes.text}
+      px-3 py-1 rounded-full text-sm font-medium
+    `}>
+      {status}
+    </div>
+  );
+};
+```
+
+#### Best Practices
+
+1. **Consistency**: Always use the same topic for related content types
+2. **Context**: Choose topics that match the content context (trades = orange, community = blue, etc.)
+3. **Accessibility**: Ensure sufficient contrast when combining colors
+4. **Semantic Meaning**: Use topics that convey meaning, not just visual preference
+5. **Component Integration**: Leverage built-in topic support in components like EnhancedSearchBar
 
 ## Typography
 
@@ -376,6 +515,89 @@ import { Input } from '../components/ui/Input';
 // Full width
 <Input fullWidth placeholder="Full width input" />
 ```
+
+### EnhancedSearchBar Component
+
+The EnhancedSearchBar is a sophisticated search component with topic-based semantic styling, real-time suggestions, and integrated filtering capabilities.
+
+#### Props
+
+- `value`: string - Current search value
+- `onChange`: (value: string) => void - Search value change handler
+- `onSearch`: (value: string, filters?: any) => void - Search submission handler
+- `placeholder`: string - Input placeholder text
+- `topic`: 'trades' | 'collaboration' | 'community' | 'success' - Semantic color theme
+- `showFilterPanel`: boolean - Whether to show filter panel
+- `onToggleFilters`: () => void - Filter panel toggle handler
+- `activeFiltersCount`: number - Number of active filters
+- `suggestions`: string[] - Real-time search suggestions
+- `resultsCount`: number - Number of search results
+- `isLoading`: boolean - Loading state
+- `className`: string - Additional CSS classes
+
+#### Features
+
+- **Topic-Based Semantic Styling**: Automatically applies colors based on topic (orange for trades, purple for collaboration, etc.)
+- **Glassmorphic Design**: Translucent background with backdrop blur
+- **Real-Time Suggestions**: Dropdown with search suggestions
+- **Integrated Filtering**: Built-in filter button with count badge
+- **Focus Animations**: Spring-based animations on focus
+- **Topic-Aware Focus Glow**: Dynamic glow effect based on semantic topic
+- **Responsive Design**: Adapts to different screen sizes
+
+#### Usage
+
+```jsx
+import { EnhancedSearchBar } from '../components/features/search/EnhancedSearchBar';
+
+// Basic usage with trades topic
+<EnhancedSearchBar
+  value={searchTerm}
+  onChange={setSearchTerm}
+  onSearch={handleSearch}
+  placeholder="Type here to search trades..."
+  topic="trades"
+/>
+
+// With filtering capabilities
+<EnhancedSearchBar
+  value={searchTerm}
+  onChange={setSearchTerm}
+  onSearch={handleSearch}
+  placeholder="Type here to search collaborations..."
+  topic="collaboration"
+  showFilterPanel={showFilters}
+  onToggleFilters={toggleFilters}
+  activeFiltersCount={activeFilters.length}
+/>
+
+// With suggestions and loading state
+<EnhancedSearchBar
+  value={searchTerm}
+  onChange={setSearchTerm}
+  onSearch={handleSearch}
+  placeholder="Type here to search users..."
+  topic="community"
+  suggestions={suggestions}
+  resultsCount={results.length}
+  isLoading={isSearching}
+/>
+```
+
+#### Topic Color Mapping
+
+- **trades**: Orange theme (`orange-500`, `orange-100`, etc.)
+- **collaboration**: Purple theme (`purple-500`, `purple-100`, etc.)
+- **community**: Blue theme (`blue-500`, `blue-100`, etc.)
+- **success**: Green theme (`green-500`, `green-100`, etc.)
+
+#### Styling Guidelines
+
+- Always wrap in a `Card variant="glass"` for consistent glassmorphic appearance
+- Use semantic topic colors for brand consistency
+- Ensure proper spacing with `p-4 md:p-6` padding on wrapper cards
+- Apply `rounded-xl` for consistent border radius
+- Use `mb-6` or `mb-8` for consistent vertical spacing
 
 ## Advanced Components
 
@@ -658,6 +880,222 @@ import { CardSkeleton } from '../components/ui/skeletons/CardSkeleton';
 
 // Loading card
 <CardSkeleton hasImage hasFooter />
+```
+
+## HomePage Patterns
+
+The HomePage serves as the gold standard for TradeYa's visual design and user experience. This section documents the successful patterns used in the HomePage that should be replicated across other pages for consistency.
+
+### HomePage Layout Structure
+
+The HomePage uses a sophisticated layout system with asymmetric grids, gradient backgrounds, and premium card variants:
+
+```jsx
+import { classPatterns, animations } from '../utils/designSystem';
+import { BentoGrid, BentoItem } from '../components/ui/BentoGrid';
+import { GradientMeshBackground } from '../components/ui/GradientMeshBackground';
+import { AnimatedHeading } from '../components/ui/AnimatedHeading';
+
+// HomePage container pattern
+<Box className={classPatterns.homepageContainer}>
+  <PerformanceMonitor pageName="HomePage" />
+  <Stack gap="md">
+    {/* Hero Section with gradient background */}
+    <Box className={classPatterns.homepageHero}>
+      <GradientMeshBackground 
+        variant="primary" 
+        intensity="medium" 
+        className={classPatterns.homepageHeroContent}
+      >
+        <AnimatedHeading 
+          as="h1" 
+          animation="kinetic" 
+          className="text-4xl md:text-5xl font-bold text-foreground mb-4"
+        >
+          Welcome to TradeYa
+        </AnimatedHeading>
+        <p className="text-xl text-muted-foreground max-w-2xl animate-fadeIn">
+          Connect with others, exchange skills, and collaborate on exciting projects.
+        </p>
+      </GradientMeshBackground>
+    </Box>
+  </Stack>
+</Box>
+```
+
+### HomePage Card Patterns
+
+HomePage uses premium card variants with advanced effects:
+
+```jsx
+// Premium card with tilt and glow effects
+<Card 
+  variant="premium" 
+  tilt={true}
+  depth="lg"
+  glow="subtle"
+  glowColor="orange"
+  interactive={true}
+  className="h-[280px] flex flex-col cursor-pointer overflow-hidden"
+>
+  <CardHeader className={classPatterns.homepageCardHeader}>
+    <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
+  </CardHeader>
+  <CardContent className={classPatterns.homepageCardContent}>
+    {/* Card content */}
+  </CardContent>
+  <CardFooter className={classPatterns.homepageCardFooter}>
+    <TopicLink to="/trades" topic="trades" className="w-full text-center text-sm font-medium transition-colors">
+      Start Trading Skills →
+    </TopicLink>
+  </CardFooter>
+</Card>
+```
+
+### HomePage Asymmetric Grid System
+
+The HomePage uses BentoGrid with asymmetric layouts for visual interest:
+
+```jsx
+<BentoGrid
+  layoutPattern="asymmetric"
+  visualRhythm="alternating"
+  contentAwareLayout={true}
+  className={classPatterns.homepageGrid}
+  gap="lg"
+>
+  {/* Small item (1/3 width) */}
+  <BentoItem
+    asymmetricSize="small"
+    contentType="feature"
+    layoutRole="simple"
+  >
+    <Card variant="premium" glowColor="orange">
+      {/* Simple content */}
+    </Card>
+  </BentoItem>
+
+  {/* Large item (2/3 width) */}
+  <BentoItem
+    asymmetricSize="large"
+    contentType="mixed"
+    layoutRole="complex"
+  >
+    <Card variant="premium" glowColor="purple">
+      {/* Complex content */}
+    </Card>
+  </BentoItem>
+</BentoGrid>
+```
+
+### HomePage Animation Patterns
+
+HomePage uses sophisticated animations for enhanced user experience:
+
+```jsx
+// Kinetic heading animation
+<AnimatedHeading 
+  as="h1" 
+  animation="kinetic" 
+  className="text-4xl md:text-5xl font-bold text-foreground mb-4"
+>
+  Page Title
+</AnimatedHeading>
+
+// Slide heading animation
+<AnimatedHeading 
+  as="h2" 
+  animation="slide" 
+  className="text-2xl md:text-3xl font-semibold text-foreground mb-6"
+>
+  Section Title
+</AnimatedHeading>
+
+// Card entrance animation
+<motion.div
+  className="h-full"
+  {...animations.homepageCardEntrance}
+  transition={{
+    ...animations.homepageCardEntrance.transition,
+    delay: index * 0.1
+  }}
+>
+  <Card>Content</Card>
+</motion.div>
+```
+
+### HomePage Color Usage
+
+HomePage uses semantic colors consistently:
+
+```jsx
+// Topic-based badges
+<Badge variant="default" topic="trades">Active</Badge>
+<Badge variant="default" topic="collaboration">Team</Badge>
+<Badge variant="default" topic="success">Rewards</Badge>
+
+// Topic-based links
+<TopicLink to="/trades" topic="trades">
+  Browse Trades
+</TopicLink>
+
+// Semantic background classes
+<div className={`${semanticClasses('trades').bgSubtle} rounded-lg`}>
+  Trade content
+</div>
+```
+
+### Implementing HomePage Patterns on Other Pages
+
+To bring other pages up to HomePage quality, follow these patterns:
+
+1. **Use HomePage container**: `classPatterns.homepageContainer`
+2. **Add gradient hero section**: Use `GradientMeshBackground` with `AnimatedHeading`
+3. **Choose appropriate grid layout**: 
+   - Use `BentoGrid` with asymmetric layouts for showcase pages (HomePage)
+   - Use uniform `Grid` layouts for listing pages (Trades, Collaborations, Directory)
+4. **Use premium cards**: Apply `variant="premium"` with tilt and glow effects
+5. **Add sophisticated animations**: Use `animations.homepageCardEntrance` and `animations.homepageGridStagger`
+6. **Apply semantic colors**: Use `semanticClasses()` and topic-based components
+
+#### Grid Layout Guidelines
+
+**Use BentoGrid (Asymmetric) for:**
+- HomePage showcase sections
+- Feature highlight areas
+- Mixed content types with different priorities
+
+**Use Grid (Uniform) for:**
+- Trades listing page
+- Collaborations listing page
+- User directory page
+- Any page where users need to compare similar items
+
+### HomePage Pattern Utilities
+
+The design system includes utilities specifically for HomePage patterns:
+
+```jsx
+// Import HomePage patterns
+import { classPatterns, animations } from '../utils/designSystem';
+
+// Available HomePage class patterns
+classPatterns.homepageContainer        // Main page container
+classPatterns.homepageHero            // Hero section styling
+classPatterns.homepageHeroContent     // Hero content padding
+classPatterns.homepageSection         // Section spacing
+classPatterns.homepageGrid            // Grid spacing
+classPatterns.homepageCard            // Card dimensions and layout
+classPatterns.homepageCardHeader      // Card header styling
+classPatterns.homepageCardContent     // Card content styling
+classPatterns.homepageCardFooter      // Card footer styling
+
+// Available HomePage animations
+animations.kineticHeading             // Kinetic heading animation
+animations.slideHeading               // Slide heading animation
+animations.homepageCardEntrance       // Card entrance animation
+animations.homepageGridStagger        // Grid stagger animation
+animations.homepagePremiumCardHover   // Premium card hover effect
 ```
 
 ## Responsive Design

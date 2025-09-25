@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card } from '../components/ui/Card';
-import { Input } from '../components/ui/Input';
+import { GlassmorphicInput } from '../components/ui/GlassmorphicInput';
 import { Button } from '../components/ui/Button';
 import { MailIcon, ArrowLeftIcon } from 'lucide-react';
 import Logo from '../components/ui/Logo';
@@ -59,18 +59,20 @@ export const PasswordResetPage: React.FC = () => {
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
               </label>
-              <div className="relative">
-                <MailIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
+                <GlassmorphicInput
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
+                  placeholder="Enter your email address"
+                  label="Email Address"
+                  icon={<MailIcon className="h-5 w-5" />}
+                  variant="glass"
+                  size="lg"
+                  animatedLabel
+                  realTimeValidation
                   required
-                  className="w-full pl-10"
                 />
-              </div>
             </div>
 
             {error && (

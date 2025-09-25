@@ -184,6 +184,26 @@ const initializeFirebase = async (): Promise<void> => {
       firebaseDb = getFirestore(firebaseApp);
       firebaseStorage = getStorage(firebaseApp);
 
+      // Enable long polling to fix Listen channel 400 errors
+      try {
+        // Use the correct Firebase v9+ settings API
+        if (typeof (firebaseDb as any).settings === 'function') {
+          (firebaseDb as any).settings({
+            experimentalForceLongPolling: true,
+            ignoreUndefinedProperties: true,
+            cacheSizeBytes: 40 * 1024 * 1024 // 40MB cache
+          });
+          console.log('Firebase: Long polling and enhanced settings enabled');
+        } else {
+          // For Firebase v9+, use enableNetwork/disableNetwork approach
+          console.log('Firebase: Using alternative connection method for v9+');
+          // The long polling will be handled at the query level
+        }
+      } catch (settingsError) {
+        console.warn('Firebase: Could not enable enhanced settings:', settingsError);
+        console.log('Firebase: Continuing with default connection settings');
+      }
+
       // Connect to emulators in development if they're running
       if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
         try {
@@ -306,8 +326,8 @@ export {
 // Export initialized Firebase instances for use in other modules
 export { firebaseAuth, firebaseDb };
 
-// Export db alias for backward compatibility with existing imports
-export const db = firebaseDb;
+// Export db alias for backward compatibility with existing imports (live binding)
+export { firebaseDb as db };
 
 // Default export keeps prior behavior (backwards compatible)
 export default getSyncFirebaseDb;
@@ -426,6 +446,7 @@ export interface CreateUserProfileData {
   role?: UserRole;
   photoURL?: string;
   bestProfilePicture?: string;
+  public?: boolean;
 }
 
 export interface UpdateUserProfileData {
@@ -436,6 +457,7 @@ export interface UpdateUserProfileData {
   photoURL?: string;
   bestProfilePicture?: string;
   provider?: string;
+  public?: boolean;
 }
 
 export type UserRole = 'user' | 'admin' | 'moderator';
