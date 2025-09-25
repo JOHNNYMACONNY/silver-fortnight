@@ -249,27 +249,50 @@ export const CollaborationDetailPage: React.FC = () => {
 
   if (isEditing) {
     return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-6">
-          <button
-            onClick={() => setIsEditing(false)}
-            className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/90"
-          >
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            Back to Collaboration
-          </button>
-        </div>
+      <Box className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Stack gap="lg">
+          {/* Back Navigation */}
+          <Box className="mb-4">
+            <TopicLink 
+              onClick={() => setIsEditing(false)}
+              topic="collaboration"
+              className="inline-flex items-center text-sm font-medium hover:opacity-80 transition-opacity cursor-pointer"
+            >
+              <ArrowLeft className="mr-1 h-4 w-4" />
+              Back to Collaboration
+            </TopicLink>
+          </Box>
 
-        <div className="bg-card rounded-lg shadow-sm border border-border p-6">
-          <h1 className="text-2xl font-bold text-card-foreground mb-6">Edit Collaboration</h1>
+          {/* Hero Section with GradientMeshBackground */}
+          <Box className="relative rounded-2xl overflow-hidden mb-8">
+            <GradientMeshBackground variant="primary" intensity="medium" className="p-8 md:p-12">
+              <div className="text-center">
+                <AnimatedHeading as="h1" animation="kinetic" className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                  Edit Collaboration
+                </AnimatedHeading>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                  Update your collaboration details and make it even better
+                </p>
+              </div>
+            </GradientMeshBackground>
+          </Box>
 
-          <CollaborationForm_legacy
-            collaboration={collaboration}
-            onSuccess={handleUpdateCollaboration}
-            onCancel={() => setIsEditing(false)}
-          />
-        </div>
-      </div>
+          {/* Edit Form - Matching Details Page Layout */}
+          <Card variant="premium" depth="lg" glow="subtle" glowColor="blue">
+            <CardHeader className="pb-6">
+              <CardTitle className="text-2xl font-semibold">Collaboration Details</CardTitle>
+              <p className="text-base text-muted-foreground">Update the information below to improve your collaboration</p>
+            </CardHeader>
+            <CardContent>
+              <CollaborationForm_legacy
+                collaboration={collaboration}
+                onSuccess={handleUpdateCollaboration}
+                onCancel={() => setIsEditing(false)}
+              />
+            </CardContent>
+          </Card>
+        </Stack>
+      </Box>
     );
   }
 
