@@ -80,6 +80,12 @@ service cloud.firestore {
         )
       );
     }
+    
+    // Helper function to check if user is participant in a conversation document
+    function isConversationParticipant(conversationId) {
+      let conversation = get(/databases/$(database)/documents/conversations/$(conversationId));
+      return conversation != null && isParticipant(conversation.data);
+    }
 
     // User profiles
     match /users/{userId} {
@@ -155,29 +161,27 @@ service cloud.firestore {
     match /conversations/{conversationId} {
       // Allow authenticated users to read conversations they participate in
       allow read: if isAuthenticated() && (
-        (resource.data.participantIds is list && resource.data.participantIds.hasAny([request.auth.uid])) ||
-        (resource.data.participants is list && resource.data.participants.size() > 0 &&
-          resource.data.participants.map('id').hasAny([request.auth.uid])
-        ) ||
+        isParticipant(resource.data) ||
         isAdmin()
       );
       // Only participants can update or delete the conversation
-      allow update, delete: if isAuthenticated() && isParticipant(resource.data);
+      allow update, delete: if isAuthenticated() && (
+        isParticipant(resource.data) ||
+        isAdmin()
+      );
       // Any authenticated user can create a conversation
       allow create: if isAuthenticated();
 
       // Messages subcollection
       match /messages/{messageId} {
-        // Allow participants to read messages
+        // Allow participants to read messages - use simplified approach
         allow read: if isAuthenticated() && (
-          (get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds is list && 
-           get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds.hasAny([request.auth.uid])) ||
+          isConversationParticipant(conversationId) ||
           isAdmin()
         );
         // Allow participants to create messages
         allow create: if isAuthenticated() && (
-          (get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds is list && 
-           get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds.hasAny([request.auth.uid])) ||
+          isConversationParticipant(conversationId) ||
           isAdmin()
         );
         // Messages are immutable
@@ -192,7 +196,7 @@ service cloud.firestore {
       allow read, create: if isAuthenticated() &&
         resource.data.conversationId != null &&
         exists(/databases/$(database)/documents/conversations/$(resource.data.conversationId)) &&
-        get(/databases/$(database)/documents/conversations/$(resource.data.conversationId)).data.participantIds.hasAny([request.auth.uid]);
+        isConversationParticipant(resource.data.conversationId);
       allow update, delete: if false; // Messages are immutable
     }
 
