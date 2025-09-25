@@ -4,9 +4,13 @@
  * Message System Diagnostic Script
  * 
  * This script helps diagnose why messages aren't displaying on the messages page.
- * Run with: node scripts/diagnose-messages.js
+ * Run with: npm run diagnose:messages
  */
 
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
+// Use require for Firebase since it's a CommonJS package
 const { initializeApp } = require('firebase/app');
 const { getFirestore, collection, query, where, orderBy, getDocs, doc, getDoc } = require('firebase/firestore');
 const { getAuth, signInWithEmailAndPassword } = require('firebase/auth');

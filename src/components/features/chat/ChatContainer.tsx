@@ -117,92 +117,73 @@ export const ChatContainer: React.FC = () => {
       //   clearResetFlags();
       // }
 
-      const loadMessages = async () => {
+      console.log('ChatContainer: Setting up real-time message listener...');
+      
+      // Use real-time listener for messages
+      const messagesRef = collection(getSyncFirebaseDb(), 'conversations', activeConversation.id!, 'messages');
+      const q = query(messagesRef, orderBy('createdAt', 'asc'));
+      
+      const unsubscribe = onSnapshot(q, (snapshot) => {
         try {
-          console.log('ChatContainer: Setting up real-time message listener...');
+          const messagesList: ChatMessage[] = [];
           
-          // Use real-time listener for messages
-          const messagesRef = collection(getSyncFirebaseDb(), 'conversations', activeConversation.id!, 'messages');
-          const q = query(messagesRef, orderBy('createdAt', 'asc'));
-          
-          const unsubscribe = onSnapshot(q, (snapshot) => {
-            try {
-              const messagesList: ChatMessage[] = [];
-              
-              snapshot.forEach((doc) => {
-                const messageData = {
-                  id: doc.id,
-                  ...doc.data()
-                } as ChatMessage;
-                messagesList.push(messageData);
-              });
-              
-              console.log(`ChatContainer: Received ${messagesList.length} messages via real-time listener`);
-              setMessages(messagesList);
-              setLoading(false);
-              setError(null);
-              
-              // Mark messages as read if needed
-              if (messagesList.length > 0 && isUserParticipant(activeConversation)) {
-                const unreadMessageIds = messagesList
-                  .filter(msg => !msg.readBy?.includes(currentUser.uid) && msg.senderId !== currentUser.uid)
-                  .map(msg => msg.id)
-                  .filter(Boolean);
-                
-                if (unreadMessageIds.length > 0) {
-                  const markAsReadDebounced = () => {
-                    markConversationAsRead(activeConversation.id!, currentUser.uid)
-                      .catch((error: any) => {
-                        console.log('Error marking messages as read:', error.message);
-                        if (!error.message?.includes('permission') && toastContext) {
-                          toastContext.addToast('error', 'Failed to mark messages as read');
-                        }
-                      });
-                  };
-
-                  if (lastMarkAsReadAttemptRef.current) {
-                    clearTimeout(lastMarkAsReadAttemptRef.current);
-                  }
-
-                  lastMarkAsReadAttemptRef.current = setTimeout(markAsReadDebounced, 1000);
-                }
-              }
-            } catch (err: any) {
-              console.error('ChatContainer: Error processing real-time messages:', err);
-              setError(err.message || 'Failed to process messages');
-              setLoading(false);
-            }
-          }, (err: any) => {
-            console.error('ChatContainer: Real-time listener error:', err);
-            setError(err.message || 'Failed to load messages');
-            setLoading(false);
+          snapshot.forEach((doc) => {
+            const messageData = {
+              id: doc.id,
+              ...doc.data()
+            } as ChatMessage;
+            messagesList.push(messageData);
           });
+          
+          console.log(`ChatContainer: Received ${messagesList.length} messages via real-time listener`);
+          setMessages(messagesList);
+          setLoading(false);
+          setError(null);
+          
+          // Mark messages as read if needed
+          if (messagesList.length > 0 && isUserParticipant(activeConversation)) {
+            const unreadMessageIds = messagesList
+              .filter(msg => !msg.readBy?.includes(currentUser.uid) && msg.senderId !== currentUser.uid)
+              .map(msg => msg.id)
+              .filter(Boolean);
+            
+            if (unreadMessageIds.length > 0) {
+              const markAsReadDebounced = () => {
+                markConversationAsRead(activeConversation.id!, currentUser.uid)
+                  .catch((error: any) => {
+                    console.log('Error marking messages as read:', error.message);
+                    if (!error.message?.includes('permission') && toastContext) {
+                      toastContext.addToast('error', 'Failed to mark messages as read');
+                    }
+                  });
+              };
 
-          // Store unsubscribe function for cleanup
-          return () => {
-            console.log('ChatContainer: Cleaning up message listener');
-            unsubscribe();
-          };
-        } catch (error: any) {
-          console.error('ChatContainer: Error setting up message listener:', error);
-          setError(error.message || 'Failed to load messages');
+              if (lastMarkAsReadAttemptRef.current) {
+                clearTimeout(lastMarkAsReadAttemptRef.current);
+              }
+
+              lastMarkAsReadAttemptRef.current = setTimeout(markAsReadDebounced, 1000);
+            }
+          }
+        } catch (err: any) {
+          console.error('ChatContainer: Error processing real-time messages:', err);
+          setError(err.message || 'Failed to process messages');
           setLoading(false);
         }
-      };
-
-      // Set up the message listener and get cleanup function
-      const cleanup = loadMessages();
+      }, (err: any) => {
+        console.error('ChatContainer: Real-time listener error:', err);
+        setError(err.message || 'Failed to load messages');
+        setLoading(false);
+      });
 
       // Clean up on unmount
       return () => {
+        console.log('ChatContainer: Cleaning up message listener');
         if (lastMarkAsReadAttemptRef.current) {
           clearTimeout(lastMarkAsReadAttemptRef.current);
           lastMarkAsReadAttemptRef.current = null;
         }
-        // Call the cleanup function if it exists
-        if (cleanup && typeof cleanup === 'function') {
-          cleanup();
-        }
+        unsubscribe();
       };
     }, [activeConversation, currentUser, markMessagesAsRead, isUserParticipant]);
 
