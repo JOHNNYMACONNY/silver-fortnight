@@ -384,29 +384,14 @@ export const CollaborationDetailPage: React.FC = () => {
           </GradientMeshBackground>
         </Box>
 
-        {/* Main Content with Improved Information Hierarchy */}
-        <BentoGrid
-          layoutPattern="asymmetric"
-          visualRhythm="alternating"
-          contentAwareLayout={true}
-          className="mb-8"
-          gap="lg"
-        >
-          {/* Application CTA - Most Important, Full Width */}
-          {!isOwner && !isCollaborator && (
-            <BentoItem
-              asymmetricSize="full"
-              contentType="feature"
-              layoutRole="simple"
-            >
-              <Card 
-                variant="premium" 
-                depth="lg"
-                glow="subtle"
-                glowColor="purple"
-                className="min-h-[120px] flex items-center justify-center"
-              >
-                <CardContent className="text-center">
+        {/* Main Content - Traditional Details Page Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Left Column - Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Application CTA - Prominent but not overwhelming */}
+            {!isOwner && !isCollaborator && (
+              <Card variant="premium" depth="md" glow="subtle" glowColor="purple">
+                <CardContent className="p-6 text-center">
                   <div className="mb-4">
                     <h3 className="text-lg font-semibold text-foreground mb-2">Ready to Collaborate?</h3>
                     <p className="text-sm text-muted-foreground">Join this collaboration and work with talented people</p>
@@ -422,24 +407,12 @@ export const CollaborationDetailPage: React.FC = () => {
                   </Button>
                 </CardContent>
               </Card>
-            </BentoItem>
-          )}
+            )}
 
-          {/* Roles Section - High Priority, Full Width */}
-          {collaborationId && ((collaboration as any).roles && Array.isArray((collaboration as any).roles) && (collaboration as any).roles.length > 0) && (
-            <BentoItem
-              asymmetricSize="full"
-              contentType="mixed"
-              layoutRole="complex"
-            >
-              <Card 
-                variant="premium" 
-                depth="lg"
-                glow="subtle"
-                glowColor="green"
-                className="min-h-[250px]"
-              >
-                <CardHeader className="pb-4">
+            {/* Roles Section - Most Important Content */}
+            {collaborationId && ((collaboration as any).roles && Array.isArray((collaboration as any).roles) && (collaboration as any).roles.length > 0) && (
+              <Card variant="premium" depth="md" glow="subtle" glowColor="green">
+                <CardHeader>
                   <CardTitle className="text-xl font-semibold">Available Roles</CardTitle>
                   <p className="text-sm text-muted-foreground">Choose a role that matches your skills and interests</p>
                 </CardHeader>
@@ -456,98 +429,108 @@ export const CollaborationDetailPage: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
-            </BentoItem>
-          )}
+            )}
 
-          {/* Skills Card - Medium Priority, Large */}
-          <BentoItem
-            asymmetricSize="large"
-            contentType="feature"
-            layoutRole="complex"
-          >
-            <Card 
-              variant="premium" 
-              depth="lg"
-              glow="subtle"
-              glowColor="purple"
-              className="min-h-[200px] flex flex-col"
-            >
-              <CardHeader className="pb-3">
+            {/* Skills Section - Important for Decision Making */}
+            <Card variant="premium" depth="md" glow="subtle" glowColor="purple">
+              <CardHeader>
                 <CardTitle className="text-xl font-semibold">Skills Needed</CardTitle>
                 <p className="text-sm text-muted-foreground">Required and preferred skills for this collaboration</p>
               </CardHeader>
-              <CardContent className="flex-1 pb-4">
-                <div className="space-y-3">
-                  {collaboration.skillsNeeded && collaboration.skillsNeeded.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {collaboration.skillsNeeded.map(skill => (
-                        <Badge 
-                          key={skill} 
-                          variant="outline" 
-                          topic="collaboration"
-                          className="text-xs rounded-full px-3 py-1"
-                        >
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No specific skills required</p>
-                  )}
-                </div>
+              <CardContent>
+                {collaboration.skillsNeeded && collaboration.skillsNeeded.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {collaboration.skillsNeeded.map(skill => (
+                      <Badge 
+                        key={skill} 
+                        variant="outline" 
+                        topic="collaboration"
+                        className="text-xs rounded-full px-3 py-1"
+                      >
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No specific skills required</p>
+                )}
               </CardContent>
             </Card>
-          </BentoItem>
+          </div>
 
-          {/* Details Card - Lower Priority, Small */}
-          <BentoItem
-            asymmetricSize="small"
-            contentType="mixed"
-            layoutRole="simple"
-          >
-            <Card 
-              variant="premium" 
-              depth="lg"
-              glow="subtle"
-              glowColor="blue"
-              className="min-h-[200px] flex flex-col"
-            >
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-semibold">Details</CardTitle>
+          {/* Right Column - Sidebar Information */}
+          <div className="space-y-6">
+            {/* Quick Details - Compact Sidebar */}
+            <Card variant="premium" depth="md" glow="subtle" glowColor="blue">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Quick Details</CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 pb-4">
-                <div className="space-y-3">
-                  {collaboration.location && (
-                    <div className="flex items-center space-x-2 p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                      <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                      <span className="text-xs font-medium text-foreground truncate">{collaboration.location}</span>
+              <CardContent className="space-y-4">
+                {collaboration.location && (
+                  <div className="flex items-start space-x-3">
+                    <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Location</p>
+                      <p className="text-sm font-medium text-foreground">{collaboration.location}</p>
                     </div>
-                  )}
-                  {collaboration.timeline && (
-                    <div className="flex items-center space-x-2 p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                      <Clock className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-                      <span className="text-xs font-medium text-foreground truncate">{collaboration.timeline}</span>
+                  </div>
+                )}
+                {collaboration.timeline && (
+                  <div className="flex items-start space-x-3">
+                    <Clock className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Timeline</p>
+                      <p className="text-sm font-medium text-foreground">{collaboration.timeline}</p>
                     </div>
-                  )}
-                  {collaboration.compensation && (
-                    <div className="flex items-center space-x-2 p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
-                      <DollarSign className="h-4 w-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
-                      <span className="text-xs font-medium text-foreground truncate">{collaboration.compensation}</span>
+                  </div>
+                )}
+                {collaboration.compensation && (
+                  <div className="flex items-start space-x-3">
+                    <DollarSign className="h-5 w-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Compensation</p>
+                      <p className="text-sm font-medium text-foreground">{collaboration.compensation}</p>
                     </div>
-                  )}
-                  {collaboration.maxParticipants > 0 && (
-                    <div className="flex items-center space-x-2 p-2 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
-                      <Users className="h-4 w-4 text-orange-600 dark:text-orange-400 flex-shrink-0" />
-                      <span className="text-xs font-medium text-foreground">
-                        {collaboration.maxParticipants} max
-                      </span>
+                  </div>
+                )}
+                {collaboration.maxParticipants > 0 && (
+                  <div className="flex items-start space-x-3">
+                    <Users className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Max Participants</p>
+                      <p className="text-sm font-medium text-foreground">{collaboration.maxParticipants}</p>
                     </div>
-                  )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Status & Stats - Compact Sidebar */}
+            <Card variant="premium" depth="md" glow="subtle" glowColor="orange">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Status</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-center p-4 bg-muted/50 rounded-lg">
+                  <div className="text-2xl font-bold text-foreground mb-1">
+                    {collaboration.collaborators?.length || 0}
+                  </div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                    Current Collaborators
+                  </div>
+                </div>
+                <div className="text-center p-4 bg-muted/50 rounded-lg">
+                  <div className="text-2xl font-bold text-foreground mb-1">
+                    {applications.filter(app => app.status === 'pending').length}
+                  </div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                    Pending Applications
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          </BentoItem>
-        </BentoGrid>
+          </div>
+        </div>
 
         {/* Tabs for Details/Applications */}
         <Box className="mt-8">
