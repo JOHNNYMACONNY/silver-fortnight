@@ -411,25 +411,23 @@ export const CollaborationDetailPage: React.FC = () => {
 
           {/* Roles Section - Full Width with Proper Grid */}
           {collaborationId && ((collaboration as any).roles && Array.isArray((collaboration as any).roles) && (collaboration as any).roles.length > 0) && (
-            <Card variant="premium" depth="md" glow="subtle" glowColor="green">
-              <CardHeader className="pb-6">
-                <CardTitle className="text-2xl font-semibold">Available Roles</CardTitle>
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-2xl font-semibold text-foreground mb-2">Available Roles</h2>
                 <p className="text-base text-muted-foreground">Choose a role that matches your skills and interests</p>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {transformLegacyRoles((collaboration as any).roles, collaborationId).map((role) => (
-                    <div key={role.id} className="w-full">
-                      <RoleCard
-                        role={role}
-                        collaborationId={collaborationId}
-                        isCreator={isOwner}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {transformLegacyRoles((collaboration as any).roles, collaborationId).map((role) => (
+                  <div key={role.id} className="w-full h-full">
+                    <RoleCard
+                      role={role}
+                      collaborationId={collaborationId}
+                      isCreator={isOwner}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Skills and Details - Side by Side Layout */}

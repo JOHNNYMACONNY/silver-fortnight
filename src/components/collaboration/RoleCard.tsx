@@ -65,7 +65,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
         glowColor="auto"
         hover={true}
         interactive={true}
-        className="min-h-[400px] flex flex-col cursor-pointer overflow-hidden"
+        className="h-full min-h-[450px] flex flex-col cursor-pointer overflow-hidden"
       >
         <CardHeader className="pb-3 flex-shrink-0">
           <div className="flex items-center justify-between gap-3">
@@ -90,33 +90,36 @@ export const RoleCard: React.FC<RoleCardProps> = ({
             )}
           </div>
         </CardHeader>
-        <CardContent className="flex-1 flex flex-col gap-4 py-4">
+        <CardContent className="flex-1 flex flex-col gap-4 py-6 px-6">
           {/* Description */}
           {role.description && (
-            <div className="flex-1">
-              <p className="text-sm text-muted-foreground line-clamp-4 leading-relaxed">{role.description}</p>
+            <div className="flex-1 min-h-0">
+              <p className="text-sm text-muted-foreground line-clamp-5 leading-relaxed">{role.description}</p>
             </div>
           )}
           
-          {/* Skills Summary - Compact view */}
-          {role.requiredSkills && role.requiredSkills.length > 0 ? (
-            <div className="flex flex-wrap gap-1">
-              {role.requiredSkills.slice(0, 4).map((skill) => (
-                <Badge key={skill.name} variant="secondary" className="text-xs font-medium px-2 py-1">
-                  {skill.name}
-                </Badge>
-              ))}
-              {role.requiredSkills.length > 4 && (
-                <Badge variant="outline" className="text-xs font-medium px-2 py-1">
-                  +{role.requiredSkills.length - 4} more
-                </Badge>
-              )}
-            </div>
-          ) : (
-            <Badge variant="outline" className="text-xs font-medium px-2 py-1 opacity-60 w-fit">
-              No skills specified
-            </Badge>
-          )}
+          {/* Skills Summary - Better spacing */}
+          <div className="mt-4">
+            <h4 className="text-sm font-medium text-foreground mb-2">Required Skills</h4>
+            {role.requiredSkills && role.requiredSkills.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {role.requiredSkills.slice(0, 6).map((skill) => (
+                  <Badge key={skill.name} variant="secondary" className="text-xs font-medium px-3 py-1">
+                    {skill.name}
+                  </Badge>
+                ))}
+                {role.requiredSkills.length > 6 && (
+                  <Badge variant="outline" className="text-xs font-medium px-3 py-1">
+                    +{role.requiredSkills.length - 6} more
+                  </Badge>
+                )}
+              </div>
+            ) : (
+              <Badge variant="outline" className="text-xs font-medium px-3 py-1 opacity-60">
+                No skills specified
+              </Badge>
+            )}
+          </div>
 
           {/* Application Count for Creators */}
           {role.applicationCount !== undefined && role.applicationCount > 0 && isCreator && (
@@ -127,14 +130,14 @@ export const RoleCard: React.FC<RoleCardProps> = ({
             </div>
           )}
         </CardContent>
-        <CardFooter className="flex justify-end">
+        <CardFooter className="flex justify-end pt-4 px-6 pb-6">
           {/* Actions will be updated in next steps */}
           {isCreator ? (
-            <>
+            <div className="flex gap-2">
               {role.status !== RoleState.COMPLETED && role.status !== RoleState.ABANDONED && (
                 <button
                   onClick={onEdit}
-                  className={cn('text-muted-foreground hover:text-foreground mr-4 transition-colors')}
+                  className={cn('text-muted-foreground hover:text-foreground px-3 py-2 text-sm transition-colors')}
                 >
                   Edit
                 </button>
@@ -142,26 +145,26 @@ export const RoleCard: React.FC<RoleCardProps> = ({
               {role.status === RoleState.FILLED && onAbandon && (
                 <button
                   onClick={onAbandon}
-                  className={cn('text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 mr-4 transition-colors')}
+                  className={cn('text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 px-3 py-2 text-sm transition-colors')}
                   aria-label={`Abandon role ${role.title}`}
                 >
-                  Abandon Role
+                  Abandon
                 </button>
               )}
               <button
                 onClick={onManage}
-                className={cn('bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors')}
+                className={cn('bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors text-sm font-medium')}
                 aria-label={`${role.status === RoleState.OPEN ? 'Manage applications' : 'Manage role'} for ${role.title}`}
               >
-                {role.status === RoleState.OPEN ? 'Manage Applications' : 'Manage Role'}
+                {role.status === RoleState.OPEN ? 'Manage' : 'Manage Role'}
               </button>
-            </>
+            </div>
           ) : (
-            <>
+            <div className="flex gap-2">
               {role.status === RoleState.OPEN && (
                 <button
                   onClick={onApply}
-                  className={cn('bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors')}
+                  className={cn('bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary/90 transition-colors text-sm font-medium')}
                   aria-label={`Apply for ${role.title}`}
                 >
                   Apply
@@ -173,13 +176,13 @@ export const RoleCard: React.FC<RoleCardProps> = ({
                !role.completionStatus && (
                 <button
                   onClick={onRequestCompletion}
-                  className={cn('bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors')}
+                  className={cn('bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors text-sm font-medium')}
                   aria-label={`Request completion for ${role.title}`}
                 >
-                  Request Role Completion
+                  Request Completion
                 </button>
               )}
-            </>
+            </div>
           )}
         </CardFooter>
       </Card>
