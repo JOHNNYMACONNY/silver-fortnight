@@ -338,7 +338,6 @@ if (typeof window !== 'undefined' && (typeof process === 'undefined' || process.
   initializeFirebase().catch(error => {
     // Non-fatal during build; surface the error in logs for debugging.
     // Do not rethrow to avoid breaking SSR/build steps.
-    // eslint-disable-next-line no-console
     console.error('Failed to initialize Firebase on module load:', error);
   });
 }
@@ -419,7 +418,6 @@ if (typeof module !== 'undefined' && module.exports) {
 
   } catch (e) {
     // Non-fatal: ignored in strict ESM environments
-    // eslint-disable-next-line no-console
     console.debug('CJS compatibility export failed (non-fatal):', e);
   }
 }
