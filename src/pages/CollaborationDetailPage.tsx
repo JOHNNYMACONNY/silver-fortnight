@@ -302,7 +302,7 @@ export const CollaborationDetailPage: React.FC = () => {
                             collaboration.status === 'in-progress' ? 'default' : 
                             collaboration.status === 'completed' ? 'secondary' : 'destructive'}
                     topic={collaboration.status === 'open' ? 'success' : 
-                           collaboration.status === 'in-progress' ? 'info' : 
+                           collaboration.status === 'in-progress' ? 'collaboration' : 
                            collaboration.status === 'completed' ? 'muted' : 'destructive'}
                     className="text-sm"
                   >
