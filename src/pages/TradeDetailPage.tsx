@@ -697,39 +697,27 @@ export const TradeDetailPage: React.FC = () => {
             </CardContent>
           </Card>
 
-              {/* Confirmation Form */}
-              {(() => {
-                // Always show the confirmation form if the conditions are met
-                if (currentUser &&
-                    trade.status === 'pending_confirmation' &&
-                    trade.completionRequestedBy !== currentUser.uid &&
-                    (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid)) {
-                  return (
-                    <div className="mt-6 border-t border-border pt-6">
-                      <h3 className="text-lg font-medium text-foreground mb-4">Confirm Trade Completion</h3>
-                      <TradeConfirmationForm
-                        trade={trade}
-                        initialMode={confirmationInitialMode} // Pass the initial mode
-                        onSuccess={() => {
-                          setShowConfirmationForm(false);
-                          fetchTrade();
-                        }}
-                        onCancel={() => setShowConfirmationForm(false)}
-                        onRequestChanges={() => {
-                          setShowConfirmationForm(false);
-                          fetchTrade();
-                        }}
-                      />
-                    </div>
-                  );
-                }
-
-                // Otherwise, only show if showConfirmationForm is true
-                return showConfirmationForm && currentUser && trade.status === 'pending_confirmation' &&
-                  trade.completionRequestedBy !== currentUser.uid &&
-                  (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid) && (
-                  <div className="mt-6 border-t border-border pt-6">
-                    <h3 className="text-lg font-medium text-foreground mb-4">Confirm Trade Completion</h3>
+          {/* Confirmation Form Card */}
+          {(() => {
+            // Always show the confirmation form if the conditions are met
+            if (currentUser &&
+                trade.status === 'pending_confirmation' &&
+                trade.completionRequestedBy !== currentUser.uid &&
+                (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid)) {
+              return (
+                <Card 
+                  variant="premium" 
+                  tilt={true}
+                  depth="lg"
+                  glow="subtle"
+                  glowColor="green"
+                  interactive={true}
+                  className="mb-6"
+                >
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xl font-semibold">Confirm Trade Completion</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 pb-3">
                     <TradeConfirmationForm
                       trade={trade}
                       initialMode={confirmationInitialMode} // Pass the initial mode
@@ -743,11 +731,45 @@ export const TradeDetailPage: React.FC = () => {
                         fetchTrade();
                       }}
                     />
-                  </div>
-                );
-              })()}
-            </CardContent>
-          </Card>
+                  </CardContent>
+                </Card>
+              );
+            }
+
+            // Otherwise, only show if showConfirmationForm is true
+            return showConfirmationForm && currentUser && trade.status === 'pending_confirmation' &&
+              trade.completionRequestedBy !== currentUser.uid &&
+              (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid) && (
+              <Card 
+                variant="premium" 
+                tilt={true}
+                depth="lg"
+                glow="subtle"
+                glowColor="green"
+                interactive={true}
+                className="mb-6"
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xl font-semibold">Confirm Trade Completion</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1 pb-3">
+                  <TradeConfirmationForm
+                    trade={trade}
+                    initialMode={confirmationInitialMode} // Pass the initial mode
+                    onSuccess={() => {
+                      setShowConfirmationForm(false);
+                      fetchTrade();
+                    }}
+                    onCancel={() => setShowConfirmationForm(false)}
+                    onRequestChanges={() => {
+                      setShowConfirmationForm(false);
+                      fetchTrade();
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            );
+          })()}
 
           {/* Change Request History Card */}
           {Array.isArray(trade.changeRequests) && trade.changeRequests.length > 0 && (
@@ -1361,8 +1383,8 @@ export const TradeDetailPage: React.FC = () => {
                   </p>
                 </div>
               )}
-            </div>
-          )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </Stack>
