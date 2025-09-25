@@ -1,0 +1,36 @@
+{
+  "authorizedDomains": [
+    "tradeya.com",
+    "www.tradeya.com",
+    "tradeya-45ede.web.app",
+    "tradeya-45ede.firebaseapp.com",
+    "localhost:5173",
+    "localhost:5175",
+    "127.0.0.1:5173",
+    "127.0.0.1:5175",
+    "vercel.app",
+    "netlify.app",
+    "github.io",
+    "firebaseapp.com",
+    "*.vercel.app",
+    "*.netlify.app",
+    "*.github.io",
+    "*.firebaseapp.com"
+  ],
+  "previewDomains": [
+    "*.vercel.app",
+    "tradeya-git-*.vercel.app",
+    "tradeya-pr-*.vercel.app",
+    "*.netlify.app",
+    "tradeya-pr-*.netlify.app",
+    "*.github.io",
+    "*.web.app",
+    "*.firebaseapp.com"
+  ],
+  "productionDomains": [
+    "tradeya.com",
+    "www.tradeya.com",
+    "tradeya-45ede.web.app",
+    "tradeya-45ede.firebaseapp.com"
+  ]
+}
