@@ -54,7 +54,7 @@ export const ChatConversationList: React.FC<ChatConversationListProps> = ({
     });
     
     return () => unsubscribe();
-  }, [currentUser, selectedConversationId, onSelectConversation]);
+  }, [currentUser, selectedConversationId]);
   
   // Filter conversations based on search term
   const filteredConversations = conversations.filter(conversation => {
@@ -116,7 +116,7 @@ export const ChatConversationList: React.FC<ChatConversationListProps> = ({
     // Fallback avatar
     return (
       <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary font-semibold">
-        {otherParticipant?.name.charAt(0).toUpperCase() || '?'}
+        {otherParticipant?.name?.charAt(0).toUpperCase() || '?'}
       </div>
     );
   };
