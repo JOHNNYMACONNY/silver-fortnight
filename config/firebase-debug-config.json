@@ -1,0 +1,25 @@
+{
+  "environment": "pr",
+  "projectId": "tradeya-45ede",
+  "branch": "unknown",
+  "timestamp": "2025-09-25T21:37:20.297Z",
+  "firebaseConfig": {
+    "apiKey": "AIzaSyDummyKeyForPreproductionTesting",
+    "authDomain": "tradeya-45ede.firebaseapp.com",
+    "projectId": "tradeya-45ede",
+    "storageBucket": "tradeya-45ede.appspot.com",
+    "messagingSenderId": "123456789",
+    "appId": "1:123456789:web:abcdef123456",
+    "measurementId": "G-XXXXXXXXXX"
+  },
+  "issues": [
+    "Missing real Firebase API credentials",
+    "Environment variables need to be set in deployment platform",
+    "Firebase CLI authentication required for deployment"
+  ],
+  "solutions": [
+    "Set real Firebase API credentials in deployment environment",
+    "Configure Firebase CLI authentication",
+    "Update environment variables in hosting platform"
+  ]
+}
