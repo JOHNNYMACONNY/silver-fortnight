@@ -23,7 +23,7 @@ jest.mock('../../../AuthContext', () => ({
 }));
 
 jest.mock('../../../utils/featureFlags', () => ({
-  isThemeToggleEnabled: () => true,
+  isThemeToggleEnabled: () => false,
 }));
 
 // Mock useNavigation hook
@@ -179,7 +179,21 @@ describe('Navbar', () => {
         </TestWrapper>
       );
 
+      // Theme toggle should be visible when explicitly enabled
       expect(screen.getByTestId('theme-toggle')).toBeInTheDocument();
+      expect(screen.getByTestId('notification-bell')).toBeInTheDocument();
+      expect(screen.getByTestId('user-menu')).toBeInTheDocument();
+    });
+
+    it('should not render theme toggle by default', () => {
+      render(
+        <TestWrapper>
+          <Navbar />
+        </TestWrapper>
+      );
+
+      // Theme toggle should be hidden by default
+      expect(screen.queryByTestId('theme-toggle')).not.toBeInTheDocument();
       expect(screen.getByTestId('notification-bell')).toBeInTheDocument();
       expect(screen.getByTestId('user-menu')).toBeInTheDocument();
     });
