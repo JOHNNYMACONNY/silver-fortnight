@@ -60,13 +60,12 @@ export const RoleCard: React.FC<RoleCardProps> = ({
     >
       <Card 
         variant="premium"
-        tilt={true}
         depth="lg"
         glow="subtle"
         glowColor="auto"
         hover={true}
         interactive={true}
-        className="h-[380px] flex flex-col cursor-pointer overflow-hidden"
+        className="min-h-[400px] flex flex-col cursor-pointer overflow-hidden"
       >
         <CardHeader className="pb-3 flex-shrink-0">
           <div className="flex items-center justify-between gap-3">
@@ -91,83 +90,37 @@ export const RoleCard: React.FC<RoleCardProps> = ({
             )}
           </div>
         </CardHeader>
-        <CardContent className="flex-1 flex flex-col gap-2">
+        <CardContent className="flex-1 flex flex-col gap-4 py-4">
           {/* Description */}
           {role.description && (
-            <p className="text-sm text-muted-foreground line-clamp-3 mb-2">{role.description}</p>
+            <div className="flex-1">
+              <p className="text-sm text-muted-foreground line-clamp-4 leading-relaxed">{role.description}</p>
+            </div>
           )}
-          {/* Skills (show up to 3 requiredSkills as badges, '+N more' if more) */}
+          
+          {/* Skills Summary - Compact view */}
           {role.requiredSkills && role.requiredSkills.length > 0 ? (
-            <div className="flex flex-wrap gap-1 mt-1">
-              {role.requiredSkills.slice(0, 3).map((skill) => (
-                <Badge key={skill.name} variant="secondary" className="text-xs font-medium px-2 py-0.5">
+            <div className="flex flex-wrap gap-1">
+              {role.requiredSkills.slice(0, 4).map((skill) => (
+                <Badge key={skill.name} variant="secondary" className="text-xs font-medium px-2 py-1">
                   {skill.name}
                 </Badge>
               ))}
-              {role.requiredSkills.length > 3 && (
-                <Badge variant="outline" className="text-xs font-medium px-2 py-0.5">
-                  +{role.requiredSkills.length - 3} more
+              {role.requiredSkills.length > 4 && (
+                <Badge variant="outline" className="text-xs font-medium px-2 py-1">
+                  +{role.requiredSkills.length - 4} more
                 </Badge>
               )}
             </div>
           ) : (
-            <Badge variant="outline" className="text-xs font-medium px-2 py-0.5 opacity-60">
+            <Badge variant="outline" className="text-xs font-medium px-2 py-1 opacity-60 w-fit">
               No skills specified
             </Badge>
           )}
-          {/* Required Skills */}
-          <div className="mt-4">
-            <h4 className="text-sm font-medium text-foreground">Required Skills</h4>
-            <div className="mt-1 flex flex-wrap gap-2">
-              {role.requiredSkills?.map((skill) => (
-                <SkillBadge
-                  key={createRoleKey(role.id, collaborationId, `required-${skill.name}`)}
-                  skill={skill.name}
-                  level={
-                    skill.level === 'beginner' || skill.level === 'intermediate' || skill.level === 'advanced' || skill.level === 'expert'
-                      ? skill.level
-                      : 'intermediate'
-                  }
-                />
-              ))}
-            </div>
-          </div>
 
-          {role.preferredSkills && role.preferredSkills.length > 0 && (
-            <div className="mt-4">
-              <h4 className="text-sm font-medium text-foreground">Preferred Skills</h4>
-              <div className="mt-1 flex flex-wrap gap-2">
-                {role.preferredSkills.map((skill) => (
-                  <SkillBadge
-                    key={createRoleKey(role.id, collaborationId, `preferred-${skill.name}`)}
-                    skill={skill.name}
-                    level={
-                      skill.level === 'beginner' || skill.level === 'intermediate' || skill.level === 'advanced' || skill.level === 'expert'
-                        ? skill.level
-                        : 'intermediate'
-                    }
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Remove participant avatar from content section */}
-          {/* {role.participantId && (
-            <div className="mt-4 border-t border-border pt-4">
-              <h4 className="text-sm font-medium text-foreground">Assigned To</h4>
-              <div className="mt-1">
-                <ProfileImageWithUser
-                  userId={role.participantId}
-                  profileUrl={role.participantPhotoURL}
-                  size="small"
-                />
-              </div>
-            </div>
-          )} */}
-
+          {/* Application Count for Creators */}
           {role.applicationCount !== undefined && role.applicationCount > 0 && isCreator && (
-            <div className="mt-4 border-t border-border pt-4">
+            <div className="mt-auto pt-4 border-t border-border">
               <span className="text-sm font-medium text-foreground">
                 {role.applicationCount} application{role.applicationCount !== 1 ? 's' : ''}
               </span>

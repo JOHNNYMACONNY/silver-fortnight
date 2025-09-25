@@ -384,54 +384,57 @@ export const CollaborationDetailPage: React.FC = () => {
           </GradientMeshBackground>
         </Box>
 
-        {/* Main Content - Traditional Details Page Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Left Column - Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Application CTA - Prominent but not overwhelming */}
-            {!isOwner && !isCollaborator && (
-              <Card variant="premium" depth="md" glow="subtle" glowColor="purple">
-                <CardContent className="p-6 text-center">
-                  <div className="mb-4">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Ready to Collaborate?</h3>
-                    <p className="text-sm text-muted-foreground">Join this collaboration and work with talented people</p>
-                  </div>
-                  <Button
-                    size="lg"
-                    topic="collaboration"
-                    onClick={() => setShowApplicationForm(true)}
-                    disabled={hasApplied}
-                    className="px-8 py-3 text-lg"
-                  >
-                    {hasApplied ? 'Application Submitted ✓' : 'Apply to Collaborate'}
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+        {/* Main Content - Optimized Layout for Better Card Display */}
+        <div className="space-y-8 mb-8">
+          {/* Application CTA - Full Width for Prominence */}
+          {!isOwner && !isCollaborator && (
+            <Card variant="premium" depth="md" glow="subtle" glowColor="purple">
+              <CardContent className="p-8 text-center">
+                <div className="mb-6">
+                  <h3 className="text-2xl font-semibold text-foreground mb-3">Ready to Collaborate?</h3>
+                  <p className="text-base text-muted-foreground max-w-2xl mx-auto">
+                    Join this collaboration and work with talented people to create something amazing together
+                  </p>
+                </div>
+                <Button
+                  size="lg"
+                  topic="collaboration"
+                  onClick={() => setShowApplicationForm(true)}
+                  disabled={hasApplied}
+                  className="px-12 py-4 text-lg"
+                >
+                  {hasApplied ? 'Application Submitted ✓' : 'Apply to Collaborate'}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
-            {/* Roles Section - Most Important Content */}
-            {collaborationId && ((collaboration as any).roles && Array.isArray((collaboration as any).roles) && (collaboration as any).roles.length > 0) && (
-              <Card variant="premium" depth="md" glow="subtle" glowColor="green">
-                <CardHeader>
-                  <CardTitle className="text-xl font-semibold">Available Roles</CardTitle>
-                  <p className="text-sm text-muted-foreground">Choose a role that matches your skills and interests</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {transformLegacyRoles((collaboration as any).roles, collaborationId).map((role) => (
+          {/* Roles Section - Full Width with Proper Grid */}
+          {collaborationId && ((collaboration as any).roles && Array.isArray((collaboration as any).roles) && (collaboration as any).roles.length > 0) && (
+            <Card variant="premium" depth="md" glow="subtle" glowColor="green">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-2xl font-semibold">Available Roles</CardTitle>
+                <p className="text-base text-muted-foreground">Choose a role that matches your skills and interests</p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {transformLegacyRoles((collaboration as any).roles, collaborationId).map((role) => (
+                    <div key={role.id} className="w-full">
                       <RoleCard
-                        key={role.id}
                         role={role}
                         collaborationId={collaborationId}
                         isCreator={isOwner}
                       />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-            {/* Skills Section - Important for Decision Making */}
+          {/* Skills and Details - Side by Side Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Skills Section */}
             <Card variant="premium" depth="md" glow="subtle" glowColor="purple">
               <CardHeader>
                 <CardTitle className="text-xl font-semibold">Skills Needed</CardTitle>
@@ -439,13 +442,13 @@ export const CollaborationDetailPage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 {collaboration.skillsNeeded && collaboration.skillsNeeded.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-3">
                     {collaboration.skillsNeeded.map(skill => (
                       <Badge 
                         key={skill} 
                         variant="outline" 
                         topic="collaboration"
-                        className="text-xs rounded-full px-3 py-1"
+                        className="text-sm rounded-full px-4 py-2"
                       >
                         {skill}
                       </Badge>
@@ -456,80 +459,87 @@ export const CollaborationDetailPage: React.FC = () => {
                 )}
               </CardContent>
             </Card>
-          </div>
 
-          {/* Right Column - Sidebar Information */}
-          <div className="space-y-6">
-            {/* Quick Details - Compact Sidebar */}
+            {/* Quick Details */}
             <Card variant="premium" depth="md" glow="subtle" glowColor="blue">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold">Quick Details</CardTitle>
+                <CardTitle className="text-xl font-semibold">Quick Details</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 {collaboration.location && (
-                  <div className="flex items-start space-x-3">
-                    <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Location</p>
-                      <p className="text-sm font-medium text-foreground">{collaboration.location}</p>
+                  <div className="flex items-start space-x-4">
+                    <MapPin className="h-6 w-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Location</p>
+                      <p className="text-base font-medium text-foreground break-words">{collaboration.location}</p>
                     </div>
                   </div>
                 )}
                 {collaboration.timeline && (
-                  <div className="flex items-start space-x-3">
-                    <Clock className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Timeline</p>
-                      <p className="text-sm font-medium text-foreground">{collaboration.timeline}</p>
+                  <div className="flex items-start space-x-4">
+                    <Clock className="h-6 w-6 text-green-600 dark:text-green-400 flex-shrink-0 mt-1" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Timeline</p>
+                      <p className="text-base font-medium text-foreground break-words">{collaboration.timeline}</p>
                     </div>
                   </div>
                 )}
                 {collaboration.compensation && (
-                  <div className="flex items-start space-x-3">
-                    <DollarSign className="h-5 w-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Compensation</p>
-                      <p className="text-sm font-medium text-foreground">{collaboration.compensation}</p>
+                  <div className="flex items-start space-x-4">
+                    <DollarSign className="h-6 w-6 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-1" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Compensation</p>
+                      <p className="text-base font-medium text-foreground break-words">{collaboration.compensation}</p>
                     </div>
                   </div>
                 )}
                 {collaboration.maxParticipants > 0 && (
-                  <div className="flex items-start space-x-3">
-                    <Users className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Max Participants</p>
-                      <p className="text-sm font-medium text-foreground">{collaboration.maxParticipants}</p>
+                  <div className="flex items-start space-x-4">
+                    <Users className="h-6 w-6 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-1" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Max Participants</p>
+                      <p className="text-base font-medium text-foreground">{collaboration.maxParticipants}</p>
                     </div>
                   </div>
                 )}
               </CardContent>
             </Card>
+          </div>
 
-            {/* Status & Stats - Compact Sidebar */}
-            <Card variant="premium" depth="md" glow="subtle" glowColor="orange">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">Status</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-center p-4 bg-muted/50 rounded-lg">
-                  <div className="text-2xl font-bold text-foreground mb-1">
+          {/* Status & Stats - Full Width */}
+          <Card variant="premium" depth="md" glow="subtle" glowColor="orange">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold">Collaboration Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center p-6 bg-muted/50 rounded-lg">
+                  <div className="text-3xl font-bold text-foreground mb-2">
                     {collaboration.collaborators?.length || 0}
                   </div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                  <div className="text-sm text-muted-foreground uppercase tracking-wide">
                     Current Collaborators
                   </div>
                 </div>
-                <div className="text-center p-4 bg-muted/50 rounded-lg">
-                  <div className="text-2xl font-bold text-foreground mb-1">
+                <div className="text-center p-6 bg-muted/50 rounded-lg">
+                  <div className="text-3xl font-bold text-foreground mb-2">
                     {applications.filter(app => app.status === 'pending').length}
                   </div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                  <div className="text-sm text-muted-foreground uppercase tracking-wide">
                     Pending Applications
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+                <div className="text-center p-6 bg-muted/50 rounded-lg">
+                  <div className="text-3xl font-bold text-foreground mb-2">
+                    {((collaboration as any).roles?.length || 0)}
+                  </div>
+                  <div className="text-sm text-muted-foreground uppercase tracking-wide">
+                    Available Roles
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Tabs for Details/Applications */}
