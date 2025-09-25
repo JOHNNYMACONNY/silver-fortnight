@@ -1405,31 +1405,19 @@ export const TradeDetailPage: React.FC = () => {
               Trade Proposals
             </AnimatedHeading>
 
-            <Card 
-              variant="premium" 
-              tilt={true}
-              depth="lg"
-              glow="subtle"
-              glowColor="blue"
-              interactive={true}
-              reducedHover={true}
-            >
-              <CardContent className="p-6">
-                <TradeProposalDashboard
-                  tradeId={trade.id!}
-                  onProposalAccepted={() => {
-                    // Refresh trade data to get updated status
-                    if (tradeId) {
-                      getTrade(tradeId).then(({ data }) => {
-                        if (data) {
-                          setTrade(data as Trade);
-                        }
-                      });
+            <TradeProposalDashboard
+              tradeId={trade.id!}
+              onProposalAccepted={() => {
+                // Refresh trade data to get updated status
+                if (tradeId) {
+                  getTrade(tradeId).then(({ data }) => {
+                    if (data) {
+                      setTrade(data as Trade);
                     }
-                  }}
-                />
-              </CardContent>
-            </Card>
+                  });
+                }
+              }}
+            />
           </Stack>
         </Box>
       )}

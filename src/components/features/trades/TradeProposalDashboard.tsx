@@ -171,13 +171,13 @@ const TradeProposalDashboard: React.FC<TradeProposalDashboardProps> = ({
   const isTradeCreator = !!currentUser && !!trade && currentUser.uid === trade.creatorId;
 
   return (
-    <Card>
-      <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <CardTitle>Trade Proposals</CardTitle>
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-          <div className="flex items-center justify-end">
+    <Card variant="premium" tilt={true} depth="lg" glow="subtle" glowColor="blue" interactive={true} reducedHover={true}>
+      <CardHeader className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4">
+        <CardTitle className="text-xl font-semibold">Trade Proposals</CardTitle>
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+          <div className="flex items-center justify-start sm:justify-end">
             <Select onValueChange={(value) => setSortBy(value as 'date' | 'skillMatch')} defaultValue={sortBy}>
-              <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectTrigger className="w-full sm:w-[160px]">
                 <SelectValue placeholder="Sort by..." />
               </SelectTrigger>
               <SelectContent>
@@ -193,10 +193,10 @@ const TradeProposalDashboard: React.FC<TradeProposalDashboardProps> = ({
                 variant={filter === status ? 'secondary' : 'ghost'}
                 size="sm"
                 onClick={() => setFilter(status)}
-                className="flex items-center"
+                className="flex items-center min-w-0"
               >
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-                <Badge variant={filter === status ? 'default' : 'outline'} className="ml-2">
+                <span className="truncate">{status.charAt(0).toUpperCase() + status.slice(1)}</span>
+                <Badge variant={filter === status ? 'default' : 'outline'} className="ml-2 flex-shrink-0">
                   {counts[status]}
                 </Badge>
               </Button>
@@ -204,7 +204,7 @@ const TradeProposalDashboard: React.FC<TradeProposalDashboardProps> = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         {loading ? (
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-24 w-full" />)}
@@ -215,25 +215,33 @@ const TradeProposalDashboard: React.FC<TradeProposalDashboardProps> = ({
             description={error}
           />
         ) : filteredProposals.length > 0 ? (
-          <motion.div
-            className="space-y-4"
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
-          >
-            <AnimatePresence>
-              {filteredProposals.map(proposal => (
-                <motion.div key={proposal.id} /* ... animation variants */ >
-                  <TradeProposalCard
-                    proposal={proposal}
-                    onAccept={() => handleAcceptProposal(proposal.id!)}
-                    onReject={() => handleRejectProposal(proposal.id!)}
-                    isCreator={isTradeCreator}
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
+          <div className="max-h-[800px] overflow-y-auto pr-2">
+            <motion.div
+              className="space-y-4"
+              initial="hidden"
+              animate="visible"
+              variants={containerVariants}
+            >
+              <AnimatePresence>
+                {filteredProposals.map(proposal => (
+                  <motion.div 
+                    key={proposal.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <TradeProposalCard
+                      proposal={proposal}
+                      onAccept={() => handleAcceptProposal(proposal.id!)}
+                      onReject={() => handleRejectProposal(proposal.id!)}
+                      isCreator={isTradeCreator}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          </div>
         ) : (
           <EmptyState
             title="No Proposals"

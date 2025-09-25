@@ -74,9 +74,9 @@ const TradeProposalCard: React.FC<TradeProposalCardProps> = ({
       interactive={true}
       className={className}
     >
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div className="flex items-center">
+      <CardHeader className="pb-4">
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex items-center min-w-0 flex-1">
             <div className="flex-shrink-0 mr-4">
               <ProfileImageWithUser
                 userId={proposal.proposerId}
@@ -85,14 +85,16 @@ const TradeProposalCard: React.FC<TradeProposalCardProps> = ({
                 className="w-12 h-12 rounded-full"
               />
             </div>
-            <div>
-  <h3 className="text-lg font-semibold text-foreground hover:text-primary/80 transition-colors duration-200">{proposal.proposerName || 'Anonymous'}</h3>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-lg font-semibold text-foreground hover:text-primary/80 transition-colors duration-200 truncate">
+                {proposal.proposerName || 'Anonymous'}
+              </h3>
               <p className="text-sm text-muted-foreground">
                 Proposed {formatDate(proposal.createdAt)}
               </p>
             </div>
           </div>
-          <Badge variant={getStatusVariant(proposal.status)}>
+          <Badge variant={getStatusVariant(proposal.status)} className="flex-shrink-0">
             {proposal.status.charAt(0).toUpperCase() + proposal.status.slice(1)}
           </Badge>
         </div>
@@ -103,21 +105,29 @@ const TradeProposalCard: React.FC<TradeProposalCardProps> = ({
           <p className="text-muted-foreground whitespace-pre-line">{proposal.message}</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="min-w-0">
             <h4 className="text-md font-medium text-foreground mb-2">Skills Offered</h4>
             <div className="flex flex-wrap gap-2">
-              {proposal.skillsOffered.map((skill, index) => (
-                <SkillBadge key={index} skill={skill.name} level={skill.level} />
-              ))}
+              {proposal.skillsOffered && proposal.skillsOffered.length > 0 ? (
+                proposal.skillsOffered.map((skill, index) => (
+                  <SkillBadge key={index} skill={skill.name} level={skill.level} />
+                ))
+              ) : (
+                <span className="text-sm text-muted-foreground italic">No skills specified</span>
+              )}
             </div>
           </div>
-          <div>
+          <div className="min-w-0">
             <h4 className="text-md font-medium text-foreground mb-2">Skills Requested</h4>
             <div className="flex flex-wrap gap-2">
-              {proposal.skillsRequested.map((skill, index) => (
-                <SkillBadge key={index} skill={skill.name} level={skill.level} />
-              ))}
+              {proposal.skillsRequested && proposal.skillsRequested.length > 0 ? (
+                proposal.skillsRequested.map((skill, index) => (
+                  <SkillBadge key={index} skill={skill.name} level={skill.level} />
+                ))
+              ) : (
+                <span className="text-sm text-muted-foreground italic">No skills specified</span>
+              )}
             </div>
           </div>
         </div>
@@ -129,9 +139,13 @@ const TradeProposalCard: React.FC<TradeProposalCardProps> = ({
         )}
       </CardContent>
       {isCreator && proposal.status === 'pending' && (
-        <CardFooter className="flex justify-end space-x-4">
-          <Button variant="outline" onClick={onReject}>Reject</Button>
-          <Button onClick={onAccept}>Accept Proposal</Button>
+        <CardFooter className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-border">
+          <Button variant="outline" onClick={onReject} className="w-full sm:w-auto">
+            Reject
+          </Button>
+          <Button onClick={onAccept} className="w-full sm:w-auto">
+            Accept Proposal
+          </Button>
         </CardFooter>
       )}
     </Card>
