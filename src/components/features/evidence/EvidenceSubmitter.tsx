@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { useAuth } from '../../../AuthContext';
 import {
   isValidEmbedUrl,
@@ -179,7 +180,15 @@ export const EvidenceSubmitter: React.FC<EvidenceSubmitterProps> = ({
                 <h4 className="text-lg font-medium mb-2">Preview</h4>
                 <div
                   className="border rounded-lg p-2 bg-muted"
-                  dangerouslySetInnerHTML={{ __html: preview }}
+                  dangerouslySetInnerHTML={{ 
+                    __html: DOMPurify.sanitize(preview, {
+                      ALLOWED_TAGS: ['iframe', 'video', 'audio', 'source', 'img', 'div', 'span', 'p', 'br'],
+                      ALLOWED_ATTR: ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'controls', 'autoplay', 'loop', 'muted', 'poster', 'alt', 'class', 'style'],
+                      ALLOW_DATA_ATTR: false,
+                      FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur'],
+                      FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input', 'button']
+                    })
+                  }}
                 />
               </div>
             )}

@@ -67,18 +67,26 @@ export const TradesPage: React.FC = () => {
     includeNonPublic: !!currentUser,
   });
 
-  // Fetch trade creators
+  // Fetch trade creators with parallel API calls for better performance
   const fetchTradeCreators = useCallback(async (creatorIds: string[]) => {
     const creators: { [key: string]: User } = {};
 
-    for (const creatorId of creatorIds) {
-      if (creatorId) {
-        const { data, error } = await getUserProfile(creatorId);
-        if (!error && data) {
-          creators[creatorId] = data as User;
-        }
+    // Use Promise.allSettled for parallel execution and error resilience
+    const results = await Promise.allSettled(
+      creatorIds
+        .filter(Boolean) // Remove falsy values
+        .map(async (creatorId) => {
+          const { data, error } = await getUserProfile(creatorId);
+          return { creatorId, data, error };
+        })
+    );
+
+    // Process results and handle individual failures gracefully
+    results.forEach((result) => {
+      if (result.status === 'fulfilled' && !result.value.error && result.value.data) {
+        creators[result.value.creatorId] = result.value.data as User;
       }
-    }
+    });
 
     setTradeCreators(creators);
   }, []);
