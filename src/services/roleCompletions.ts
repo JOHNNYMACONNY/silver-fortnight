@@ -10,11 +10,9 @@ const getSyncFirebaseDbResolved = () => {
   // and prefer other shapes below; the dynamic import result is ignored here.
   if (!mod || Object.keys(mod).length === 0) {
     // Best-effort kick of a dynamic import that does not block
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     import('../firebase-config').then((m) => {
       if (m && Object.keys(mod || {}).length === 0) {
         // shallow replace only if we still have empty module
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (mod as any) = m as any;
       }
     }).catch(() => {/* ignore */});
