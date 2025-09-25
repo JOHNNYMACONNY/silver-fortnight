@@ -3,7 +3,7 @@
   incrementally add types. These files are app-critical and blocking CI; remove
   this disable once typed replacements are implemented.
 */
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+ 
 
 import { transactionManager } from './transactionManager';
 import { v4 as uuidv4 } from 'uuid';
