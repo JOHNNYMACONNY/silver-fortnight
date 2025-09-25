@@ -332,7 +332,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
         setIsVoiceRecording(false);
       }
     };
-  }, [enableVoiceSearch, initializeVoiceRecognition, voiceRecognition]);
+  }, [enableVoiceSearch, initializeVoiceRecognition]);
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();

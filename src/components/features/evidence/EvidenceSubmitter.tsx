@@ -182,11 +182,11 @@ export const EvidenceSubmitter: React.FC<EvidenceSubmitterProps> = ({
                   className="border rounded-lg p-2 bg-muted"
                   dangerouslySetInnerHTML={{ 
                     __html: DOMPurify.sanitize(preview, {
-                      ALLOWED_TAGS: ['iframe', 'video', 'audio', 'source', 'img', 'div', 'span', 'p', 'br'],
-                      ALLOWED_ATTR: ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'controls', 'autoplay', 'loop', 'muted', 'poster', 'alt', 'class', 'style'],
+                      ALLOWED_TAGS: ['iframe', 'video', 'audio', 'source', 'img', 'div', 'span', 'p', 'br', 'a', 'blockquote'],
+                      ALLOWED_ATTR: ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'controls', 'autoplay', 'loop', 'muted', 'poster', 'alt', 'class', 'style', 'href', 'title', 'data-id'],
                       ALLOW_DATA_ATTR: false,
-                      FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur'],
-                      FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input', 'button']
+                      FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur', 'onsubmit'],
+                      FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input', 'button', 'link']
                     })
                   }}
                 />

@@ -130,11 +130,11 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({
               {evidence.embedCode ? (
                 <div dangerouslySetInnerHTML={{ 
                   __html: DOMPurify.sanitize(evidence.embedCode, {
-                    ALLOWED_TAGS: ['iframe', 'video', 'audio', 'source', 'img', 'div', 'span', 'p', 'br'],
-                    ALLOWED_ATTR: ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'controls', 'autoplay', 'loop', 'muted', 'poster', 'alt', 'class', 'style'],
+                    ALLOWED_TAGS: ['iframe', 'video', 'audio', 'source', 'img', 'div', 'span', 'p', 'br', 'a', 'blockquote'],
+                    ALLOWED_ATTR: ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'controls', 'autoplay', 'loop', 'muted', 'poster', 'alt', 'class', 'style', 'href', 'title', 'data-id'],
                     ALLOW_DATA_ATTR: false,
-                    FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur'],
-                    FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input', 'button']
+                    FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur', 'onsubmit'],
+                    FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input', 'button', 'link']
                   })
                 }} />
               ) : (
