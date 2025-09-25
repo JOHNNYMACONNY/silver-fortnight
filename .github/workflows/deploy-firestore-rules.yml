@@ -1,0 +1,36 @@
+name: Deploy Firestore Security Rules
+
+on:
+  push:
+    paths:
+      - 'firestore.rules'
+    branches:
+      - main
+      - master
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  deploy-rules:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy Firestore Rules
+        run: firebase deploy --only firestore:rules --token ${{ secrets.FIREBASE_TOKEN }}
+        env:
+          FIREBASE_PROJECT: tradeya-45ede
+
+      - name: Verify Deployment
+        run: |
+          echo "✅ Firestore security rules deployed successfully!"
+          echo "🔄 The messages page should now work correctly."
