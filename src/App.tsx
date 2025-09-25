@@ -51,6 +51,7 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const MessagesPage = lazy(() => import('./pages/MessagesPage').then(module => ({ default: module.MessagesPage })));
 const CreateTestConversationPage = lazy(() => import('./pages/CreateTestConversationPage').then(module => ({ default: module.CreateTestConversationPage })));
 const DebugMessagesPage = lazy(() => import('./pages/DebugMessagesPage').then(module => ({ default: module.DebugMessagesPage })));
+const SimpleConversationTest = lazy(() => import('./pages/SimpleConversationTest').then(module => ({ default: module.SimpleConversationTest })));
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
 const MigrationPage = lazy(() => import('./pages/MigrationPage'));
 const AsymmetricHomePageLayout = lazy(() => import('./pages/AsymmetricHomePageLayout'));
@@ -204,6 +205,7 @@ function App() {
         <Route path="/messages/:conversationId" element={<RouteErrorBoundary><MessagesPage /></RouteErrorBoundary>} />
         <Route path="/create-test-conversation" element={<RouteErrorBoundary><CreateTestConversationPage /></RouteErrorBoundary>} />
         <Route path="/debug-messages" element={<RouteErrorBoundary><DebugMessagesPage /></RouteErrorBoundary>} />
+        <Route path="/simple-conversation-test" element={<RouteErrorBoundary><SimpleConversationTest /></RouteErrorBoundary>} />
 
         <Route path="/notifications" element={<RouteErrorBoundary><NotificationsPage /></RouteErrorBoundary>} />
         <Route path="/leaderboard" element={<RouteErrorBoundary><LeaderboardPage /></RouteErrorBoundary>} />

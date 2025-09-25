@@ -8,7 +8,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { getSyncFirebaseDb } from '../firebase-config';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, Timestamp, query, where, getDocs } from 'firebase/firestore';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Alert, AlertDescription } from '../components/ui/Alert';
@@ -62,6 +62,8 @@ export const CreateTestConversationPage: React.FC = () => {
         }
       };
 
+      console.log('Creating conversation with data:', testConversation);
+
       // Add the conversation to Firestore
       const conversationsRef = collection(db, 'conversations');
       const docRef = await addDoc(conversationsRef, testConversation);
@@ -86,9 +88,41 @@ export const CreateTestConversationPage: React.FC = () => {
       
       console.log(`✅ Test message created successfully with ID: ${messageRef.id}`);
       
+      // Verify the conversation was created by querying it back
+      const verifyQuery = query(
+        collection(db, 'conversations'),
+        where('participantIds', 'array-contains', userId)
+      );
+      console.log('Verifying conversation with query for user:', userId);
+      const verifySnapshot = await getDocs(verifyQuery);
+      const foundConversations = verifySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      console.log('Verification query found:', foundConversations.length, 'conversations');
+      foundConversations.forEach(conv => {
+        console.log('Found conversation:', conv.id, 'participantIds:', conv.participantIds);
+      });
+
+      // Also try to get all conversations to see if the issue is with the query
+      try {
+        const allConversationsQuery = query(collection(db, 'conversations'));
+        const allConversationsSnapshot = await getDocs(allConversationsQuery);
+        console.log('All conversations query found:', allConversationsSnapshot.size, 'conversations');
+        allConversationsSnapshot.docs.forEach(doc => {
+          const data = doc.data();
+          console.log('All conversations - ID:', doc.id, 'participantIds:', data.participantIds, 'participants:', data.participants);
+        });
+      } catch (allError) {
+        console.log('All conversations query failed:', allError);
+      }
+      
       setResult(`✅ Test conversation created successfully!
 Conversation ID: ${docRef.id}
 Message ID: ${messageRef.id}
+
+Verification: Found ${foundConversations.length} conversations for user
+${foundConversations.length > 0 ? '✅ Conversation found in database' : '❌ Conversation not found in database'}
 
 You can now go to the messages page to see your conversation.`);
 

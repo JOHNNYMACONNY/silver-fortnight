@@ -5,7 +5,7 @@ import {
   createMessage,
   User
 } from '../../../services/firestore-exports';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, getDocs } from 'firebase/firestore';
 import { getSyncFirebaseDb } from '../../../firebase-config';
 import { ConversationList } from './ConversationList';
 // import { MessageList } from './MessageList';
@@ -55,15 +55,50 @@ export const ChatContainer: React.FC = () => {
 
     // Create a query for the user's conversations
     const conversationsRef = collection(getSyncFirebaseDb(), 'conversations');
-    const q = query(
-      conversationsRef,
-      where('participantIds', 'array-contains', currentUser.uid),
-      orderBy('updatedAt', 'desc')
-    );
+    
+    // Try different query approaches
+    let q;
+    
+    // First try: Simple query without orderBy
+    try {
+      q = query(
+        conversationsRef,
+        where('participantIds', 'array-contains', currentUser.uid)
+      );
+      console.log('ChatContainer: Using simple participantIds query');
+    } catch (simpleError) {
+      console.log('ChatContainer: Simple query failed, trying alternative:', simpleError);
+      // Fallback: Try with participants array
+      try {
+        q = query(
+          conversationsRef,
+          where('participants', 'array-contains', { id: currentUser.uid })
+        );
+        console.log('ChatContainer: Using participants array query');
+      } catch (participantsError) {
+        console.log('ChatContainer: Participants query failed, using no filter:', participantsError);
+        // Last resort: Get all conversations and filter client-side
+        q = query(conversationsRef);
+        console.log('ChatContainer: Using no-filter query with client-side filtering');
+      }
+    }
+    
+    console.log('ChatContainer: Querying conversations for user:', currentUser.uid);
+
+    // First try a simple getDocs query to test
+    getDocs(q).then((snapshot) => {
+      console.log('ChatContainer: getDocs test - found', snapshot.size, 'conversations');
+      snapshot.forEach((doc) => {
+        console.log('ChatContainer: getDocs test - conversation:', doc.id, doc.data());
+      });
+    }).catch((err) => {
+      console.log('ChatContainer: getDocs test failed:', err);
+    });
 
     // Set up real-time listener
     const unsubscribe = onSnapshot(q, (snapshot) => {
       try {
+        console.log('ChatContainer: Received snapshot with', snapshot.size, 'conversations');
         const conversationsList: ChatConversation[] = [];
 
         snapshot.forEach((doc) => {
@@ -71,20 +106,35 @@ export const ChatContainer: React.FC = () => {
             id: doc.id,
             ...(doc.data() as any)
           } as ChatConversation;
+          console.log('ChatContainer: Processing conversation', doc.id, conversationData);
           conversationsList.push(conversationData);
         });
 
-        setConversations(conversationsList);
+        // If we used no-filter query, filter client-side
+        const filteredConversations = conversationsList.filter(conv => {
+          // Check if user is in participantIds array
+          if (conv.participantIds && Array.isArray(conv.participantIds)) {
+            return conv.participantIds.includes(currentUser.uid);
+          }
+          // Check if user is in participants array
+          if (conv.participants && Array.isArray(conv.participants)) {
+            return conv.participants.some((p: any) => p.id === currentUser.uid);
+          }
+          return false;
+        });
+
+        console.log('ChatContainer: Filtered conversations list:', filteredConversations);
+        setConversations(filteredConversations);
 
         // If conversationId is provided in URL, set it as active
         if (conversationId) {
-          const conversation = conversationsList.find(c => c.id === conversationId);
+          const conversation = filteredConversations.find(c => c.id === conversationId);
           if (conversation) {
             setActiveConversation(conversation);
           }
-        } else if (conversationsList.length > 0 && !activeConversation) {
+        } else if (filteredConversations.length > 0 && !activeConversation) {
           // Otherwise, set the first conversation as active (only if no active conversation)
-          setActiveConversation(conversationsList[0]);
+          setActiveConversation(filteredConversations[0]);
         }
 
         setLoading(false);
@@ -93,6 +143,7 @@ export const ChatContainer: React.FC = () => {
         setLoading(false);
       }
     }, (err: any) => {
+      console.log('ChatContainer: Query error:', err);
       // Check if this is a permission error due to no conversations
       if (err.message?.includes('Missing or insufficient permissions')) {
         console.log('No conversations found for user - this is expected if user has no conversations yet');
@@ -100,6 +151,7 @@ export const ChatContainer: React.FC = () => {
         setLoading(false);
         setError(null); // Clear error since this is expected
       } else {
+        console.log('ChatContainer: Real error occurred:', err.message);
         setError(err.message || 'Failed to fetch conversations');
         setLoading(false);
       }

@@ -39,12 +39,20 @@ export const DebugMessagesPage: React.FC = () => {
       // Check 1: Get all conversations (without filters)
       const allConversationsRef = collection(db, 'conversations');
       const allConversationsQuery = query(allConversationsRef, limit(10));
-      const allConversationsSnapshot = await getDocs(allConversationsQuery);
+      let allConversations: any[] = [];
+      let allConversationsError: any = null;
       
-      const allConversations = allConversationsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      try {
+        const allConversationsSnapshot = await getDocs(allConversationsQuery);
+        allConversations = allConversationsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        console.log('All conversations query succeeded, found:', allConversations.length, 'conversations');
+      } catch (err: any) {
+        allConversationsError = err;
+        console.log('All conversations query failed:', err.message);
+      }
 
       // Check 2: Get conversations with participantIds filter
       const participantConversationsRef = collection(db, 'conversations');
@@ -55,14 +63,17 @@ export const DebugMessagesPage: React.FC = () => {
       );
       
       let participantConversations: any[] = [];
+      let participantError: any = null;
       try {
         const participantSnapshot = await getDocs(participantQuery);
         participantConversations = participantSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-      } catch (participantError: any) {
-        console.log('Participant query failed:', participantError.message);
+        console.log('Participant query succeeded, found:', participantConversations.length, 'conversations');
+      } catch (err: any) {
+        participantError = err;
+        console.log('Participant query failed:', err.message);
       }
 
       // Check 3: Get conversations with participants filter (legacy)
@@ -90,18 +101,40 @@ export const DebugMessagesPage: React.FC = () => {
       const userSnapshot = await getDocs(userQuery);
       const userProfile = userSnapshot.docs.length > 0 ? userSnapshot.docs[0].data() : null;
 
+      // Check 5: Try to read a specific conversation if any exist
+      let specificConversationTest: any = null;
+      if (allConversations.length > 0) {
+        try {
+          const { getDoc, doc } = await import('firebase/firestore');
+          const firstConvId = allConversations[0].id;
+          const specificConvRef = doc(db, 'conversations', firstConvId);
+          const specificConvSnap = await getDoc(specificConvRef);
+          specificConversationTest = {
+            id: firstConvId,
+            exists: specificConvSnap.exists(),
+            data: specificConvSnap.data(),
+            error: null
+          };
+        } catch (err: any) {
+          specificConversationTest = {
+            error: err.message
+          };
+        }
+      }
+
       const debugData = {
         userId,
         timestamp: new Date().toISOString(),
         checks: {
           allConversations: {
             count: allConversations.length,
-            data: allConversations
+            data: allConversations,
+            error: allConversationsError ? allConversationsError.message : null
           },
           participantConversations: {
             count: participantConversations.length,
             data: participantConversations,
-            error: participantConversations.length === 0 ? 'No conversations found with participantIds filter' : null
+            error: participantError ? participantError.message : (participantConversations.length === 0 ? 'No conversations found with participantIds filter' : null)
           },
           legacyConversations: {
             count: legacyConversations.length,
@@ -111,7 +144,8 @@ export const DebugMessagesPage: React.FC = () => {
           userProfile: {
             exists: !!userProfile,
             data: userProfile
-          }
+          },
+          specificConversationTest: specificConversationTest
         }
       };
 
@@ -233,6 +267,37 @@ export const DebugMessagesPage: React.FC = () => {
                   )}
                 </CardContent>
               </Card>
+
+              {debugInfo.checks.specificConversationTest && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">Specific Conversation Test</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {debugInfo.checks.specificConversationTest.error ? (
+                      <Alert variant="destructive">
+                        <AlertDescription className="text-xs">
+                          Error: {debugInfo.checks.specificConversationTest.error}
+                        </AlertDescription>
+                      </Alert>
+                    ) : (
+                      <div className="space-y-2">
+                        <Badge variant={debugInfo.checks.specificConversationTest.exists ? "default" : "destructive"}>
+                          {debugInfo.checks.specificConversationTest.exists ? 'Exists' : 'Not Found'}
+                        </Badge>
+                        <div className="text-xs">
+                          <div><strong>ID:</strong> {debugInfo.checks.specificConversationTest.id}</div>
+                          {debugInfo.checks.specificConversationTest.data && (
+                            <div className="mt-2 p-2 bg-muted rounded">
+                              <pre>{JSON.stringify(debugInfo.checks.specificConversationTest.data, null, 2)}</pre>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
 
