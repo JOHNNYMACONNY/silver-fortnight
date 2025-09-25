@@ -384,7 +384,7 @@ export const CollaborationDetailPage: React.FC = () => {
           </GradientMeshBackground>
         </Box>
 
-        {/* Main Content with BentoGrid Layout */}
+        {/* Main Content with Improved Information Hierarchy */}
         <BentoGrid
           layoutPattern="asymmetric"
           visualRhythm="alternating"
@@ -392,93 +392,40 @@ export const CollaborationDetailPage: React.FC = () => {
           className="mb-8"
           gap="lg"
         >
-          {/* Details Card - Large */}
-          <BentoItem
-            asymmetricSize="large"
-            contentType="mixed"
-            layoutRole="complex"
-          >
-            <Card 
-              variant="premium" 
-              depth="lg"
-              glow="subtle"
-              glowColor="blue"
-              className="h-[300px] flex flex-col"
+          {/* Application CTA - Most Important, Full Width */}
+          {!isOwner && !isCollaborator && (
+            <BentoItem
+              asymmetricSize="full"
+              contentType="feature"
+              layoutRole="simple"
             >
-              <CardHeader className="pb-3">
-                <CardTitle className="text-xl font-semibold">Collaboration Details</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 pb-4">
-                <div className="space-y-4">
-                  {collaboration.location && (
-                    <div className="flex items-center space-x-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                      <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      <span className="text-sm font-medium text-foreground">{collaboration.location}</span>
-                    </div>
-                  )}
-                  {collaboration.timeline && (
-                    <div className="flex items-center space-x-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                      <Clock className="h-5 w-5 text-green-600 dark:text-green-400" />
-                      <span className="text-sm font-medium text-foreground">{collaboration.timeline}</span>
-                    </div>
-                  )}
-                  {collaboration.compensation && (
-                    <div className="flex items-center space-x-3 p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
-                      <DollarSign className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                      <span className="text-sm font-medium text-foreground">{collaboration.compensation}</span>
-                    </div>
-                  )}
-                  {collaboration.maxParticipants > 0 && (
-                    <div className="flex items-center space-x-3 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
-                      <Users className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                      <span className="text-sm font-medium text-foreground">
-                        Up to {collaboration.maxParticipants} collaborators
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </BentoItem>
+              <Card 
+                variant="premium" 
+                depth="lg"
+                glow="subtle"
+                glowColor="purple"
+                className="min-h-[120px] flex items-center justify-center"
+              >
+                <CardContent className="text-center">
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Ready to Collaborate?</h3>
+                    <p className="text-sm text-muted-foreground">Join this collaboration and work with talented people</p>
+                  </div>
+                  <Button
+                    size="lg"
+                    topic="collaboration"
+                    onClick={() => setShowApplicationForm(true)}
+                    disabled={hasApplied}
+                    className="px-8 py-3 text-lg"
+                  >
+                    {hasApplied ? 'Application Submitted ✓' : 'Apply to Collaborate'}
+                  </Button>
+                </CardContent>
+              </Card>
+            </BentoItem>
+          )}
 
-          {/* Skills Card - Small */}
-          <BentoItem
-            asymmetricSize="small"
-            contentType="feature"
-            layoutRole="simple"
-          >
-            <Card 
-              variant="premium" 
-              depth="lg"
-              glow="subtle"
-              glowColor="purple"
-              className="h-[300px] flex flex-col"
-            >
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-semibold">Skills Needed</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 pb-4">
-                <div className="space-y-3">
-                  {collaboration.skillsNeeded && collaboration.skillsNeeded.length > 0 ? (
-                    collaboration.skillsNeeded.map(skill => (
-                      <Badge 
-                        key={skill} 
-                        variant="outline" 
-                        topic="collaboration"
-                        className="text-xs rounded-full px-3 py-1 mr-2 mb-2"
-                      >
-                        {skill}
-                      </Badge>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No specific skills required</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </BentoItem>
-
-          {/* Roles Section - Full Width */}
+          {/* Roles Section - High Priority, Full Width */}
           {collaborationId && ((collaboration as any).roles && Array.isArray((collaboration as any).roles) && (collaboration as any).roles.length > 0) && (
             <BentoItem
               asymmetricSize="full"
@@ -490,10 +437,11 @@ export const CollaborationDetailPage: React.FC = () => {
                 depth="lg"
                 glow="subtle"
                 glowColor="green"
-                className="min-h-[200px]"
+                className="min-h-[250px]"
               >
                 <CardHeader className="pb-4">
                   <CardTitle className="text-xl font-semibold">Available Roles</CardTitle>
+                  <p className="text-sm text-muted-foreground">Choose a role that matches your skills and interests</p>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -511,34 +459,94 @@ export const CollaborationDetailPage: React.FC = () => {
             </BentoItem>
           )}
 
-          {/* Application Button - Full Width */}
-          {!isOwner && !isCollaborator && (
-            <BentoItem
-              asymmetricSize="full"
-              contentType="feature"
-              layoutRole="simple"
+          {/* Skills Card - Medium Priority, Large */}
+          <BentoItem
+            asymmetricSize="large"
+            contentType="feature"
+            layoutRole="complex"
+          >
+            <Card 
+              variant="premium" 
+              depth="lg"
+              glow="subtle"
+              glowColor="purple"
+              className="min-h-[200px] flex flex-col"
             >
-              <Card 
-                variant="premium" 
-                depth="lg"
-                glow="subtle"
-                glowColor="purple"
-                className="min-h-[100px] flex items-center justify-center"
-              >
-                <CardContent className="text-center">
-                  <Button
-                    size="lg"
-                    topic="collaboration"
-                    onClick={() => setShowApplicationForm(true)}
-                    disabled={hasApplied}
-                    className="px-8 py-3 text-lg"
-                  >
-                    {hasApplied ? 'Application Submitted' : 'Apply to Collaborate'}
-                  </Button>
-                </CardContent>
-              </Card>
-            </BentoItem>
-          )}
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl font-semibold">Skills Needed</CardTitle>
+                <p className="text-sm text-muted-foreground">Required and preferred skills for this collaboration</p>
+              </CardHeader>
+              <CardContent className="flex-1 pb-4">
+                <div className="space-y-3">
+                  {collaboration.skillsNeeded && collaboration.skillsNeeded.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {collaboration.skillsNeeded.map(skill => (
+                        <Badge 
+                          key={skill} 
+                          variant="outline" 
+                          topic="collaboration"
+                          className="text-xs rounded-full px-3 py-1"
+                        >
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No specific skills required</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </BentoItem>
+
+          {/* Details Card - Lower Priority, Small */}
+          <BentoItem
+            asymmetricSize="small"
+            contentType="mixed"
+            layoutRole="simple"
+          >
+            <Card 
+              variant="premium" 
+              depth="lg"
+              glow="subtle"
+              glowColor="blue"
+              className="min-h-[200px] flex flex-col"
+            >
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold">Details</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 pb-4">
+                <div className="space-y-3">
+                  {collaboration.location && (
+                    <div className="flex items-center space-x-2 p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                      <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                      <span className="text-xs font-medium text-foreground truncate">{collaboration.location}</span>
+                    </div>
+                  )}
+                  {collaboration.timeline && (
+                    <div className="flex items-center space-x-2 p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                      <Clock className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                      <span className="text-xs font-medium text-foreground truncate">{collaboration.timeline}</span>
+                    </div>
+                  )}
+                  {collaboration.compensation && (
+                    <div className="flex items-center space-x-2 p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
+                      <DollarSign className="h-4 w-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                      <span className="text-xs font-medium text-foreground truncate">{collaboration.compensation}</span>
+                    </div>
+                  )}
+                  {collaboration.maxParticipants > 0 && (
+                    <div className="flex items-center space-x-2 p-2 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
+                      <Users className="h-4 w-4 text-orange-600 dark:text-orange-400 flex-shrink-0" />
+                      <span className="text-xs font-medium text-foreground">
+                        {collaboration.maxParticipants} max
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </BentoItem>
         </BentoGrid>
 
         {/* Tabs for Details/Applications */}
