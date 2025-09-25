@@ -93,8 +93,16 @@ export const ChatContainer: React.FC = () => {
         setLoading(false);
       }
     }, (err: any) => {
-      setError(err.message || 'Failed to fetch conversations');
-      setLoading(false);
+      // Check if this is a permission error due to no conversations
+      if (err.message?.includes('Missing or insufficient permissions')) {
+        console.log('No conversations found for user - this is expected if user has no conversations yet');
+        setConversations([]);
+        setLoading(false);
+        setError(null); // Clear error since this is expected
+      } else {
+        setError(err.message || 'Failed to fetch conversations');
+        setLoading(false);
+      }
     });
 
     // Clean up listener on unmount
@@ -375,6 +383,28 @@ export const ChatContainer: React.FC = () => {
         >
           Reload Page
         </Button>
+      </div>
+    );
+  }
+
+  // Show helpful message when no conversations exist
+  if (!loading && conversations.length === 0) {
+    return (
+      <div className="p-4">
+        <Alert>
+          <AlertTitle>No Conversations Yet</AlertTitle>
+          <AlertDescription>
+            You don't have any conversations yet. Start a conversation with another user or create a test conversation to get started.
+            <div className="mt-4 space-x-2">
+              <Button asChild variant="outline">
+                <a href="/create-test-conversation">Create Test Conversation</a>
+              </Button>
+              <Button asChild variant="outline">
+                <a href="/connections">Find Users to Message</a>
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }
