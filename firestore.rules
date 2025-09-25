@@ -185,7 +185,9 @@ service cloud.firestore {
       }
     }
 
-    // Flat messages collection (for direct queries)
+    // Flat messages collection (for direct queries) - DEPRECATED
+    // This collection is maintained for backward compatibility only
+    // New messages should use nested subcollections: conversations/{conversationId}/messages/{messageId}
     match /messages/{messageId} {
       allow read, create: if isAuthenticated() &&
         resource.data.conversationId != null &&

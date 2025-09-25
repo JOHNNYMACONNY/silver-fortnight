@@ -191,6 +191,8 @@ export const createGroupConversation = async (
 
 /**
  * Get messages for a conversation
+ * Uses nested subcollections: conversations/{conversationId}/messages/{messageId}
+ * This is the preferred and standardized approach for message storage
  */
 export const getConversationMessages = (
   conversationId: string,
