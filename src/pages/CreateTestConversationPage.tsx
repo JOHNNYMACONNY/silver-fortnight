@@ -63,6 +63,8 @@ export const CreateTestConversationPage: React.FC = () => {
       };
 
       console.log('Creating conversation with data:', testConversation);
+      console.log('User ID being used:', userId);
+      console.log('ParticipantIds array:', testConversation.participantIds);
 
       // Add the conversation to Firestore
       const conversationsRef = collection(db, 'conversations');

@@ -91,6 +91,19 @@ export const ChatContainer: React.FC = () => {
       snapshot.forEach((doc) => {
         console.log('ChatContainer: getDocs test - conversation:', doc.id, doc.data());
       });
+      
+      // Also try to get all conversations to compare
+      const allConversationsRef = collection(getSyncFirebaseDb(), 'conversations');
+      const allQuery = query(allConversationsRef);
+      getDocs(allQuery).then((allSnapshot) => {
+        console.log('ChatContainer: ALL conversations test - found', allSnapshot.size, 'conversations');
+        allSnapshot.forEach((doc) => {
+          const data = doc.data();
+          console.log('ChatContainer: ALL conversations - ID:', doc.id, 'participantIds:', data.participantIds, 'participants:', data.participants);
+        });
+      }).catch((allErr) => {
+        console.log('ChatContainer: ALL conversations test failed:', allErr);
+      });
     }).catch((err) => {
       console.log('ChatContainer: getDocs test failed:', err);
     });
@@ -125,6 +138,15 @@ export const ChatContainer: React.FC = () => {
 
         console.log('ChatContainer: Filtered conversations list:', filteredConversations);
         setConversations(filteredConversations);
+        
+        // Show alert for debugging
+        if (filteredConversations.length === 0 && conversationsList.length > 0) {
+          console.log('ChatContainer: DEBUG - Found', conversationsList.length, 'total conversations but 0 after filtering');
+          console.log('ChatContainer: DEBUG - User ID:', currentUser.uid);
+          conversationsList.forEach(conv => {
+            console.log('ChatContainer: DEBUG - Conversation', conv.id, 'participantIds:', conv.participantIds, 'participants:', conv.participants);
+          });
+        }
 
         // If conversationId is provided in URL, set it as active
         if (conversationId) {
@@ -452,8 +474,23 @@ export const ChatContainer: React.FC = () => {
                 <a href="/create-test-conversation">Create Test Conversation</a>
               </Button>
               <Button asChild variant="outline">
+                <a href="/simple-conversation-test">Debug Queries</a>
+              </Button>
+              <Button asChild variant="outline">
+                <a href="/test-messages">Test Messages (getDocs)</a>
+              </Button>
+              <Button asChild variant="outline">
                 <a href="/connections">Find Users to Message</a>
               </Button>
+            </div>
+            <div className="mt-4 text-xs text-muted-foreground">
+              <p>Debug Info:</p>
+              <ul className="list-disc list-inside">
+                <li>Current User: {currentUser?.uid || 'Not authenticated'}</li>
+                <li>Loading: {loading ? 'Yes' : 'No'}</li>
+                <li>Error: {error || 'None'}</li>
+              </ul>
+              <p className="mt-2">Check browser console for detailed logs.</p>
             </div>
           </AlertDescription>
         </Alert>
