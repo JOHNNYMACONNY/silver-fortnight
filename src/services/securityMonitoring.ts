@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+ 
 
 import { AUTH_CONSTANTS } from '../utils/constants';
 import { SecurityEvent, ErrorSeverity, SecurityEventType } from '../types/security';

@@ -5,7 +5,7 @@
  * for uploading, downloading, and managing files.
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+ 
 
 import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from 'firebase/storage';
 import { getSyncFirebaseStorage } from '../../firebase-config';

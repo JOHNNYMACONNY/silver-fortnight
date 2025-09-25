@@ -2,7 +2,7 @@
  * Returns streak milestone thresholds, optionally overridden by env var
  * VITE_STREAK_THRESHOLDS (comma-separated numbers, e.g., "3,7,14,30").
  */
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+ 
 
 export function getStreakMilestoneThresholds(defaults: number[] = [3, 7, 14, 30]): number[] {
   try {

@@ -37,7 +37,6 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
 
   useEffect(() => {
     fetchPortfolio();
-    // eslint-disable-next-line
   }, [userId, isOwnProfile]);
 
   const filteredItems = useMemo(() => {
