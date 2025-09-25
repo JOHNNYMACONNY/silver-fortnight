@@ -57,6 +57,15 @@ const getRequiredEnvVar = (name: string): string => {
       return testValues[name] || 'mock-value';
     }
 
+    // PR environment - use staging project with PR-specific configuration
+    const isPREnvironment = (typeof process !== 'undefined' && process.env.VITE_ENVIRONMENT === 'pr') ||
+                           (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ENVIRONMENT === 'pr');
+    
+    if (isPREnvironment) {
+      // For PR environments, fallback to staging configuration if PR-specific values aren't set
+      console.log('Firebase: Using PR environment configuration');
+    }
+
     // Production/Development environment
     let value: string | undefined;
 
@@ -68,6 +77,16 @@ const getRequiredEnvVar = (name: string): string => {
     // Try Vite environment variables (browser environment)
     if (!value && typeof import.meta !== 'undefined' && import.meta.env) {
       value = (import.meta.env as Record<string, string>)[name];
+    }
+
+    // PR environment fallback to staging values
+    if (!value && isPREnvironment) {
+      const stagingFallbacks: Record<string, string> = {
+        VITE_FIREBASE_PROJECT_ID: 'tradeya-45ede', // Use staging project for PR
+        VITE_FIREBASE_AUTH_DOMAIN: 'tradeya-45ede.firebaseapp.com',
+        VITE_FIREBASE_STORAGE_BUCKET: 'tradeya-45ede.appspot.com'
+      };
+      value = stagingFallbacks[name];
     }
 
     if (!value) {

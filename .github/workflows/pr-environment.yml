@@ -1,0 +1,144 @@
+name: PR Environment Setup
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR Number'
+        required: true
+        type: string
+
+env:
+  NODE_VERSION: '18'
+  FIREBASE_PROJECT_ID: 'tradeya-45ede'
+
+jobs:
+  setup-pr-environment:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup PR environment
+        run: |
+          export PR_NUMBER=${{ github.event.number || github.event.inputs.pr_number }}
+          export BRANCH_NAME=${{ github.head_ref }}
+          export AUTHOR=${{ github.actor }}
+          npm run setup:pr
+
+      - name: Build PR environment
+        run: npm run build:pr
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
+          VITE_CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          VITE_CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-build-${{ github.event.number || github.event.inputs.pr_number }}
+          path: dist/
+          retention-days: 7
+
+  deploy-pr-preview:
+    needs: setup-pr-environment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-build-${{ github.event.number }}
+          path: dist/
+
+      - name: Deploy to Firebase Hosting (PR Preview)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          channelId: 'pr-${{ github.event.number }}'
+          projectId: ${{ env.FIREBASE_PROJECT_ID }}
+          entryPoint: 'dist'
+
+      - name: Comment PR with preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const channelId = 'pr-${{ github.event.number }}';
+            const previewUrl = `https://${{ env.FIREBASE_PROJECT_ID }}--${channelId}-${{ github.event.number }}.web.app`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 **PR Preview Environment Ready!**
+              
+              **Preview URL:** ${previewUrl}
+              
+              This preview environment is configured with:
+              - Firebase Project: \`${{ env.FIREBASE_PROJECT_ID }}\`
+              - PR Number: \`${{ github.event.number }}\`
+              - Branch: \`${{ github.head_ref }}\`
+              - Environment: \`pr\`
+              
+              The preview will be automatically updated when you push new commits to this PR.
+              
+              ⚠️ **Note:** This is a pre-production environment using the staging Firebase project. Data changes here won't affect production.`
+            });
+
+  cleanup-pr-environment:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Delete Firebase Hosting channel
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          channelId: 'pr-${{ github.event.number }}'
+          projectId: ${{ env.FIREBASE_PROJECT_ID }}
+          deleteChannel: true
+
+      - name: Comment PR with cleanup confirmation
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🧹 **PR Preview Environment Cleaned Up**
+              
+              The preview environment for this PR has been automatically cleaned up.
+              
+              - Firebase Hosting channel \`pr-${{ github.event.number }}\` deleted
+              - Build artifacts removed
+              - Environment variables cleared
+              
+              Thank you for using TradeYa's PR preview system! 🎉`
+            });

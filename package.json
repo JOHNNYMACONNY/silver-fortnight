@@ -21,6 +21,8 @@
     "build:parallel": "npm run functions:build:fast & npm run assets:optimize & wait && npm run assets:cleanup && npx vite build",
     "build:ci": "npm run functions:build:fast && npx vite build",
     "build:dev": "npm run assets:optimize && npm run assets:cleanup && npm run functions:build && npx vite build",
+    "build:pr": "npm run setup:pr && npm run functions:build:fast && npx vite build --mode pr",
+    "setup:pr": "npx tsx scripts/setup-pr-environment.ts",
     "functions:build": "cd functions && npm ci --ignore-scripts && npm run build",
     "functions:build:fast": "cd functions && npm ci --prefer-offline --no-audit --ignore-scripts && npm run build",
     "assets:optimize": "node scripts/optimize-assets.cjs",
