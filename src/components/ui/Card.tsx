@@ -35,6 +35,7 @@ export interface CardProps {
   
   // Interaction
   hover?: boolean;
+  reducedHover?: boolean; // Disables movement effects but keeps visual feedback
   interactive?: boolean;
   onClick?: () => void;
   
@@ -114,6 +115,7 @@ export const Card: React.FC<CardProps> = ({
   glow = 'none',
   glowColor = 'auto',
   hover = false,
+  reducedHover = false,
   interactive = false,
   onClick,
   reducedMotion,
@@ -137,7 +139,7 @@ export const Card: React.FC<CardProps> = ({
   }, [reducedMotion]);
   
   // Determine if 3D effects should be active
-  const use3D = tilt && canUse3D && !shouldReduceMotion && !isTouch && !disabled;
+  const use3D = tilt && canUse3D && !shouldReduceMotion && !isTouch && !disabled && !reducedHover;
 
   // Throttled mouse move handler for performance
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -179,9 +181,11 @@ export const Card: React.FC<CardProps> = ({
   const baseStyles = 'rounded-lg transition-all duration-300 ease-out relative overflow-hidden';
   
   const interactionStyles = cn(
-    hover && 'hover:shadow-lg hover:scale-[1.02] transform cursor-pointer',
+    hover && !reducedHover && 'hover:shadow-lg hover:scale-[1.02] transform cursor-pointer',
+    reducedHover && 'hover:shadow-lg cursor-pointer transition-shadow',
     interactive && 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2',
-    onClick && 'cursor-pointer hover:shadow-md transition-shadow'
+    onClick && !reducedHover && 'cursor-pointer hover:shadow-md transition-shadow',
+    onClick && reducedHover && 'cursor-pointer transition-shadow'
   );
 
   // Dynamic glow effect

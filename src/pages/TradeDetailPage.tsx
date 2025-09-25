@@ -594,6 +594,7 @@ export const TradeDetailPage: React.FC = () => {
             glow="subtle"
             glowColor="blue"
             interactive={true}
+            reducedHover={true}
             className="mb-6"
           >
             <CardHeader className="pb-2">
@@ -712,6 +713,7 @@ export const TradeDetailPage: React.FC = () => {
                   glow="subtle"
                   glowColor="green"
                   interactive={true}
+                  reducedHover={true}
                   className="mb-6"
                 >
                   <CardHeader className="pb-2">
@@ -747,6 +749,7 @@ export const TradeDetailPage: React.FC = () => {
                 glow="subtle"
                 glowColor="green"
                 interactive={true}
+                reducedHover={true}
                 className="mb-6"
               >
                 <CardHeader className="pb-2">
@@ -780,6 +783,7 @@ export const TradeDetailPage: React.FC = () => {
               glow="subtle"
               glowColor="blue"
               interactive={true}
+              reducedHover={true}
               className="mb-6"
             >
               <CardHeader className="pb-2">
@@ -800,6 +804,7 @@ export const TradeDetailPage: React.FC = () => {
               glow="subtle"
               glowColor="purple"
               interactive={true}
+              reducedHover={true}
               className="mb-6"
             >
               <CardHeader className="pb-2">
@@ -978,6 +983,7 @@ export const TradeDetailPage: React.FC = () => {
             glow="subtle"
             glowColor="orange"
             interactive={true}
+            reducedHover={true}
             className="mb-6"
           >
             <CardHeader className="pb-2">
@@ -1032,6 +1038,7 @@ export const TradeDetailPage: React.FC = () => {
             glow="subtle"
             glowColor="purple"
             interactive={true}
+            reducedHover={true}
             className="mb-6"
           >
             <CardHeader className="pb-2">
@@ -1405,6 +1412,7 @@ export const TradeDetailPage: React.FC = () => {
               glow="subtle"
               glowColor="blue"
               interactive={true}
+              reducedHover={true}
             >
               <CardContent className="p-6">
                 <TradeProposalDashboard
@@ -1442,6 +1450,7 @@ export const TradeDetailPage: React.FC = () => {
                 glow="subtle"
                 glowColor="orange"
                 interactive={true}
+                reducedHover={true}
                 className="text-center"
               >
                 <CardContent className="p-6">
@@ -1460,6 +1469,7 @@ export const TradeDetailPage: React.FC = () => {
                 glow="subtle"
                 glowColor="orange"
                 interactive={true}
+                reducedHover={true}
               >
                 <CardContent className="p-6">
                   <TradeProposalForm
@@ -1493,6 +1503,7 @@ export const TradeDetailPage: React.FC = () => {
                 glow="subtle"
                 glowColor="purple"
                 interactive={true}
+                reducedHover={true}
               >
                 <CardContent className="p-6">
                   <ReviewForm
@@ -1513,6 +1524,7 @@ export const TradeDetailPage: React.FC = () => {
                 glow="subtle"
                 glowColor="purple"
                 interactive={true}
+                reducedHover={true}
                 className="text-center"
               >
                 <CardContent className="p-6">

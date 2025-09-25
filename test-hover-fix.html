@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hover Effect Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Simulate the reduced hover effect */
+        .card-normal {
+            @apply bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 transition-all duration-300;
+        }
+        
+        .card-normal:hover {
+            @apply shadow-lg -translate-y-1 scale-[1.02];
+        }
+        
+        .card-reduced {
+            @apply bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 transition-all duration-300;
+        }
+        
+        .card-reduced:hover {
+            @apply shadow-lg;
+            /* No translate-y or scale effects */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 p-8">
+    <div class="max-w-4xl mx-auto space-y-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">Hover Effect Comparison</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Normal hover effect -->
+            <div class="space-y-4">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Normal Hover Effect</h2>
+                <div class="card-normal">
+                    <h3 class="text-lg font-medium mb-2">Trade Details Card</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">This card moves up and scales when hovered.</p>
+                    <div class="space-y-2">
+                        <button class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                            Action Button 1
+                        </button>
+                        <button class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
+                            Action Button 2
+                        </button>
+                        <button class="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors">
+                            Action Button 3
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reduced hover effect -->
+            <div class="space-y-4">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Reduced Hover Effect</h2>
+                <div class="card-reduced">
+                    <h3 class="text-lg font-medium mb-2">Trade Details Card</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">This card only changes shadow when hovered - no movement!</p>
+                    <div class="space-y-2">
+                        <button class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                            Action Button 1
+                        </button>
+                        <button class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
+                            Action Button 2
+                        </button>
+                        <button class="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors">
+                            Action Button 3
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-8 p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <h3 class="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Test Instructions</h3>
+            <p class="text-yellow-700 dark:text-yellow-300">
+                Hover over both cards and notice the difference:
+                <br>• <strong>Left card:</strong> Moves up and scales (can make clicking buttons difficult)
+                <br>• <strong>Right card:</strong> Only changes shadow (easier to click buttons)
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -55,4 +55,6 @@ export const themeClasses = {
   // Hover effects
   hoverCard: 'hover:shadow-md hover:-translate-y-1 dark:hover:bg-neutral-700/70 dark:hover:shadow-[0_0_12px_rgba(251,146,60,0.15)]',
   hoverGlassCard: 'hover:shadow-md hover:-translate-y-1 hover:bg-white/80 dark:hover:bg-neutral-800/70',
+  // Reduced movement hover for large cards (trade details, etc.)
+  hoverCardReduced: 'hover:shadow-lg dark:hover:bg-neutral-700/50 dark:hover:shadow-[0_0_8px_rgba(251,146,60,0.1)]',
 }; 
