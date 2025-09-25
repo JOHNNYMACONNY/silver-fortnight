@@ -74,22 +74,28 @@ export const MessageDebugPage: React.FC = () => {
             results.nestedMessages.push(data);
           });
           
-          // 4. Check for flat messages
-          const flatMessagesRef = collection(getSyncFirebaseDb(), 'messages');
-          const flatMessagesQuery = query(
-            flatMessagesRef as any,
-            where('conversationId', '==', specificConversationId),
-            orderBy('createdAt', 'asc')
-          );
-          const flatMessagesSnap = await getDocs(flatMessagesQuery);
-          
-          console.log('Flat messages count:', flatMessagesSnap.size);
-          flatMessagesSnap.forEach(doc => {
-            const raw = doc.data();
-            const data = { id: doc.id, ...(raw && typeof raw === 'object' ? raw : {}) };
-            console.log('Flat message:', doc.id, data);
-            results.flatMessages.push(data);
-          });
+          // 4. Check for flat messages (DEPRECATED - for backward compatibility only)
+          // Note: Flat messages collection is deprecated. Use nested subcollections instead.
+          try {
+            const flatMessagesRef = collection(getSyncFirebaseDb(), 'messages');
+            const flatMessagesQuery = query(
+              flatMessagesRef as any,
+              where('conversationId', '==', specificConversationId),
+              orderBy('createdAt', 'asc')
+            );
+            const flatMessagesSnap = await getDocs(flatMessagesQuery);
+            
+            console.log('Flat messages count:', flatMessagesSnap.size);
+            flatMessagesSnap.forEach(doc => {
+              const raw = doc.data();
+              const data = { id: doc.id, ...(raw && typeof raw === 'object' ? raw : {}) };
+              console.log('Flat message:', doc.id, data);
+              results.flatMessages.push(data);
+            });
+          } catch (flatError) {
+            console.warn('Flat messages query failed (expected for new installations):', flatError);
+            results.flatMessages = [];
+          }
         } else {
           console.log('Specific conversation not found');
         }
@@ -185,7 +191,7 @@ export const MessageDebugPage: React.FC = () => {
           <div className="bg-card shadow overflow-hidden sm:rounded-lg">
             <div className="px-4 py-5 sm:px-6">
               <h2 className="text-lg font-medium text-foreground">Nested Messages</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Found {debugInfo.nestedMessages.length} messages in nested collection</p>
+              <p className="mt-1 text-sm text-muted-foreground">Found {debugInfo.nestedMessages.length} messages in nested collection (PREFERRED)</p>
             </div>
             <div className="border-t border-border px-4 py-5 sm:p-0">
               <div className="sm:divide-y sm:divide-border">
@@ -217,7 +223,7 @@ export const MessageDebugPage: React.FC = () => {
           <div className="bg-card shadow overflow-hidden sm:rounded-lg">
             <div className="px-4 py-5 sm:px-6">
               <h2 className="text-lg font-medium text-foreground">Flat Messages</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Found {debugInfo.flatMessages.length} messages in flat collection</p>
+              <p className="mt-1 text-sm text-muted-foreground">Found {debugInfo.flatMessages.length} messages in flat collection (DEPRECATED)</p>
             </div>
             <div className="border-t border-border px-4 py-5 sm:p-0">
               <div className="sm:divide-y sm:divide-border">

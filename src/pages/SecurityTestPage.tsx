@@ -79,20 +79,20 @@ export const SecurityTestPage: React.FC = () => {
           });
         }
 
-        // Test 4: Access flat messages collection
+        // Test 4: Access flat messages collection (DEPRECATED)
         try {
           const flatMessagesRef = collection(getSyncFirebaseDb(), 'messages');
           const flatMessagesSnap = await getDocs(flatMessagesRef);
           testResults.push({
-            name: 'Access flat messages collection',
+            name: 'Access flat messages collection (DEPRECATED)',
             result: 'Success',
-            details: `Found ${flatMessagesSnap.size} messages`
+            details: `Found ${flatMessagesSnap.size} messages (use nested collections instead)`
           });
         } catch (err: unknown) {
           testResults.push({
-            name: 'Access flat messages collection',
+            name: 'Access flat messages collection (DEPRECATED)',
             result: 'Failed',
-            details: err instanceof Error ? err.message : String(err)
+            details: `${err instanceof Error ? err.message : String(err)} (flat collection deprecated)`
           });
         }
 
