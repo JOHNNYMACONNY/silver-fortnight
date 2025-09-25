@@ -5,6 +5,7 @@
  */
 
 import React, { useState } from 'react';
+import DOMPurify from 'dompurify';
 import { EmbeddedEvidence } from '../../../utils/embedUtils';
 import { getProfileImageUrl } from '../../../utils/imageUtils';
 import {
@@ -127,7 +128,15 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({
           <div className="mt-4">
             <div className="embed-container rounded-lg overflow-hidden border bg-background shadow-sm">
               {evidence.embedCode ? (
-                <div dangerouslySetInnerHTML={{ __html: evidence.embedCode }} />
+                <div dangerouslySetInnerHTML={{ 
+                  __html: DOMPurify.sanitize(evidence.embedCode, {
+                    ALLOWED_TAGS: ['iframe', 'video', 'audio', 'source', 'img', 'div', 'span', 'p', 'br', 'a', 'blockquote'],
+                    ALLOWED_ATTR: ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'controls', 'autoplay', 'loop', 'muted', 'poster', 'alt', 'class', 'style', 'href', 'title', 'data-id'],
+                    ALLOW_DATA_ATTR: false,
+                    FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur', 'onsubmit'],
+                    FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input', 'button', 'link']
+                  })
+                }} />
               ) : (
                 <a
                   href={evidence.originalUrl}

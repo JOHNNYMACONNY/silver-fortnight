@@ -318,6 +318,20 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
     if (enableVoiceSearch) {
       initializeVoiceRecognition();
     }
+
+    // Cleanup function to properly dispose of voice recognition
+    return () => {
+      if (voiceRecognition) {
+        try {
+          voiceRecognition.abort();
+        } catch (error) {
+          // Voice recognition might already be stopped/cleaned up
+          console.debug('Voice recognition cleanup:', error);
+        }
+        setVoiceRecognition(null);
+        setIsVoiceRecording(false);
+      }
+    };
   }, [enableVoiceSearch, initializeVoiceRecognition]);
 
   const handleFormSubmit = (e: React.FormEvent) => {
