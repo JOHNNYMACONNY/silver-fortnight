@@ -6,6 +6,7 @@
 
 import React, { useState } from 'react';
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../AuthContext';
 import { ChatConversationList } from './ChatConversationList';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatInput } from './ChatInput';
@@ -28,6 +29,7 @@ export const ChatContainer: React.FC = () => {
   const [selectedConversation, setSelectedConversation] = useState<ChatConversation | null>(null);
   const [showConversationList, setShowConversationList] = useState(true);
   const { addToast } = useToast();
+  const { currentUser } = useAuth();
   
   // Handle new conversation
   const handleNewConversation = () => {
@@ -43,7 +45,7 @@ export const ChatContainer: React.FC = () => {
     
     // For direct conversations, show the other participant's name
     const otherParticipant = conversation.participants.find(
-      participant => participant.id !== 'current-user-id' // Replace with actual current user ID
+      participant => participant.id !== currentUser?.uid
     );
     
     return otherParticipant?.name || 'Unknown';
