@@ -133,7 +133,7 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
 
       {/* Basic Information Section */}
       <div className="space-y-8">
-        <div className="max-w-4xl mx-auto">
+        <div>
           <h3 className="text-lg font-semibold text-foreground mb-6 text-center">Basic Information</h3>
           <div className="space-y-6">
             <div className="space-y-2">
@@ -162,41 +162,43 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="category" className="text-sm font-medium">Category *</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger id="category" className="text-base h-12">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {COLLABORATION_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="category" className="text-sm font-medium">Category *</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger id="category" className="text-base h-12">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COLLABORATION_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="timeline" className="text-sm font-medium">Timeline *</Label>
+                <Input
+                  id="timeline"
+                  type="text"
+                  value={timeline}
+                  onChange={(e) => setTimeline(e.target.value)}
+                  required
+                  placeholder="e.g. 2-3 weeks, 1-2 months"
+                  className="text-base h-12"
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Details Section */}
-        <div className="max-w-5xl mx-auto">
+        <div>
           <h3 className="text-lg font-semibold text-foreground mb-6 text-center">Collaboration Details</h3>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="space-y-2">
-              <Label htmlFor="timeline" className="text-sm font-medium">Timeline *</Label>
-              <Input
-                id="timeline"
-                type="text"
-                value={timeline}
-                onChange={(e) => setTimeline(e.target.value)}
-                required
-                placeholder="e.g. 2-3 weeks, 1-2 months"
-                className="text-base h-12"
-              />
-            </div>
-
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="compensation" className="text-sm font-medium">Compensation *</Label>
               <Input
@@ -231,7 +233,7 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 lg:col-span-2">
               <Label htmlFor="skillsNeeded" className="text-sm font-medium">Skills Needed *</Label>
               <Input
                 id="skillsNeeded"
@@ -247,7 +249,7 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
         </div>
 
         {/* Media Section */}
-        <div className="max-w-4xl mx-auto">
+        <div>
           <h3 className="text-lg font-semibold text-foreground mb-6 text-center">Collaboration Media</h3>
           <div className="space-y-4">
             <Label className="text-sm font-medium">Collaboration Images</Label>
