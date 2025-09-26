@@ -126,18 +126,18 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {error && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mx-auto max-w-2xl">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {/* Basic Information Section */}
-      <div className="space-y-6">
-        <div>
-          <h3 className="text-lg font-semibold text-foreground mb-4">Basic Information</h3>
+      <div className="space-y-8">
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-lg font-semibold text-foreground mb-6 text-center">Basic Information</h3>
           <div className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="title">Collaboration Title *</Label>
+              <Label htmlFor="title" className="text-sm font-medium">Collaboration Title *</Label>
               <Input
                 id="title"
                 type="text"
@@ -145,12 +145,12 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
                 onChange={(e) => setTitle(e.target.value)}
                 required
                 placeholder="e.g. Website Redesign for Small Business"
-                className="text-base"
+                className="text-base h-12"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Collaboration Description *</Label>
+              <Label htmlFor="description" className="text-sm font-medium">Collaboration Description *</Label>
               <Textarea
                 id="description"
                 value={description}
@@ -158,14 +158,14 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
                 required
                 rows={6}
                 placeholder="Describe your collaboration in detail..."
-                className="text-base"
+                className="text-base resize-none"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">Category *</Label>
+              <Label htmlFor="category" className="text-sm font-medium">Category *</Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger id="category" className="text-base">
+                <SelectTrigger id="category" className="text-base h-12">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -181,11 +181,11 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
         </div>
 
         {/* Details Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-foreground mb-4">Collaboration Details</h3>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="max-w-5xl mx-auto">
+          <h3 className="text-lg font-semibold text-foreground mb-6 text-center">Collaboration Details</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-2">
-              <Label htmlFor="timeline">Timeline *</Label>
+              <Label htmlFor="timeline" className="text-sm font-medium">Timeline *</Label>
               <Input
                 id="timeline"
                 type="text"
@@ -193,12 +193,12 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
                 onChange={(e) => setTimeline(e.target.value)}
                 required
                 placeholder="e.g. 2-3 weeks, 1-2 months"
-                className="text-base"
+                className="text-base h-12"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="compensation">Compensation *</Label>
+              <Label htmlFor="compensation" className="text-sm font-medium">Compensation *</Label>
               <Input
                 id="compensation"
                 type="text"
@@ -206,12 +206,12 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
                 onChange={(e) => setCompensation(e.target.value)}
                 required
                 placeholder="e.g. $500-1000, Skill exchange, Negotiable"
-                className="text-base"
+                className="text-base h-12"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="location" className="text-sm font-medium">Location</Label>
               <Input
                 id="location"
                 type="text"
@@ -219,9 +219,9 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="e.g. New York, NY"
                 disabled={isRemote}
-                className="text-base"
+                className="text-base h-12"
               />
-              <div className="flex items-center space-x-2 mt-2">
+              <div className="flex items-center space-x-2 mt-3">
                 <Checkbox
                   id="isRemote"
                   checked={isRemote}
@@ -232,7 +232,7 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="skillsNeeded">Skills Needed *</Label>
+              <Label htmlFor="skillsNeeded" className="text-sm font-medium">Skills Needed *</Label>
               <Input
                 id="skillsNeeded"
                 type="text"
@@ -240,17 +240,17 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
                 onChange={(e) => setSkillsNeeded(e.target.value)}
                 required
                 placeholder="e.g. React, UI Design, Content Writing (comma separated)"
-                className="text-base"
+                className="text-base h-12"
               />
             </div>
           </div>
         </div>
 
         {/* Media Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-foreground mb-4">Collaboration Media</h3>
-          <div className="space-y-2">
-            <Label>Collaboration Images</Label>
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-lg font-semibold text-foreground mb-6 text-center">Collaboration Media</h3>
+          <div className="space-y-4">
+            <Label className="text-sm font-medium">Collaboration Images</Label>
             <MultipleImageUploader
               onImagesChange={setImages}
               initialImageUrls={images}
@@ -260,9 +260,9 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
         </div>
       </div>
 
-      <div className="flex justify-end space-x-4 pt-6 border-t border-border">
+      <div className="flex justify-center space-x-4 pt-8 border-t border-border">
           {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" variant="outline" onClick={onCancel} size="lg">
               Cancel
             </Button>
           )}
