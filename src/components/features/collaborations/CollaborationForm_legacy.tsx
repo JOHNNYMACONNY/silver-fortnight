@@ -124,75 +124,83 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
   };
 
   return (
-    <Card>
-      <form onSubmit={handleSubmit}>
-        <CardHeader>
-          <CardTitle>{collaboration ? 'Edit Collaboration' : 'Create a New Collaboration'}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+    <form onSubmit={handleSubmit} className="space-y-8">
+      {error && (
+        <Alert variant="destructive" className="mx-auto max-w-2xl">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-          <div className="space-y-2">
-            <Label htmlFor="title">Collaboration Title *</Label>
-            <Input
-              id="title"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              placeholder="e.g. Website Redesign for Small Business"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Collaboration Description *</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-              rows={5}
-              placeholder="Describe your collaboration in detail..."
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Basic Information Section */}
+      <div className="space-y-8">
+        <div>
+          <h3 className="text-lg font-semibold text-foreground mb-6 text-center">Basic Information</h3>
+          <div className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="category">Category *</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {COLLABORATION_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="timeline">Timeline *</Label>
+              <Label htmlFor="title" className="text-sm font-medium">Collaboration Title *</Label>
               <Input
-                id="timeline"
+                id="title"
                 type="text"
-                value={timeline}
-                onChange={(e) => setTimeline(e.target.value)}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 required
-                placeholder="e.g. 2-3 weeks, 1-2 months"
+                placeholder="e.g. Website Redesign for Small Business"
+                className="text-base h-12"
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="compensation">Compensation *</Label>
+              <Label htmlFor="description" className="text-sm font-medium">Collaboration Description *</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+                rows={6}
+                placeholder="Describe your collaboration in detail..."
+                className="text-base resize-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="category" className="text-sm font-medium">Category *</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger id="category" className="text-base h-12">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COLLABORATION_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="timeline" className="text-sm font-medium">Timeline *</Label>
+                <Input
+                  id="timeline"
+                  type="text"
+                  value={timeline}
+                  onChange={(e) => setTimeline(e.target.value)}
+                  required
+                  placeholder="e.g. 2-3 weeks, 1-2 months"
+                  className="text-base h-12"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Details Section */}
+        <div>
+          <h3 className="text-lg font-semibold text-foreground mb-6 text-center">Collaboration Details</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="compensation" className="text-sm font-medium">Compensation *</Label>
               <Input
                 id="compensation"
                 type="text"
@@ -200,11 +208,12 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
                 onChange={(e) => setCompensation(e.target.value)}
                 required
                 placeholder="e.g. $500-1000, Skill exchange, Negotiable"
+                className="text-base h-12"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="location" className="text-sm font-medium">Location</Label>
               <Input
                 id="location"
                 type="text"
@@ -212,51 +221,58 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="e.g. New York, NY"
                 disabled={isRemote}
+                className="text-base h-12"
               />
-              <div className="flex items-center space-x-2 mt-2">
+              <div className="flex items-center space-x-2 mt-3">
                 <Checkbox
                   id="isRemote"
                   checked={isRemote}
                   onCheckedChange={(checked) => setIsRemote(Boolean(checked))}
                 />
-                <Label htmlFor="isRemote">This is a remote collaboration</Label>
+                <Label htmlFor="isRemote" className="text-sm">This is a remote collaboration</Label>
               </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="skillsNeeded">Skills Needed *</Label>
-            <Input
-              id="skillsNeeded"
-              type="text"
-              value={skillsNeeded}
-              onChange={(e) => setSkillsNeeded(e.target.value)}
-              required
-              placeholder="e.g. React, UI Design, Content Writing (comma separated)"
-            />
+            <div className="space-y-2 lg:col-span-2">
+              <Label htmlFor="skillsNeeded" className="text-sm font-medium">Skills Needed *</Label>
+              <Input
+                id="skillsNeeded"
+                type="text"
+                value={skillsNeeded}
+                onChange={(e) => setSkillsNeeded(e.target.value)}
+                required
+                placeholder="e.g. React, UI Design, Content Writing (comma separated)"
+                className="text-base h-12"
+              />
+            </div>
           </div>
+        </div>
 
-          <div className="space-y-2">
-            <Label>Collaboration Images</Label>
+        {/* Media Section */}
+        <div>
+          <h3 className="text-lg font-semibold text-foreground mb-6 text-center">Collaboration Media</h3>
+          <div className="space-y-4">
+            <Label className="text-sm font-medium">Collaboration Images</Label>
             <MultipleImageUploader
               onImagesChange={setImages}
               initialImageUrls={images}
               folder={`collaborations/${collaboration?.id || 'new'}`}
             />
           </div>
-        </CardContent>
-        <CardFooter className="flex justify-end space-x-2">
+        </div>
+      </div>
+
+      <div className="flex justify-center space-x-4 pt-8 border-t border-border">
           {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" variant="outline" onClick={onCancel} size="lg">
               Cancel
             </Button>
           )}
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading} size="lg">
             {loading ? 'Saving...' : collaboration ? 'Save Changes' : 'Create Collaboration'}
           </Button>
-        </CardFooter>
+        </div>
       </form>
-    </Card>
   );
 };
 
