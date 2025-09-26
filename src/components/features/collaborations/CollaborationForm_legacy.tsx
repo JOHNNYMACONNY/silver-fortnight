@@ -258,7 +258,9 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
             />
           </div>
         </div>
-        <div className="flex justify-end space-x-4 pt-6 border-t border-border">
+      </div>
+
+      <div className="flex justify-end space-x-4 pt-6 border-t border-border">
           {onCancel && (
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
