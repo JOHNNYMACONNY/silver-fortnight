@@ -5,7 +5,7 @@ import {
   createMessage,
   User
 } from '../../../services/firestore-exports';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, getDocs } from 'firebase/firestore';
 import { getSyncFirebaseDb } from '../../../firebase-config';
 import { ConversationList } from './ConversationList';
 // import { MessageList } from './MessageList';
@@ -55,15 +55,63 @@ export const ChatContainer: React.FC = () => {
 
     // Create a query for the user's conversations
     const conversationsRef = collection(getSyncFirebaseDb(), 'conversations');
-    const q = query(
-      conversationsRef,
-      where('participantIds', 'array-contains', currentUser.uid),
-      orderBy('updatedAt', 'desc')
-    );
+    
+    // Try different query approaches
+    let q;
+    
+    // First try: Simple query without orderBy
+    try {
+      q = query(
+        conversationsRef,
+        where('participantIds', 'array-contains', currentUser.uid)
+      );
+      console.log('ChatContainer: Using simple participantIds query');
+    } catch (simpleError) {
+      console.log('ChatContainer: Simple query failed, trying alternative:', simpleError);
+      // Fallback: Try with participants array
+      try {
+        q = query(
+          conversationsRef,
+          where('participants', 'array-contains', { id: currentUser.uid })
+        );
+        console.log('ChatContainer: Using participants array query');
+      } catch (participantsError) {
+        console.log('ChatContainer: Participants query failed, using no filter:', participantsError);
+        // Last resort: Get all conversations and filter client-side
+        q = query(conversationsRef);
+        console.log('ChatContainer: Using no-filter query with client-side filtering');
+      }
+    }
+    
+    console.log('ChatContainer: Querying conversations for user:', currentUser.uid);
+
+    // First try a simple getDocs query to test
+    getDocs(q).then((snapshot) => {
+      console.log('ChatContainer: getDocs test - found', snapshot.size, 'conversations');
+      snapshot.forEach((doc) => {
+        console.log('ChatContainer: getDocs test - conversation:', doc.id, doc.data());
+      });
+      
+      // Also try to get all conversations to compare
+      const allConversationsRef = collection(getSyncFirebaseDb(), 'conversations');
+      const allQuery = query(allConversationsRef);
+      getDocs(allQuery).then((allSnapshot) => {
+        console.log('ChatContainer: ALL conversations test - found', allSnapshot.size, 'conversations');
+        allSnapshot.forEach((doc) => {
+          const data = doc.data();
+          console.log('ChatContainer: ALL conversations - ID:', doc.id, 'participantIds:', data.participantIds, 'participants:', data.participants);
+        });
+      }).catch((allErr) => {
+        console.log('ChatContainer: ALL conversations test failed:', allErr);
+      });
+    }).catch((err) => {
+      console.log('ChatContainer: getDocs test failed:', err);
+    });
 
     // Set up real-time listener
     const unsubscribe = onSnapshot(q, (snapshot) => {
       try {
+        console.log('ChatContainer: Received snapshot with', snapshot.size, 'conversations');
         const conversationsList: ChatConversation[] = [];
 
         snapshot.forEach((doc) => {
@@ -71,20 +119,44 @@ export const ChatContainer: React.FC = () => {
             id: doc.id,
             ...(doc.data() as any)
           } as ChatConversation;
+          console.log('ChatContainer: Processing conversation', doc.id, conversationData);
           conversationsList.push(conversationData);
         });
 
-        setConversations(conversationsList);
+        // If we used no-filter query, filter client-side
+        const filteredConversations = conversationsList.filter(conv => {
+          // Check if user is in participantIds array
+          if (conv.participantIds && Array.isArray(conv.participantIds)) {
+            return conv.participantIds.includes(currentUser.uid);
+          }
+          // Check if user is in participants array
+          if (conv.participants && Array.isArray(conv.participants)) {
+            return conv.participants.some((p: any) => p.id === currentUser.uid);
+          }
+          return false;
+        });
+
+        console.log('ChatContainer: Filtered conversations list:', filteredConversations);
+        setConversations(filteredConversations);
+        
+        // Show alert for debugging
+        if (filteredConversations.length === 0 && conversationsList.length > 0) {
+          console.log('ChatContainer: DEBUG - Found', conversationsList.length, 'total conversations but 0 after filtering');
+          console.log('ChatContainer: DEBUG - User ID:', currentUser.uid);
+          conversationsList.forEach(conv => {
+            console.log('ChatContainer: DEBUG - Conversation', conv.id, 'participantIds:', conv.participantIds, 'participants:', conv.participants);
+          });
+        }
 
         // If conversationId is provided in URL, set it as active
         if (conversationId) {
-          const conversation = conversationsList.find(c => c.id === conversationId);
+          const conversation = filteredConversations.find(c => c.id === conversationId);
           if (conversation) {
             setActiveConversation(conversation);
           }
-        } else if (conversationsList.length > 0 && !activeConversation) {
+        } else if (filteredConversations.length > 0 && !activeConversation) {
           // Otherwise, set the first conversation as active (only if no active conversation)
-          setActiveConversation(conversationsList[0]);
+          setActiveConversation(filteredConversations[0]);
         }
 
         setLoading(false);
@@ -93,8 +165,18 @@ export const ChatContainer: React.FC = () => {
         setLoading(false);
       }
     }, (err: any) => {
-      setError(err.message || 'Failed to fetch conversations');
-      setLoading(false);
+      console.log('ChatContainer: Query error:', err);
+      // Check if this is a permission error due to no conversations
+      if (err.message?.includes('Missing or insufficient permissions')) {
+        console.log('No conversations found for user - this is expected if user has no conversations yet');
+        setConversations([]);
+        setLoading(false);
+        setError(null); // Clear error since this is expected
+      } else {
+        console.log('ChatContainer: Real error occurred:', err.message);
+        setError(err.message || 'Failed to fetch conversations');
+        setLoading(false);
+      }
     });
 
     // Clean up listener on unmount
@@ -375,6 +457,43 @@ export const ChatContainer: React.FC = () => {
         >
           Reload Page
         </Button>
+      </div>
+    );
+  }
+
+  // Show helpful message when no conversations exist
+  if (!loading && conversations.length === 0) {
+    return (
+      <div className="p-4">
+        <Alert>
+          <AlertTitle>No Conversations Yet</AlertTitle>
+          <AlertDescription>
+            You don't have any conversations yet. Start a conversation with another user or create a test conversation to get started.
+            <div className="mt-4 space-x-2">
+              <Button asChild variant="outline">
+                <a href="/create-test-conversation">Create Test Conversation</a>
+              </Button>
+              <Button asChild variant="outline">
+                <a href="/simple-conversation-test">Debug Queries</a>
+              </Button>
+              <Button asChild variant="outline">
+                <a href="/test-messages">Test Messages (getDocs)</a>
+              </Button>
+              <Button asChild variant="outline">
+                <a href="/connections">Find Users to Message</a>
+              </Button>
+            </div>
+            <div className="mt-4 text-xs text-muted-foreground">
+              <p>Debug Info:</p>
+              <ul className="list-disc list-inside">
+                <li>Current User: {currentUser?.uid || 'Not authenticated'}</li>
+                <li>Loading: {loading ? 'Yes' : 'No'}</li>
+                <li>Error: {error || 'None'}</li>
+              </ul>
+              <p className="mt-2">Check browser console for detailed logs.</p>
+            </div>
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }

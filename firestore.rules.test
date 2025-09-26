@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // TEMPORARY PERMISSIVE RULES FOR TESTING
+    // These rules allow all authenticated users to read/write all documents
+    // WARNING: This is NOT secure for production use!
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Allow all authenticated users to read/write all documents
+    match /{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}
