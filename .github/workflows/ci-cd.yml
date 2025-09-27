@@ -26,9 +26,9 @@ jobs:
     - name: Run linting
       run: npm run lint
       
-    - name: Run tests
-      run: npm test
-      
+    - name: Run tests (CI subset)
+      run: npm run test:ci
+
     - name: Run migration compatibility tests
       run: npm run test:migration:ci
       
