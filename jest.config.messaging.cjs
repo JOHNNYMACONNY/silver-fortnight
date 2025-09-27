@@ -4,7 +4,6 @@ module.exports = {
   // Do NOT load jsdom-specific setup to avoid referencing window in Node env
   setupFilesAfterEnv: [],
   moduleNameMapper: {
-    '^@firebase/rules-unit-testing$': '<rootDir>/src/types/firebase-test.cjs',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   transform: {
