@@ -1,33 +1,59 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { useAuth } from '../../../AuthContext';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import {
-  createMessage,
-  User
-} from '../../../services/firestore-exports';
-import { collection, query, where, orderBy, onSnapshot, getDocs } from 'firebase/firestore';
-import { getSyncFirebaseDb } from '../../../firebase-config';
-import { ConversationList } from './ConversationList';
+  useParams,
+  Link,
+  useSearchParams,
+  useNavigate,
+} from "react-router-dom";
+import { useAuth } from "../../../AuthContext";
+import { createMessage, User } from "../../../services/firestore-exports";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  getDocs,
+} from "firebase/firestore";
+import { getSyncFirebaseDb } from "../../../firebase-config";
+import { ConversationList } from "./ConversationList";
 // import { MessageList } from './MessageList';
-import { MessageListNew } from './MessageListNew';
-import { MessageInput } from './MessageInput';
-import { MessageHeader } from './MessageHeader';
-import { fetchMultipleUsers } from '../../../utils/userUtils';
-import { useMessageContext } from '../../../contexts/MessageContext';
-import { markMessagesAsRead as markConversationAsRead } from '../../../services/chat/chatService';
-import { ChatConversation, ChatMessage } from '../../../types/chat';
-import { ToastContext } from '../../../contexts/ToastContext';
-import { performQuickHealthCheck, getHealthStatus } from '../../../utils/firebaseHealthCheck';
-import { createRobustListener, FirebaseConnectionManager } from '../../../utils/firebaseConnectionManager';
-import { testMessagesDirectly } from '../../../utils/testMessagesDirectly';
+import { MessageListNew } from "./MessageListNew";
+import { MessageInput } from "./MessageInput";
+import { MessageHeader } from "./MessageHeader";
+import { fetchMultipleUsers } from "../../../utils/userUtils";
+import { useMessageContext } from "../../../contexts/MessageContext";
+import {
+  markMessagesAsRead as markConversationAsRead,
+  getUserConversations,
+  getConversationMessages,
+  getOrCreateDirectConversation,
+} from "../../../services/chat/chatService";
+import { ChatConversation, ChatMessage } from "../../../types/chat";
+import { ToastContext } from "../../../contexts/ToastContext";
+import {
+  performQuickHealthCheck,
+  getHealthStatus,
+} from "../../../utils/firebaseHealthCheck";
+import {
+  createRobustListener,
+  FirebaseConnectionManager,
+} from "../../../utils/firebaseConnectionManager";
+import { testMessagesDirectly } from "../../../utils/testMessagesDirectly";
 // import { loadMessagesOffline } from '../../../utils/offlineMessageLoader';
 // import { resetFirebaseConnections, wasResetRequested, clearResetFlags } from '../../../utils/firebaseConnectionReset';
-import { Card } from '../../ui/Card';
-import { Alert, AlertDescription, AlertTitle } from '../../ui/Alert';
-import { Skeleton } from '../../ui/skeletons/Skeleton';
-import { Button } from '../../ui/Button';
-import { ArrowLeft } from 'lucide-react';
-import { themeClasses } from '../../../utils/themeUtils';
+import { Card } from "../../ui/Card";
+import { Alert, AlertDescription, AlertTitle } from "../../ui/Alert";
+import { Skeleton } from "../../ui/skeletons/Skeleton";
+import { Button } from "../../ui/Button";
+import { ArrowLeft } from "lucide-react";
+import { themeClasses } from "../../../utils/themeUtils";
 
 export const ChatContainer: React.FC = () => {
   const { conversationId } = useParams<{ conversationId?: string }>();
@@ -35,7 +61,8 @@ export const ChatContainer: React.FC = () => {
   const { markMessagesAsRead, isUserParticipant } = useMessageContext();
   const toastContext = React.useContext(ToastContext);
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
-  const [activeConversation, setActiveConversation] = useState<ChatConversation | null>(null);
+  const [activeConversation, setActiveConversation] =
+    useState<ChatConversation | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
@@ -46,228 +73,150 @@ export const ChatContainer: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastMarkAsReadAttemptRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch user's conversations with real-time updates
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // Deep-linking: /messages/new?to=<userId>
+  useEffect(() => {
+    if (!currentUser) return;
+    const targetUserId = searchParams.get("to");
+    if (!targetUserId) return;
+
+    (async () => {
+      try {
+        const users = await fetchMultipleUsers([targetUserId]);
+        const target = users[targetUserId]
+          ? {
+              id: targetUserId,
+              name: users[targetUserId].displayName || "User",
+              avatar:
+                users[targetUserId].profilePicture ||
+                users[targetUserId].photoURL ||
+                null,
+            }
+          : { id: targetUserId, name: "User" };
+        const me = {
+          id: currentUser.uid,
+          name: currentUser.displayName || "You",
+          avatar: (currentUser as any)?.photoURL || null,
+        };
+        const convo = await getOrCreateDirectConversation(me, target);
+        setActiveConversation(convo);
+        try {
+          navigate(`/messages/${convo.id}`, { replace: true });
+        } catch {}
+      } catch (e) {
+        console.error(
+          "ChatContainer: failed to open deep-linked conversation",
+          e
+        );
+      }
+    })();
+  }, [currentUser, searchParams, navigate]);
+
+  // Fetch user's conversations with canonical service
   useEffect(() => {
     if (!currentUser) return;
 
     setLoading(true);
     setError(null);
 
-    // Create a query for the user's conversations
-    const conversationsRef = collection(getSyncFirebaseDb(), 'conversations');
-    
-    // Try different query approaches
-    let q;
-    
-    // First try: Simple query without orderBy
-    try {
-      q = query(
-        conversationsRef,
-        where('participantIds', 'array-contains', currentUser.uid)
-      );
-      console.log('ChatContainer: Using simple participantIds query');
-    } catch (simpleError) {
-      console.log('ChatContainer: Simple query failed, trying alternative:', simpleError);
-      // Fallback: Try with participants array
+    const unsubscribe = getUserConversations(currentUser.uid, (list) => {
       try {
-        q = query(
-          conversationsRef,
-          where('participants', 'array-contains', { id: currentUser.uid })
-        );
-        console.log('ChatContainer: Using participants array query');
-      } catch (participantsError) {
-        console.log('ChatContainer: Participants query failed, using no filter:', participantsError);
-        // Last resort: Get all conversations and filter client-side
-        q = query(conversationsRef);
-        console.log('ChatContainer: Using no-filter query with client-side filtering');
-      }
-    }
-    
-    console.log('ChatContainer: Querying conversations for user:', currentUser.uid);
+        setConversations(list);
 
-    // First try a simple getDocs query to test
-    getDocs(q).then((snapshot) => {
-      console.log('ChatContainer: getDocs test - found', snapshot.size, 'conversations');
-      snapshot.forEach((doc) => {
-        console.log('ChatContainer: getDocs test - conversation:', doc.id, doc.data());
-      });
-      
-      // Also try to get all conversations to compare
-      const allConversationsRef = collection(getSyncFirebaseDb(), 'conversations');
-      const allQuery = query(allConversationsRef);
-      getDocs(allQuery).then((allSnapshot) => {
-        console.log('ChatContainer: ALL conversations test - found', allSnapshot.size, 'conversations');
-        allSnapshot.forEach((doc) => {
-          const data = doc.data();
-          console.log('ChatContainer: ALL conversations - ID:', doc.id, 'participantIds:', data.participantIds, 'participants:', data.participants);
-        });
-      }).catch((allErr) => {
-        console.log('ChatContainer: ALL conversations test failed:', allErr);
-      });
-    }).catch((err) => {
-      console.log('ChatContainer: getDocs test failed:', err);
-    });
-
-    // Set up real-time listener
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      try {
-        console.log('ChatContainer: Received snapshot with', snapshot.size, 'conversations');
-        const conversationsList: ChatConversation[] = [];
-
-        snapshot.forEach((doc) => {
-          const conversationData = {
-            id: doc.id,
-            ...(doc.data() as any)
-          } as ChatConversation;
-          console.log('ChatContainer: Processing conversation', doc.id, conversationData);
-          conversationsList.push(conversationData);
-        });
-
-        // If we used no-filter query, filter client-side
-        const filteredConversations = conversationsList.filter(conv => {
-          // Check if user is in participantIds array
-          if (conv.participantIds && Array.isArray(conv.participantIds)) {
-            return conv.participantIds.includes(currentUser.uid);
-          }
-          // Check if user is in participants array
-          if (conv.participants && Array.isArray(conv.participants)) {
-            return conv.participants.some((p: any) => p.id === currentUser.uid);
-          }
-          return false;
-        });
-
-        console.log('ChatContainer: Filtered conversations list:', filteredConversations);
-        setConversations(filteredConversations);
-        
-        // Show alert for debugging
-        if (filteredConversations.length === 0 && conversationsList.length > 0) {
-          console.log('ChatContainer: DEBUG - Found', conversationsList.length, 'total conversations but 0 after filtering');
-          console.log('ChatContainer: DEBUG - User ID:', currentUser.uid);
-          conversationsList.forEach(conv => {
-            console.log('ChatContainer: DEBUG - Conversation', conv.id, 'participantIds:', conv.participantIds, 'participants:', conv.participants);
-          });
-        }
-
-        // If conversationId is provided in URL, set it as active
         if (conversationId) {
-          const conversation = filteredConversations.find(c => c.id === conversationId);
-          if (conversation) {
-            setActiveConversation(conversation);
-          }
-        } else if (filteredConversations.length > 0 && !activeConversation) {
-          // Otherwise, set the first conversation as active (only if no active conversation)
-          setActiveConversation(filteredConversations[0]);
+          const found = list.find((c) => c.id === conversationId);
+          if (found) setActiveConversation(found);
+        } else if (list.length > 0 && !activeConversation) {
+          setActiveConversation(list[0]);
         }
 
         setLoading(false);
       } catch (err: any) {
-        setError(err.message || 'Failed to process conversations');
-        setLoading(false);
-      }
-    }, (err: any) => {
-      console.log('ChatContainer: Query error:', err);
-      // Check if this is a permission error due to no conversations
-      if (err.message?.includes('Missing or insufficient permissions')) {
-        console.log('No conversations found for user - this is expected if user has no conversations yet');
-        setConversations([]);
-        setLoading(false);
-        setError(null); // Clear error since this is expected
-      } else {
-        console.log('ChatContainer: Real error occurred:', err.message);
-        setError(err.message || 'Failed to fetch conversations');
+        setError(err.message || "Failed to process conversations");
         setLoading(false);
       }
     });
 
     // Clean up listener on unmount
     return () => unsubscribe();
-  }, [currentUser, conversationId]);
+  }, [currentUser, conversationId, activeConversation]);
 
-    // Load messages using offline approach to avoid Firebase internal assertion failures
-    useEffect(() => {
-      if (!activeConversation || !currentUser) {
-        setMessages([]);
-        return;
-      }
+  // Load messages using canonical service
+  useEffect(() => {
+    if (!activeConversation || !currentUser) {
+      setMessages([]);
+      return;
+    }
 
-      setLoading(true);
-      setError(null);
+    setLoading(true);
+    setError(null);
 
-      // Check if a Firebase reset was recently requested
-      // if (wasResetRequested()) {
-      //   console.log('ChatContainer: Firebase reset was requested, clearing flags');
-      //   clearResetFlags();
-      // }
-
-      console.log('ChatContainer: Setting up real-time message listener...');
-      
-      // Use real-time listener for messages
-      const messagesRef = collection(getSyncFirebaseDb(), 'conversations', activeConversation.id!, 'messages');
-      const q = query(messagesRef, orderBy('createdAt', 'asc'));
-      
-      const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = getConversationMessages(
+      activeConversation.id!,
+      (messagesList) => {
         try {
-          const messagesList: ChatMessage[] = [];
-          
-          snapshot.forEach((doc) => {
-            const messageData = {
-              id: doc.id,
-              ...doc.data()
-            } as ChatMessage;
-            messagesList.push(messageData);
-          });
-          
-          console.log(`ChatContainer: Received ${messagesList.length} messages via real-time listener`);
           setMessages(messagesList);
           setLoading(false);
           setError(null);
-          
-          // Mark messages as read if needed
-          if (messagesList.length > 0 && isUserParticipant(activeConversation)) {
-            const unreadMessageIds = messagesList
-              .filter(msg => !msg.readBy?.includes(currentUser.uid) && msg.senderId !== currentUser.uid)
-              .map(msg => msg.id)
-              .filter(Boolean);
-            
-            if (unreadMessageIds.length > 0) {
+
+          // Debounced mark-as-read using service (now safe after fix)
+          if (
+            messagesList.length > 0 &&
+            isUserParticipant(activeConversation)
+          ) {
+            const hasUnread = messagesList.some(
+              (msg) =>
+                !msg.readBy?.includes(currentUser.uid) &&
+                msg.senderId !== currentUser.uid
+            );
+            if (hasUnread) {
               const markAsReadDebounced = () => {
-                markConversationAsRead(activeConversation.id!, currentUser.uid)
-                  .catch((error: any) => {
-                    console.log('Error marking messages as read:', error.message);
-                    if (!error.message?.includes('permission') && toastContext) {
-                      toastContext.addToast('error', 'Failed to mark messages as read');
-                    }
-                  });
+                markConversationAsRead(
+                  activeConversation.id!,
+                  currentUser.uid
+                ).catch((error: any) => {
+                  console.log("Error marking messages as read:", error.message);
+                  if (!error.message?.includes("permission") && toastContext) {
+                    toastContext.addToast(
+                      "error",
+                      "Failed to mark messages as read"
+                    );
+                  }
+                });
               };
 
               if (lastMarkAsReadAttemptRef.current) {
                 clearTimeout(lastMarkAsReadAttemptRef.current);
               }
 
-              lastMarkAsReadAttemptRef.current = setTimeout(markAsReadDebounced, 1000);
+              lastMarkAsReadAttemptRef.current = setTimeout(
+                markAsReadDebounced,
+                1000
+              );
             }
           }
         } catch (err: any) {
-          console.error('ChatContainer: Error processing real-time messages:', err);
-          setError(err.message || 'Failed to process messages');
+          console.error(
+            "ChatContainer: Error processing real-time messages:",
+            err
+          );
+          setError(err.message || "Failed to process messages");
           setLoading(false);
         }
-      }, (err: any) => {
-        console.error('ChatContainer: Real-time listener error:', err);
-        setError(err.message || 'Failed to load messages');
-        setLoading(false);
-      });
+      }
+    );
 
-      // Clean up on unmount
-      return () => {
-        console.log('ChatContainer: Cleaning up message listener');
-        if (lastMarkAsReadAttemptRef.current) {
-          clearTimeout(lastMarkAsReadAttemptRef.current);
-          lastMarkAsReadAttemptRef.current = null;
-        }
-        unsubscribe();
-      };
-    }, [activeConversation, currentUser, markMessagesAsRead, isUserParticipant]);
+    // Clean up on unmount
+    return () => {
+      if (lastMarkAsReadAttemptRef.current) {
+        clearTimeout(lastMarkAsReadAttemptRef.current);
+        lastMarkAsReadAttemptRef.current = null;
+      }
+      unsubscribe();
+    };
+  }, [activeConversation, currentUser, isUserParticipant]);
 
   // Memoize the fetchParticipantsData function to prevent unnecessary re-renders
   const fetchParticipantsData = useCallback(async () => {
@@ -282,8 +231,14 @@ export const ChatContainer: React.FC = () => {
 
       // Add all participants from conversations
       conversations.forEach((conversation: ChatConversation) => {
-        if (conversation.participants && Array.isArray(conversation.participants)) {
-          conversation.participants.forEach((participant: { id: string; name: string }) => userIds.add(participant.id));
+        if (
+          conversation.participants &&
+          Array.isArray(conversation.participants)
+        ) {
+          conversation.participants.forEach(
+            (participant: { id: string; name: string }) =>
+              userIds.add(participant.id)
+          );
         }
       });
 
@@ -296,34 +251,43 @@ export const ChatContainer: React.FC = () => {
 
       // Only fetch if there are new user IDs to fetch
       const currentUserIds = Array.from(userIds);
-      const missingUserIds = currentUserIds.filter(id => !usersData[id]);
-      
+      const missingUserIds = currentUserIds.filter((id) => !usersData[id]);
+
       if (missingUserIds.length > 0) {
         // Fetch user data only for missing participants
-        const newUsers: Record<string, User> = await fetchMultipleUsers(missingUserIds);
-        setUsersData(prevData => ({ ...prevData, ...newUsers }));
+        const newUsers: Record<string, User> = await fetchMultipleUsers(
+          missingUserIds
+        );
+        setUsersData((prevData) => ({ ...prevData, ...newUsers }));
       }
     } catch (error: any) {
-      console.error('Error fetching user data:', error);
+      console.error("Error fetching user data:", error);
       // Show user-friendly error message for data fetching failures
       if (toastContext) {
-        toastContext.addToast('error', 'Failed to load user information');
+        toastContext.addToast("error", "Failed to load user information");
       }
     }
   }, [conversations, messages, currentUser?.uid, usersData]);
 
   // Memoize user data dependencies to prevent unnecessary re-fetches
-  const userDataDependencies = useMemo(() => ({
-    conversationCount: conversations.length,
-    messageCount: messages.length,
-    currentUserId: currentUser?.uid,
-    existingUserIds: Object.keys(usersData)
-  }), [conversations.length, messages.length, currentUser?.uid, usersData]);
+  const userDataDependencies = useMemo(
+    () => ({
+      conversationCount: conversations.length,
+      messageCount: messages.length,
+      currentUserId: currentUser?.uid,
+      existingUserIds: Object.keys(usersData),
+    }),
+    [conversations.length, messages.length, currentUser?.uid, usersData]
+  );
 
   // Use a separate useEffect with memoized dependencies
   useEffect(() => {
     fetchParticipantsData();
-  }, [userDataDependencies.conversationCount, userDataDependencies.messageCount, userDataDependencies.currentUserId]);
+  }, [
+    userDataDependencies.conversationCount,
+    userDataDependencies.messageCount,
+    userDataDependencies.currentUserId,
+  ]);
 
   // Scroll to bottom of messages when new messages are loaded
   // Use a ref to track previous message count to only scroll on new messages
@@ -331,8 +295,11 @@ export const ChatContainer: React.FC = () => {
 
   useEffect(() => {
     // Only scroll if the number of messages has increased (new message added)
-    if (messagesEndRef.current && messages.length > prevMessageCountRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (
+      messagesEndRef.current &&
+      messages.length > prevMessageCountRef.current
+    ) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
 
     // Update the previous message count
@@ -351,23 +318,30 @@ export const ChatContainer: React.FC = () => {
     try {
       // Get the best profile picture available - we'll get this from usersData instead
       const currentUserData = usersData[currentUser.uid];
-      const profilePicture: string | undefined = currentUserData?.profilePicture || currentUserData?.photoURL;
+      const profilePicture: string | undefined =
+        currentUserData?.profilePicture || currentUserData?.photoURL;
 
       const messageData = {
         conversationId: activeConversation.id!,
         senderId: currentUser.uid,
-        senderName: currentUserData?.displayName || currentUser.email || 'You' as string,
+        senderName:
+          currentUserData?.displayName ||
+          currentUser.email ||
+          ("You" as string),
         senderAvatar: profilePicture,
         content: content.trim(),
         read: false,
-        status: 'sent' as 'sent' | 'delivered' | 'read' | 'failed',
-        type: 'text' as 'text' | 'image' | 'file' | 'link'
+        status: "sent" as "sent" | "delivered" | "read" | "failed",
+        type: "text" as "text" | "image" | "file" | "link",
       };
 
-      console.log('Sending message with data:', messageData);
+      console.log("Sending message with data:", messageData);
 
       // Call createMessage with conversationId and messageData
-      const { error: sendError } = await createMessage(activeConversation.id!, messageData);
+      const { error: sendError } = await createMessage(
+        activeConversation.id!,
+        messageData
+      );
 
       if (sendError) {
         throw new Error(sendError.message);
@@ -375,15 +349,14 @@ export const ChatContainer: React.FC = () => {
 
       // Clear the input after sending
       // The messages will be updated by the real-time listener
-
     } catch (err: any) {
-      console.error('Error sending message:', err);
-      const errorMessage = err.message || 'Failed to send message';
+      console.error("Error sending message:", err);
+      const errorMessage = err.message || "Failed to send message";
       setError(errorMessage);
-      
+
       // Show user-friendly error toast
       if (toastContext) {
-        toastContext.addToast('error', errorMessage);
+        toastContext.addToast("error", errorMessage);
       }
     } finally {
       setSendingMessage(false);
@@ -392,7 +365,7 @@ export const ChatContainer: React.FC = () => {
 
   const getOtherParticipant = useCallback(
     (conversation: ChatConversation) => {
-      if (!currentUser) return { id: '', name: 'Unknown', avatar: null };
+      if (!currentUser) return { id: "", name: "Unknown", avatar: null };
 
       const otherParticipantId = conversation.participantIds.find(
         (id) => id !== currentUser.uid
@@ -402,7 +375,7 @@ export const ChatContainer: React.FC = () => {
         const otherUser = usersData[otherParticipantId];
         return {
           id: otherUser.uid,
-          name: otherUser.displayName || 'Unknown',
+          name: otherUser.displayName || "Unknown",
           avatar: otherUser.photoURL || null,
         };
       }
@@ -414,12 +387,12 @@ export const ChatContainer: React.FC = () => {
       if (otherParticipantData) {
         return {
           id: otherParticipantData.id,
-          name: otherParticipantData.name || 'Unknown',
+          name: otherParticipantData.name || "Unknown",
           avatar: null, // No avatar in this fallback
         };
       }
 
-      return { id: otherParticipantId || '', name: 'Loading...', avatar: null };
+      return { id: otherParticipantId || "", name: "Loading...", avatar: null };
     },
     [currentUser, usersData]
   );
@@ -442,16 +415,16 @@ export const ChatContainer: React.FC = () => {
             <div className="mt-2 text-sm">
               <p>Debug Info:</p>
               <ul className="list-disc list-inside">
-                <li>Current User: {currentUser?.uid || 'Not authenticated'}</li>
-                <li>Active Conversation: {activeConversation?.id || 'None'}</li>
+                <li>Current User: {currentUser?.uid || "Not authenticated"}</li>
+                <li>Active Conversation: {activeConversation?.id || "None"}</li>
                 <li>Conversations Count: {conversations.length}</li>
                 <li>Messages Count: {messages.length}</li>
               </ul>
             </div>
           </AlertDescription>
         </Alert>
-        <Button 
-          onClick={() => window.location.reload()} 
+        <Button
+          onClick={() => window.location.reload()}
           className="mt-4"
           variant="outline"
         >
@@ -468,7 +441,8 @@ export const ChatContainer: React.FC = () => {
         <Alert>
           <AlertTitle>No Conversations Yet</AlertTitle>
           <AlertDescription>
-            You don't have any conversations yet. Start a conversation with another user or create a test conversation to get started.
+            You don't have any conversations yet. Start a conversation with
+            another user or create a test conversation to get started.
             <div className="mt-4 space-x-2">
               <Button asChild variant="outline">
                 <a href="/create-test-conversation">Create Test Conversation</a>
@@ -486,9 +460,9 @@ export const ChatContainer: React.FC = () => {
             <div className="mt-4 text-xs text-muted-foreground">
               <p>Debug Info:</p>
               <ul className="list-disc list-inside">
-                <li>Current User: {currentUser?.uid || 'Not authenticated'}</li>
-                <li>Loading: {loading ? 'Yes' : 'No'}</li>
-                <li>Error: {error || 'None'}</li>
+                <li>Current User: {currentUser?.uid || "Not authenticated"}</li>
+                <li>Loading: {loading ? "Yes" : "No"}</li>
+                <li>Error: {error || "None"}</li>
               </ul>
               <p className="mt-2">Check browser console for detailed logs.</p>
             </div>
@@ -507,7 +481,7 @@ export const ChatContainer: React.FC = () => {
       <Card className="h-full flex flex-col md:flex-row overflow-hidden">
         <div
           className={`${
-            showConversationList ? 'block' : 'hidden'
+            showConversationList ? "block" : "hidden"
           } md:block md:w-1/3 lg:w-1/4 w-full h-full border-r border-border flex flex-col`}
           role="complementary"
           aria-label="Conversation list"
@@ -527,21 +501,19 @@ export const ChatContainer: React.FC = () => {
 
         <div
           className={`${
-            showConversationList ? 'hidden' : 'block'
+            showConversationList ? "hidden" : "block"
           } md:block flex-1 flex flex-col h-full`}
           role="main"
           aria-label="Message area"
         >
           {activeConversation ? (
             <>
-              <MessageHeader
-                conversation={activeConversation}
-              />
+              <MessageHeader conversation={activeConversation} />
               <div className="flex-1 overflow-hidden">
                 <MessageListNew
                   messages={messages}
                   loading={loading}
-                  currentUserId={currentUser?.uid || ''}
+                  currentUserId={currentUser?.uid || ""}
                   messagesEndRef={messagesEndRef}
                   usersData={usersData}
                 />
@@ -549,7 +521,9 @@ export const ChatContainer: React.FC = () => {
               <div className="p-4 border-t border-border flex-shrink-0">
                 <MessageInput
                   onSendMessage={handleSendMessage}
-                  disabled={sendingMessage || !isUserParticipant(activeConversation)}
+                  disabled={
+                    sendingMessage || !isUserParticipant(activeConversation)
+                  }
                   loading={sendingMessage}
                 />
                 {!isUserParticipant(activeConversation) && (

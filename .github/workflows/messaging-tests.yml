@@ -1,0 +1,39 @@
+name: Messaging Emulator Tests
+
+on:
+  pull_request:
+    paths:
+      - 'src/services/chat/chatService.ts'
+      - 'src/services/__tests__/messaging.readReceipts.test.ts'
+      - '.github/workflows/messaging-tests.yml'
+  workflow_dispatch:
+
+jobs:
+  test-messaging:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Java (for Firestore Emulator)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Print Java version
+        run: java -version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Messaging tests via Emulator
+        run: npx firebase emulators:exec --only firestore "npm run test:fast -- --testPathPattern='src/services/__tests__/messaging.readReceipts.test.ts' --runInBand"
+
