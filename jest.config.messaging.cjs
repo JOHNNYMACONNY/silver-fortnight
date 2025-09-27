@@ -5,7 +5,6 @@ module.exports = {
   setupFilesAfterEnv: [],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^@firebase/rules-unit-testing$': '<rootDir>/src/types/firebase-test.cjs',
   },
   transform: {
     '^.+\\.(ts|tsx)$': [
