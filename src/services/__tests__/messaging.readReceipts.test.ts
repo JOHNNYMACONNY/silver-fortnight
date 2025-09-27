@@ -90,7 +90,11 @@ describe("Messaging read receipts", () => {
     async () => {
       // Mock getSyncFirebaseDb to use emulator Firestore for u1
       await jest.isolateModulesAsync(async () => {
-        jest.doMock("../../firebase-config", () => ({
+        // ESM-compatible mocking for firebase-config
+        // Use unstable_mockModule since the project uses ESM ("type": "module")
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore - unstable_mockModule is available in Jest 29+
+        await jest.unstable_mockModule("../../firebase-config", () => ({
           getSyncFirebaseDb: () =>
             testEnv.authenticatedContext("u1").firestore(),
         }));
