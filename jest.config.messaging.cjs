@@ -10,6 +10,7 @@ module.exports = {
     '^.+\\.(ts|tsx)$': [
       'ts-jest',
       {
+        useESM: true,
         tsconfig: {
           jsx: 'react-jsx',
           esModuleInterop: true,
@@ -35,5 +36,6 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   transformIgnorePatterns: ['node_modules/(?!(firebase|@firebase)/)'],
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
   verbose: true,
 };
