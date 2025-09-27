@@ -39,5 +39,5 @@ jobs:
         env:
           FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
           NODE_OPTIONS: --experimental-vm-modules
-        run: npx firebase-tools --project demo-tradeya-messaging emulators:exec --only firestore "npx jest --runInBand --coverage=false --no-cache --env=node --testPathPattern=src/services/__tests__/messaging.readReceipts.test.ts"
+        run: npx firebase-tools --project demo-tradeya-messaging emulators:exec --only firestore "npx jest -c jest.config.messaging.cjs --runInBand --coverage=false --no-cache --env=node --testPathPattern=src/services/__tests__/messaging.readReceipts.test.ts"
 
