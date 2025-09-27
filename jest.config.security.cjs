@@ -16,16 +16,13 @@ module.exports = Object.assign({}, baseConfig, {
     '**/__tests__/**/*.security.test.ts',
     '**/__tests__/**/firebase-security.test.ts'
   ],
-  setupFilesAfterEnv: [
-    '<rootDir>/jest.setup.ts'
-  ],
   testEnvironment: 'node',
+  resolver: 'jest-node-exports-resolver',
   transform: {
-    ...tsjPreset.transform
+    '^.+\\.(ts|tsx)$': ['ts-jest', { useESM: true }]
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^@firebase/rules-unit-testing$': '<rootDir>/src/types/firebase-test.d.ts'
   },
   globals: {
     'ts-jest': {
@@ -45,6 +42,7 @@ module.exports = Object.assign({}, baseConfig, {
   maxWorkers: 1,
   // Verbose output for debugging
   verbose: true,
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
   // Coverage configuration specific to security tests
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
