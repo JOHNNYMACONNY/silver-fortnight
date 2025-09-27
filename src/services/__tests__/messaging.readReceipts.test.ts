@@ -21,9 +21,8 @@ beforeAll(async () => {
     path.resolve(process.cwd(), "firestore.rules"),
     "utf8"
   );
-  const { initializeTestEnvironment } = await import(
-    "@firebase/rules-unit-testing"
-  );
+  const mod = await import("@firebase/rules-unit-testing");
+  const { initializeTestEnvironment } = "default" in mod ? mod.default : mod;
   testEnv = await initializeTestEnvironment({
     projectId,
     firestore: { rules },
