@@ -88,32 +88,20 @@ describe("Messaging read receipts", () => {
   maybeIt(
     "markMessagesAsRead adds userId to readBy for unread messages",
     async () => {
-      // Mock getSyncFirebaseDb to use emulator Firestore for u1
-      await jest.isolateModulesAsync(async () => {
-        // ESM-compatible mocking for firebase-config
-        // Use unstable_mockModule since the project uses ESM ("type": "module")
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore - unstable_mockModule is available in Jest 29+
-        await jest.unstable_mockModule("../../firebase-config", () => ({
-          getSyncFirebaseDb: () =>
-            testEnv.authenticatedContext("u1").firestore(),
-        }));
+      const db = testEnv.authenticatedContext("u1").firestore();
+      const { markMessagesAsRead } = await import("../chat/chatService");
+      await markMessagesAsRead("c1", "u1", db);
 
-        const { markMessagesAsRead } = await import("../chat/chatService");
-        await markMessagesAsRead("c1", "u1");
+      const msgsSnap = await getDocs(
+        collection(db, "conversations", "c1", "messages")
+      );
+      const allHaveU1 = msgsSnap.docs.every(
+        (d) =>
+          (d.data() as any).readBy?.includes("u1") ||
+          (d.data() as any).senderId === "u1"
+      );
 
-        const db = testEnv.authenticatedContext("u1").firestore();
-        const msgsSnap = await getDocs(
-          collection(db, "conversations", "c1", "messages")
-        );
-        const allHaveU1 = msgsSnap.docs.every(
-          (d) =>
-            (d.data() as any).readBy?.includes("u1") ||
-            (d.data() as any).senderId === "u1"
-        );
-
-        expect(allHaveU1).toBe(true);
-      });
+      expect(allHaveU1).toBe(true);
     },
     20000
   );
