@@ -1,10 +1,6 @@
 import fs from "fs";
 import path from "path";
-import {
-  initializeTestEnvironment,
-  assertSucceeds,
-  RulesTestEnvironment,
-} from "@firebase/rules-unit-testing";
+import type { RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import {
   setDoc,
   doc,
@@ -24,6 +20,9 @@ beforeAll(async () => {
   const rules = fs.readFileSync(
     path.resolve(process.cwd(), "firestore.rules"),
     "utf8"
+  );
+  const { initializeTestEnvironment } = await import(
+    "@firebase/rules-unit-testing"
   );
   testEnv = await initializeTestEnvironment({
     projectId,
