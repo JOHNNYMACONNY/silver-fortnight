@@ -64,10 +64,11 @@ jobs:
           path: security-report.md
 
       - name: Check for sensitive data
-        uses: zricethezav/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          config-path: .gitleaks.toml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
       - name: Start local server for ZAP scan
         run: |
@@ -112,7 +113,6 @@ jobs:
             config-path: .gitleaks.toml
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}}
 
   compliance:
     name: Compliance Checks

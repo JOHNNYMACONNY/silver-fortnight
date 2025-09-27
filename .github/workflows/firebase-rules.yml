@@ -162,7 +162,7 @@ jobs:
           npm run security-audit
 
       - name: Check for Sensitive Data
-        uses: zricethezav/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v2
         with:
           config-path: .gitleaks.toml
 

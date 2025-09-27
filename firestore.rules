@@ -74,10 +74,7 @@ service cloud.firestore {
         (data.participants is map && (
           (data.participants.creator == request.auth.uid) ||
           (data.participants.participant == request.auth.uid)
-        )) ||
-        (data.participants is list && data.participants.size() > 0 &&
-          data.participants.map('id').hasAny([request.auth.uid])
-        )
+        ))
       );
     }
 
