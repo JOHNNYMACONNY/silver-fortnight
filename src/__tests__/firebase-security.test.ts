@@ -51,25 +51,38 @@ let testEnv: TestEnv;
 
 describe("Firebase Security Rules", () => {
   beforeAll(async () => {
+    // Default emulator ports for local testing
+    const defaultFirestoreHost = "127.0.0.1";
+    const defaultFirestorePort = 8080;
+    const defaultStorageHost = "127.0.0.1";
+    const defaultStoragePort = 9199;
+
+    // Parse emulator host/port from environment or use defaults
+    const firestoreHost = process.env.FIRESTORE_EMULATOR_HOST
+      ? process.env.FIRESTORE_EMULATOR_HOST.split(":")[0]
+      : defaultFirestoreHost;
+    const firestorePort = process.env.FIRESTORE_EMULATOR_HOST
+      ? parseInt(process.env.FIRESTORE_EMULATOR_HOST.split(":")[1])
+      : defaultFirestorePort;
+
+    const storageHost = process.env.FIREBASE_STORAGE_EMULATOR_HOST
+      ? process.env.FIREBASE_STORAGE_EMULATOR_HOST.split(":")[0]
+      : defaultStorageHost;
+    const storagePort = process.env.FIREBASE_STORAGE_EMULATOR_HOST
+      ? parseInt(process.env.FIREBASE_STORAGE_EMULATOR_HOST.split(":")[1])
+      : defaultStoragePort;
+
     const options = {
       projectId,
       firestore: {
         rules: getRules("firestore"),
-        // Use emulator host/port from environment if available
-        ...(process.env.FIRESTORE_EMULATOR_HOST && {
-          host: process.env.FIRESTORE_EMULATOR_HOST.split(":")[0],
-          port: parseInt(process.env.FIRESTORE_EMULATOR_HOST.split(":")[1]),
-        }),
+        host: firestoreHost,
+        port: firestorePort,
       },
       storage: {
         rules: getRules("storage"),
-        // Use emulator host/port from environment if available
-        ...(process.env.FIREBASE_STORAGE_EMULATOR_HOST && {
-          host: process.env.FIREBASE_STORAGE_EMULATOR_HOST.split(":")[0],
-          port: parseInt(
-            process.env.FIREBASE_STORAGE_EMULATOR_HOST.split(":")[1]
-          ),
-        }),
+        host: storageHost,
+        port: storagePort,
       },
     };
 
