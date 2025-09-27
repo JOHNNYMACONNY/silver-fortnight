@@ -3,6 +3,7 @@ module.exports = {
   testEnvironment: 'node',
   // Do NOT load jsdom-specific setup to avoid referencing window in Node env
   setupFilesAfterEnv: [],
+  moduleDirectories: ['node_modules', '<rootDir>/src'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
@@ -22,20 +23,13 @@ module.exports = {
           skipLibCheck: true,
           types: ['jest', 'node'],
         },
-        babelConfig: {
-          plugins: [
-            '@babel/plugin-syntax-import-meta',
-            ['@babel/plugin-transform-modules-commonjs', { allowTopLevelThis: true }],
-          ],
-        },
       },
     ],
-    '^.+\\.(js|jsx)$': 'babel-jest',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
-  transformIgnorePatterns: ['node_modules/(?!(firebase|@firebase)/)'],
+  transformIgnorePatterns: ['/node_modules/'],
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   verbose: true,
 };
