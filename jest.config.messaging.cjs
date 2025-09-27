@@ -1,7 +1,6 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  resolver: 'jest-node-exports-resolver',
   // Do NOT load jsdom-specific setup to avoid referencing window in Node env
   setupFilesAfterEnv: [],
   moduleDirectories: ['node_modules', '<rootDir>/src'],
