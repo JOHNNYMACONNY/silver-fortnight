@@ -50,13 +50,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-firebase-emulators-
 
-      - name: Lint Rules
+      - name: Run Security Validation (Emulator)
         run: |
-          firebase firestore:rules:lint firestore.rules
-          firebase storage:rules:lint storage.rules
-
-      - name: Run Security Tests
-        run: npm run test:security
+          npx firebase-tools emulators:exec --project demo-tradeya --only firestore,storage -- \
+            npm run security:validate
 
       - name: Save Test Results
         if: always()
@@ -171,10 +168,12 @@ jobs:
           echo "# Security Analysis Report" > security-report.md
           echo "## Firebase Rules Analysis" >> security-report.md
           echo "Generated on: $(date)" >> security-report.md
-          echo "\`\`\`" >> security-report.md
-          firebase firestore:rules:lint firestore.rules >> security-report.md
-          firebase storage:rules:lint storage.rules >> security-report.md
-          echo "\`\`\`" >> security-report.md
+          echo "Rules lint via firebase CLI is not available; validation performed via unit tests and security:validate script." >> security-report.md
+          echo "\n### Rule Files (for reference)\n" >> security-report.md
+          echo "\n#### firestore.rules\n" >> security-report.md
+          sed -n '1,200p' firestore.rules >> security-report.md
+          echo "\n#### storage.rules\n" >> security-report.md
+          sed -n '1,200p' storage.rules >> security-report.md
 
       - name: Upload Security Report
         uses: actions/upload-artifact@v3
