@@ -10,12 +10,12 @@ import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { uploadBytes, ref } from "firebase/storage";
 import { getRules } from "../__mocks__/firebaseRules.js";
 
-// Import testing utilities using ESM imports with jest-node-exports-resolver
-import {
+// Import testing utilities using CommonJS require for Jest compatibility
+const {
   initializeTestEnvironment,
   assertFails,
   assertSucceeds,
-} from "@firebase/rules-unit-testing";
+} = require("@firebase/rules-unit-testing");
 
 interface TestData extends DocumentData {
   name?: string;
@@ -55,9 +55,21 @@ describe("Firebase Security Rules", () => {
       projectId,
       firestore: {
         rules: getRules("firestore"),
+        // Use emulator host/port from environment if available
+        ...(process.env.FIRESTORE_EMULATOR_HOST && {
+          host: process.env.FIRESTORE_EMULATOR_HOST.split(":")[0],
+          port: parseInt(process.env.FIRESTORE_EMULATOR_HOST.split(":")[1]),
+        }),
       },
       storage: {
         rules: getRules("storage"),
+        // Use emulator host/port from environment if available
+        ...(process.env.FIREBASE_STORAGE_EMULATOR_HOST && {
+          host: process.env.FIREBASE_STORAGE_EMULATOR_HOST.split(":")[0],
+          port: parseInt(
+            process.env.FIREBASE_STORAGE_EMULATOR_HOST.split(":")[1]
+          ),
+        }),
       },
     };
 

@@ -1,34 +1,21 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
-const { defaults: tsjPreset } = require('ts-jest/presets');
 
-let baseConfig = {};
-try {
-  // Try to load project base jest config if it exists
-  baseConfig = require('./jest.config.js');
-} catch (err) {
-  // If not present, continue with an empty base config
-  baseConfig = {};
-}
-
-module.exports = Object.assign({}, baseConfig, {
+// Minimal security-specific Jest config without inheriting base config
+module.exports = {
   displayName: 'security',
   testMatch: [
     '**/__tests__/**/*.security.test.ts',
     '**/__tests__/**/firebase-security.test.ts'
   ],
   testEnvironment: 'node',
-  resolver: 'jest-node-exports-resolver',
+  preset: 'ts-jest',
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', { useESM: true }]
+    '^.+\\.(ts|tsx)$': 'ts-jest'
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   globals: {
-    'ts-jest': {
-      isolatedModules: true,
-      tsconfig: 'tsconfig.json'
-    },
     "__FIREBASE_DEFAULTS__": {
       "config": {
         "projectId": "demo-test-project"
@@ -42,7 +29,6 @@ module.exports = Object.assign({}, baseConfig, {
   maxWorkers: 1,
   // Verbose output for debugging
   verbose: true,
-  extensionsToTreatAsEsm: ['.ts', '.tsx'],
   // Coverage configuration specific to security tests
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
@@ -90,4 +76,4 @@ module.exports = Object.assign({}, baseConfig, {
       port: 9199
     }
   }
-});
+};
