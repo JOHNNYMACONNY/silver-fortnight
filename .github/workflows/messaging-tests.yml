@@ -35,5 +35,7 @@ jobs:
         run: npm ci
 
       - name: Run Messaging tests via Emulator
-        run: npx firebase-tools emulators:exec --only firestore "npm run test:fast -- --testPathPattern='src/services/__tests__/messaging.readReceipts.test.ts' --runInBand"
+        env:
+          FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
+        run: npx firebase-tools --project demo-tradeya-messaging emulators:exec --only firestore "npm run test:fast -- --testPathPattern='src/services/__tests__/messaging.readReceipts.test.ts' --runInBand"
 
