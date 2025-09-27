@@ -1,11 +1,16 @@
-import { getSyncFirebaseDb, requireAuth, initializeFirebase, getFirebaseInstances } from '../firebase-config';
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
+import {
+  getSyncFirebaseDb,
+  requireAuth,
+  initializeFirebase,
+  getFirebaseInstances,
+} from "../firebase-config";
+import {
+  doc,
+  setDoc,
+  getDoc,
   getDocs,
-  collection, 
-  addDoc, 
+  collection,
+  addDoc,
   Timestamp,
   query,
   where,
@@ -24,13 +29,20 @@ import {
   DocumentData,
   Query,
   CollectionReference,
-  Firestore
-} from 'firebase/firestore';
-import { CreateUserProfileData } from '../firebase-config';
-import { ServiceResult } from '../types/ServiceError';
-import { EmbeddedEvidence } from '../types/evidence';
-import { CollaborationRole, CollaborationRoleData } from '../types/collaboration';
-import { getOrCreateDirectConversation, createGroupConversation, sendMessage } from './chat/chatService';
+  Firestore,
+} from "firebase/firestore";
+import { CreateUserProfileData } from "../firebase-config";
+import { ServiceResult } from "../types/ServiceError";
+import { EmbeddedEvidence } from "../types/evidence";
+import {
+  CollaborationRole,
+  CollaborationRoleData,
+} from "../types/collaboration";
+import {
+  getOrCreateDirectConversation,
+  createGroupConversation,
+  sendMessage,
+} from "./chat/chatService";
 import {
   userConverter,
   tradeConverter,
@@ -40,11 +52,11 @@ import {
   tradeProposalConverter,
   collaborationApplicationConverter,
   challengeConverter,
-  connectionConverter
-} from './firestoreConverters';
-import { ChatMessage } from '../types/chat';
-import type { BannerData } from '../utils/imageUtils';
-import { MessageType } from './firestoreConverters';
+  connectionConverter,
+} from "./firestoreConverters";
+import { ChatMessage } from "../types/chat";
+import type { BannerData } from "../utils/imageUtils";
+import { MessageType } from "./firestoreConverters";
 
 const getDbWithInitialization = async (): Promise<Firestore> => {
   try {
@@ -53,7 +65,9 @@ const getDbWithInitialization = async (): Promise<Firestore> => {
     await initializeFirebase();
     const { db } = await getFirebaseInstances();
     if (!db) {
-      throw (error instanceof Error ? error : new Error('Failed to initialize Firestore'));
+      throw error instanceof Error
+        ? error
+        : new Error("Failed to initialize Firestore");
     }
     return db;
   }
@@ -61,15 +75,15 @@ const getDbWithInitialization = async (): Promise<Firestore> => {
 
 // Collection names
 export const COLLECTIONS = {
-  USERS: 'users',
-  TRADES: 'trades',
-  NOTIFICATIONS: 'notifications',
-  CONVERSATIONS: 'conversations',
-  MESSAGES: 'messages',
-  CONNECTIONS: 'connections',
-  REVIEWS: 'reviews',
-  CHALLENGES: 'challenges',
-  COLLABORATIONS: 'collaborations'
+  USERS: "users",
+  TRADES: "trades",
+  NOTIFICATIONS: "notifications",
+  CONVERSATIONS: "conversations",
+  MESSAGES: "messages",
+  CONNECTIONS: "connections",
+  REVIEWS: "reviews",
+  CHALLENGES: "challenges",
+  COLLABORATIONS: "collaborations",
 } as const;
 
 // Export Timestamp explicitly
@@ -79,21 +93,28 @@ export type { ServiceResult };
 // Trade types (moved up to be available for filters)
 export type TradeSkill = {
   name: string;
-  level: 'beginner' | 'intermediate' | 'expert';
+  level: "beginner" | "intermediate" | "expert";
 };
 
-export type TradeStatus = 'open' | 'in-progress' | 'completed' | 'cancelled' | 'pending_confirmation' | 'pending_evidence' | 'disputed';
+export type TradeStatus =
+  | "open"
+  | "in-progress"
+  | "completed"
+  | "cancelled"
+  | "pending_confirmation"
+  | "pending_evidence"
+  | "disputed";
 
 // Pagination and filtering interfaces
 export interface PaginationOptions {
   limit?: number;
   startAfterDoc?: DocumentSnapshot;
   orderByField?: string;
-  orderDirection?: 'asc' | 'desc';
+  orderDirection?: "asc" | "desc";
 }
 
 export interface CollaborationFilters {
-  status?: 'open' | 'in-progress' | 'completed' | 'cancelled';
+  status?: "open" | "in-progress" | "completed" | "cancelled";
   createdBy?: string;
   skillsRequired?: string[];
   // New unified skills filter used by UI; server maps to skillsIndex
@@ -129,7 +150,15 @@ export interface UserFilters {
 }
 
 export interface NotificationFilters {
-  type?: 'message' | 'trade_interest' | 'trade_completed' | 'review' | 'collaboration' | 'challenge' | 'system' | 'trade';
+  type?:
+    | "message"
+    | "trade_interest"
+    | "trade_completed"
+    | "review"
+    | "collaboration"
+    | "challenge"
+    | "system"
+    | "trade";
   read?: boolean;
   relatedId?: string;
 }
@@ -143,11 +172,11 @@ export interface PaginatedResult<T> {
 }
 
 // Base types
-export type UserRole = 'user' | 'admin' | 'moderator';
+export type UserRole = "user" | "admin" | "moderator";
 
 export interface User {
   uid: string;
-  id: string;  // Required
+  id: string; // Required
   email?: string;
   displayName?: string; // Made optional to match actual data
   profilePicture?: string;
@@ -164,7 +193,7 @@ export interface User {
 }
 
 // Simplified Collaboration Types for UI
-export type SimpleCollaborationRole = 'Leader' | 'Contributor' | 'Helper';
+export type SimpleCollaborationRole = "Leader" | "Contributor" | "Helper";
 
 export interface SimpleCollaborationCard {
   id: string;
@@ -201,10 +230,13 @@ export interface UserChallengeProgress {
 }
 
 // Role mapping from simple to complex
-export const ROLE_MAPPING: Record<SimpleCollaborationRole, CollaborationRole[]> = {
-  'Leader': [CollaborationRole.OWNER, CollaborationRole.ADMIN],
-  'Contributor': [CollaborationRole.MEMBER],
-  'Helper': [CollaborationRole.VIEWER]
+export const ROLE_MAPPING: Record<
+  SimpleCollaborationRole,
+  CollaborationRole[]
+> = {
+  Leader: [CollaborationRole.OWNER, CollaborationRole.ADMIN],
+  Contributor: [CollaborationRole.MEMBER],
+  Helper: [CollaborationRole.VIEWER],
 };
 
 // Enhanced Challenge interfaces for three-tier system
@@ -214,18 +246,18 @@ export interface ChallengeParticipant {
   userPhotoURL?: string;
   role?: string; // For collaboration challenges
   joinedAt: Timestamp;
-  status: 'ACTIVE' | 'COMPLETED' | 'DROPPED_OUT';
+  status: "ACTIVE" | "COMPLETED" | "DROPPED_OUT";
 }
 
 export interface ChallengeCriteria {
-  type: 'VISUAL' | 'FUNCTIONAL' | 'CREATIVE' | 'TECHNICAL' | 'CONSTRAINT';
+  type: "VISUAL" | "FUNCTIONAL" | "CREATIVE" | "TECHNICAL" | "CONSTRAINT";
   description: string;
   required: boolean;
-  validationMethod?: 'AUTO' | 'PEER' | 'AI' | 'MANUAL';
+  validationMethod?: "AUTO" | "PEER" | "AI" | "MANUAL";
 }
 
 export interface ChallengeDeliverable {
-  type: 'IMAGE' | 'VIDEO' | 'TEXT' | 'CODE_REPO' | 'DESIGN_FILE' | 'DOCUMENT';
+  type: "IMAGE" | "VIDEO" | "TEXT" | "CODE_REPO" | "DESIGN_FILE" | "DOCUMENT";
   required: boolean;
   description: string;
   maxSize?: number; // in MB
@@ -234,7 +266,7 @@ export interface ChallengeDeliverable {
 
 // Solo Challenge Configuration
 export interface SoloChallengeConfig {
-  focusArea: 'creativity' | 'skill-building' | 'portfolio' | 'experimentation';
+  focusArea: "creativity" | "skill-building" | "portfolio" | "experimentation";
   autoValidation: boolean;
   peerReviewOptional: boolean;
   pointsReward: number;
@@ -259,14 +291,14 @@ export interface TradeChallengeConfig {
 export interface TradeMutualDeliverable {
   fromUserA: ChallengeDeliverable;
   toUserB: ChallengeDeliverable;
-  dependency: 'PARALLEL' | 'SEQUENTIAL';
+  dependency: "PARALLEL" | "SEQUENTIAL";
 }
 
 // Collaboration Challenge Configuration
 export interface CollaborationChallengeConfig {
   teamRoles: SimplifiedTeamRole[];
   projectPhases: ProjectPhase[];
-  leadershipModel: 'CREATOR_LED' | 'DEMOCRATIC' | 'ROTATING';
+  leadershipModel: "CREATOR_LED" | "DEMOCRATIC" | "ROTATING";
   advancedWorkflow: boolean;
   customRolePermissions: boolean;
 }
@@ -294,42 +326,42 @@ export interface Challenge {
   id?: string;
   title: string;
   description: string;
-  type: 'SOLO' | 'TRADE' | 'COLLABORATION';
-  
+  type: "SOLO" | "TRADE" | "COLLABORATION";
+
   // Difficulty & Discovery
-  difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  difficulty: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
   category: string;
-  timeEstimate: '15-min' | '30-min' | '1-hour' | '2-hour' | 'multi-day';
-  
+  timeEstimate: "15-min" | "30-min" | "1-hour" | "2-hour" | "multi-day";
+
   // Participation
   creatorId: string;
   participants: ChallengeParticipant[];
   maxParticipants: number;
-  
+
   // Lifecycle
-  status: 'DRAFT' | 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  status: "DRAFT" | "OPEN" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
   deadline?: Timestamp;
   createdAt: Timestamp;
   updatedAt: Timestamp;
-  
+
   // Content & Validation
   criteria: ChallengeCriteria[];
   deliverables: ChallengeDeliverable[];
-  
+
   // AI & Personalization
   aiGenerated?: boolean;
   personalizedFor?: string[];
   skillsUsed: string[];
   skillsLearned: string[];
-  
+
   // Type-specific configurations
   soloConfig?: SoloChallengeConfig;
   tradeConfig?: TradeChallengeConfig;
   collaborationConfig?: CollaborationChallengeConfig;
-  
+
   // Legacy fields for backward compatibility
   deadline_legacy?: Timestamp;
-  difficulty_legacy?: 'Beginner' | 'Intermediate' | 'Advanced';
+  difficulty_legacy?: "Beginner" | "Intermediate" | "Advanced";
   category_legacy?: string;
   participants_legacy?: string[];
 }
@@ -340,7 +372,7 @@ export interface Collaboration {
   description: string;
   roles: CollaborationRoleData[];
   creatorId: string;
-  status: 'open' | 'in-progress' | 'completed' | 'recruiting' | 'cancelled';
+  status: "open" | "in-progress" | "completed" | "recruiting" | "cancelled";
   createdAt: Timestamp;
   updatedAt: Timestamp;
   creatorName?: string;
@@ -362,7 +394,7 @@ export interface Collaboration {
   collaborators?: string[];
   images?: string[];
   category?: string;
-  visibility?: 'public' | 'private' | 'unlisted';
+  visibility?: "public" | "private" | "unlisted";
   public?: boolean;
 }
 
@@ -370,7 +402,7 @@ export interface Connection {
   id?: string;
   userId: string;
   connectedUserId: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: "pending" | "accepted" | "rejected";
   createdAt: Timestamp;
   updatedAt: Timestamp;
   relatedId?: string;
@@ -394,7 +426,15 @@ export interface Connection {
 export interface Notification {
   id?: string;
   userId: string;
-  type: 'message' | 'trade_interest' | 'trade_completed' | 'review' | 'collaboration' | 'challenge' | 'system' | 'trade';
+  type:
+    | "message"
+    | "trade_interest"
+    | "trade_completed"
+    | "review"
+    | "collaboration"
+    | "challenge"
+    | "system"
+    | "trade";
   title: string;
   content: string;
   read: boolean;
@@ -410,14 +450,15 @@ export interface Notification {
   };
 }
 
-export interface NotificationData extends Omit<Notification, 'id' | 'createdAt' | 'read'> {}
+export interface NotificationData
+  extends Omit<Notification, "id" | "createdAt" | "read"> {}
 
 export interface ChangeRequest {
   id: string;
   requestedBy: string;
   requestedAt: Timestamp;
   reason: string;
-  status: 'pending' | 'addressed' | 'rejected';
+  status: "pending" | "addressed" | "rejected";
   resolvedAt?: Timestamp;
 }
 
@@ -455,7 +496,7 @@ export interface Trade {
   disputeReason?: string;
   disputeDetails?: string;
   changeRequests?: ChangeRequest[];
-  visibility?: 'public' | 'private' | 'unlisted';
+  visibility?: "public" | "private" | "unlisted";
 }
 
 export interface CollaborationApplication {
@@ -467,7 +508,7 @@ export interface CollaborationApplication {
   applicantPhotoURL?: string;
   message: string;
   skills: string[];
-  status: 'pending' | 'accepted' | 'rejected';
+  status: "pending" | "accepted" | "rejected";
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -478,7 +519,7 @@ export interface Review {
   reviewerName?: string;
   reviewerPhotoURL?: string;
   targetId: string;
-  targetType: 'user' | 'trade' | 'collaboration';
+  targetType: "user" | "trade" | "collaboration";
   rating: number;
   comment: string;
   tradeId?: string;
@@ -496,55 +537,85 @@ export interface TradeProposal {
   skillsOffered: TradeSkill[];
   skillsRequested: TradeSkill[];
   evidence?: EmbeddedEvidence[];
-  status: 'pending' | 'accepted' | 'rejected';
+  status: "pending" | "accepted" | "rejected";
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
 
-export const createNotification = async (data: NotificationData): Promise<ServiceResult<string>> => {
+export const createNotification = async (
+  data: NotificationData
+): Promise<ServiceResult<string>> => {
   try {
     const db = getSyncFirebaseDb();
     const docRef = await addDoc(
-      collection(db, COLLECTIONS.NOTIFICATIONS).withConverter(notificationConverter),
+      collection(db, COLLECTIONS.NOTIFICATIONS).withConverter(
+        notificationConverter
+      ),
       { ...data, read: false, createdAt: Timestamp.now() }
     );
     return { data: docRef.id, error: null };
   } catch (error: any) {
-    console.error('Error creating notification:', error);
-    return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to create notification' } };
+    console.error("Error creating notification:", error);
+    return {
+      data: null,
+      error: {
+        code: error.code || "unknown",
+        message: error.message || "Failed to create notification",
+      },
+    };
   }
 };
 
-export const markNotificationAsRead = async (notificationId: string): Promise<ServiceResult<void>> => {
+export const markNotificationAsRead = async (
+  notificationId: string
+): Promise<ServiceResult<void>> => {
   try {
     const db = getSyncFirebaseDb();
     await updateDoc(doc(db, COLLECTIONS.NOTIFICATIONS, notificationId), {
-      read: true
+      read: true,
     });
     return { data: null, error: null };
   } catch (error: any) {
-    console.error('Error marking notification as read:', error);
-    return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to mark notification as read' } };
+    console.error("Error marking notification as read:", error);
+    return {
+      data: null,
+      error: {
+        code: error.code || "unknown",
+        message: error.message || "Failed to mark notification as read",
+      },
+    };
   }
 };
 
-export const markAllNotificationsAsRead = async (userId: string): Promise<ServiceResult<void>> => {
+export const markAllNotificationsAsRead = async (
+  userId: string
+): Promise<ServiceResult<void>> => {
   try {
     const db = getSyncFirebaseDb();
     const notificationsRef = collection(db, COLLECTIONS.NOTIFICATIONS);
-    const unreadQuery = query(notificationsRef, where('userId', '==', userId), where('read', '==', false));
+    const unreadQuery = query(
+      notificationsRef,
+      where("userId", "==", userId),
+      where("read", "==", false)
+    );
     const unreadDocs = await getDocs(unreadQuery);
 
     const batch = writeBatch(db);
-    unreadDocs.docs.forEach(doc => {
+    unreadDocs.docs.forEach((doc) => {
       batch.update(doc.ref, { read: true });
     });
 
     await batch.commit();
     return { data: null, error: null };
   } catch (error: any) {
-    console.error('Error marking all notifications as read:', error);
-    return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to mark all notifications as read' } };
+    console.error("Error marking all notifications as read:", error);
+    return {
+      data: null,
+      error: {
+        code: error.code || "unknown",
+        message: error.message || "Failed to mark all notifications as read",
+      },
+    };
   }
 };
 
@@ -558,17 +629,28 @@ export const createUserProfile = async (
       ...profileData,
       id: uid,
       uid: uid,
-      public: profileData.public ?? true
+      public: profileData.public ?? true,
     };
-    await setDoc(doc(db, COLLECTIONS.USERS, uid).withConverter(userConverter), userWithId);
+    await setDoc(
+      doc(db, COLLECTIONS.USERS, uid).withConverter(userConverter),
+      userWithId
+    );
     return { data: null, error: null };
   } catch (error: any) {
-    console.error('Error creating user profile:', error);
-    return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to create user profile' } };
+    console.error("Error creating user profile:", error);
+    return {
+      data: null,
+      error: {
+        code: error.code || "unknown",
+        message: error.message || "Failed to create user profile",
+      },
+    };
   }
 };
 
-export const getUserProfile = async (uid: string): Promise<ServiceResult<User | undefined>> => {
+export const getUserProfile = async (
+  uid: string
+): Promise<ServiceResult<User | undefined>> => {
   try {
     const db = await getDbWithInitialization();
     const ref = doc(db, COLLECTIONS.USERS, uid).withConverter(userConverter);
@@ -594,11 +676,17 @@ export const getUserProfile = async (uid: string): Promise<ServiceResult<User | 
     // Private profile: treat as hidden for callers without access.
     return { data: undefined, error: null };
   } catch (error: any) {
-    if (error?.code === 'permission-denied') {
+    if (error?.code === "permission-denied") {
       return { data: undefined, error: null };
     }
-    console.error('Error getting user profile:', error);
-    return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to get user profile' } };
+    console.error("Error getting user profile:", error);
+    return {
+      data: null,
+      error: {
+        code: error.code || "unknown",
+        message: error.message || "Failed to get user profile",
+      },
+    };
   }
 };
 
@@ -608,49 +696,54 @@ export const getAllUsers = async (
 ): Promise<ServiceResult<PaginatedResult<User>>> => {
   try {
     const db = await getDbWithInitialization();
-    const usersCollection = collection(db, COLLECTIONS.USERS).withConverter(userConverter);
+    const usersCollection = collection(db, COLLECTIONS.USERS).withConverter(
+      userConverter
+    );
     const baseConstraints: QueryConstraint[] = [];
 
     if (!filters?.includePrivate) {
-      baseConstraints.push(where('public', '==', true));
+      baseConstraints.push(where("public", "==", true));
     }
 
     if (filters?.role) {
-      baseConstraints.push(where('role', '==', filters.role));
+      baseConstraints.push(where("role", "==", filters.role));
     }
 
-    let usersQuery: Query<User> = baseConstraints.length > 0
-      ? query(usersCollection, ...baseConstraints)
-      : query(usersCollection);
-    
+    let usersQuery: Query<User> =
+      baseConstraints.length > 0
+        ? query(usersCollection, ...baseConstraints)
+        : query(usersCollection);
+
     // Apply pagination
     if (pagination) {
-        const constraints: QueryConstraint[] = [];
-        if (pagination.orderByField) {
-            constraints.push(orderBy(pagination.orderByField, pagination.orderDirection || 'asc'));
-        }
-        if (pagination.startAfterDoc) {
-            constraints.push(startAfter(pagination.startAfterDoc));
-        }
-        constraints.push(limitQuery(pagination.limit || 10));
-        usersQuery = query(usersQuery, ...constraints);
+      const constraints: QueryConstraint[] = [];
+      if (pagination.orderByField) {
+        constraints.push(
+          orderBy(pagination.orderByField, pagination.orderDirection || "asc")
+        );
+      }
+      if (pagination.startAfterDoc) {
+        constraints.push(startAfter(pagination.startAfterDoc));
+      }
+      constraints.push(limitQuery(pagination.limit || 10));
+      usersQuery = query(usersQuery, ...constraints);
     }
 
     const querySnapshot = await getDocs(usersQuery);
-    
-    const users = querySnapshot.docs.map(doc => doc.data());
+
+    const users = querySnapshot.docs.map((doc) => doc.data());
 
     const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
     const hasMore = (pagination?.limit || 0) <= users.length;
     return { data: { items: users, hasMore, lastDoc }, error: null };
   } catch (error) {
-    console.error('Error getting all users:', error);
+    console.error("Error getting all users:", error);
     return {
       data: null,
       error: {
-        code: (error as any)?.code || 'unknown',
-        message: (error as any)?.message || 'Failed to get all users'
-      }
+        code: (error as any)?.code || "unknown",
+        message: (error as any)?.message || "Failed to get all users",
+      },
     };
   }
 };
@@ -658,33 +751,43 @@ export const getAllUsers = async (
 export const getAllUsersLegacy = async (): Promise<ServiceResult<User[]>> => {
   try {
     const db = await getDbWithInitialization();
-    const querySnapshot = await getDocs(collection(db, COLLECTIONS.USERS).withConverter(userConverter));
+    const querySnapshot = await getDocs(
+      collection(db, COLLECTIONS.USERS).withConverter(userConverter)
+    );
     const users = querySnapshot.docs.map((doc) => doc.data() as User);
     return { data: users, error: null };
   } catch (error) {
-    console.error('Error getting all users (legacy):', error);
+    console.error("Error getting all users (legacy):", error);
     return {
       data: null,
       error: {
-        code: (error as any)?.code || 'unknown',
-        message: (error as any)?.message || 'Failed to get all users'
-      }
+        code: (error as any)?.code || "unknown",
+        message: (error as any)?.message || "Failed to get all users",
+      },
     };
   }
 };
 
-export const deleteUser = async (userId: string): Promise<ServiceResult<void>> => {
+export const deleteUser = async (
+  userId: string
+): Promise<ServiceResult<void>> => {
   try {
     const db = getSyncFirebaseDb();
     await deleteDoc(doc(db, COLLECTIONS.USERS, userId));
     return { data: null, error: null };
   } catch (error: any) {
     console.error(`Error deleting user ${userId}:`, error);
-    return { data: null, error: { code: 'unknown', message: `Failed to delete user ${userId}` } };
+    return {
+      data: null,
+      error: { code: "unknown", message: `Failed to delete user ${userId}` },
+    };
   }
 };
 
-export const updateUserRole = async (userId: string, role: UserRole): Promise<ServiceResult<void>> => {
+export const updateUserRole = async (
+  userId: string,
+  role: UserRole
+): Promise<ServiceResult<void>> => {
   try {
     const db = getSyncFirebaseDb();
     const userRef = doc(db, COLLECTIONS.USERS, userId);
@@ -692,40 +795,66 @@ export const updateUserRole = async (userId: string, role: UserRole): Promise<Se
     return { data: null, error: null };
   } catch (error: any) {
     console.error(`Error updating role for user ${userId}:`, error);
-    return { data: null, error: { code: 'unknown', message: `Failed to update role for user ${userId}` } };
+    return {
+      data: null,
+      error: {
+        code: "unknown",
+        message: `Failed to update role for user ${userId}`,
+      },
+    };
   }
 };
 
-export const createTrade = async (tradeData: Omit<Trade, 'id'>): Promise<ServiceResult<string>> => {
+export const createTrade = async (
+  tradeData: Omit<Trade, "id">
+): Promise<ServiceResult<string>> => {
   try {
     const db = getSyncFirebaseDb();
-    const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(tradeConverter);
+    const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(
+      tradeConverter
+    );
     const payload: Trade = {
       ...tradeData,
-      visibility: tradeData.visibility ?? 'public'
+      visibility: tradeData.visibility ?? "public",
     } as Trade;
     const docRef = await addDoc(tradesCollection, payload);
     return { data: docRef.id, error: null };
   } catch (error) {
-    console.error('Error creating trade:', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to create trade' } };
+    console.error("Error creating trade:", error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to create trade" },
+    };
   }
 };
 
 // Fix getTrade function with proper type assertion
-export const getTrade = async (tradeId: string): Promise<ServiceResult<Trade | undefined>> => {
+export const getTrade = async (
+  tradeId: string
+): Promise<ServiceResult<Trade | undefined>> => {
   try {
     const db = getSyncFirebaseDb();
-    const tradeRef = doc(db, COLLECTIONS.TRADES, tradeId).withConverter(tradeConverter);
+    const tradeRef = doc(db, COLLECTIONS.TRADES, tradeId).withConverter(
+      tradeConverter
+    );
     const docSnap = await getDoc(tradeRef);
-    return { data: docSnap.exists() ? docSnap.data() as Trade : undefined, error: null };
+    return {
+      data: docSnap.exists() ? (docSnap.data() as Trade) : undefined,
+      error: null,
+    };
   } catch (error) {
     console.error(`Error getting trade ${tradeId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to get trade' } };
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to get trade" },
+    };
   }
 };
 
-export const updateTrade = async (tradeId: string, updates: Partial<Trade>): Promise<ServiceResult<void>> => {
+export const updateTrade = async (
+  tradeId: string,
+  updates: Partial<Trade>
+): Promise<ServiceResult<void>> => {
   try {
     const db = getSyncFirebaseDb();
     const tradeRef = doc(db, COLLECTIONS.TRADES, tradeId);
@@ -733,18 +862,26 @@ export const updateTrade = async (tradeId: string, updates: Partial<Trade>): Pro
     return { data: null, error: null };
   } catch (error) {
     console.error(`Error updating trade ${tradeId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to update trade' } };
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to update trade" },
+    };
   }
 };
 
-export const deleteTrade = async (tradeId: string): Promise<ServiceResult<void>> => {
+export const deleteTrade = async (
+  tradeId: string
+): Promise<ServiceResult<void>> => {
   try {
     const db = getSyncFirebaseDb();
     await deleteDoc(doc(db, COLLECTIONS.TRADES, tradeId));
     return { data: null, error: null };
   } catch (error) {
     console.error(`Error deleting trade ${tradeId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to delete trade' } };
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to delete trade" },
+    };
   }
 };
 
@@ -755,28 +892,33 @@ export const getAllTrades = async (
 ): Promise<ServiceResult<PaginatedResult<Trade>>> => {
   try {
     const db = await getDbWithInitialization();
-    const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(tradeConverter);
+    const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(
+      tradeConverter
+    );
 
     const baseConstraints: QueryConstraint[] = [];
     if (!options.includeNonPublic) {
-      baseConstraints.push(where('visibility', '==', 'public'));
+      baseConstraints.push(where("visibility", "==", "public"));
     }
     if (filters?.status) {
-      baseConstraints.push(where('status', '==', filters.status));
+      baseConstraints.push(where("status", "==", filters.status));
     }
     if (filters?.category) {
-      baseConstraints.push(where('category', '==', filters.category));
+      baseConstraints.push(where("category", "==", filters.category));
     }
 
-    let tradesQuery: Query<Trade> = baseConstraints.length > 0
-      ? query(tradesCollection, ...baseConstraints)
-      : query(tradesCollection);
+    let tradesQuery: Query<Trade> =
+      baseConstraints.length > 0
+        ? query(tradesCollection, ...baseConstraints)
+        : query(tradesCollection);
 
     // Apply pagination
     if (pagination) {
       const constraints: QueryConstraint[] = [];
       if (pagination.orderByField) {
-        constraints.push(orderBy(pagination.orderByField, pagination.orderDirection || 'asc'));
+        constraints.push(
+          orderBy(pagination.orderByField, pagination.orderDirection || "asc")
+        );
       }
       if (pagination.startAfterDoc) {
         constraints.push(startAfter(pagination.startAfterDoc));
@@ -784,61 +926,95 @@ export const getAllTrades = async (
       constraints.push(limitQuery(pagination.limit || 10));
       tradesQuery = query(tradesQuery, ...constraints);
     }
-    
+
     const querySnapshot = await getDocs(tradesQuery);
 
-    const trades = querySnapshot.docs.map(doc => doc.data());
+    const trades = querySnapshot.docs.map((doc) => doc.data());
 
     const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
     const hasMore = (pagination?.limit || 0) <= trades.length;
 
     return { data: { items: trades, hasMore, lastDoc }, error: null };
   } catch (error) {
-    console.error('Error getting all trades:', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to get all trades' } };
+    console.error("Error getting all trades:", error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to get all trades" },
+    };
   }
 };
 
-export const getAllTradesLegacy = async (category?: string, limit?: number, options: { includeNonPublic?: boolean } = {}): Promise<ServiceResult<Trade[]>> => {
+export const getAllTradesLegacy = async (
+  category?: string,
+  limit?: number,
+  options: { includeNonPublic?: boolean } = {}
+): Promise<ServiceResult<Trade[]>> => {
   try {
     const db = await getDbWithInitialization();
-    const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(tradeConverter);
+    const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(
+      tradeConverter
+    );
     const base: QueryConstraint[] = [];
     if (!options.includeNonPublic) {
-      base.push(where('visibility', '==', 'public'));
+      base.push(where("visibility", "==", "public"));
     }
     if (category) {
-      base.push(where('category', '==', category));
+      base.push(where("category", "==", category));
     }
     const q = query(tradesCollection, ...base, limitQuery(limit || 10));
     const querySnapshot = await getDocs(q);
-    const trades = querySnapshot.docs.map(doc => doc.data() as Trade);
+    const trades = querySnapshot.docs.map((doc) => doc.data() as Trade);
     return { data: trades, error: null };
   } catch (error) {
-    console.error('Error getting all trades by category (legacy):', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to get trades' } };
+    console.error("Error getting all trades by category (legacy):", error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to get trades" },
+    };
   }
 };
 
-export const getUserTrades = async (userId: string, options: { includeNonPublic?: boolean } = {}): Promise<ServiceResult<Trade[]>> => {
+export const getUserTrades = async (
+  userId: string,
+  options: { includeNonPublic?: boolean } = {}
+): Promise<ServiceResult<Trade[]>> => {
   try {
     const db = await getDbWithInitialization();
-    const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(tradeConverter);
+    const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(
+      tradeConverter
+    );
 
-    const visibilityConstraint = options.includeNonPublic ? [] : [where('visibility', '==', 'public')];
+    const visibilityConstraint = options.includeNonPublic
+      ? []
+      : [where("visibility", "==", "public")];
 
-    const createdTradesQuery = query(tradesCollection, where('creatorId', '==', userId), ...visibilityConstraint);
+    const createdTradesQuery = query(
+      tradesCollection,
+      where("creatorId", "==", userId),
+      ...visibilityConstraint
+    );
     const createdTradesSnapshot = await getDocs(createdTradesQuery);
-    const createdTrades = createdTradesSnapshot.docs.map(doc => doc.data() as Trade);
+    const createdTrades = createdTradesSnapshot.docs.map(
+      (doc) => doc.data() as Trade
+    );
 
-    const participatingTradesQuery = query(tradesCollection, where('participantId', '==', userId), ...visibilityConstraint);
+    const participatingTradesQuery = query(
+      tradesCollection,
+      where("participantId", "==", userId),
+      ...visibilityConstraint
+    );
     const participatingTradesSnapshot = await getDocs(participatingTradesQuery);
-    const participatingTrades = participatingTradesSnapshot.docs.map(doc => doc.data() as Trade);
+    const participatingTrades = participatingTradesSnapshot.docs.map(
+      (doc) => doc.data() as Trade
+    );
 
     return { data: [...createdTrades, ...participatingTrades], error: null };
   } catch (error) {
-    console.error(`Error getting trades for user ${userId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to get user trades' } };
+    console.error("Error getting trades for user %s:", userId, error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to get user trades" },
+    };
   }
 };
 
@@ -847,7 +1023,7 @@ export const getUserTrades = async (userId: string, options: { includeNonPublic?
  */
 export const getRelatedUserIds = async (
   userId: string,
-  relation: 'followers' | 'following',
+  relation: "followers" | "following",
   opts?: { limit?: number }
 ): Promise<ServiceResult<{ ids: string[] }>> => {
   try {
@@ -855,57 +1031,77 @@ export const getRelatedUserIds = async (
     requireAuth();
 
     const db = getSyncFirebaseDb();
-    const followsCol = collection(db, 'userFollows');
+    const followsCol = collection(db, "userFollows");
     const constraints: QueryConstraint[] = [];
-    if (relation === 'followers') {
-      constraints.push(where('followingId', '==', userId));
+    if (relation === "followers") {
+      constraints.push(where("followingId", "==", userId));
     } else {
-      constraints.push(where('followerId', '==', userId));
+      constraints.push(where("followerId", "==", userId));
     }
-    constraints.push(orderBy('createdAt', 'desc'));
+    constraints.push(orderBy("createdAt", "desc"));
     if (opts?.limit) {
       constraints.push(limitQuery(opts.limit));
     }
     const q = query(followsCol, ...constraints);
     const snap = await getDocs(q);
     const ids = snap.docs
-      .filter(d => !(d.data() as any)?.deletedAt)
-      .map(d => relation === 'followers' ? (d.data() as any).followerId : (d.data() as any).followingId)
+      .filter((d) => !(d.data() as any)?.deletedAt)
+      .map((d) =>
+        relation === "followers"
+          ? (d.data() as any).followerId
+          : (d.data() as any).followingId
+      )
       .filter(Boolean);
     return { data: { ids }, error: null };
   } catch (error: any) {
-    console.error('Error fetching related user ids:', error);
-    return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to fetch related user ids' } };
+    console.error("Error fetching related user ids:", error);
+    return {
+      data: null,
+      error: {
+        code: error.code || "unknown",
+        message: error.message || "Failed to fetch related user ids",
+      },
+    };
   }
 };
 
 /**
  * Fetch users by ids in batches of 10 to comply with Firestore 'in' constraints
  */
-export const getUsersByIds = async (ids: string[]): Promise<ServiceResult<User[]>> => {
+export const getUsersByIds = async (
+  ids: string[]
+): Promise<ServiceResult<User[]>> => {
   try {
     if (!ids.length) return { data: [], error: null };
     const db = await getDbWithInitialization();
-    const usersCol = collection(db, COLLECTIONS.USERS).withConverter(userConverter);
+    const usersCol = collection(db, COLLECTIONS.USERS).withConverter(
+      userConverter
+    );
     const chunks: string[][] = [];
     for (let i = 0; i < ids.length; i += 10) chunks.push(ids.slice(i, i + 10));
     const results: User[] = [];
     for (const chunk of chunks) {
       const q = query(
         usersCol as any,
-        where(documentId(), 'in', chunk),
-        where('public', '==', true)
+        where(documentId(), "in", chunk),
+        where("public", "==", true)
       );
       const snap = await getDocs(q);
-      results.push(...snap.docs.map(d => d.data() as User));
+      results.push(...snap.docs.map((d) => d.data() as User));
     }
     // Deduplicate by id
     const uniqueMap = new Map<string, User>();
     for (const u of results) uniqueMap.set(u.id, u);
     return { data: Array.from(uniqueMap.values()), error: null };
   } catch (error: any) {
-    console.error('Error fetching users by ids:', error);
-    return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to fetch users' } };
+    console.error("Error fetching users by ids:", error);
+    return {
+      data: null,
+      error: {
+        code: error.code || "unknown",
+        message: error.message || "Failed to fetch users",
+      },
+    };
   }
 };
 
@@ -917,31 +1113,54 @@ export const requestTradeCompletion = async (
 ): Promise<ServiceResult<void>> => {
   try {
     const db = getSyncFirebaseDb();
-    const tradeRef = doc(db, COLLECTIONS.TRADES, tradeId).withConverter(tradeConverter);
+    const tradeRef = doc(db, COLLECTIONS.TRADES, tradeId).withConverter(
+      tradeConverter
+    );
     const tradeDoc = await getDoc(tradeRef);
 
     if (!tradeDoc.exists()) {
-      return { data: null, error: { code: 'not-found', message: 'Trade not found' } };
+      return {
+        data: null,
+        error: { code: "not-found", message: "Trade not found" },
+      };
     }
 
     const tradeData = tradeDoc.data() as Trade;
 
     // Check if the user is the creator or participant
     if (tradeData.creatorId !== userId && tradeData.participantId !== userId) {
-      return { data: null, error: { code: 'permission-denied', message: 'User is not part of this trade' } };
+      return {
+        data: null,
+        error: {
+          code: "permission-denied",
+          message: "User is not part of this trade",
+        },
+      };
     }
 
-    if (tradeData.status !== 'in-progress' && tradeData.status !== 'pending_evidence') {
-      return { data: null, error: { code: 'invalid-status', message: 'Trade is not in a state to be completed' } };
+    if (
+      tradeData.status !== "in-progress" &&
+      tradeData.status !== "pending_evidence"
+    ) {
+      return {
+        data: null,
+        error: {
+          code: "invalid-status",
+          message: "Trade is not in a state to be completed",
+        },
+      };
     }
 
-    if (tradeData.completionRequestedBy && tradeData.completionRequestedBy !== userId) {
+    if (
+      tradeData.completionRequestedBy &&
+      tradeData.completionRequestedBy !== userId
+    ) {
       // The other party already requested completion, so this becomes a confirmation.
       return confirmTradeCompletion(tradeId, userId);
     }
 
     const updateData: Partial<Trade> = {
-      status: 'pending_confirmation',
+      status: "pending_confirmation",
       completionRequestedAt: Timestamp.now(),
       completionRequestedBy: userId,
     };
@@ -957,7 +1176,10 @@ export const requestTradeCompletion = async (
     return { data: null, error: null };
   } catch (error) {
     console.error(`Error requesting completion for trade ${tradeId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to request trade completion' } };
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to request trade completion" },
+    };
   }
 };
 
@@ -970,39 +1192,63 @@ export const confirmTradeCompletion = async (
     requireAuth();
 
     const db = getSyncFirebaseDb();
-    const tradeRef = doc(db, COLLECTIONS.TRADES, tradeId).withConverter(tradeConverter);
+    const tradeRef = doc(db, COLLECTIONS.TRADES, tradeId).withConverter(
+      tradeConverter
+    );
     const tradeDoc = await getDoc(tradeRef);
 
     if (!tradeDoc.exists()) {
-      return { data: null, error: { code: 'not-found', message: 'Trade not found.' } };
+      return {
+        data: null,
+        error: { code: "not-found", message: "Trade not found." },
+      };
     }
     const tradeData = tradeDoc.data() as Trade;
 
-    const { creatorId, participantId, status, completionRequestedBy } = tradeData;
+    const { creatorId, participantId, status, completionRequestedBy } =
+      tradeData;
 
-    if (status !== 'in-progress' && status !== 'pending_evidence') {
+    if (status !== "in-progress" && status !== "pending_evidence") {
       return {
         data: null,
-        error: { code: 'invalid-status', message: 'Trade is not in a state to be completed' }
+        error: {
+          code: "invalid-status",
+          message: "Trade is not in a state to be completed",
+        },
       };
     }
 
     if (completionRequestedBy === userId) {
-      return { data: null, error: { code: 'permission-denied', message: 'Cannot confirm your own completion request' } };
+      return {
+        data: null,
+        error: {
+          code: "permission-denied",
+          message: "Cannot confirm your own completion request",
+        },
+      };
     }
 
     if (creatorId !== userId && participantId !== userId) {
-      return { data: null, error: { code: 'permission-denied', message: 'User is not part of this trade' } };
+      return {
+        data: null,
+        error: {
+          code: "permission-denied",
+          message: "User is not part of this trade",
+        },
+      };
     }
 
     await updateDoc(doc(db, COLLECTIONS.TRADES, tradeId), {
-      status: 'completed',
+      status: "completed",
       completionConfirmedAt: Timestamp.now(),
     });
     return { data: null, error: null };
   } catch (error) {
-    console.error('Error confirming trade completion:', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to confirm trade completion' } };
+    console.error("Error confirming trade completion:", error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to confirm trade completion" },
+    };
   }
 };
 
@@ -1015,50 +1261,73 @@ export const requestTradeChanges = async (
     const db = getSyncFirebaseDb();
     const tradeRef = doc(db, COLLECTIONS.TRADES, tradeId);
     const changeRequest: ChangeRequest = {
-      id: doc(collection(db, 'temp')).id, // Generate a unique ID
+      id: doc(collection(db, "temp")).id, // Generate a unique ID
       requestedBy: userId,
       requestedAt: Timestamp.now(),
       reason,
-      status: 'pending',
+      status: "pending",
     };
     await updateDoc(tradeRef, {
       changeRequests: arrayUnion(changeRequest),
-      status: 'disputed'
+      status: "disputed",
     });
     return { data: null, error: null };
   } catch (error: any) {
-    console.error('Error requesting trade changes:', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to request trade changes' } };
+    console.error("Error requesting trade changes:", error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to request trade changes" },
+    };
   }
 };
 
-export const createCollaboration = async (collaborationData: Omit<Collaboration, 'id'>): Promise<ServiceResult<string>> => {
+export const createCollaboration = async (
+  collaborationData: Omit<Collaboration, "id">
+): Promise<ServiceResult<string>> => {
   try {
     const db = getSyncFirebaseDb();
-    const collsCollection = collection(db, COLLECTIONS.COLLABORATIONS).withConverter(collaborationConverter);
+    const collsCollection = collection(
+      db,
+      COLLECTIONS.COLLABORATIONS
+    ).withConverter(collaborationConverter);
     const payload: Collaboration = {
       ...collaborationData,
       public: collaborationData.public ?? true,
-      visibility: collaborationData.visibility ?? 'public'
+      visibility: collaborationData.visibility ?? "public",
     } as Collaboration;
     const docRef = await addDoc(collsCollection, payload);
     return { data: docRef.id, error: null };
   } catch (error) {
-    console.error('Error creating collaboration:', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to create collaboration' } };
+    console.error("Error creating collaboration:", error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to create collaboration" },
+    };
   }
 };
 
 // Fix getCollaboration function
-export const getCollaboration = async (collaborationId: string): Promise<ServiceResult<Collaboration | undefined>> => {
+export const getCollaboration = async (
+  collaborationId: string
+): Promise<ServiceResult<Collaboration | undefined>> => {
   try {
     const db = getSyncFirebaseDb();
-    const collRef = doc(db, COLLECTIONS.COLLABORATIONS, collaborationId).withConverter(collaborationConverter);
+    const collRef = doc(
+      db,
+      COLLECTIONS.COLLABORATIONS,
+      collaborationId
+    ).withConverter(collaborationConverter);
     const docSnap = await getDoc(collRef);
-    return { data: docSnap.exists() ? docSnap.data() as Collaboration : undefined, error: null };
+    return {
+      data: docSnap.exists() ? (docSnap.data() as Collaboration) : undefined,
+      error: null,
+    };
   } catch (error) {
     console.error(`Error getting collaboration ${collaborationId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to get collaboration' } };
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to get collaboration" },
+    };
   }
 };
 
@@ -1070,21 +1339,30 @@ export const getAllCollaborations = async (
 ): Promise<ServiceResult<PaginatedResult<Collaboration>>> => {
   try {
     const db = getSyncFirebaseDb();
-    const collsCollection = collection(db, COLLECTIONS.COLLABORATIONS).withConverter(collaborationConverter);
-    
+    const collsCollection = collection(
+      db,
+      COLLECTIONS.COLLABORATIONS
+    ).withConverter(collaborationConverter);
+
     // Smart query building based on filter complexity
-    const queryBuilder = new CollaborationQueryBuilder(collsCollection, filters);
-    
+    const queryBuilder = new CollaborationQueryBuilder(
+      collsCollection,
+      filters
+    );
+
     // Use simplified filters if complex index is required
-    const effectiveFilters = queryBuilder.requiresComplexIndex() 
-      ? queryBuilder.getSimplifiedFilters() 
+    const effectiveFilters = queryBuilder.requiresComplexIndex()
+      ? queryBuilder.getSimplifiedFilters()
       : filters;
-    
-    const simplifiedQueryBuilder = effectiveFilters !== filters 
-      ? new CollaborationQueryBuilder(collsCollection, effectiveFilters)
-      : queryBuilder;
-    
-    const visibilityConstraints = options.includeNonPublic ? [] : [where('visibility', '==', 'public')];
+
+    const simplifiedQueryBuilder =
+      effectiveFilters !== filters
+        ? new CollaborationQueryBuilder(collsCollection, effectiveFilters)
+        : queryBuilder;
+
+    const visibilityConstraints = options.includeNonPublic
+      ? []
+      : [where("visibility", "==", "public")];
 
     let collsQuery = simplifiedQueryBuilder.buildQuery();
     if (visibilityConstraints.length > 0) {
@@ -1093,34 +1371,49 @@ export const getAllCollaborations = async (
 
     // Apply pagination with smart ordering
     const paginationConstraints: QueryConstraint[] = [];
-    
+
     // Always add ordering for consistency (required for Firestore queries)
-    const orderByField = pagination?.orderByField || simplifiedQueryBuilder.getOptimalOrderBy();
+    const orderByField =
+      pagination?.orderByField || simplifiedQueryBuilder.getOptimalOrderBy();
     if (orderByField) {
-      paginationConstraints.push(orderBy(orderByField, pagination?.orderDirection || 'desc'));
+      paginationConstraints.push(
+        orderBy(orderByField, pagination?.orderDirection || "desc")
+      );
     }
-    
+
     if (pagination?.startAfterDoc) {
       paginationConstraints.push(startAfter(pagination.startAfterDoc));
     }
-    
+
     // Optimize limit based on filter complexity
-    const optimizedLimit = simplifiedQueryBuilder.getOptimizedLimit(pagination?.limit || 20);
+    const optimizedLimit = simplifiedQueryBuilder.getOptimizedLimit(
+      pagination?.limit || 20
+    );
     paginationConstraints.push(limitQuery(optimizedLimit));
-    
+
     collsQuery = query(collsQuery, ...paginationConstraints);
 
     const querySnapshot = await getDocs(collsQuery);
-    let collaborations = querySnapshot.docs.map(doc => doc.data() as Collaboration);
+    let collaborations = querySnapshot.docs.map(
+      (doc) => doc.data() as Collaboration
+    );
 
     // Apply client-side filtering for filters that were simplified due to index requirements
     if (effectiveFilters !== filters && filters) {
-      collaborations = applyClientSideFilters(collaborations, filters, effectiveFilters);
+      collaborations = applyClientSideFilters(
+        collaborations,
+        filters,
+        effectiveFilters
+      );
     }
 
     // Apply server-side text search if available, otherwise fallback to client-side
     if (filters?.searchQuery) {
-      collaborations = await applyTextSearch(collaborations, filters.searchQuery, db);
+      collaborations = await applyTextSearch(
+        collaborations,
+        filters.searchQuery,
+        db
+      );
     }
 
     // Apply date range filtering
@@ -1131,24 +1424,27 @@ export const getAllCollaborations = async (
     const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
     const hasMore = collaborations.length >= (pagination?.limit || 20);
 
-    return { 
-      data: { 
-        items: collaborations, 
-        hasMore, 
+    return {
+      data: {
+        items: collaborations,
+        hasMore,
         lastDoc,
         totalCount: collaborations.length,
         queryMetadata: {
           ...simplifiedQueryBuilder.getQueryMetadata(),
           usedSimplifiedFilters: effectiveFilters !== filters,
           originalFilters: filters,
-          effectiveFilters: effectiveFilters
-        }
-      }, 
-      error: null 
+          effectiveFilters: effectiveFilters,
+        },
+      },
+      error: null,
     };
   } catch (error) {
-    console.error('Error getting all collaborations:', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to get all collaborations' } };
+    console.error("Error getting all collaborations:", error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to get all collaborations" },
+    };
   }
 };
 
@@ -1159,7 +1455,10 @@ class CollaborationQueryBuilder {
   private constraints: QueryConstraint[] = [];
   private queryMetadata: any = {};
 
-  constructor(collection: CollectionReference<Collaboration>, filters?: CollaborationFilters) {
+  constructor(
+    collection: CollectionReference<Collaboration>,
+    filters?: CollaborationFilters
+  ) {
     this.collection = collection;
     this.filters = filters;
     this.buildConstraints();
@@ -1170,23 +1469,27 @@ class CollaborationQueryBuilder {
 
     // Priority 1: Exact match filters (most efficient)
     if (this.filters.status) {
-      this.constraints.push(where('status', '==', this.filters.status));
+      this.constraints.push(where("status", "==", this.filters.status));
       this.queryMetadata.statusFilter = true;
     }
 
     if (this.filters.category) {
-      this.constraints.push(where('category', '==', this.filters.category));
+      this.constraints.push(where("category", "==", this.filters.category));
       this.queryMetadata.categoryFilter = true;
     }
 
     if (this.filters.timeCommitment) {
-      this.constraints.push(where('timeCommitment', '==', this.filters.timeCommitment));
+      this.constraints.push(
+        where("timeCommitment", "==", this.filters.timeCommitment)
+      );
       this.queryMetadata.timeFilter = true;
     }
 
     // Priority 2: Range filters
     if (this.filters.maxParticipants) {
-      this.constraints.push(where('maxParticipants', '<=', this.filters.maxParticipants));
+      this.constraints.push(
+        where("maxParticipants", "<=", this.filters.maxParticipants)
+      );
       this.queryMetadata.participantFilter = true;
     }
 
@@ -1195,23 +1498,27 @@ class CollaborationQueryBuilder {
     const requiredSkills = this.filters.skillsRequired as string[] | undefined;
     const combinedSkills = [
       ...(Array.isArray(uiSkills) ? uiSkills : []),
-      ...(Array.isArray(requiredSkills) ? requiredSkills : [])
+      ...(Array.isArray(requiredSkills) ? requiredSkills : []),
     ];
     if (combinedSkills.length > 0) {
       // Use normalized index for better matches and performance
-      const limitedSkills = combinedSkills.map(s => s.toLowerCase()).slice(0, 10);
-      this.constraints.push(where('skillsIndex', 'array-contains-any', limitedSkills));
+      const limitedSkills = combinedSkills
+        .map((s) => s.toLowerCase())
+        .slice(0, 10);
+      this.constraints.push(
+        where("skillsIndex", "array-contains-any", limitedSkills)
+      );
       this.queryMetadata.skillsFilter = true;
     }
 
     // Priority 4: String filters (least efficient, consider full-text search)
     if (this.filters.location) {
-      this.constraints.push(where('location', '==', this.filters.location));
+      this.constraints.push(where("location", "==", this.filters.location));
       this.queryMetadata.locationFilter = true;
     }
 
     if (this.filters.createdBy) {
-      this.constraints.push(where('creatorId', '==', this.filters.createdBy));
+      this.constraints.push(where("creatorId", "==", this.filters.createdBy));
       this.queryMetadata.creatorFilter = true;
     }
 
@@ -1219,7 +1526,7 @@ class CollaborationQueryBuilder {
   }
 
   buildQuery(): Query<Collaboration> {
-    return this.constraints.length > 0 
+    return this.constraints.length > 0
       ? query(this.collection, ...this.constraints)
       : query(this.collection);
   }
@@ -1227,9 +1534,9 @@ class CollaborationQueryBuilder {
   getOptimalOrderBy(): string {
     // Smart ordering based on active filters
     // Avoid complex index requirements by using simple ordering
-    if (this.filters?.category) return 'category';
-    if (this.filters?.timeCommitment) return 'timeCommitment';
-    return 'createdAt';
+    if (this.filters?.category) return "category";
+    if (this.filters?.timeCommitment) return "timeCommitment";
+    return "createdAt";
   }
 
   // Check if query requires complex indexes
@@ -1246,11 +1553,11 @@ class CollaborationQueryBuilder {
   // Get simplified filters for basic queries
   getSimplifiedFilters(): CollaborationFilters | undefined {
     if (!this.filters) return undefined;
-    
+
     // If complex index is required, simplify the query
     if (this.requiresComplexIndex()) {
       const simplified: CollaborationFilters = {};
-      
+
       // Keep only the most important filter to avoid index issues
       if (this.filters.status) {
         simplified.status = this.filters.status;
@@ -1259,10 +1566,10 @@ class CollaborationQueryBuilder {
       } else if (this.filters.timeCommitment) {
         simplified.timeCommitment = this.filters.timeCommitment;
       }
-      
+
       return simplified;
     }
-    
+
     return this.filters;
   }
 
@@ -1279,60 +1586,66 @@ class CollaborationQueryBuilder {
     return {
       ...this.queryMetadata,
       constraintCount: this.constraints.length,
-      hasComplexFilters: this.queryMetadata.skillsFilter || this.queryMetadata.locationFilter
+      hasComplexFilters:
+        this.queryMetadata.skillsFilter || this.queryMetadata.locationFilter,
     };
   }
 }
 
 // Enhanced text search with server-side optimization
 async function applyTextSearch(
-  collaborations: Collaboration[], 
-  searchQuery: string, 
+  collaborations: Collaboration[],
+  searchQuery: string,
   db: Firestore
 ): Promise<Collaboration[]> {
   const searchTerm = searchQuery.toLowerCase().trim();
-  
+
   if (searchTerm.length < 2) return collaborations;
 
   // For short queries, use client-side filtering
   if (searchTerm.length < 4) {
-    return collaborations.filter(collab => {
-      const title = collab.title?.toLowerCase() || '';
-      const description = collab.description?.toLowerCase() || '';
-      const creatorName = collab.creatorName?.toLowerCase() || '';
-      const skills = collab.skillsRequired?.join(' ').toLowerCase() || '';
-      const category = collab.category?.toLowerCase() || '';
-      
-      return title.includes(searchTerm) || 
-             description.includes(searchTerm) || 
-             creatorName.includes(searchTerm) || 
-             skills.includes(searchTerm) ||
-             category.includes(searchTerm);
+    return collaborations.filter((collab) => {
+      const title = collab.title?.toLowerCase() || "";
+      const description = collab.description?.toLowerCase() || "";
+      const creatorName = collab.creatorName?.toLowerCase() || "";
+      const skills = collab.skillsRequired?.join(" ").toLowerCase() || "";
+      const category = collab.category?.toLowerCase() || "";
+
+      return (
+        title.includes(searchTerm) ||
+        description.includes(searchTerm) ||
+        creatorName.includes(searchTerm) ||
+        skills.includes(searchTerm) ||
+        category.includes(searchTerm)
+      );
     });
   }
 
   // For longer queries, consider server-side search if available
   // This is where you could integrate Algolia, Elasticsearch, or Firestore full-text search
   // For now, we'll use optimized client-side filtering
-  return collaborations.filter(collab => {
+  return collaborations.filter((collab) => {
     const searchableText = [
       collab.title,
       collab.description,
       collab.creatorName,
-      collab.skillsRequired?.join(' '),
-      collab.category
-    ].filter(Boolean).join(' ').toLowerCase();
-    
+      collab.skillsRequired?.join(" "),
+      collab.category,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
     return searchableText.includes(searchTerm);
   });
 }
 
 // Date range filtering
 function applyDateRangeFilter(
-  collaborations: Collaboration[], 
+  collaborations: Collaboration[],
   dateRange: { start: Date; end: Date }
 ): Collaboration[] {
-  return collaborations.filter(collab => {
+  return collaborations.filter((collab) => {
     const createdAt = collab.createdAt?.toDate() || new Date(0);
     return createdAt >= dateRange.start && createdAt <= dateRange.end;
   });
@@ -1344,66 +1657,109 @@ function applyClientSideFilters(
   originalFilters: CollaborationFilters,
   effectiveFilters: CollaborationFilters | undefined
 ): Collaboration[] {
-  return collaborations.filter(collab => {
+  return collaborations.filter((collab) => {
     // Apply filters that were removed due to index requirements
-    
+
     // Category filter
-    if (originalFilters.category && collab.category !== originalFilters.category) {
+    if (
+      originalFilters.category &&
+      collab.category !== originalFilters.category
+    ) {
       return false;
     }
-    
+
     // Time commitment filter
-    if (originalFilters.timeCommitment && collab.timeCommitment !== originalFilters.timeCommitment) {
+    if (
+      originalFilters.timeCommitment &&
+      collab.timeCommitment !== originalFilters.timeCommitment
+    ) {
       return false;
     }
-    
+
     // Max participants filter
-    if (originalFilters.maxParticipants && collab.maxParticipants > originalFilters.maxParticipants) {
+    if (
+      originalFilters.maxParticipants &&
+      collab.maxParticipants > originalFilters.maxParticipants
+    ) {
       return false;
     }
-    
+
     // Skills filter (supports both legacy skillsRequired and new skills)
-    const legacyReq = Array.isArray(originalFilters.skillsRequired) ? originalFilters.skillsRequired : [];
-    const uiSkills = Array.isArray((originalFilters as any).skills) ? (originalFilters as any).skills as string[] : [];
-    const combined = [...uiSkills, ...legacyReq].map(s => s.toLowerCase());
+    const legacyReq = Array.isArray(originalFilters.skillsRequired)
+      ? originalFilters.skillsRequired
+      : [];
+    const uiSkills = Array.isArray((originalFilters as any).skills)
+      ? ((originalFilters as any).skills as string[])
+      : [];
+    const combined = [...uiSkills, ...legacyReq].map((s) => s.toLowerCase());
     if (combined.length > 0) {
-      const collabRequired = (collab.skillsRequired || []).map(s => (s || '').toLowerCase());
-      const collabNeeded = (collab.skillsNeeded || []).map(s => (s || '').toLowerCase());
-      const hasAny = combined.some(s => collabRequired.includes(s) || collabNeeded.includes(s));
+      const collabRequired = (collab.skillsRequired || []).map((s) =>
+        (s || "").toLowerCase()
+      );
+      const collabNeeded = (collab.skillsNeeded || []).map((s) =>
+        (s || "").toLowerCase()
+      );
+      const hasAny = combined.some(
+        (s) => collabRequired.includes(s) || collabNeeded.includes(s)
+      );
       if (!hasAny) return false;
     }
-    
+
     // Location filter
-    if (originalFilters.location && collab.location !== originalFilters.location) {
+    if (
+      originalFilters.location &&
+      collab.location !== originalFilters.location
+    ) {
       return false;
     }
-    
+
     // Created by filter
-    if (originalFilters.createdBy && collab.creatorId !== originalFilters.createdBy) {
+    if (
+      originalFilters.createdBy &&
+      collab.creatorId !== originalFilters.createdBy
+    ) {
       return false;
     }
-    
+
     return true;
   });
 }
 
 // Fix getAllCollaborationsLegacy function
-export const getAllCollaborationsLegacy = async (options: { includeNonPublic?: boolean } = {}): Promise<ServiceResult<Collaboration[]>> => {
+export const getAllCollaborationsLegacy = async (
+  options: { includeNonPublic?: boolean } = {}
+): Promise<ServiceResult<Collaboration[]>> => {
   try {
     const db = getSyncFirebaseDb();
-    const collsCollection = collection(db, COLLECTIONS.COLLABORATIONS).withConverter(collaborationConverter);
-    const visibilityConstraints = options.includeNonPublic ? [] : [where('visibility', '==', 'public')];
-    const q = visibilityConstraints.length > 0 ? query(collsCollection, ...visibilityConstraints) : collsCollection;
+    const collsCollection = collection(
+      db,
+      COLLECTIONS.COLLABORATIONS
+    ).withConverter(collaborationConverter);
+    const visibilityConstraints = options.includeNonPublic
+      ? []
+      : [where("visibility", "==", "public")];
+    const q =
+      visibilityConstraints.length > 0
+        ? query(collsCollection, ...visibilityConstraints)
+        : collsCollection;
     const querySnapshot = await getDocs(q);
-    const collaborations = querySnapshot.docs.map(doc => doc.data() as Collaboration);
+    const collaborations = querySnapshot.docs.map(
+      (doc) => doc.data() as Collaboration
+    );
     return { data: collaborations, error: null };
   } catch (error) {
-    console.error('Error getting all collaborations (legacy):', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to get all collaborations' } };
+    console.error("Error getting all collaborations (legacy):", error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to get all collaborations" },
+    };
   }
 };
 
-export const updateCollaboration = async (collaborationId: string, updates: Partial<Collaboration>): Promise<ServiceResult<void>> => {
+export const updateCollaboration = async (
+  collaborationId: string,
+  updates: Partial<Collaboration>
+): Promise<ServiceResult<void>> => {
   try {
     const db = getSyncFirebaseDb();
     const collRef = doc(db, COLLECTIONS.COLLABORATIONS, collaborationId);
@@ -1411,123 +1767,192 @@ export const updateCollaboration = async (collaborationId: string, updates: Part
     return { data: null, error: null };
   } catch (error) {
     console.error(`Error updating collaboration ${collaborationId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to update collaboration' } };
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to update collaboration" },
+    };
   }
 };
 
-export const deleteCollaboration = async (collaborationId: string): Promise<ServiceResult<void>> => {
+export const deleteCollaboration = async (
+  collaborationId: string
+): Promise<ServiceResult<void>> => {
   try {
     const db = getSyncFirebaseDb();
     await deleteDoc(doc(db, COLLECTIONS.COLLABORATIONS, collaborationId));
     return { data: null, error: null };
   } catch (error) {
     console.error(`Error deleting collaboration ${collaborationId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to delete collaboration' } };
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to delete collaboration" },
+    };
   }
 };
 
 // Application Functions
 export const createCollaborationApplication = async (
-  applicationData: Omit<CollaborationApplication, 'id' | 'createdAt' | 'updatedAt'>
+  applicationData: Omit<
+    CollaborationApplication,
+    "id" | "createdAt" | "updatedAt"
+  >
 ): Promise<ServiceResult<string>> => {
   try {
     const db = getSyncFirebaseDb();
-    const appsCollection = collection(db, COLLECTIONS.COLLABORATIONS, applicationData.collaborationId, 'roles', applicationData.roleId, 'applications').withConverter(collaborationApplicationConverter);
-    const docRef = await addDoc(appsCollection, applicationData as CollaborationApplication);
+    const appsCollection = collection(
+      db,
+      COLLECTIONS.COLLABORATIONS,
+      applicationData.collaborationId,
+      "roles",
+      applicationData.roleId,
+      "applications"
+    ).withConverter(collaborationApplicationConverter);
+    const docRef = await addDoc(
+      appsCollection,
+      applicationData as CollaborationApplication
+    );
     return { data: docRef.id, error: null };
   } catch (error) {
-    console.error(`Error creating application for collaboration ${applicationData.collaborationId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to create application' } };
+    console.error(
+      `Error creating application for collaboration ${applicationData.collaborationId}:`,
+      error
+    );
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to create application" },
+    };
   }
 };
 
 // Fix getCollaborationApplications function
-export const getCollaborationApplications = async (collaborationId: string): Promise<ServiceResult<CollaborationApplication[]>> => {
+export const getCollaborationApplications = async (
+  collaborationId: string
+): Promise<ServiceResult<CollaborationApplication[]>> => {
   try {
     const db = getSyncFirebaseDb();
     const allApplications: CollaborationApplication[] = [];
-    
+
     // Get all roles for this collaboration
-    const rolesQuery = query(collection(db, COLLECTIONS.COLLABORATIONS, collaborationId, 'roles'));
+    const rolesQuery = query(
+      collection(db, COLLECTIONS.COLLABORATIONS, collaborationId, "roles")
+    );
     const rolesSnapshot = await getDocs(rolesQuery);
-    
+
     // Get applications for each role
     for (const roleDoc of rolesSnapshot.docs) {
       const roleId = roleDoc.id;
       const applicationsQuery = query(
-        collection(db, COLLECTIONS.COLLABORATIONS, collaborationId, 'roles', roleId, 'applications')
-          .withConverter(collaborationApplicationConverter)
+        collection(
+          db,
+          COLLECTIONS.COLLABORATIONS,
+          collaborationId,
+          "roles",
+          roleId,
+          "applications"
+        ).withConverter(collaborationApplicationConverter)
       );
       const applicationsSnapshot = await getDocs(applicationsQuery);
-      
-      const roleApplications = applicationsSnapshot.docs.map(doc => doc.data() as CollaborationApplication);
+
+      const roleApplications = applicationsSnapshot.docs.map(
+        (doc) => doc.data() as CollaborationApplication
+      );
       allApplications.push(...roleApplications);
     }
-    
+
     return { data: allApplications, error: null };
   } catch (error) {
-    console.error(`Error getting applications for collaboration ${collaborationId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to get applications' } };
+    console.error(
+      `Error getting applications for collaboration ${collaborationId}:`,
+      error
+    );
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to get applications" },
+    };
   }
 };
 
 export const updateCollaborationApplication = async (
   applicationId: string,
-  updates: { status: 'accepted' | 'rejected' },
+  updates: { status: "accepted" | "rejected" },
   collaborationId: string,
   roleId: string // Add roleId parameter for new structure
 ): Promise<ServiceResult<void>> => {
   try {
     const db = getSyncFirebaseDb();
-    const appRef = doc(db, COLLECTIONS.COLLABORATIONS, collaborationId, 'roles', roleId, 'applications', applicationId);
+    const appRef = doc(
+      db,
+      COLLECTIONS.COLLABORATIONS,
+      collaborationId,
+      "roles",
+      roleId,
+      "applications",
+      applicationId
+    );
     await updateDoc(appRef, updates);
     return { data: null, error: null };
   } catch (error) {
     console.error(`Error updating application ${applicationId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to update application' } };
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to update application" },
+    };
   }
 };
 
 // Helper function for trade auto-completion countdown
-export const calculateAutoCompletionCountdown = (completionRequestedAt: Timestamp | Date): number => {
+export const calculateAutoCompletionCountdown = (
+  completionRequestedAt: Timestamp | Date
+): number => {
   const threeDaysInMillis = 3 * 24 * 60 * 60 * 1000;
-  
-  const requestDate = completionRequestedAt instanceof Date 
-    ? completionRequestedAt.getTime() 
-    : completionRequestedAt.toDate().getTime();
-  
+
+  const requestDate =
+    completionRequestedAt instanceof Date
+      ? completionRequestedAt.getTime()
+      : completionRequestedAt.toDate().getTime();
+
   const autoCompletionDate = new Date(requestDate);
   autoCompletionDate.setDate(autoCompletionDate.getDate() + 3);
-  
+
   const now = new Date();
-  const daysRemaining = Math.ceil((autoCompletionDate.getTime() - now.getTime()) / threeDaysInMillis);
-  
+  const daysRemaining = Math.ceil(
+    (autoCompletionDate.getTime() - now.getTime()) / threeDaysInMillis
+  );
+
   return Math.max(0, daysRemaining);
 };
 
 // Helper function for calculating auto-completion date
-export const calculateAutoCompletionDate = (completionRequestedAt: Timestamp | Date): Date => {
+export const calculateAutoCompletionDate = (
+  completionRequestedAt: Timestamp | Date
+): Date => {
   const threeDaysInMillis = 3 * 24 * 60 * 60 * 1000;
-  
-  const requestDate = completionRequestedAt instanceof Date 
-    ? completionRequestedAt.getTime() 
-    : completionRequestedAt.toDate().getTime();
-  
+
+  const requestDate =
+    completionRequestedAt instanceof Date
+      ? completionRequestedAt.getTime()
+      : completionRequestedAt.toDate().getTime();
+
   const autoCompletionDate = new Date(requestDate);
   autoCompletionDate.setDate(autoCompletionDate.getDate() + 3);
-  
+
   return autoCompletionDate;
 };
 
 // Helper function for determining if auto-completion should occur
-export const shouldAutoComplete = (completionRequestedAt: Timestamp | Date): boolean => {
+export const shouldAutoComplete = (
+  completionRequestedAt: Timestamp | Date
+): boolean => {
   return calculateAutoCompletionCountdown(completionRequestedAt) <= 0;
 };
 
 // Helper function for determining if a reminder should be sent
-export const shouldSendReminder = (completionRequestedAt: Timestamp | Date, remindersSent: number): boolean => {
+export const shouldSendReminder = (
+  completionRequestedAt: Timestamp | Date,
+  remindersSent: number
+): boolean => {
   const countdown = calculateAutoCompletionCountdown(completionRequestedAt);
-  
+
   // Example logic: send reminder at 2 days and 1 day remaining
   if (remindersSent === 0 && countdown <= 2) {
     return true;
@@ -1535,42 +1960,53 @@ export const shouldSendReminder = (completionRequestedAt: Timestamp | Date, remi
   if (remindersSent === 1 && countdown <= 1) {
     return true;
   }
-  
+
   return false;
 };
 
 // Fix getCollaborations function
-export const getCollaborations = async (): Promise<ServiceResult<Collaboration[]>> => {
+export const getCollaborations = async (): Promise<
+  ServiceResult<Collaboration[]>
+> => {
   try {
     const db = getSyncFirebaseDb();
-    const querySnapshot = await getDocs(collection(db, COLLECTIONS.COLLABORATIONS).withConverter(collaborationConverter));
-    const collaborations = querySnapshot.docs.map(doc => doc.data() as Collaboration);
+    const querySnapshot = await getDocs(
+      collection(db, COLLECTIONS.COLLABORATIONS).withConverter(
+        collaborationConverter
+      )
+    );
+    const collaborations = querySnapshot.docs.map(
+      (doc) => doc.data() as Collaboration
+    );
     return { data: collaborations, error: null };
   } catch (error) {
-    console.error('Error fetching collaborations:', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to get collaborations' } };
+    console.error("Error fetching collaborations:", error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to get collaborations" },
+    };
   }
 };
 
 // Fix createReview function to match Review interface
-export const createReview = async (
-  reviewData: {
-    reviewerId: string;
-    reviewerName?: string;
-    targetId: string;
-    targetType: 'user' | 'trade' | 'collaboration';
-    rating: number;
-    comment: string;
-    tradeId?: string;
-    collaborationId?: string;
-  }
-): Promise<ServiceResult<string>> => {
+export const createReview = async (reviewData: {
+  reviewerId: string;
+  reviewerName?: string;
+  targetId: string;
+  targetType: "user" | "trade" | "collaboration";
+  rating: number;
+  comment: string;
+  tradeId?: string;
+  collaborationId?: string;
+}): Promise<ServiceResult<string>> => {
   try {
     const db = getSyncFirebaseDb();
-    const reviewsCollection = collection(db, COLLECTIONS.REVIEWS).withConverter(reviewConverter);
-    
+    const reviewsCollection = collection(db, COLLECTIONS.REVIEWS).withConverter(
+      reviewConverter
+    );
+
     // Create proper Review object with all required fields
-    const review: Omit<Review, 'id'> = {
+    const review: Omit<Review, "id"> = {
       reviewerId: reviewData.reviewerId,
       reviewerName: reviewData.reviewerName,
       targetId: reviewData.targetId,
@@ -1579,54 +2015,92 @@ export const createReview = async (
       comment: reviewData.comment,
       tradeId: reviewData.tradeId,
       collaborationId: reviewData.collaborationId,
-      createdAt: Timestamp.now()
+      createdAt: Timestamp.now(),
     };
-    
+
     const docRef = await addDoc(reviewsCollection, review);
     return { data: docRef.id, error: null };
   } catch (error) {
-    console.error('Error creating review:', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to create review' } };
+    console.error("Error creating review:", error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to create review" },
+    };
   }
 };
 
 // Fix getUserReviews function
-export const getUserReviews = async (userId: string): Promise<ServiceResult<Review[]>> => {
+export const getUserReviews = async (
+  userId: string
+): Promise<ServiceResult<Review[]>> => {
   try {
     const db = getSyncFirebaseDb();
-    const reviewsQuery = query(collection(db, COLLECTIONS.REVIEWS).withConverter(reviewConverter), where('targetId', '==', userId));
+    const reviewsQuery = query(
+      collection(db, COLLECTIONS.REVIEWS).withConverter(reviewConverter),
+      where("targetId", "==", userId)
+    );
     const querySnapshot = await getDocs(reviewsQuery);
-    const reviews = querySnapshot.docs.map(doc => doc.data() as Review);
+    const reviews = querySnapshot.docs.map((doc) => doc.data() as Review);
     return { data: reviews, error: null };
   } catch (error) {
-    console.error(`Error getting reviews for user ${userId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to get user reviews' } };
+    console.error("Error getting reviews for user %s:", userId, error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to get user reviews" },
+    };
   }
 };
 
-export const createTradeProposal = async (proposalData: Omit<TradeProposal, 'id' | 'createdAt' | 'updatedAt'>): Promise<ServiceResult<string>> => {
+export const createTradeProposal = async (
+  proposalData: Omit<TradeProposal, "id" | "createdAt" | "updatedAt">
+): Promise<ServiceResult<string>> => {
   try {
     const db = getSyncFirebaseDb();
-    const proposalsCollection = collection(db, COLLECTIONS.TRADES, proposalData.tradeId, 'proposals').withConverter(tradeProposalConverter);
-    const docRef = await addDoc(proposalsCollection, proposalData as TradeProposal);
+    const proposalsCollection = collection(
+      db,
+      COLLECTIONS.TRADES,
+      proposalData.tradeId,
+      "proposals"
+    ).withConverter(tradeProposalConverter);
+    const docRef = await addDoc(
+      proposalsCollection,
+      proposalData as TradeProposal
+    );
     return { data: docRef.id, error: null };
   } catch (error) {
-    console.error(`Error creating proposal for trade ${proposalData.tradeId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to create proposal' } };
+    console.error(
+      `Error creating proposal for trade ${proposalData.tradeId}:`,
+      error
+    );
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to create proposal" },
+    };
   }
 };
 
 // Fix getTradeProposals function
-export const getTradeProposals = async (tradeId: string): Promise<ServiceResult<TradeProposal[]>> => {
+export const getTradeProposals = async (
+  tradeId: string
+): Promise<ServiceResult<TradeProposal[]>> => {
   try {
     const db = getSyncFirebaseDb();
-    const proposalsQuery = query(collection(db, COLLECTIONS.TRADES, tradeId, 'proposals').withConverter(tradeProposalConverter));
+    const proposalsQuery = query(
+      collection(db, COLLECTIONS.TRADES, tradeId, "proposals").withConverter(
+        tradeProposalConverter
+      )
+    );
     const querySnapshot = await getDocs(proposalsQuery);
-    const proposals = querySnapshot.docs.map(doc => doc.data() as TradeProposal);
+    const proposals = querySnapshot.docs.map(
+      (doc) => doc.data() as TradeProposal
+    );
     return { data: proposals, error: null };
   } catch (error) {
     console.error(`Error getting proposals for trade ${tradeId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to get trade proposals' } };
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to get trade proposals" },
+    };
   }
 };
 
@@ -1634,24 +2108,35 @@ export const getTradeProposals = async (tradeId: string): Promise<ServiceResult<
 export const updateTradeProposalStatus = async (
   tradeId: string,
   proposalId: string,
-  status: 'accepted' | 'rejected'
+  status: "accepted" | "rejected"
 ): Promise<ServiceResult<void>> => {
   try {
     const db = getSyncFirebaseDb();
     const tradeRef = doc(db, COLLECTIONS.TRADES, tradeId);
-    const proposalRef = doc(db, COLLECTIONS.TRADES, tradeId, 'proposals', proposalId);
+    const proposalRef = doc(
+      db,
+      COLLECTIONS.TRADES,
+      tradeId,
+      "proposals",
+      proposalId
+    );
 
     const batch = writeBatch(db);
 
-    if (status === 'accepted') {
-      const proposalDoc = await getDoc(proposalRef.withConverter(tradeProposalConverter));
+    if (status === "accepted") {
+      const proposalDoc = await getDoc(
+        proposalRef.withConverter(tradeProposalConverter)
+      );
       if (!proposalDoc.exists()) {
-        return { data: null, error: { code: 'not-found', message: 'Proposal not found' } };
+        return {
+          data: null,
+          error: { code: "not-found", message: "Proposal not found" },
+        };
       }
       const proposalData = proposalDoc.data() as TradeProposal;
 
       batch.update(tradeRef, {
-        status: 'in-progress',
+        status: "in-progress",
         participantId: proposalData.proposerId,
         participantName: proposalData.proposerName,
         participantPhotoURL: proposalData.proposerPhotoURL,
@@ -1663,33 +2148,62 @@ export const updateTradeProposalStatus = async (
 
     return { data: null, error: null };
   } catch (error) {
-    console.error(`Error updating proposal ${proposalId} for trade ${tradeId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to update proposal' } };
+    console.error(
+      `Error updating proposal ${proposalId} for trade ${tradeId}:`,
+      error
+    );
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to update proposal" },
+    };
   }
 };
 
 // Fix createConversation function with proper avatar handling
 export const createConversation = async (
   participants: { id: string; name: string; avatar?: string }[],
-  metadata?: { tradeId?: string; tradeName?: string; conversationType?: string; [key: string]: any }
+  metadata?: {
+    tradeId?: string;
+    tradeName?: string;
+    conversationType?: string;
+    [key: string]: any;
+  }
 ): Promise<ServiceResult<string>> => {
   try {
     // Require authentication for creating conversations
     requireAuth();
 
     if (participants.length === 2) {
-      const p1 = { id: participants[0].id, name: participants[0].name, avatar: participants[0].avatar };
-      const p2 = { id: participants[1].id, name: participants[1].name, avatar: participants[1].avatar };
+      const p1 = {
+        id: participants[0].id,
+        name: participants[0].name,
+        avatar: participants[0].avatar,
+      };
+      const p2 = {
+        id: participants[1].id,
+        name: participants[1].name,
+        avatar: participants[1].avatar,
+      };
       const conversation = await getOrCreateDirectConversation(p1, p2);
-      return { data: conversation.id || '', error: null };
+      return { data: conversation.id || "", error: null };
     } else {
-      const mappedParticipants = participants.map(p => ({ id: p.id, name: p.name, avatar: p.avatar }));
-      const conversation = await createGroupConversation(metadata?.tradeName || 'Group Chat', mappedParticipants);
-      return { data: conversation.id || '', error: null };
+      const mappedParticipants = participants.map((p) => ({
+        id: p.id,
+        name: p.name,
+        avatar: p.avatar,
+      }));
+      const conversation = await createGroupConversation(
+        metadata?.tradeName || "Group Chat",
+        mappedParticipants
+      );
+      return { data: conversation.id || "", error: null };
     }
   } catch (error) {
-    console.error('Error creating conversation:', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to create conversation' } };
+    console.error("Error creating conversation:", error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to create conversation" },
+    };
   }
 };
 
@@ -1707,19 +2221,25 @@ export const createMessage = async (
 ): Promise<ServiceResult<void>> => {
   try {
     const db = getSyncFirebaseDb();
-    const message: Omit<ChatMessage, 'id' | 'createdAt' | 'readBy'> = {
+    const message: Omit<ChatMessage, "id" | "createdAt" | "readBy"> = {
       conversationId: conversationId,
       senderId: messageData.senderId,
       senderName: messageData.senderName,
       senderAvatar: messageData.senderAvatar,
       content: messageData.content,
-      type: (messageData.type as MessageType) || 'text',
+      type: (messageData.type as MessageType) || "text",
     };
     await sendMessage(message);
     return { data: null, error: null };
   } catch (error) {
-    console.error(`Error sending message to conversation ${conversationId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to send message' } };
+    console.error(
+      `Error sending message to conversation ${conversationId}:`,
+      error
+    );
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to send message" },
+    };
   }
 };
 
@@ -1733,46 +2253,59 @@ export const getUserNotifications = async (
     requireAuth();
 
     const db = getSyncFirebaseDb();
-    const notificationsCollection = collection(db, COLLECTIONS.NOTIFICATIONS).withConverter(notificationConverter);
-    let notificationsQuery: Query<Notification> = query(notificationsCollection, where('userId', '==', userId));
+    const notificationsCollection = collection(
+      db,
+      COLLECTIONS.NOTIFICATIONS
+    ).withConverter(notificationConverter);
+    let notificationsQuery: Query<Notification> = query(
+      notificationsCollection,
+      where("userId", "==", userId)
+    );
 
     // Apply filters
     if (filters) {
       const constraints: QueryConstraint[] = [];
       if (filters.type) {
-        constraints.push(where('type', '==', filters.type));
+        constraints.push(where("type", "==", filters.type));
       }
       notificationsQuery = query(notificationsQuery, ...constraints);
     }
-    
+
     // Apply pagination
     if (pagination) {
-        const constraints: QueryConstraint[] = [];
-        if (pagination.orderByField) {
-            constraints.push(orderBy(pagination.orderByField, pagination.orderDirection || 'asc'));
-        }
-        if (pagination.startAfterDoc) {
-            constraints.push(startAfter(pagination.startAfterDoc));
-        }
-        constraints.push(limitQuery(pagination.limit || 10));
-        notificationsQuery = query(notificationsQuery, ...constraints);
+      const constraints: QueryConstraint[] = [];
+      if (pagination.orderByField) {
+        constraints.push(
+          orderBy(pagination.orderByField, pagination.orderDirection || "asc")
+        );
+      }
+      if (pagination.startAfterDoc) {
+        constraints.push(startAfter(pagination.startAfterDoc));
+      }
+      constraints.push(limitQuery(pagination.limit || 10));
+      notificationsQuery = query(notificationsQuery, ...constraints);
     }
 
     const querySnapshot = await getDocs(notificationsQuery);
 
-    const notifications = querySnapshot.docs.map(doc => doc.data());
+    const notifications = querySnapshot.docs.map((doc) => doc.data());
 
     const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
     const hasMore = (pagination?.limit || 0) <= notifications.length;
-    
+
     return { data: { items: notifications, hasMore, lastDoc }, error: null };
   } catch (error) {
     console.error(`Error getting notifications for user ${userId}:`, error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to get user notifications' } };
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to get user notifications" },
+    };
   }
 };
 
-export const getUnreadNotificationCount = async (userId: string): Promise<ServiceResult<number>> => {
+export const getUnreadNotificationCount = async (
+  userId: string
+): Promise<ServiceResult<number>> => {
   try {
     // Require authentication for accessing notifications
     requireAuth();
@@ -1781,14 +2314,17 @@ export const getUnreadNotificationCount = async (userId: string): Promise<Servic
     const notificationsCollection = collection(db, COLLECTIONS.NOTIFICATIONS);
     const q = query(
       notificationsCollection,
-      where('userId', '==', userId),
-      where('read', '==', false)
+      where("userId", "==", userId),
+      where("read", "==", false)
     );
     const snapshot = await getDocs(q);
     return { data: snapshot.size, error: null };
   } catch (error) {
-    console.error('Error getting unread notification count:', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to get unread count' } };
+    console.error("Error getting unread notification count:", error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to get unread count" },
+    };
   }
 };
 
@@ -1799,15 +2335,18 @@ export const bulkMarkNotificationsAsRead = async (
   try {
     const db = getSyncFirebaseDb();
     const batch = writeBatch(db);
-    notificationIds.forEach(id => {
+    notificationIds.forEach((id) => {
       const notificationRef = doc(db, COLLECTIONS.NOTIFICATIONS, id);
       batch.update(notificationRef, { read: true });
     });
     await batch.commit();
     return { data: null, error: null };
   } catch (error) {
-    console.error('Error bulk marking notifications as read:', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to bulk mark notifications' } };
+    console.error("Error bulk marking notifications as read:", error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to bulk mark notifications" },
+    };
   }
 };
 
@@ -1818,46 +2357,66 @@ export const searchUsers = async (
 ): Promise<ServiceResult<PaginatedResult<User>>> => {
   try {
     const db = getSyncFirebaseDb();
-    const usersCollection = collection(db, COLLECTIONS.USERS).withConverter(userConverter);
-    let searchQuery: Query<User> = query(usersCollection, where('displayName', '>=', searchTerm), where('displayName', '<=', searchTerm + '\uf8ff'));
+    const usersCollection = collection(db, COLLECTIONS.USERS).withConverter(
+      userConverter
+    );
+    let searchQuery: Query<User> = query(
+      usersCollection,
+      where("displayName", ">=", searchTerm),
+      where("displayName", "<=", searchTerm + "\uf8ff")
+    );
 
     // Apply filters...
     if (filters) {
       const constraints: QueryConstraint[] = [];
       if (filters.role) {
-          constraints.push(where('role', '==', filters.role));
+        constraints.push(where("role", "==", filters.role));
       }
       searchQuery = query(searchQuery, ...constraints);
     }
-    
+
     const totalCountQuery = searchQuery;
 
     if (pagination?.orderByField) {
-      searchQuery = query(searchQuery, orderBy(pagination.orderByField, pagination.orderDirection || 'asc'));
+      searchQuery = query(
+        searchQuery,
+        orderBy(pagination.orderByField, pagination.orderDirection || "asc")
+      );
     } else {
-      searchQuery = query(searchQuery, orderBy('displayName'));
+      searchQuery = query(searchQuery, orderBy("displayName"));
     }
 
     if (pagination?.startAfterDoc) {
       searchQuery = query(searchQuery, startAfter(pagination.startAfterDoc));
     }
-    
+
     const finalQuery = query(searchQuery, limitQuery(pagination?.limit || 10));
 
     const [querySnapshot, totalCountSnapshot] = await Promise.all([
       getDocs(finalQuery),
-      getDocs(totalCountQuery)
+      getDocs(totalCountQuery),
     ]);
 
-    const users = querySnapshot.docs.map(doc => doc.data());
+    const users = querySnapshot.docs.map((doc) => doc.data());
 
     const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
     const hasMore = users.length === (pagination?.limit || 10);
-    
-    return { data: { items: users, hasMore, lastDoc, totalCount: totalCountSnapshot.size }, error: null };
+
+    return {
+      data: {
+        items: users,
+        hasMore,
+        lastDoc,
+        totalCount: totalCountSnapshot.size,
+      },
+      error: null,
+    };
   } catch (error) {
-    console.error('Error searching users:', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to search users' } };
+    console.error("Error searching users:", error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to search users" },
+    };
   }
 };
 
@@ -1869,13 +2428,15 @@ export const searchTrades = async (
 ): Promise<ServiceResult<PaginatedResult<Trade>>> => {
   try {
     const db = await getDbWithInitialization();
-    const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(tradeConverter);
+    const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(
+      tradeConverter
+    );
     const baseConstraints: QueryConstraint[] = [];
     if (!options.includeNonPublic) {
-      baseConstraints.push(where('visibility', '==', 'public'));
+      baseConstraints.push(where("visibility", "==", "public"));
     }
-    baseConstraints.push(where('title', '>=', searchTerm));
-    baseConstraints.push(where('title', '<=', searchTerm + '\uf8ff'));
+    baseConstraints.push(where("title", ">=", searchTerm));
+    baseConstraints.push(where("title", "<=", searchTerm + "\uf8ff"));
 
     let searchQuery: Query<Trade> = query(tradesCollection, ...baseConstraints);
 
@@ -1883,14 +2444,16 @@ export const searchTrades = async (
     if (filters) {
       const constraints: QueryConstraint[] = [];
       if (filters.category) {
-        constraints.push(where('category', '==', filters.category));
+        constraints.push(where("category", "==", filters.category));
       }
       if (filters.status) {
-        constraints.push(where('status', '==', filters.status));
+        constraints.push(where("status", "==", filters.status));
       }
       if (filters.skills && filters.skills.length > 0) {
-        const normalized = filters.skills.map(s => s.toLowerCase());
-        constraints.push(where('skillsIndex', 'array-contains-any', normalized.slice(0, 10)));
+        const normalized = filters.skills.map((s) => s.toLowerCase());
+        constraints.push(
+          where("skillsIndex", "array-contains-any", normalized.slice(0, 10))
+        );
       }
       searchQuery = query(searchQuery, ...constraints);
     }
@@ -1898,30 +2461,44 @@ export const searchTrades = async (
     const totalCountQuery = searchQuery;
 
     if (pagination?.orderByField) {
-      searchQuery = query(searchQuery, orderBy(pagination.orderByField, pagination.orderDirection || 'asc'));
+      searchQuery = query(
+        searchQuery,
+        orderBy(pagination.orderByField, pagination.orderDirection || "asc")
+      );
     } else {
-      searchQuery = query(searchQuery, orderBy('title'));
+      searchQuery = query(searchQuery, orderBy("title"));
     }
 
     if (pagination?.startAfterDoc) {
       searchQuery = query(searchQuery, startAfter(pagination.startAfterDoc));
     }
-    
+
     const finalQuery = query(searchQuery, limitQuery(pagination?.limit || 10));
 
     const [querySnapshot, totalCountSnapshot] = await Promise.all([
       getDocs(finalQuery),
-      getDocs(totalCountQuery)
+      getDocs(totalCountQuery),
     ]);
 
-    const trades = querySnapshot.docs.map(doc => doc.data());
+    const trades = querySnapshot.docs.map((doc) => doc.data());
 
     const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
     const hasMore = trades.length === (pagination?.limit || 10);
-    
-    return { data: { items: trades, hasMore, lastDoc, totalCount: totalCountSnapshot.size }, error: null };
+
+    return {
+      data: {
+        items: trades,
+        hasMore,
+        lastDoc,
+        totalCount: totalCountSnapshot.size,
+      },
+      error: null,
+    };
   } catch (error) {
-    console.error('Error searching trades:', error);
-    return { data: null, error: { code: 'unknown', message: 'Failed to search trades' } };
+    console.error("Error searching trades:", error);
+    return {
+      data: null,
+      error: { code: "unknown", message: "Failed to search trades" },
+    };
   }
 };

@@ -35,5 +35,5 @@ jobs:
         run: npm ci
 
       - name: Run Messaging tests via Emulator
-        run: npx firebase emulators:exec --only firestore "npm run test:fast -- --testPathPattern='src/services/__tests__/messaging.readReceipts.test.ts' --runInBand"
+        run: npx firebase-tools emulators:exec --only firestore "npm run test:fast -- --testPathPattern='src/services/__tests__/messaging.readReceipts.test.ts' --runInBand"
 

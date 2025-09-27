@@ -2039,7 +2039,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
               <div className="relative h-16 w-16 rounded-full overflow-hidden ring-2 ring-border">
                 {avatarPreviewUrl ? (
                   <img
-                    src={avatarPreviewUrl}
+                    src={
+                      avatarPreviewUrl && avatarPreviewUrl.startsWith("blob:")
+                        ? avatarPreviewUrl
+                        : undefined
+                    }
                     alt="New avatar preview"
                     className="h-full w-full object-cover"
                   />
