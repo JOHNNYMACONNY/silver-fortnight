@@ -28,7 +28,7 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
-  transformIgnorePatterns: ['node_modules/(?!(firebase|@firebase)/)'],
+  transformIgnorePatterns: ['/node_modules/'],
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   verbose: true,
 };
