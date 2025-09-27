@@ -5,6 +5,7 @@ module.exports = {
   setupFilesAfterEnv: [],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@firebase/rules-unit-testing$': require.resolve('@firebase/rules-unit-testing'),
   },
   transform: {
     '^.+\\.(ts|tsx)$': [
