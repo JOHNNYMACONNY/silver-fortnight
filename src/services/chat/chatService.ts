@@ -26,6 +26,7 @@ import {
   startAfter,
   DocumentSnapshot,
   deleteDoc,
+  Firestore,
 } from "firebase/firestore";
 import { getSyncFirebaseDb } from "../../firebase-config";
 import { ServiceResult } from "../../types/ServiceError";
@@ -294,10 +295,11 @@ export const sendMessage = async (
  */
 export const markMessagesAsRead = async (
   conversationId: string,
-  userId: string
+  userId: string,
+  dbOverride?: Firestore
 ): Promise<void> => {
   try {
-    const db = getSyncFirebaseDb();
+    const db = dbOverride ?? getSyncFirebaseDb();
     const messagesRef = collection(
       db,
       "conversations",

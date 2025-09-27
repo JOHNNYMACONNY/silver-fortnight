@@ -229,27 +229,35 @@ generate_report() {
     local report_file="$REPORT_DIR/security_validation_${TIMESTAMP}.md"
     
     # Create report header
+    # Helper to safely append a section from a file if it exists
+    safe_append() {
+        local title="$1"; shift
+        local file="$1"; shift
+        echo -e "\n### ${title}" >> "$report_file"
+        if [ -s "$file" ]; then
+            cat "$file" >> "$report_file"
+        else
+            echo "(no data)" >> "$report_file"
+        fi
+    }
+
+    # Create report header
     cat << EOF > "$report_file"
 # Firebase Security Rules Validation Report
 Generated: $(date)
 
 ## Validation Results
-
-### Syntax Validation
-$(cat "$REPORT_DIR/firestore_lint.txt")
-$(cat "$REPORT_DIR/storage_lint.txt")
-
-### Security Tests
-$(cat "$REPORT_DIR/test_output.txt")
-
-### Coverage Analysis
-$(cat "$REPORT_DIR/coverage.txt")
-
-### Security Issues
-$(cat "$REPORT_DIR/gitleaks.txt")
-
-## Recommendations
 EOF
+
+    # Sections (guarded)
+    safe_append "Syntax Validation (Firestore)" "$REPORT_DIR/firestore_lint.txt"
+    safe_append "Syntax Validation (Storage)" "$REPORT_DIR/storage_lint.txt"
+    safe_append "Security Tests" "$REPORT_DIR/test_output.txt"
+    safe_append "Coverage Analysis" "$REPORT_DIR/coverage.txt"
+    safe_append "Security Issues (gitleaks)" "$REPORT_DIR/gitleaks.txt"
+
+    # Recommendations header
+    echo -e "\n## Recommendations" >> "$report_file"
     
     # Add recommendations based on findings
     if grep -q "Warning" "$report_file"; then
