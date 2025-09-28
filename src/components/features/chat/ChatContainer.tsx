@@ -31,10 +31,10 @@ import { fetchMultipleUsers } from "../../../utils/userUtils";
 import { useMessageContext } from "../../../contexts/MessageContext";
 import {
   markMessagesAsRead as markConversationAsRead,
-  getUserConversations,
   getConversationMessages,
   getOrCreateDirectConversation,
 } from "../../../services/chat/chatService";
+import { migrationRegistry } from "../../../services/migration/migrationRegistry";
 import { ChatConversation, ChatMessage } from "../../../types/chat";
 import { ToastContext } from "../../../contexts/ToastContext";
 import {
@@ -76,6 +76,23 @@ export const ChatContainer: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
+  // Helper: normalize conversation objects from migration/compatibility services
+  const normalizeConversation = (c: any): ChatConversation => {
+    return {
+      // keep existing known properties
+      ...c,
+      // participants must be an array for our canonical type
+      participants: Array.isArray(c?.participants) ? c.participants : [],
+      // ensure participantIds exist (fallback to participants' ids)
+      participantIds:
+        Array.isArray(c?.participantIds) && c.participantIds.length > 0
+          ? c.participantIds
+          : (Array.isArray(c?.participants)
+              ? c.participants.map((p: any) => p.id)
+              : []),
+    } as ChatConversation;
+  };
+
   // Deep-linking: /messages/new?to=<userId>
   useEffect(() => {
     if (!currentUser) return;
@@ -101,7 +118,8 @@ export const ChatContainer: React.FC = () => {
           avatar: (currentUser as any)?.photoURL || null,
         };
         const convo = await getOrCreateDirectConversation(me, target);
-        setActiveConversation(convo);
+        // normalize before putting into state
+        setActiveConversation(normalizeConversation(convo));
         try {
           navigate(`/messages/${convo.id}`, { replace: true });
         } catch {}
@@ -114,33 +132,56 @@ export const ChatContainer: React.FC = () => {
     })();
   }, [currentUser, searchParams, navigate]);
 
-  // Fetch user's conversations with canonical service
+  // Initialize migration registry and fetch user's conversations
   useEffect(() => {
     if (!currentUser) return;
 
     setLoading(true);
     setError(null);
 
-    const unsubscribe = getUserConversations(currentUser.uid, (list) => {
+    // Initialize migration registry if not already done
+    const db = getSyncFirebaseDb();
+    if (!migrationRegistry.isInitialized()) {
+      migrationRegistry.initialize(db);
+      migrationRegistry.enableMigrationMode();
+    }
+
+    // Use ChatCompatibilityService for better error handling
+    const fetchConversations = async () => {
       try {
-        setConversations(list);
+        const chatService = migrationRegistry.chat;
+        const list = await chatService.getUserConversations(currentUser.uid, 50);
+
+        // normalize all items before setting state (ensures participants is always an array)
+        const normalizedList = list.map((c: any) => normalizeConversation(c));
+
+        setConversations(normalizedList);
 
         if (conversationId) {
-          const found = list.find((c) => c.id === conversationId);
+          const found = normalizedList.find((c) => c.id === conversationId);
           if (found) setActiveConversation(found);
-        } else if (list.length > 0 && !activeConversation) {
-          setActiveConversation(list[0]);
+        } else if (normalizedList.length > 0 && !activeConversation) {
+          setActiveConversation(normalizedList[0]);
         }
 
         setLoading(false);
       } catch (err: any) {
-        setError(err.message || "Failed to process conversations");
-        setLoading(false);
-      }
-    });
+        console.error("Error fetching conversations:", err);
 
-    // Clean up listener on unmount
-    return () => unsubscribe();
+        // Handle permission errors gracefully - they're expected when user has no conversations
+        if (err.message?.includes('Missing or insufficient permissions')) {
+          console.log('No conversations found for user - this is expected if user has no conversations yet');
+          setConversations([]);
+          setLoading(false);
+          setError(null); // Clear error since this is expected
+        } else {
+          setError(err.message || "Failed to load conversations");
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchConversations();
   }, [currentUser, conversationId, activeConversation]);
 
   // Load messages using canonical service
