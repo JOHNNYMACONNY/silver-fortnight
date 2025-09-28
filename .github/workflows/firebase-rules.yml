@@ -60,7 +60,7 @@ jobs:
       - name: Run Security Validation (Emulator)
         run: |
           npx firebase-tools emulators:exec --project demo-test-project --only firestore,storage -- \
-            npm run security:validate
+            npm run security:test
 
       - name: Save Test Results
         if: always()
