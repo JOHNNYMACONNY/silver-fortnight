@@ -24,25 +24,29 @@ class MockTextDecoder {
 (global as any).TextDecoder = MockTextDecoder;
 
 // Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-});
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(), // deprecated
+      removeListener: jest.fn(), // deprecated
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  });
+}
 
 // Mock window.scrollTo
-Object.defineProperty(window, 'scrollTo', {
-  writable: true,
-  value: jest.fn(),
-});
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'scrollTo', {
+    writable: true,
+    value: jest.fn(),
+  });
+}
 
 // Mock import.meta for Vite environment
 Object.defineProperty(global, 'import', {
@@ -145,9 +149,11 @@ const localStorageMock = {
   key: jest.fn()
 } as Storage;
 
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
-});
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'localStorage', {
+    value: localStorageMock
+  });
+}
 
 // Mock sessionStorage
 const sessionStorageMock = {
@@ -159,8 +165,24 @@ const sessionStorageMock = {
   key: jest.fn()
 } as Storage;
 
-Object.defineProperty(window, 'sessionStorage', {
-  value: sessionStorageMock
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'sessionStorage', {
+    value: sessionStorageMock
+  });
+}
+
+
+// Global framer-motion mock for stable tests
+jest.mock('framer-motion', () => {
+  const React = require('react');
+  const stub = (props: any) => React.createElement('div', null, props && props.children);
+  const motion = new Proxy({}, { get: () => stub });
+  return {
+    __esModule: true,
+    motion,
+    AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children),
+    useReducedMotion: () => false,
+  };
 });
 
 // Configure test environment

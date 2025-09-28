@@ -140,8 +140,10 @@ export class ChatCompatibilityService {
           .map((p: any) => {
             const id = p.id || p.userId || '';
             if (!id) return null;
-            // Return the original object but guarantee `id` is set
-            return { ...p, id } as ChatParticipant;
+            // Normalize name field - use name, displayName, or empty string
+            const name = p.name || p.displayName || '';
+            // Return the original object but guarantee `id` and `name` are set
+            return { ...p, id, name } as ChatParticipant;
           })
           .filter((p: any) => p !== null) as ChatParticipant[];
 
@@ -181,19 +183,33 @@ export class ChatCompatibilityService {
     }
 
     try {
-      return {
+      const normalized: any = {
         id: data.id,
         conversationId: data.conversationId || data.chatId || '',
         senderId: data.senderId || data.userId || data.authorId || '',
-        senderName: data.senderName || data.userName || data.authorName,
         content: data.content || data.message || data.text || '',
         type: data.type || 'text',
-        createdAt: data.createdAt || data.timestamp,
-        updatedAt: data.updatedAt,
-        readBy: data.readBy || [],
-        edited: data.edited || false,
-        editedAt: data.editedAt
-      } as ChatMessage;
+        createdAt: data.createdAt || data.timestamp
+      };
+
+      // Only add optional fields if they exist in the original data
+      if (data.senderName || data.userName || data.authorName) {
+        normalized.senderName = data.senderName || data.userName || data.authorName;
+      }
+      if (data.updatedAt) {
+        normalized.updatedAt = data.updatedAt;
+      }
+      if (data.readBy) {
+        normalized.readBy = data.readBy;
+      }
+      if (data.edited !== undefined) {
+        normalized.edited = data.edited;
+      }
+      if (data.editedAt) {
+        normalized.editedAt = data.editedAt;
+      }
+
+      return normalized as ChatMessage;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error('Error normalizing message data:', error);
@@ -522,9 +538,10 @@ export class ChatCompatibilityService {
    */
   static validateConversation(conversation: any): conversation is ChatConversation {
     try {
+      if (!conversation || typeof conversation !== 'object') {
+        return false;
+      }
       return (
-        conversation &&
-        typeof conversation === 'object' &&
         typeof conversation.id === 'string' &&
         Array.isArray(conversation.participantIds) &&
         conversation.participantIds.length > 0 &&
@@ -543,9 +560,10 @@ export class ChatCompatibilityService {
    */
   static validateMessage(message: any): message is ChatMessage {
     try {
+      if (!message || typeof message !== 'object') {
+        return false;
+      }
       return (
-        message &&
-        typeof message === 'object' &&
         typeof message.id === 'string' &&
         typeof message.conversationId === 'string' &&
         typeof message.senderId === 'string' &&

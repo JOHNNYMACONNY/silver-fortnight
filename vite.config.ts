@@ -48,7 +48,8 @@ export default defineConfig(({ mode }) => {
       target: 'esnext',
       outDir: 'dist',
       sourcemap: mode === 'pr', // Enable sourcemaps for PR debugging
-      minify: mode === 'pr' ? false : 'terser', // Disable minification for PR debugging
+      // Ensure 'terser' is typed as the literal so the union matches Vite's expected type
+      minify: mode === 'pr' ? false : ('terser' as const), // Disable minification for PR debugging
       rollupOptions: {
         output: {
           manualChunks: {

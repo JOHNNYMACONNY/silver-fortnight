@@ -1,14 +1,14 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import TradeConfirmationForm from '../TradeConfirmationForm';
-import { useAuth } from '../../../../AuthContext';
-import { confirmTradeCompletion } from '../../../../services/firestore-exports';
-import { generateTradePortfolioItem } from '../../../../services/portfolio';
+import TradeConfirmationForm from '../../../../../components/features/trades/TradeConfirmationForm';
+import { useAuth } from '../../../../../AuthContext';
+import { confirmTradeCompletion } from '../../../../../services/firestore-exports';
+import { generateTradePortfolioItem } from '../../../../../services/portfolio';
 
 // Mock the dependencies
-jest.mock('../../../../AuthContext');
-jest.mock('../../../../services/firestore');
-jest.mock('../../../../services/portfolio');
-jest.mock('../../../features/evidence/EvidenceGallery', () => ({
+jest.mock('../../../../../AuthContext');
+jest.mock('../../../../../services/firestore');
+jest.mock('../../../../../services/portfolio');
+jest.mock('../../../../../components/features/evidence/EvidenceGallery', () => ({
   EvidenceGallery: ({ title, emptyMessage }: { title: string; emptyMessage: string }) => {
     const React = require('react');
     return React.createElement('div', { 'data-testid': 'evidence-gallery' },
@@ -33,8 +33,9 @@ const mockTrade = {
   participantId: 'participant-456',
   offeredSkills: [{ name: 'React', level: 'intermediate' as const }],
   requestedSkills: [{ name: 'Python', level: 'beginner' as const }],
-  skillsOffered: ['React'],
-  skillsWanted: ['Python'],
+  // Fix: use TradeSkill[]-shaped objects instead of string[] so it matches the Trade type
+  skillsOffered: [{ name: 'React', level: 'intermediate' as const }],
+  skillsWanted: [{ name: 'Python', level: 'beginner' as const }],
   status: 'pending_confirmation' as const,
   createdAt: { toDate: () => new Date() } as any,
   updatedAt: { toDate: () => new Date() } as any,
@@ -71,6 +72,7 @@ describe('TradeConfirmationForm', () => {
     mockUseAuth.mockReturnValue({
       user: mockCurrentUser,
       currentUser: mockCurrentUser,
+      userProfile: null, // <-- added to satisfy AuthContextType
       loading: false,
       error: null,
       isAdmin: false,

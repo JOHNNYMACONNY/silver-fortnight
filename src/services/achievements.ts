@@ -22,6 +22,7 @@ import {
 import { ServiceResponse } from '../types/services';
 import { createNotification } from './notifications';
 import { awardXP } from './gamification';
+import { getUserStats as getAggregatedUserStats } from './userStats';
 
 /**
  * Predefined achievements for the TradeYa platform
@@ -322,15 +323,15 @@ interface UserStats {
 }
 
 const getUserStats = async (userId: string): Promise<UserStats> => {
-  // TODO: Implement actual stat collection from various collections
-  // This is a placeholder that would aggregate data from trades, roles, etc.
+  const res = await getAggregatedUserStats(userId);
+  // Map to local shape used by achievement checks
   return {
-    tradeCount: 0,
-    roleCount: 0,
-    totalXP: 0,
-    quickResponses: 0,
-    evidenceCount: 0
-  };
+    tradeCount: res.tradeCount ?? 0,
+    roleCount: res.roleCount ?? 0,
+    totalXP: res.totalXP ?? 0,
+    quickResponses: res.quickResponses ?? 0,
+    evidenceCount: res.evidenceCount ?? 0,
+  } as UserStats;
 };
 
 const checkAchievementConditions = async (

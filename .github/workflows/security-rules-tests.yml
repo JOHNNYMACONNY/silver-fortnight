@@ -1,0 +1,39 @@
+name: Firestore Security Rules Tests
+
+on:
+  pull_request:
+    paths:
+      - 'firestore.rules'
+      - 'src/services/__tests__/security.rules.adminGamification.test.ts'
+      - '.github/workflows/security-rules-tests.yml'
+  workflow_dispatch:
+
+jobs:
+  test-security-rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Java (for Firestore Emulator)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Print Java version
+        run: java -version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Firestore security rules tests via Emulator
+        run: npx firebase emulators:exec --only firestore "npm run test:fast -- --testPathPattern='src/services/__tests__/security.rules.adminGamification.test.ts' --runInBand"
+

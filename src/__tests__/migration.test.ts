@@ -21,13 +21,39 @@ import type {
   ChatParticipant
 } from '../services/migration/chatCompatibility';
 
+// Mock Firestore methods (use var to avoid TDZ with jest.mock hoisting)
+var mockGet = jest.fn();
+var mockGetDocs = jest.fn();
+var mockCollection = jest.fn();
+var mockDoc = jest.fn();
+var mockQuery = jest.fn();
+var mockWhere = jest.fn();
+var mockOrderBy = jest.fn();
+var mockLimit = jest.fn();
+
 // Mock Firebase/Firestore dependencies
 const mockFirestore = {
-  collection: jest.fn(),
-  doc: jest.fn(),
+  collection: mockCollection,
+  doc: mockDoc,
   runTransaction: jest.fn(),
   batch: jest.fn()
 } as any;
+
+// Mock firebase/firestore functions
+jest.mock('firebase/firestore', () => ({
+  collection: mockCollection,
+  doc: mockDoc,
+  getDoc: mockGet,
+  getDocs: mockGetDocs,
+  query: mockQuery,
+  where: mockWhere,
+  orderBy: mockOrderBy,
+  limit: mockLimit,
+  Timestamp: {
+    now: () => ({ seconds: Date.now() / 1000, nanoseconds: 0 }),
+    fromDate: (date: Date) => ({ seconds: date.getTime() / 1000, nanoseconds: 0 })
+  }
+}));
 
 jest.mock('../firebase-config', () => ({
   db: mockFirestore,
@@ -44,10 +70,6 @@ jest.mock('../contexts/PerformanceContext', () => ({
     recordMetric: jest.fn()
   })
 }));
-
-// Mock Firestore methods (use var to avoid TDZ with jest.mock hoisting)
-var mockGet = jest.fn();
-var mockGetDocs = jest.fn();
 var mockQuery = jest.fn();
 var mockWhere = jest.fn();
 var mockOrderBy = jest.fn();

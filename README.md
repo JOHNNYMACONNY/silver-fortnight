@@ -523,3 +523,12 @@ Notes
 - Security checks are executed via `scripts/security-checks.sh` in CI.
   - Untracked local secrets (e.g., `.env`) are reported as warnings.
   - CI fails only if sensitive files are tracked in git.
+
+
+## Admin & Gamification Stability Updates
+
+- Collaboration services have been standardized to return a uniform ServiceResult shape for safer error handling.
+  - Pattern: `{ success: boolean, data?: T, error?: { code: string; message: string } | string | null }`
+  - Example (collaborations): `getAllCollaborations()` resolves to `{ success: true, data: { items: [...], hasMore, totalCount, lastDoc, queryMetadata }, error: null }`.
+- The useCollaborationSearch hook was updated to consume the ServiceResult format while maintaining the same external interface for consuming components.
+- Admin analytics and tab navigation are protected by smoke tests to guard against regressions.

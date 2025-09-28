@@ -10,6 +10,17 @@ jest.mock('../../services/firestore-exports', () => ({
 describe('useCollaborationSearch', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (getAllCollaborations as jest.Mock).mockResolvedValue({
+      success: true,
+      data: {
+        items: [],
+        hasMore: false,
+        lastDoc: undefined,
+        totalCount: 0,
+        queryMetadata: {}
+      },
+      error: null
+    });
   });
 
   it('should initialize with default values', () => {

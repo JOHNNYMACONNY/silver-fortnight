@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from 'react';
-// import { resetFirebaseConnections, wasResetRequested, clearResetFlags } from '../../utils/firebaseConnectionReset';
+import { resetFirebaseConnections, wasResetRequested, clearResetFlags } from '../../utils/firebaseConnectionReset';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Alert, AlertDescription, AlertTitle } from '../ui/Alert';

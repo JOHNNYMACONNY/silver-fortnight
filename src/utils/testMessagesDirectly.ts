@@ -63,7 +63,7 @@ export const testMessagesDirectly = async (conversationId: string = 'bcB1UuJ2VHw
     messagesSnapshot.forEach((doc) => {
       const messageData = {
         id: doc.id,
-        ...doc.data()
+        ...(doc.data() as any)
       };
       messages.push(messageData);
       console.log('📝 Message:', messageData);
@@ -113,7 +113,7 @@ export const testAllConversations = async (userId: string): Promise<{
     for (const conversationDoc of conversationsSnapshot.docs) {
       const conversationData = {
         id: conversationDoc.id,
-        ...conversationDoc.data()
+        ...(conversationDoc.data() as any)
       };
       
       // Check if user is a participant

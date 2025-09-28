@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getSyncFirebaseDb } from '../../firebase-config';
-import { collection, query, orderBy, getDocs, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { getHealthStatus, performQuickHealthCheck } from '../../utils/firebaseHealthCheck';
 import { runConnectionTests, getConnectionTestSummary } from '../../utils/testFirebaseConnection';
 import { Card } from '../ui/Card';
@@ -143,7 +143,7 @@ export const FirebaseDebugPanel: React.FC = () => {
       console.log('Specific conversation test:', {
         conversationId: 'bcB1UuJ2VHwTXsTFG71g',
         messageCount: snapshot.size,
-        messages: snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+        messages: snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }))
       });
 
       setDebugInfo(prev => ({
