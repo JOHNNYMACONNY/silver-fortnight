@@ -45,9 +45,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          npm ci --legacy-peer-deps
+          npm ci
           npm install -g firebase-tools@latest
-          npm i --no-save @firebase/rules-unit-testing@3.0.4 --legacy-peer-deps
 
       - name: Cache Firebase Emulators
         uses: actions/cache@v3
@@ -112,7 +111,7 @@ jobs:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
       - name: Save Rule Backups
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: security-rules-backup
           path: backups/security-rules/
@@ -183,7 +182,7 @@ jobs:
           sed -n '1,200p' storage.rules >> security-report.md
 
       - name: Upload Security Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: security-analysis
           path: security-report.md
