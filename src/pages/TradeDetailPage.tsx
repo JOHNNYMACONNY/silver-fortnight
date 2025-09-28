@@ -711,7 +711,7 @@ export const TradeDetailPage: React.FC = () => {
                   tilt={true}
                   depth="lg"
                   glow="subtle"
-                  glowColor="green"
+                  glowColor="auto"
                   interactive={true}
                   reducedHover={true}
                   className="mb-6"
@@ -747,7 +747,7 @@ export const TradeDetailPage: React.FC = () => {
                 tilt={true}
                 depth="lg"
                 glow="subtle"
-                glowColor="green"
+                glowColor="auto"
                 interactive={true}
                 reducedHover={true}
                 className="mb-6"

@@ -11,6 +11,7 @@ import {
   Trade,
   Collaboration,
 } from '../../services/firestore-exports';
+import { getGamificationMetrics7d, GamificationMetrics7d } from '../../services/adminGamificationMetrics';
 import { useToast } from '../../contexts/ToastContext';
 import {
   Users,
@@ -37,8 +38,27 @@ const AdminDashboard: React.FC = () => {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [collaborations, setCollaborations] = useState<Collaboration[]>([]);
   const [stats, setStats] = useState<any>(null);
+  const [gamiMetrics, setGamiMetrics] = useState<GamificationMetrics7d | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const buildTooltip = (m?: Record<string, number>) => {
+    if (!m) return '';
+    const keys = Object.keys(m).sort();
+    return keys.map(k => `${k}: ${m[k]}`).join(' | ');
+  };
+
+  const refreshGamificationMetrics = async () => {
+    const { data, error } = await getGamificationMetrics7d();
+    if (error) {
+      console.warn('Gamification metrics refresh failed:', error.message);
+      addToast('error', error.message || 'Failed to refresh metrics');
+      setGamiMetrics(null);
+    } else {
+      setGamiMetrics(data || null);
+      addToast('success', 'Gamification metrics refreshed');
+    }
+  };
+
 
   // Fetch data based on active tab
   useEffect(() => {
@@ -52,6 +72,14 @@ const AdminDashboard: React.FC = () => {
             const { data: systemStats, error: statsError } = await getSystemStats();
             if (statsError) throw new Error(statsError.message);
             setStats(systemStats);
+            // Fetch last 7 days gamification metrics
+            const { data: metrics, error: gError } = await getGamificationMetrics7d();
+            if (gError) {
+              console.warn('Gamification metrics failed:', gError.message);
+              setGamiMetrics(null);
+            } else {
+              setGamiMetrics(metrics || null);
+            }
             break;
           }
 
@@ -134,66 +162,125 @@ const AdminDashboard: React.FC = () => {
 
   // Render dashboard stats
   const renderDashboard = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {stats && (
-        <>
-          <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats && (
+          <>
+            <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-primary/10 text-primary">
+                  <Users className="h-6 w-6" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">Total Users</p>
+                  <h3 className="text-2xl font-bold text-foreground">{stats.totalUsers}</h3>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-success/10 text-success">
+                  <ShoppingBag className="h-6 w-6" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">Total Trades</p>
+                  <h3 className="text-2xl font-bold text-foreground">{stats.totalTrades}</h3>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-secondary/10 text-secondary">
+                  <Briefcase className="h-6 w-6" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">Total Collaborations</p>
+                  <h3 className="text-2xl font-bold text-foreground">{stats.totalCollaborations}</h3>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-accent/10 text-accent">
+                  <MessageSquare className="h-6 w-6" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">Total Messages</p>
+                  <h3 className="text-2xl font-bold text-foreground">{stats.totalMessages}</h3>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Gamification Metrics (Last 7 days) */}
+      <div className="flex items-center justify-between mt-6">
+        <h3 className="text-lg font-medium text-foreground">Gamification (Last 7 days)</h3>
+        <button onClick={refreshGamificationMetrics} className="px-3 py-1.5 text-sm rounded-md bg-muted hover:bg-muted/80 text-foreground border border-border">Refresh</button>
+      </div>
+      {gamiMetrics && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+          <div className="bg-card p-6 rounded-lg shadow-sm border border-border" title={`Per day: ${buildTooltip(gamiMetrics.perDay.xpAwardsByDate)}`}>
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-primary/10 text-primary">
-                <Users className="h-6 w-6" />
+                <BarChart className="h-6 w-6" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Total Users</p>
-                <h3 className="text-2xl font-bold text-foreground">{stats.totalUsers}</h3>
+                <p className="text-sm font-medium text-muted-foreground">XP Awards (7d)</p>
+                <h3 className="text-2xl font-bold text-foreground">{gamiMetrics.totals.xpAwards}</h3>
               </div>
             </div>
           </div>
 
-          <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+          <div className="bg-card p-6 rounded-lg shadow-sm border border-border" title={`Per day: ${buildTooltip(gamiMetrics.perDay.achievementsByDate)}`}>
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-success/10 text-success">
-                <ShoppingBag className="h-6 w-6" />
+                <BarChart className="h-6 w-6" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Total Trades</p>
-                <h3 className="text-2xl font-bold text-foreground">{stats.totalTrades}</h3>
+                <p className="text-sm font-medium text-muted-foreground">Achievements (7d)</p>
+                <h3 className="text-2xl font-bold text-foreground">{gamiMetrics.totals.achievements}</h3>
               </div>
             </div>
           </div>
 
-          <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+          <div className="bg-card p-6 rounded-lg shadow-sm border border-border" title={`Per day: ${buildTooltip(gamiMetrics.perDay.streakMilestonesByDate)}`}>
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-secondary/10 text-secondary">
-                <Briefcase className="h-6 w-6" />
+                <BarChart className="h-6 w-6" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Total Collaborations</p>
-                <h3 className="text-2xl font-bold text-foreground">{stats.totalCollaborations}</h3>
+                <p className="text-sm font-medium text-muted-foreground">Streak Milestones (7d)</p>
+                <h3 className="text-2xl font-bold text-foreground">{gamiMetrics.totals.streakMilestones}</h3>
               </div>
             </div>
           </div>
 
-          <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+          <div className="bg-card p-6 rounded-lg shadow-sm border border-border" title={`Unique recipients over the last 7 days (no per-day breakdown)`}>
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-accent/10 text-accent">
-                <MessageSquare className="h-6 w-6" />
+                <BarChart className="h-6 w-6" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Total Messages</p>
-                <h3 className="text-2xl font-bold text-foreground">{stats.totalMessages}</h3>
+                <p className="text-sm font-medium text-muted-foreground">Unique XP Recipients (7d)</p>
+                <h3 className="text-2xl font-bold text-foreground">{gamiMetrics.totals.uniqueXpRecipients}</h3>
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
 
-      <div className="md:col-span-2 lg:col-span-4 bg-card p-6 rounded-lg shadow-sm border border-border">
+      <div className="md:col-span-2 lg:col-span-4 bg-card p-6 rounded-lg shadow-sm border border-border mt-6">
         <h3 className="text-lg font-medium text-foreground mb-4">Recent Activity</h3>
         <p className="text-muted-foreground">
           Welcome to the admin dashboard. Use the tabs above to manage users, trades, and collaborations.
         </p>
       </div>
-    </div>
+    </>
   );
 
   // Render users table

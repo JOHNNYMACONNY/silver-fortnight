@@ -99,7 +99,7 @@ export const CreateTestConversationPage: React.FC = () => {
       const verifySnapshot = await getDocs(verifyQuery);
       const foundConversations = verifySnapshot.docs.map(doc => ({
         id: doc.id,
-        ...doc.data()
+        ...(doc.data() as any)
       }));
       console.log('Verification query found:', foundConversations.length, 'conversations');
       foundConversations.forEach(conv => {
@@ -112,7 +112,7 @@ export const CreateTestConversationPage: React.FC = () => {
         const allConversationsSnapshot = await getDocs(allConversationsQuery);
         console.log('All conversations query found:', allConversationsSnapshot.size, 'conversations');
         allConversationsSnapshot.docs.forEach(doc => {
-          const data = doc.data();
+          const data = doc.data() as any;
           console.log('All conversations - ID:', doc.id, 'participantIds:', data.participantIds, 'participants:', data.participants);
         });
       } catch (allError) {

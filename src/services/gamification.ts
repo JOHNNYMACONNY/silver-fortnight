@@ -28,6 +28,8 @@ import { ServiceResponse } from '../types/services';
 import { createNotification } from './notifications';
 import { triggerLeaderboardUpdate, recomputeUserReputation } from './leaderboards';
 
+import { ServiceResult } from '../types/ServiceError';
+
 // Real-time notification support
 let notificationCallback: ((notification: any) => void) | null = null;
 
@@ -73,9 +75,9 @@ export const awardXP = async (
     const result = await runTransaction(db, async (transaction) => {
       const userXPRef = doc(db, 'userXP', userId);
       const userXPSnap = await transaction.get(userXPRef);
-      
+
       let currentXP: UserXP;
-      
+
       if (!userXPSnap.exists()) {
         currentXP = {
           userId,
@@ -311,7 +313,7 @@ export const getUserXPHistory = async (
  */
 const createLevelUpNotification = async (userId: string, newLevel: number): Promise<void> => {
   const levelTier = LEVEL_TIERS.find(tier => tier.level === newLevel);
-  
+
   await createNotification({
     recipientId: userId,
     type: 'level_up',
@@ -394,7 +396,7 @@ export const awardXPWithLeaderboardUpdate = async (
   description?: string
 ): Promise<XPAwardResult> => {
   const result = await awardXP(userId, amount, source, sourceId, description);
-  
+
   // Update leaderboard stats if XP was successfully awarded
   if (result.success && result.xpAwarded > 0) {
     try {
@@ -407,8 +409,38 @@ export const awardXPWithLeaderboardUpdate = async (
       // Don't fail the main XP award if leaderboard update fails
     }
   }
-  
+
   return result;
+};
+
+// ServiceResult adapters (non-breaking): wrap XPAwardResult in ServiceResponse
+
+const toServiceResult = <T>(res: { success: boolean; error?: string } & any, data: T): ServiceResult<T> => {
+  return res.success
+    ? { data, error: null }
+    : { data: null, error: { code: 'gamification-error', message: res.error || 'Unknown error' } };
+};
+
+export const awardXP_SR = async (
+  userId: string,
+  amount: number,
+  source: XPSource,
+  sourceId?: string,
+  description?: string
+): Promise<ServiceResult<XPAwardResult>> => {
+  const res = await awardXP(userId, amount, source, sourceId, description);
+  return toServiceResult(res, res);
+};
+
+export const awardXPWithLeaderboardUpdate_SR = async (
+  userId: string,
+  amount: number,
+  source: XPSource,
+  sourceId?: string,
+  description?: string
+): Promise<ServiceResult<XPAwardResult>> => {
+  const res = await awardXPWithLeaderboardUpdate(userId, amount, source, sourceId, description);
+  return toServiceResult(res, res);
 };
 
 // Re-export types/constants for convenience where modules import from services/gamification

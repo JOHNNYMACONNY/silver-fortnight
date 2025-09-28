@@ -44,7 +44,7 @@ export const SimpleConversationTest: React.FC = () => {
         const allSnapshot = await getDocs(allQuery);
         allConversations = allSnapshot.docs.map(doc => ({
           id: doc.id,
-          ...doc.data()
+          ...(doc.data() as any)
         }));
         console.log('✅ All conversations read successfully:', allConversations.length);
       } catch (allError: any) {
@@ -64,7 +64,7 @@ export const SimpleConversationTest: React.FC = () => {
         const participantSnapshot = await getDocs(participantQuery);
         participantConversations = participantSnapshot.docs.map(doc => ({
           id: doc.id,
-          ...doc.data()
+          ...(doc.data() as any)
         }));
         console.log('✅ Participant conversations read successfully:', participantConversations.length);
       } catch (participantError: any) {

@@ -57,7 +57,7 @@ describe('Gamification Service', () => {
   describe('Level Tiers Configuration', () => {
     it('should have properly configured level tiers', () => {
       expect(LEVEL_TIERS).toHaveLength(7);
-      
+
       // Check first level
       expect(LEVEL_TIERS[0]).toEqual({
         level: 1,
@@ -85,7 +85,7 @@ describe('Gamification Service', () => {
       for (let i = 0; i < LEVEL_TIERS.length - 1; i++) {
         const currentTier = LEVEL_TIERS[i];
         const nextTier = LEVEL_TIERS[i + 1];
-        
+
         // Next tier should start where current tier ends + 1
         expect(nextTier.minXP).toBe(currentTier.maxXP + 1);
       }
@@ -175,4 +175,8 @@ describe('XP Values Configuration', () => {
     // Test that XP values create good progression curves
     // Higher-effort actions should provide proportionally more XP
   });
+});
+
+
+
 });

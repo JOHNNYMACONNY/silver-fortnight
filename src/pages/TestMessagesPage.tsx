@@ -47,7 +47,7 @@ export const TestMessagesPage: React.FC = () => {
         console.log('TestMessagesPage: participantIds query found', participantSnapshot.size, 'conversations');
         
         participantSnapshot.forEach((doc) => {
-          const data = { id: doc.id, ...doc.data() };
+          const data = { id: doc.id, ...(doc.data() as any) };
           console.log('TestMessagesPage: participantIds conversation:', data);
           conversations.push(data);
         });
@@ -67,7 +67,7 @@ export const TestMessagesPage: React.FC = () => {
           console.log('TestMessagesPage: participants query found', participantsSnapshot.size, 'conversations');
           
           participantsSnapshot.forEach((doc) => {
-            const data = { id: doc.id, ...doc.data() };
+            const data = { id: doc.id, ...(doc.data() as any) };
             console.log('TestMessagesPage: participants conversation:', data);
             conversations.push(data);
           });
@@ -85,7 +85,7 @@ export const TestMessagesPage: React.FC = () => {
           console.log('TestMessagesPage: all conversations query found', allSnapshot.size, 'conversations');
           
           allSnapshot.forEach((doc) => {
-            const data = { id: doc.id, ...doc.data() };
+            const data = { id: doc.id, ...(doc.data() as any) };
             console.log('TestMessagesPage: all conversation:', data);
             
             // Check if user is participant

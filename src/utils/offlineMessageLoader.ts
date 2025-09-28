@@ -61,7 +61,7 @@ export const loadMessagesOffline = async (conversationId: string): Promise<Offli
     messagesSnapshot.forEach((doc) => {
       const messageData = {
         id: doc.id,
-        ...doc.data()
+        ...(doc.data() as any)
       } as ChatMessage;
       messages.push(messageData);
     });
@@ -104,7 +104,7 @@ export const loadConversationsOffline = async (userId: string): Promise<{
     for (const conversationDoc of conversationsSnapshot.docs) {
       const conversationData = {
         id: conversationDoc.id,
-        ...conversationDoc.data()
+        ...(conversationDoc.data() as any)
       };
       
       // Check if user is a participant

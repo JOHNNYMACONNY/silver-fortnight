@@ -14,7 +14,22 @@ jest.mock('../../services/challenges', () => ({
   getRecommendedChallenges: jest.fn(async () => ({ success: true, challenges: [] })),
   getFeaturedDaily: jest.fn(async () => ({ id: 'd1', title: 'Daily', rewards: { xp: 50 } })),
   getFeaturedWeekly: jest.fn(async () => ({ id: 'w1', title: 'Weekly', rewards: { xp: 100 } })),
+  getDailyChallenges: jest.fn(async () => ({ success: true, challenges: [] })),
+  getWeeklyChallenges: jest.fn(async () => ({ success: true, challenges: [] })),
 }));
+jest.mock('../../contexts/PerformanceContext', () => ({
+  useBusinessMetrics: () => ({ track: jest.fn() }),
+  PerformanceProvider: ({ children }: any) => children
+}));
+
+jest.mock('../../components/ui/PerformanceMonitor', () => () => null);
+jest.mock('../../components/ui/AnimatedHeading', () => () => null);
+
+jest.mock('../../services/streaks', () => ({
+  hasPracticedToday: jest.fn(async () => false),
+  markSkillPracticeDay: jest.fn(async () => ({ success: true }))
+}));
+
 
 jest.mock('../../contexts/ToastContext', () => ({
   useToast: () => ({ addToast: jest.fn() })
@@ -27,9 +42,10 @@ describe('ChallengesPage featured chips', () => {
         <ChallengesPage />
       </MemoryRouter>
     );
-    await act(async () => {});
-    expect(screen.getByText(/Featured today/i)).toBeInTheDocument();
-    expect(screen.getByText(/Featured this week/i)).toBeInTheDocument();
+    const today = await screen.findByText(/Featured today/i, {}, { timeout: 8000 });
+    const week = await screen.findByText(/Featured this week/i, {}, { timeout: 8000 });
+    expect(today).toBeInTheDocument();
+    expect(week).toBeInTheDocument();
   });
 });
 

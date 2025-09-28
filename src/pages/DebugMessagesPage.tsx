@@ -46,7 +46,7 @@ export const DebugMessagesPage: React.FC = () => {
         const allConversationsSnapshot = await getDocs(allConversationsQuery);
         allConversations = allConversationsSnapshot.docs.map(doc => ({
           id: doc.id,
-          ...doc.data()
+          ...(doc.data() as any)
         }));
         console.log('All conversations query succeeded, found:', allConversations.length, 'conversations');
       } catch (err: any) {
@@ -68,7 +68,7 @@ export const DebugMessagesPage: React.FC = () => {
         const participantSnapshot = await getDocs(participantQuery);
         participantConversations = participantSnapshot.docs.map(doc => ({
           id: doc.id,
-          ...doc.data()
+          ...(doc.data() as any)
         }));
         console.log('Participant query succeeded, found:', participantConversations.length, 'conversations');
       } catch (err: any) {
@@ -89,7 +89,7 @@ export const DebugMessagesPage: React.FC = () => {
         const legacySnapshot = await getDocs(legacyQuery);
         legacyConversations = legacySnapshot.docs.map(doc => ({
           id: doc.id,
-          ...doc.data()
+          ...(doc.data() as any)
         }));
       } catch (legacyError: any) {
         console.log('Legacy query failed:', legacyError.message);

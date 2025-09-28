@@ -420,6 +420,24 @@
         {"fieldPath": "title", "order": "ASCENDING"}
       ]
     }
+,
+    {
+      "collectionGroup": "notifications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "type", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "xpTransactions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "userId", "order": "ASCENDING"},
+        {"fieldPath": "source", "order": "ASCENDING"}
+      ]
+    }
   ],
+
   "fieldOverrides": []
 }
