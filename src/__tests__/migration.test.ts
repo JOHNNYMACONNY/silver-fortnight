@@ -52,7 +52,19 @@ jest.mock('firebase/firestore', () => ({
   Timestamp: {
     now: () => ({ seconds: Date.now() / 1000, nanoseconds: 0 }),
     fromDate: (date: Date) => ({ seconds: date.getTime() / 1000, nanoseconds: 0 })
-  }
+  },
+  // Add additional Firestore functions that might be used
+  addDoc: jest.fn(),
+  updateDoc: jest.fn(),
+  deleteDoc: jest.fn(),
+  setDoc: jest.fn(),
+  onSnapshot: jest.fn(),
+  serverTimestamp: jest.fn(() => ({ seconds: Date.now() / 1000, nanoseconds: 0 })),
+  arrayUnion: jest.fn(),
+  arrayRemove: jest.fn(),
+  increment: jest.fn(),
+  writeBatch: jest.fn(),
+  runTransaction: jest.fn()
 }));
 
 jest.mock('../firebase-config', () => ({
