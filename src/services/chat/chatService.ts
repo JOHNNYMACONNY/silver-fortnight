@@ -299,6 +299,32 @@ export const markMessagesAsRead = async (
   dbOverride?: Firestore
 ): Promise<void> => {
   try {
+    // Compat fallback path for Firestore instances coming from @firebase/rules-unit-testing (CI/Jest)
+    // Those can be a different SDK instance/version than our app's, so modular helpers may reject them.
+    if (dbOverride && typeof (dbOverride as any).collection === "function") {
+      const compatDb: any = dbOverride as any;
+      const messagesRef = compatDb
+        .collection(`conversations/${conversationId}/messages`)
+        .orderBy("createdAt", "desc");
+      const snap = await messagesRef.get();
+      const updates: Promise<any>[] = [];
+      snap.forEach((docSnap: any) => {
+        const data = docSnap.data() as any;
+        const alreadyRead =
+          Array.isArray(data.readBy) && data.readBy.includes(userId);
+        const isOwnMessage = data.senderId === userId;
+        if (!alreadyRead && !isOwnMessage) {
+          const next = Array.isArray(data.readBy)
+            ? [...data.readBy, userId]
+            : [userId];
+          updates.push(docSnap.ref.update({ readBy: next }));
+        }
+      });
+      await Promise.all(updates);
+      return;
+    }
+
+    // Default modular path
     const db = dbOverride ?? getSyncFirebaseDb();
     const messagesRef = collection(
       db,
