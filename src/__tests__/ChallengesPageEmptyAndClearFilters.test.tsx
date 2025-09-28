@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -12,9 +11,14 @@ jest.mock('../contexts/ToastContext', () => ({
   useToast: () => ({ addToast: jest.fn() })
 }));
 
-// Mock business metrics
+// Mock performance context
 jest.mock('../contexts/PerformanceContext', () => ({
-  useBusinessMetrics: () => ({ track: jest.fn() })
+  useBusinessMetrics: () => ({ track: jest.fn() }),
+  usePerformance: () => ({
+    collectMetrics: jest.fn(),
+    addBusinessMetric: jest.fn(),
+    trackJourneyStep: jest.fn()
+  })
 }));
 
 // Mock challenge services
