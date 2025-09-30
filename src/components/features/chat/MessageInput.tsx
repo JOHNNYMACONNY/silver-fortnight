@@ -63,7 +63,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   return (
     <div className="space-y-2">
       <form onSubmit={handleSubmit} className="flex space-x-2">
-        <div className="flex-1 relative">
+        <div className="flex-1 relative min-w-0 bg-background/10 backdrop-blur-sm border border-border/20 rounded-lg">
           <Input
             ref={inputRef}
             id="message-input"
@@ -73,7 +73,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
-            className="pr-12"
+            className="pr-12 min-w-[200px] bg-transparent border-0 focus:ring-0 focus:border-0"
             disabled={disabled || loading}
             aria-label="Message input"
             aria-describedby="message-help"
@@ -94,6 +94,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           type="submit"
           disabled={!isMessageValid || disabled || loading}
           isLoading={loading}
+          className="flex-shrink-0"
           aria-label="Send message"
         >
           Send

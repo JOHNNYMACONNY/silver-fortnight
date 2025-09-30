@@ -1,15 +1,34 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Home, ShoppingBag, Briefcase, Users, Award, Trophy, MessageSquare, Bell, User, Settings, Shield, LogOut } from '../../utils/icons';
-import { useAuth } from '../../AuthContext';
-import NavItem from './NavItem';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './Sheet';
-import { Button } from './Button';
-import { Avatar } from './Avatar';
-import Logo from './Logo';
-import { ThemeToggle } from './ThemeToggle';
-import { isThemeToggleEnabled } from '../../utils/featureFlags';
-import { cn } from '../../utils/cn';
+import React, { useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  Home,
+  ShoppingBag,
+  Briefcase,
+  Users,
+  Award,
+  Trophy,
+  MessageSquare,
+  Bell,
+  User,
+  Settings,
+  Shield,
+  LogOut,
+} from "../../utils/icons";
+import { useAuth } from "../../AuthContext";
+import NavItem from "./NavItem";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "./Sheet";
+import { Button } from "./Button";
+import { Avatar } from "./Avatar";
+import Logo from "./Logo";
+import { ThemeToggle } from "./ThemeToggle";
+import { isThemeToggleEnabled } from "../../utils/featureFlags";
+import { cn } from "../../utils/cn";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -17,49 +36,116 @@ interface MobileMenuProps {
   showThemeToggle?: boolean;
 }
 
-export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, showThemeToggle }) => {
+export const MobileMenu: React.FC<MobileMenuProps> = ({
+  isOpen,
+  onClose,
+  showThemeToggle,
+}) => {
   const { currentUser, logout, isAdmin } = useAuth();
   const displayThemeToggle = showThemeToggle ?? isThemeToggleEnabled();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const mainNavItems = [
-    { to: '/', label: 'Home', icon: <Home className="mr-2 h-5 w-5" /> },
-    { to: '/trades', label: 'Trades', icon: <ShoppingBag className="mr-2 h-5 w-5" /> },
-    { to: '/collaborations', label: 'Collaborations', icon: <Users className="mr-2 h-5 w-5" /> },
-    { to: '/directory', label: 'Directory', icon: <Users className="mr-2 h-5 w-5" /> },
-    { to: '/challenges', label: 'Challenges', icon: <Award className="mr-2 h-5 w-5" /> },
-    { to: '/portfolio', label: 'Portfolio', icon: <Briefcase className="mr-2 h-5 w-5" /> },
-    { to: '/leaderboard', label: 'Leaderboard', icon: <Trophy className="mr-2 h-5 w-5" /> }
+    { to: "/", label: "Home", icon: <Home className="mr-2 h-5 w-5" /> },
+    {
+      to: "/trades",
+      label: "Trades",
+      icon: <ShoppingBag className="mr-2 h-5 w-5" />,
+    },
+    {
+      to: "/collaborations",
+      label: "Collaborations",
+      icon: <Users className="mr-2 h-5 w-5" />,
+    },
+    {
+      to: "/directory",
+      label: "Directory",
+      icon: <Users className="mr-2 h-5 w-5" />,
+    },
+    {
+      to: "/challenges",
+      label: "Challenges",
+      icon: <Award className="mr-2 h-5 w-5" />,
+    },
+    {
+      to: "/portfolio",
+      label: "Portfolio",
+      icon: <Briefcase className="mr-2 h-5 w-5" />,
+    },
+    {
+      to: "/leaderboard",
+      label: "Leaderboard",
+      icon: <Trophy className="mr-2 h-5 w-5" />,
+    },
   ];
 
-  const userNavItems = currentUser ? [
-    { to: '/profile', label: 'Profile', icon: <User className="mr-2 h-5 w-5" /> },
-    { to: '/dashboard', label: 'Dashboard', icon: <Settings className="mr-2 h-5 w-5" /> },
-    { to: '/connections', label: 'Connections', icon: <Users className="mr-2 h-5 w-5" /> },
-    { to: '/messages', label: 'Messages', icon: <MessageSquare className="mr-2 h-5 w-5" /> },
-    { to: '/notifications', label: 'Notifications', icon: <Bell className="mr-2 h-5 w-5" /> }
-  ] : [];
+  const userNavItems = currentUser
+    ? [
+        {
+          to: "/profile",
+          label: "Profile",
+          icon: <User className="mr-2 h-5 w-5" />,
+        },
+        {
+          to: "/dashboard",
+          label: "Dashboard",
+          icon: <Settings className="mr-2 h-5 w-5" />,
+        },
+        {
+          to: "/connections",
+          label: "Connections",
+          icon: <Users className="mr-2 h-5 w-5" />,
+        },
+        {
+          to: "/messages",
+          label: "Messages",
+          icon: <MessageSquare className="mr-2 h-5 w-5" />,
+        },
+        {
+          to: "/notifications",
+          label: "Notifications",
+          icon: <Bell className="mr-2 h-5 w-5" />,
+        },
+      ]
+    : [];
 
   if (currentUser && isAdmin) {
-    userNavItems.push({ to: '/admin', label: 'Admin', icon: <Shield className="mr-2 h-5 w-5" /> });
+    userNavItems.push({
+      to: "/admin",
+      label: "Admin",
+      icon: <Shield className="mr-2 h-5 w-5" />,
+    });
   }
 
   const normalizedQuery = query.trim().toLowerCase();
-  const filteredMainNavItems = useMemo(() => (
-    normalizedQuery ? mainNavItems.filter(i => i.label.toLowerCase().includes(normalizedQuery)) : mainNavItems
-  ), [normalizedQuery]);
+  const filteredMainNavItems = useMemo(
+    () =>
+      normalizedQuery
+        ? mainNavItems.filter((i) =>
+            i.label.toLowerCase().includes(normalizedQuery)
+          )
+        : mainNavItems,
+    [normalizedQuery]
+  );
 
-  const filteredUserNavItems = useMemo(() => (
-    normalizedQuery ? userNavItems.filter(i => i.label.toLowerCase().includes(normalizedQuery)) : userNavItems
-  ), [normalizedQuery, userNavItems]);
+  const filteredUserNavItems = useMemo(
+    () =>
+      normalizedQuery
+        ? userNavItems.filter((i) =>
+            i.label.toLowerCase().includes(normalizedQuery)
+          )
+        : userNavItems,
+    [normalizedQuery, userNavItems]
+  );
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent 
-        side="left" 
+      <SheetContent
+        data-testid="mobile-menu"
+        side="left"
         className={cn(
           "w-full max-w-xs p-0",
           // Phase 4.1: Enhanced glassmorphism for mobile menu
@@ -70,11 +156,13 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, showThe
         )}
         hideOverlay={false}
       >
-        <SheetHeader className={cn(
-          "sticky top-0 z-navigation p-4 navbar-gradient-border",
-          // Glassmorphic sticky header
-          "bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md"
-        )}>
+        <SheetHeader
+          className={cn(
+            "sticky top-0 z-navigation p-4 navbar-gradient-border",
+            // Glassmorphic sticky header
+            "bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md"
+          )}
+        >
           <SheetTitle className="flex items-center justify-between">
             <Logo size="medium" showText={true} />
             {displayThemeToggle && (
@@ -105,7 +193,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, showThe
                   size="sm"
                   onClick={() => {
                     setIsSearchOpen(false);
-                    setQuery('');
+                    setQuery("");
                   }}
                   className="whitespace-nowrap"
                 >
@@ -130,7 +218,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, showThe
             )}
           </div>
         </SheetHeader>
-        
+
         <div className="p-4 overflow-y-auto mobile-safe-area">
           {/* Main Navigation Section */}
           <div className="space-y-1">
@@ -167,17 +255,25 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, showThe
                 )}
               >
                 <Avatar
-                  alt={currentUser.displayName ?? 'User'}
-                  fallback={currentUser.displayName?.charAt(0)?.toUpperCase() ?? 'U'}
+                  alt={currentUser.displayName ?? "User"}
+                  fallback={
+                    currentUser.displayName?.charAt(0)?.toUpperCase() ?? "U"
+                  }
                   className="h-7 w-7"
                 />
                 <div className="flex-1 text-left">
-                  <div className="text-sm font-medium text-foreground">Account</div>
+                  <div className="text-sm font-medium text-foreground">
+                    Account
+                  </div>
                   {currentUser.email && (
-                    <div className="text-xs text-muted-foreground truncate">{currentUser.email}</div>
+                    <div className="text-xs text-muted-foreground truncate">
+                      {currentUser.email}
+                    </div>
                   )}
                 </div>
-                <span className="text-xs text-muted-foreground">{isAccountOpen ? 'Hide' : 'Show'}</span>
+                <span className="text-xs text-muted-foreground">
+                  {isAccountOpen ? "Hide" : "Show"}
+                </span>
               </button>
 
               {isAccountOpen && (
@@ -204,8 +300,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, showThe
             /* Authentication Section */
             <div className="mt-6 pt-4 border-t border-divider">
               <div className="flex flex-col space-y-2">
-                <Button 
-                  asChild 
+                <Button
+                  asChild
                   onClick={onClose}
                   className={cn(
                     // Phase 4.1: Enhanced auth button styling
@@ -215,9 +311,9 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, showThe
                 >
                   <Link to="/login">Log In</Link>
                 </Button>
-                <Button 
-                  asChild 
-                  variant="outline" 
+                <Button
+                  asChild
+                  variant="outline"
                   onClick={onClose}
                   className={cn(
                     // Phase 4.1: Enhanced auth button styling
@@ -236,12 +332,14 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, showThe
 
         {/* Footer logout row */}
         {currentUser && (
-          <div className={cn(
-            "sticky bottom-0 p-4 border-t",
-            "bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md",
-            "border-navbar-glass-border dark:border-navbar-glass-border-dark",
-            "mobile-safe-area"
-          )}>
+          <div
+            className={cn(
+              "sticky bottom-0 p-4 border-t",
+              "bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md",
+              "border-navbar-glass-border dark:border-navbar-glass-border-dark",
+              "mobile-safe-area"
+            )}
+          >
             <Button
               variant="ghost"
               className={cn(

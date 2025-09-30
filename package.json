@@ -190,6 +190,7 @@
     "deploy:rules": "firebase deploy --only firestore:rules --project tradeya-45ede",
     "firebase:diagnose": "npx tsx scripts/firebase-cli-diagnostics.ts --project=tradeya-45ede",
     "firebase:diagnose:staging": "npx tsx scripts/firebase-cli-diagnostics.ts --project=tradeya-staging",
+    "deploy:verify": "npx tsx scripts/verify-deployment-config.ts",
     "manual:index-guide": "npx tsx scripts/manual-index-creation-guide.ts --project=tradeya-45ede",
     "manual:index-guide:staging": "npx tsx scripts/manual-index-creation-guide.ts --project=tradeya-staging",
     "storybook": "storybook dev -p 6006",

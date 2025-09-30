@@ -12,10 +12,10 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
-    
+      uses: actions/checkout@v4
+
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
@@ -50,10 +50,10 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
-      
+      uses: actions/checkout@v4
+
     - name: Download build artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: build
         path: dist
@@ -64,24 +64,32 @@ jobs:
         repoToken: '${{ secrets.GITHUB_TOKEN }}'
         firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
         channelId: live
-        projectId: tradeya-app
+        projectId: tradeya-45ede
 
   deploy-functions:
     needs: build-and-test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
-      
-    - name: Download build artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
       with:
-        name: build
-        path: dist
-        
-    - name: Deploy functions to Firebase
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
       run: |
-        cd functions
-        npm run deploy
+        npm ci
+        cd functions && npm ci
+
+    - name: Deploy functions to Firebase
+      uses: FirebaseExtended/action-hosting-deploy@v0
+      with:
+        repoToken: '${{ secrets.GITHUB_TOKEN }}'
+        firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+        projectId: tradeya-45ede
+        entryPoint: './functions'

@@ -13,11 +13,9 @@ const config = {
     "^vite$": "<rootDir>/src/utils/__mocks__/viteMock.ts",
 
     // Mock firebase-config to avoid import.meta issues
-    "^../../../firebase-config$":
-      "<rootDir>/src/utils/__mocks__/firebase-config.ts",
-    "^../../firebase-config$":
-      "<rootDir>/src/utils/__mocks__/firebase-config.ts",
-    "^../firebase-config$": "<rootDir>/src/utils/__mocks__/firebase-config.ts",
+    "^../../../firebase-config$": "<rootDir>/src/__mocks__/firebase-config.ts",
+    "^../../firebase-config$": "<rootDir>/src/__mocks__/firebase-config.ts",
+    "^../firebase-config$": "<rootDir>/src/__mocks__/firebase-config.ts",
     // Map rules unit testing to CJS shim for Jest compatibility
     "^@firebase/rules-unit-testing$": "<rootDir>/src/types/firebase-test.cjs",
     "^@/(.*)$": "<rootDir>/src/$1",

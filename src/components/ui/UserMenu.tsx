@@ -1,10 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { cn } from '../../utils/cn';
-import { User, LogOut, Settings, Shield, Users, MessageSquare, Bell, Link as LinkIcon } from '../../utils/icons';
-import { useAuth } from '../../AuthContext';
-import { getUserProfile } from '../../services/firestore-exports';
-import { getProfileImageUrl } from '../../utils/imageUtils';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { cn } from "../../utils/cn";
+import {
+  User,
+  LogOut,
+  Settings,
+  Shield,
+  Users,
+  MessageSquare,
+  Bell,
+  Link as LinkIcon,
+} from "../../utils/icons";
+import { useAuth } from "../../AuthContext";
+import { getUserProfile } from "../../services/firestore-exports";
+import { getProfileImageUrl } from "../../utils/imageUtils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +23,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuShortcut,
-} from './DropdownMenu';
-import { Button } from './Button';
-import { Avatar } from './Avatar';
+} from "./DropdownMenu";
+import { Button } from "./Button";
+import { Avatar } from "./Avatar";
 
 interface UserMenuProps {
   className?: string;
@@ -27,7 +36,20 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
   const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user profile data to get Cloudinary profile image
+  // Simple in-memory cache for profile image URLs by userId
+  // Persisted only for the session; avoids repeated Firestore lookups
+  // and reduces visible image flashes when reopening the menu
+  const getImageCache = (): Map<string, string | null> => {
+    const globalAny = globalThis as unknown as {
+      __userImageCache?: Map<string, string | null>;
+    };
+    if (!globalAny.__userImageCache) {
+      globalAny.__userImageCache = new Map<string, string | null>();
+    }
+    return globalAny.__userImageCache;
+  };
+
+  // Fetch user profile data to get Cloudinary profile image (with cache)
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!currentUser?.uid) {
@@ -36,20 +58,29 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
       }
 
       try {
-        const { data: profile, error } = await getUserProfile(currentUser.uid);
-        if (error) {
-          console.warn('Failed to fetch user profile for UserMenu:', error);
-          // Fallback to Firebase Auth photoURL
-          setUserProfileImage(currentUser.photoURL);
-        } else if (profile?.profilePicture) {
-          // Use Cloudinary profile image from Firestore
-          setUserProfileImage(getProfileImageUrl(profile.profilePicture, 32));
-        } else {
-          // Fallback to Firebase Auth photoURL
-          setUserProfileImage(currentUser.photoURL);
+        const cache = getImageCache();
+        const cached = cache.get(currentUser.uid);
+        if (cached !== undefined) {
+          setUserProfileImage(cached);
+          setLoading(false);
+          return;
         }
+
+        const { data: profile, error } = await getUserProfile(currentUser.uid);
+        let resolved: string | null = null;
+        if (error) {
+          console.warn("Failed to fetch user profile for UserMenu:", error);
+          resolved = currentUser.photoURL;
+        } else if (profile?.profilePicture) {
+          resolved = getProfileImageUrl(profile.profilePicture, 32);
+        } else {
+          resolved = currentUser.photoURL;
+        }
+
+        cache.set(currentUser.uid, resolved);
+        setUserProfileImage(resolved);
       } catch (error) {
-        console.error('Error fetching user profile for UserMenu:', error);
+        console.error("Error fetching user profile for UserMenu:", error);
         // Fallback to Firebase Auth photoURL
         setUserProfileImage(currentUser.photoURL);
       } finally {
@@ -64,59 +95,61 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
 
   const menuItems = [
     {
-      label: 'Profile',
+      label: "Profile",
       icon: <User className="mr-2 h-4 w-4" />,
-      to: '/profile'
+      to: "/profile",
     },
     {
-      label: 'Directory',
+      label: "Directory",
       icon: <Users className="mr-2 h-4 w-4" />,
-      to: '/directory'
+      to: "/directory",
     },
     {
-      label: 'Dashboard',
+      label: "Dashboard",
       icon: <Settings className="mr-2 h-4 w-4" />,
-      to: '/dashboard'
+      to: "/dashboard",
     },
     {
-      label: 'Connections',
+      label: "Connections",
       icon: <Users className="mr-2 h-4 w-4" />,
-      to: '/connections'
+      to: "/connections",
     },
     {
-      label: 'Messages',
+      label: "Messages",
       icon: <MessageSquare className="mr-2 h-4 w-4" />,
-      to: '/messages'
+      to: "/messages",
     },
     {
-      label: 'Notifications',
+      label: "Notifications",
       icon: <Bell className="mr-2 h-4 w-4" />,
-      to: '/notifications'
-    }
+      to: "/notifications",
+    },
   ];
 
   if (isAdmin) {
     menuItems.push({
-      label: 'Admin',
+      label: "Admin",
       icon: <Shield className="mr-2 h-4 w-4" />,
-      to: '/admin'
+      to: "/admin",
     });
     menuItems.push({
-      label: 'Evidence System',
+      label: "Evidence System",
       icon: <LinkIcon className="mr-2 h-4 w-4" />,
-      to: '/evidence-demo'
+      to: "/evidence-demo",
     });
   }
 
   // Focus user menu on account-centric actions; remove redundant Directory link
-  const accountMenuItems = menuItems.filter((item) => item.label !== 'Directory');
+  const accountMenuItems = menuItems.filter(
+    (item) => item.label !== "Directory"
+  );
 
   return (
-    <div className={cn('relative', className)}>
+    <div className={cn("relative", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className={cn(
               // Fix: Remove fixed width, let it expand to fit content
               "relative rounded-full px-3 py-2 h-auto",
@@ -125,14 +158,22 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
               // Prevent text from wrapping
               "whitespace-nowrap"
             )}
-            aria-label={`Open user menu for ${currentUser.displayName ?? 'user'}`}
+            aria-label={`Open user menu for ${
+              currentUser.displayName ?? "user"
+            }`}
           >
-            <Avatar
-              src={loading ? null : userProfileImage}
-              alt={currentUser.displayName ?? 'User'}
-              fallback={currentUser.displayName?.charAt(0)?.toUpperCase() ?? 'U'}
-              className="h-8 w-8 flex-shrink-0"
-            />
+            {loading ? (
+              <div className="h-8 w-8 rounded-full bg-muted animate-pulse flex-shrink-0" />
+            ) : (
+              <Avatar
+                src={userProfileImage}
+                alt={currentUser.displayName ?? "User"}
+                fallback={
+                  currentUser.displayName?.charAt(0)?.toUpperCase() ?? "U"
+                }
+                className="h-8 w-8 flex-shrink-0"
+              />
+            )}
             <span
               className="hidden sm:inline-block text-sm font-medium max-w-24 truncate"
               title={currentUser.displayName ?? undefined}
@@ -143,28 +184,38 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           className={cn(
-            'w-64',
+            "w-64",
             // Glassmorphic surface aligned with navbar
-            'bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md navbar-gradient-border',
+            "bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md navbar-gradient-border",
             // Enhanced shadow to match mobile menu aesthetic
-            'shadow-glass-lg',
+            "shadow-glass-lg",
             // Accessibility: respect reduced motion
-            'motion-reduce:animate-none motion-reduce:transition-none'
+            "motion-reduce:animate-none motion-reduce:transition-none"
           )}
           align="end"
         >
           {/* Account header */}
           <div className="px-2 py-2 flex items-center gap-3">
-            <Avatar
-              src={loading ? null : userProfileImage}
-              alt={currentUser.displayName ?? 'User'}
-              fallback={currentUser.displayName?.charAt(0)?.toUpperCase() ?? 'U'}
-              className="h-9 w-9"
-            />
+            {loading ? (
+              <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
+            ) : (
+              <Avatar
+                src={userProfileImage}
+                alt={currentUser.displayName ?? "User"}
+                fallback={
+                  currentUser.displayName?.charAt(0)?.toUpperCase() ?? "U"
+                }
+                className="h-9 w-9"
+              />
+            )}
             <div className="min-w-0">
-              <div className="text-sm font-medium truncate">{currentUser.displayName}</div>
+              <div className="text-sm font-medium truncate">
+                {currentUser.displayName}
+              </div>
               {currentUser.email && (
-                <div className="text-xs text-muted-foreground truncate">{currentUser.email}</div>
+                <div className="text-xs text-muted-foreground truncate">
+                  {currentUser.email}
+                </div>
               )}
             </div>
             <Button asChild variant="outline" size="sm" className="ml-auto">
@@ -178,8 +229,8 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
             {accountMenuItems.map((item, index) => (
               <DropdownMenuItem key={index} asChild>
                 <Link to={item.to} className="w-full flex items-center">
-                    {item.icon}
-                    <span>{item.label}</span>
+                  {item.icon}
+                  <span>{item.label}</span>
                 </Link>
               </DropdownMenuItem>
             ))}
@@ -189,7 +240,8 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           <DropdownMenuItem
             onClick={() => {
               try {
-                const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                const origin =
+                  typeof window !== "undefined" ? window.location.origin : "";
                 const profileUrl = `${origin}/profile`;
                 void navigator.clipboard.writeText(profileUrl);
               } catch (e) {

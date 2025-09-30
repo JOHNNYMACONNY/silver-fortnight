@@ -1,20 +1,30 @@
-import React from 'react';
-import { cn } from '../../../utils/cn';
-import { Card, CardHeader, CardContent, CardTitle, CardFooter } from '../../ui/Card';
-import { Badge } from '../../ui/Badge';
-import { Clock, Award, Users, Target, Star } from 'lucide-react';
-import { Challenge, ChallengeDifficulty, ChallengeType } from '../../../types/gamification';
-import { ChallengeRecommendation } from '../../../services/challengeDiscovery';
-import { Tooltip } from '../../ui/Tooltip';
-import { useAuth } from '../../../AuthContext';
-import { getUserThreeTierProgress } from '../../../services/threeTierProgression';
+import React from "react";
+import { cn } from "../../../utils/cn";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardTitle,
+  CardFooter,
+} from "../../ui/Card";
+import { Badge } from "../../ui/Badge";
+import { Clock, Award, Users, Target, Star } from "lucide-react";
+import {
+  Challenge,
+  ChallengeDifficulty,
+  ChallengeType,
+} from "../../../types/gamification";
+import { ChallengeRecommendation } from "../../../services/challengeDiscovery";
+import { Tooltip } from "../../ui/Tooltip";
+import { useAuth } from "../../../AuthContext";
+import { getUserThreeTierProgress } from "../../../services/threeTierProgression";
 
 export interface ChallengeCardProps {
   challenge: Challenge;
   recommendation?: ChallengeRecommendation;
   onSelect?: (challenge: Challenge) => void;
   className?: string;
-  variant?: 'default' | 'glass' | 'elevated' | 'premium';
+  variant?: "default" | "glass" | "elevated" | "premium";
   enhanced?: boolean;
   footer?: React.ReactNode;
 }
@@ -22,13 +32,13 @@ export interface ChallengeCardProps {
 const getDifficultyBadgeVariant = (difficulty: ChallengeDifficulty) => {
   switch (difficulty) {
     case ChallengeDifficulty.BEGINNER:
-      return 'default' as const;
+      return "default" as const;
     case ChallengeDifficulty.INTERMEDIATE:
-      return 'secondary' as const;
+      return "secondary" as const;
     case ChallengeDifficulty.ADVANCED:
-      return 'outline' as const;
+      return "outline" as const;
     case ChallengeDifficulty.EXPERT:
-      return 'outline' as const;
+      return "outline" as const;
   }
 };
 
@@ -45,18 +55,18 @@ const getTypeIcon = (type: ChallengeType) => {
   }
 };
 
-const getMatchColor = (match: ChallengeRecommendation['difficultyMatch']) => {
+const getMatchColor = (match: ChallengeRecommendation["difficultyMatch"]) => {
   switch (match) {
-    case 'perfect':
-      return 'text-green-500';
-    case 'slightly-easy':
-      return 'text-blue-500';
-    case 'slightly-hard':
-      return 'text-amber-500';
-    case 'too-easy':
-      return 'text-gray-500';
-    case 'too-hard':
-      return 'text-red-500';
+    case "perfect":
+      return "text-green-500";
+    case "slightly-easy":
+      return "text-blue-500";
+    case "slightly-hard":
+      return "text-amber-500";
+    case "too-easy":
+      return "text-gray-500";
+    case "too-hard":
+      return "text-red-500";
   }
 };
 
@@ -65,13 +75,13 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
   recommendation,
   onSelect,
   className,
-  variant = 'premium',
+  variant = "premium",
   enhanced = true,
   footer,
 }) => {
   const { currentUser } = useAuth();
   const [locked, setLocked] = React.useState<boolean>(false);
-  const [lockReason, setLockReason] = React.useState<string>('');
+  const [lockReason, setLockReason] = React.useState<string>("");
 
   React.useEffect(() => {
     (async () => {
@@ -81,21 +91,31 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
         const prog = await getUserThreeTierProgress(currentUser.uid);
         if (!prog.success || !prog.data) return;
         const tier = challenge.type;
-        if (tier === ChallengeType.TRADE && !prog.data.unlockedTiers.includes('TRADE')) {
+        if (
+          tier === ChallengeType.TRADE &&
+          !prog.data.unlockedTiers.includes("TRADE")
+        ) {
           setLocked(true);
-          setLockReason('Complete 3 Solo challenges and reach skill level 2 to unlock Trade');
-        } else if (tier === ChallengeType.COLLABORATION && !prog.data.unlockedTiers.includes('COLLABORATION')) {
+          setLockReason(
+            "Complete 3 Solo challenges and reach skill level 2 to unlock Trade"
+          );
+        } else if (
+          tier === ChallengeType.COLLABORATION &&
+          !prog.data.unlockedTiers.includes("COLLABORATION")
+        ) {
           setLocked(true);
-          setLockReason('Complete 5 Trade challenges and reach skill level 3 to unlock Collaboration');
+          setLockReason(
+            "Complete 5 Trade challenges and reach skill level 3 to unlock Collaboration"
+          );
         } else {
           setLocked(false);
-          setLockReason('');
+          setLockReason("");
         }
       } catch {}
     })();
   }, [currentUser?.uid, challenge.type]);
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       onSelect?.(challenge);
     }
@@ -114,12 +134,15 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
         variant={variant}
         tilt={enhanced}
         depth="lg"
-        glow={enhanced ? 'subtle' : 'none'}
+        glow={enhanced ? "subtle" : "none"}
         glowColor="purple"
         hover
         interactive
         onClick={() => onSelect?.(challenge)}
-        className={cn('h-[380px] flex flex-col cursor-pointer overflow-hidden', className)}
+        className={cn(
+          "h-[420px] flex flex-col cursor-pointer overflow-hidden",
+          className
+        )}
       >
         <CardHeader className="pb-3 flex-shrink-0">
           <div className="flex items-center justify-between gap-3">
@@ -131,15 +154,19 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
             <div className="flex items-center gap-2 flex-shrink-0">
               {getTypeIcon(challenge.type)}
               {recommendation && (
-                <Badge variant="outline">{Math.round(recommendation.score)}%</Badge>
+                <Badge variant="outline">
+                  {Math.round(recommendation.score)}%
+                </Badge>
               )}
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="flex-1 overflow-hidden px-4 pb-4">
+        <CardContent className="flex-1 overflow-hidden px-4 pb-4 space-y-3">
           {challenge.description && (
-            <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{challenge.description}</p>
+            <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
+              {challenge.description}
+            </p>
           )}
 
           <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
@@ -160,7 +187,9 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
 
           {locked && (
             <div className="mb-3">
-              <Tooltip content={<div className="max-w-xs text-xs">{lockReason}</div>}>
+              <Tooltip
+                content={<div className="max-w-xs text-xs">{lockReason}</div>}
+              >
                 <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card/60 px-2 py-0.5 text-[11px] text-muted-foreground">
                   🔒 Locked
                 </span>
@@ -169,22 +198,31 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
           )}
 
           {/* Base vs Bonus hint */}
-          <div className="text-[11px] text-muted-foreground -mt-3 mb-3">
-            Base XP shown; bonuses available for quality, early completion, first attempt, and streaks.
+          <div className="text-xs text-muted-foreground -mt-3 mb-3">
+            Base XP shown; bonuses available for quality, early completion,
+            first attempt, and streaks.
           </div>
 
           {recommendation && (
             <div className="space-y-2 p-3 rounded-lg border">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Recommendation</span>
-                <span className={cn('text-sm', getMatchColor(recommendation.difficultyMatch))}>
-                  {recommendation.difficultyMatch.replace('-', ' ')}
+                <span
+                  className={cn(
+                    "text-sm",
+                    getMatchColor(recommendation.difficultyMatch)
+                  )}
+                >
+                  {recommendation.difficultyMatch.replace("-", " ")}
                 </span>
               </div>
               {recommendation.reasons.length > 0 && (
                 <ul className="space-y-1">
                   {recommendation.reasons.slice(0, 2).map((reason, index) => (
-                    <li key={index} className="text-xs text-muted-foreground flex items-start gap-2">
+                    <li
+                      key={index}
+                      className="text-xs text-muted-foreground flex items-start gap-2"
+                    >
                       <Star className="w-3 h-3 mt-0.5 flex-shrink-0" />
                       <span>{reason}</span>
                     </li>
@@ -193,15 +231,19 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
               )}
               {recommendation.matchedSkills.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2">
-                  {recommendation.matchedSkills.slice(0, 3).map((skill, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {skill}
-                    </Badge>
-                  ))}
+                  {recommendation.matchedSkills
+                    .slice(0, 3)
+                    .map((skill, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {skill}
+                      </Badge>
+                    ))}
                 </div>
               )}
               <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>Est. completion: {recommendation.estimatedCompletionTime}</span>
+                <span>
+                  Est. completion: {recommendation.estimatedCompletionTime}
+                </span>
                 <div className="flex items-center space-x-1">
                   <Star className="w-3 h-3" />
                   <span>{Math.round(recommendation.score)}/100</span>
@@ -236,4 +278,3 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
 };
 
 export default ChallengeCard;
-

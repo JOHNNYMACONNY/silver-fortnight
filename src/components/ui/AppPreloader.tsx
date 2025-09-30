@@ -1,17 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 import {
   preconnectToCommonDomains,
   preloadFonts,
   preloadImages,
-  preloadStyles
-} from '../../utils/preloadUtils';
+  preloadStyles,
+} from "../../utils/preloadUtils";
 
 /**
  * Critical resources that should be preloaded as soon as the application starts
  */
 const CRITICAL_FONTS: string[] = [
-  // We'll let the Google Fonts stylesheet handle loading the correct font files
-  // instead of hardcoding specific font file URLs that might change
+  // Only preload fonts that are actually used immediately in the critical rendering path
+  // Remove inter-var.woff2 as it doesn't exist and causes 404s
 ];
 
 const CRITICAL_IMAGES: string[] = [
@@ -20,8 +20,9 @@ const CRITICAL_IMAGES: string[] = [
 ];
 
 const CRITICAL_STYLES: string[] = [
-  // Add your critical CSS URLs here if loading external stylesheets
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap'
+  // Only preload Google Fonts stylesheet if fonts are used immediately
+  // Remove this to eliminate unused preload warnings
+  // 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap'
 ];
 
 /**
@@ -54,12 +55,12 @@ const AppPreloader = () => {
 
     // Log preloading activity in development (safe check for Storybook/Chromatic)
     if (
-      (typeof import.meta !== 'undefined' &&
-        typeof import.meta.env !== 'undefined' &&
-        (import.meta.env.DEV || process.env.NODE_ENV === 'development')) ||
-      process.env.NODE_ENV === 'development'
+      (typeof import.meta !== "undefined" &&
+        typeof import.meta.env !== "undefined" &&
+        (import.meta.env.DEV || process.env.NODE_ENV === "development")) ||
+      process.env.NODE_ENV === "development"
     ) {
-      console.log('[AppPreloader] Preloaded critical application resources');
+      console.log("[AppPreloader] Preloaded critical application resources");
     }
   }, []);
 

@@ -123,7 +123,11 @@ describe("ChallengesPage", () => {
   test("renders challenge page header", () => {
     const _uid = "test-user";
     void _uid;
-    const { getByText } = render(<ChallengesPage />);
+    const { getByText } = render(
+      <MemoryRouter>
+        <ChallengesPage />
+      </MemoryRouter>
+    );
     expect(getByText(/Challenges/i)).toBeInTheDocument();
   });
 });
