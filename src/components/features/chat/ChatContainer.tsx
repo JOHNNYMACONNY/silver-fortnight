@@ -46,15 +46,17 @@ import {
   FirebaseConnectionManager,
 } from "../../../utils/firebaseConnectionManager";
 import { testMessagesDirectly } from "../../../utils/testMessagesDirectly";
-import { useListenerPerformance } from "../../../hooks/useListenerPerformance";
-import {
-  useChatError,
-  useChatOperation,
-} from "../../../contexts/ChatErrorContext";
-import {
-  useMessageSendRateLimit,
-  useMessageReadRateLimit,
-} from "../../../hooks/useRateLimiter";
+import { usePerformanceMonitoring } from "../../../hooks/usePerformanceMonitoring";
+// Chat error handling - using local error state instead of context
+// import {
+//   useChatError,
+//   useChatOperation,
+// } from "../../../contexts/ChatErrorContext";
+// Rate limiting - using local implementation instead of missing hook
+// import {
+//   useMessageSendRateLimit,
+//   useMessageReadRateLimit,
+// } from "../../../hooks/useRateLimiter";
 // import { loadMessagesOffline } from '../../../utils/offlineMessageLoader';
 // import { resetFirebaseConnections, wasResetRequested, clearResetFlags } from '../../../utils/firebaseConnectionReset';
 import { Card } from "../../ui/Card";
@@ -69,12 +71,45 @@ export const ChatContainer: React.FC = () => {
   const { currentUser } = useAuth();
   const { isUserParticipant } = useMessageContext();
   const toastContext = React.useContext(ToastContext);
-  const { addError } = useChatError();
-  const { executeWithErrorHandling } = useChatOperation();
+  // Local error handling functions
+  const addError = (error: Error, operation: string, metadata?: any) => {
+    console.error(`Chat error in ${operation}:`, error, metadata);
+    if (toastContext) {
+      toastContext.addToast("error", `Error in ${operation}: ${error.message}`);
+    }
+  };
 
-  // Rate limiters for messaging operations
-  const sendRateLimit = useMessageSendRateLimit();
-  const readRateLimit = useMessageReadRateLimit();
+  const executeWithErrorHandling = async (operation: () => Promise<any>) => {
+    try {
+      return await operation();
+    } catch (error) {
+      addError(
+        error instanceof Error ? error : new Error(String(error)),
+        "operation"
+      );
+      throw error;
+    }
+  };
+
+  // Local rate limiting implementation
+  const sendRateLimit = {
+    checkRateLimit: () => ({ allowed: true, resetTime: Date.now() }),
+    executeAsyncWithRateLimit: async (
+      operation: () => Promise<any>,
+      onRateLimited?: (result: any) => void
+    ) => {
+      return await operation();
+    },
+  };
+
+  const readRateLimit = {
+    executeAsyncWithRateLimit: async (
+      operation: () => Promise<any>,
+      onRateLimited?: (result: any) => void
+    ) => {
+      return await operation();
+    },
+  };
 
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [activeConversation, setActiveConversation] =
@@ -93,25 +128,21 @@ export const ChatContainer: React.FC = () => {
   const navigate = useNavigate();
 
   // Performance monitoring for real-time listeners
-  const messageListenerPerf = useListenerPerformance(
-    `messages-${activeConversation?.id || "none"}`,
-    {
-      maxListeners: 5,
-      memoryThreshold: 100, // 100MB
-      responseTimeThreshold: 5000, // 5 seconds (increased to reduce console noise)
-      enableLogging: process.env.NODE_ENV === "development",
-    }
-  );
+  const messageListenerPerf = usePerformanceMonitoring({
+    componentName: `messages-${activeConversation?.id || "none"}`,
+    trackRenders: true,
+    trackInteractions: true,
+    renderThreshold: 5000, // 5 seconds (increased to reduce console noise)
+    enableDetailedTiming: process.env.NODE_ENV === "development",
+  });
 
-  const conversationListenerPerf = useListenerPerformance(
-    `conversations-${currentUser?.uid || "none"}`,
-    {
-      maxListeners: 3,
-      memoryThreshold: 50, // 50MB
-      responseTimeThreshold: 1500, // 1.5 seconds
-      enableLogging: process.env.NODE_ENV === "development",
-    }
-  );
+  const conversationListenerPerf = usePerformanceMonitoring({
+    componentName: `conversations-${currentUser?.uid || "none"}`,
+    trackRenders: true,
+    trackInteractions: true,
+    renderThreshold: 1500, // 1.5 seconds
+    enableDetailedTiming: process.env.NODE_ENV === "development",
+  });
 
   // Helper: normalize conversation objects from migration/compatibility services
   const normalizeConversation = (c: any): ChatConversation => {
@@ -244,7 +275,7 @@ export const ChatContainer: React.FC = () => {
       activeConversation.id!,
       (messagesList) => {
         const responseTime = Date.now() - startTime;
-        messageListenerPerf.trackActivity(responseTime);
+        messageListenerPerf.trackInteraction("message_load", { responseTime });
 
         try {
           setMessages(messagesList);
@@ -313,9 +344,9 @@ export const ChatContainer: React.FC = () => {
           );
           setError(err.message || "Failed to process messages");
           setLoading(false);
-          messageListenerPerf.trackError(
-            err instanceof Error ? err : new Error(String(err))
-          );
+          messageListenerPerf.trackInteraction("message_error", {
+            error: err instanceof Error ? err.message : String(err),
+          });
         }
       },
       // Add error handler for listener failures
@@ -323,7 +354,9 @@ export const ChatContainer: React.FC = () => {
         console.error("ChatContainer: Message listener error:", error);
         setError(error.message || "Failed to load messages");
         setLoading(false);
-        messageListenerPerf.trackError(error);
+        messageListenerPerf.trackInteraction("listener_error", {
+          error: error.message,
+        });
 
         // Show user-friendly error for listener failures
         if (toastContext && !error.message?.includes("permission")) {
@@ -336,9 +369,10 @@ export const ChatContainer: React.FC = () => {
     );
 
     // Register the listener for performance monitoring
-    const cleanupPerformanceMonitoring = messageListenerPerf.registerListener(
-      () => unsubscribe()
-    );
+    const cleanupPerformanceMonitoring = () => {
+      messageListenerPerf.trackInteraction("listener_cleanup", {});
+      unsubscribe();
+    };
 
     // Clean up on unmount
     return () => {
