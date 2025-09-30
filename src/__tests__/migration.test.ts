@@ -31,6 +31,8 @@ var mockWhere = jest.fn();
 var mockOrderBy = jest.fn();
 var mockLimit = jest.fn();
 
+// Set up proper chaining for Firestore query functions - will be configured in beforeEach
+
 // Mock Firebase/Firestore dependencies
 const mockFirestore = {
   collection: mockCollection,
@@ -39,21 +41,44 @@ const mockFirestore = {
   batch: jest.fn()
 } as any;
 
-// Mock firebase/firestore functions
-jest.mock('firebase/firestore', () => ({
-  collection: mockCollection,
-  doc: mockDoc,
-  getDoc: mockGet,
-  getDocs: mockGetDocs,
-  query: mockQuery,
-  where: mockWhere,
-  orderBy: mockOrderBy,
-  limit: mockLimit,
-  Timestamp: {
-    now: () => ({ seconds: Date.now() / 1000, nanoseconds: 0 }),
-    fromDate: (date: Date) => ({ seconds: date.getTime() / 1000, nanoseconds: 0 })
-  }
-}));
+// Mock firebase/firestore functions with proper named export mocking
+jest.mock('firebase/firestore', () => {
+  // Create a mock query that can be passed to getDocs
+  const mockQueryResult = { _isMockQuery: true };
+
+  return {
+    // Core Firestore functions
+    collection: mockCollection,
+    doc: mockDoc,
+    getDoc: mockGet,
+    getDocs: mockGetDocs,
+
+    // Query building functions - these should return a mock query object
+    query: jest.fn(() => mockQueryResult),
+    where: jest.fn(() => mockQueryResult),
+    orderBy: jest.fn(() => mockQueryResult),
+    limit: jest.fn(() => mockQueryResult),
+
+    // Timestamp utilities
+    Timestamp: {
+      now: () => ({ seconds: Date.now() / 1000, nanoseconds: 0 }),
+      fromDate: (date: Date) => ({ seconds: date.getTime() / 1000, nanoseconds: 0 })
+    },
+
+    // Additional Firestore functions
+    addDoc: jest.fn(),
+    updateDoc: jest.fn(),
+    deleteDoc: jest.fn(),
+    setDoc: jest.fn(),
+    onSnapshot: jest.fn(),
+    serverTimestamp: jest.fn(() => ({ seconds: Date.now() / 1000, nanoseconds: 0 })),
+    arrayUnion: jest.fn(),
+    arrayRemove: jest.fn(),
+    increment: jest.fn(),
+    writeBatch: jest.fn(),
+    runTransaction: jest.fn()
+  };
+});
 
 jest.mock('../firebase-config', () => ({
   db: mockFirestore,
@@ -237,15 +262,12 @@ describe('TradeYa Migration Test Suite', () => {
     chatCompatibilityService = new ChatCompatibilityService(mockFirestore);
     registry = MigrationServiceRegistry.getInstance();
     registry.reset(); // Reset registry state
-    
+
     // Reset all mocks
     jest.clearAllMocks();
-    
-    // Setup default mock implementations
-    mockQuery.mockReturnValue({});
-    mockWhere.mockReturnValue({});
-    mockOrderBy.mockReturnValue({});
-    mockLimit.mockReturnValue({});
+
+    // Setup default collection mock
+    mockCollection.mockReturnValue({ id: 'mock-collection' });
   });
 
   afterEach(() => {

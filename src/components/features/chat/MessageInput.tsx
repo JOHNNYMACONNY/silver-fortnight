@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Input } from '../../ui/Input';
-import { Button } from '../../ui/Button';
-import { themeClasses } from '../../../utils/themeUtils';
+import React, { useState, useRef, useEffect } from "react";
+import { Input } from "../../ui/Input";
+import { Button } from "../../ui/Button";
+import { themeClasses } from "../../../utils/themeUtils";
 
 interface MessageInputProps {
   onSendMessage: (message: string) => void;
@@ -16,7 +16,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   disabled,
   loading,
 }) => {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -33,13 +33,13 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     if (!message.trim() || disabled || loading) return;
 
     onSendMessage(message.trim());
-    setMessage('');
+    setMessage("");
     setIsTyping(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    
+
     // Enforce character limit
     if (value.length <= MAX_MESSAGE_LENGTH) {
       setMessage(value);
@@ -49,13 +49,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // Allow Enter to submit, but prevent on Shift+Enter for future multi-line support
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e as any);
     }
   };
 
-  const isMessageValid = message.trim().length > 0 && message.trim().length <= MAX_MESSAGE_LENGTH;
+  const isMessageValid =
+    message.trim().length > 0 && message.trim().length <= MAX_MESSAGE_LENGTH;
   const characterCount = message.length;
   const isNearLimit = characterCount > MAX_MESSAGE_LENGTH * 0.9;
 
@@ -65,6 +66,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         <div className="flex-1 relative">
           <Input
             ref={inputRef}
+            id="message-input"
+            name="message"
             type="text"
             value={message}
             onChange={handleInputChange}
@@ -77,7 +80,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           />
           {isNearLimit && (
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-  <span className={`text-xs ${isNearLimit ? 'text-primary' : 'text-muted-foreground'}`}>
+              <span
+                className={`text-xs ${
+                  isNearLimit ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
                 {characterCount}/{MAX_MESSAGE_LENGTH}
               </span>
             </div>
@@ -92,12 +99,12 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           Send
         </Button>
       </form>
-      
+
       {/* Help text */}
       <div id="message-help" className="text-xs text-muted-foreground">
         Press Enter to send, Shift+Enter for new line (coming soon)
       </div>
-      
+
       {/* Character limit warning */}
       {characterCount > MAX_MESSAGE_LENGTH && (
         <div className="text-xs text-destructive">

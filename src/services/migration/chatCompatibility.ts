@@ -1,16 +1,14 @@
-import { 
-  doc, 
-  getDoc, 
-  getDocs, 
-  collection, 
-  query, 
-  where, 
-  orderBy, 
+import {
+  doc,
+  getDoc,
+  getDocs,
+  collection,
+  query,
+  where,
+  orderBy,
   limit,
   DocumentData,
-  QueryConstraint,
-  Firestore,
-  collectionGroup
+  Firestore
 } from 'firebase/firestore';
 
 /**
@@ -138,12 +136,22 @@ export class ChatCompatibilityService {
         // participant has an `id` field; skip entries without an id.
         participants = data.participants
           .map((p: any) => {
+            if (!p || typeof p !== 'object') return null;
+
             const id = p.id || p.userId || '';
             if (!id) return null;
+
             // Normalize name field - use name, displayName, or empty string
             const name = p.name || p.displayName || '';
-            // Return the original object but guarantee `id` and `name` are set
-            return { ...p, id, name } as ChatParticipant;
+
+            // Create normalized participant with only valid ChatParticipant fields
+            const normalized: ChatParticipant = { id, name };
+
+            // Add optional fields only if they exist in original data
+            if (p.avatar) normalized.avatar = p.avatar;
+            if (p.photoURL) normalized.photoURL = p.photoURL;
+
+            return normalized;
           })
           .filter((p: any) => p !== null) as ChatParticipant[];
 

@@ -48,7 +48,8 @@ export type { ChatMessage, ChatConversation } from "../../types/chat";
  */
 export const getUserConversations = (
   userId: string,
-  callback: (conversations: ChatConversation[]) => void
+  callback: (conversations: ChatConversation[]) => void,
+  onError?: (error: Error) => void
 ) => {
   const db = getSyncFirebaseDb();
   const conversationsRef = collection(db, "conversations");
@@ -58,27 +59,43 @@ export const getUserConversations = (
     orderBy("updatedAt", "desc")
   );
 
-  return onSnapshot(q, (snapshot) => {
-    const conversations: ChatConversation[] = [];
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      try {
+        const conversations: ChatConversation[] = [];
 
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      if (typeof data === "object" && data !== null) {
-        let conversation: ChatConversation;
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          if (typeof data === "object" && data !== null) {
+            let conversation: ChatConversation;
 
-        // Migrate legacy data if needed
-        if (isValidChatConversation(data)) {
-          conversation = { id: doc.id, ...data };
-        } else {
-          conversation = migrateLegacyConversation({ id: doc.id, ...data });
+            // Migrate legacy data if needed
+            if (isValidChatConversation(data)) {
+              conversation = { id: doc.id, ...data };
+            } else {
+              conversation = migrateLegacyConversation({ id: doc.id, ...data });
+            }
+
+            conversations.push(conversation);
+          }
+        });
+
+        callback(conversations);
+      } catch (error) {
+        console.error("Error processing conversation snapshot:", error);
+        if (onError) {
+          onError(error instanceof Error ? error : new Error(String(error)));
         }
-
-        conversations.push(conversation);
       }
-    });
-
-    callback(conversations);
-  });
+    },
+    (error) => {
+      console.error("Error in conversation listener:", error);
+      if (onError) {
+        onError(error instanceof Error ? error : new Error(String(error)));
+      }
+    }
+  );
 };
 
 /**
@@ -206,7 +223,8 @@ export const createGroupConversation = async (
  */
 export const getConversationMessages = (
   conversationId: string,
-  callback: (messages: ChatMessage[]) => void
+  callback: (messages: ChatMessage[]) => void,
+  onError?: (error: Error) => void
 ) => {
   const db = getSyncFirebaseDb();
   const messagesRef = collection(
@@ -217,27 +235,43 @@ export const getConversationMessages = (
   );
   const q = query(messagesRef, orderBy("createdAt", "asc"));
 
-  return onSnapshot(q, (snapshot) => {
-    const messages: ChatMessage[] = [];
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      try {
+        const messages: ChatMessage[] = [];
 
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      if (typeof data === "object" && data !== null) {
-        let message: ChatMessage;
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          if (typeof data === "object" && data !== null) {
+            let message: ChatMessage;
 
-        // Migrate legacy data if needed
-        if (isValidChatMessage(data)) {
-          message = { id: doc.id, ...data };
-        } else {
-          message = migrateLegacyMessage({ id: doc.id, ...data });
+            // Migrate legacy data if needed
+            if (isValidChatMessage(data)) {
+              message = { id: doc.id, ...data };
+            } else {
+              message = migrateLegacyMessage({ id: doc.id, ...data });
+            }
+
+            messages.push(message);
+          }
+        });
+
+        callback(messages);
+      } catch (error) {
+        console.error("Error processing message snapshot:", error);
+        if (onError) {
+          onError(error instanceof Error ? error : new Error(String(error)));
         }
-
-        messages.push(message);
       }
-    });
-
-    callback(messages);
-  });
+    },
+    (error) => {
+      console.error("Error in message listener:", error);
+      if (onError) {
+        onError(error instanceof Error ? error : new Error(String(error)));
+      }
+    }
+  );
 };
 
 /**
@@ -335,11 +369,11 @@ export const markMessagesAsRead = async (
 
     // Firestore does not support a negative array membership query (e.g., "not-in" for arrays).
     // Instead, fetch a recent window of messages and update those that are unread for this user.
-    // If needed, increase the window size or add conversation-level lastReadAt later.
+    // Limit to 100 most recent messages for performance (older messages are likely already read)
     const q = query(
       messagesRef,
-      orderBy("createdAt", "desc")
-      // , limit(100) // optional safety window
+      orderBy("createdAt", "desc"),
+      limit(100) // Process only recent 100 messages for performance
     );
 
     const snapshot = await getDocs(q);
@@ -356,8 +390,14 @@ export const markMessagesAsRead = async (
     });
 
     await batch.commit();
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error marking messages as read:", error);
+    // Provide more specific error information for debugging
+    if (error.code === "permission-denied") {
+      console.error(
+        "Permission denied - check Firebase Security Rules for messages subcollection"
+      );
+    }
     throw error;
   }
 };
