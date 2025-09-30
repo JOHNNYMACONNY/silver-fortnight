@@ -46,6 +46,15 @@ import {
   FirebaseConnectionManager,
 } from "../../../utils/firebaseConnectionManager";
 import { testMessagesDirectly } from "../../../utils/testMessagesDirectly";
+import { useListenerPerformance } from "../../../hooks/useListenerPerformance";
+import {
+  useChatError,
+  useChatOperation,
+} from "../../../contexts/ChatErrorContext";
+import {
+  useMessageSendRateLimit,
+  useMessageReadRateLimit,
+} from "../../../hooks/useRateLimiter";
 // import { loadMessagesOffline } from '../../../utils/offlineMessageLoader';
 // import { resetFirebaseConnections, wasResetRequested, clearResetFlags } from '../../../utils/firebaseConnectionReset';
 import { Card } from "../../ui/Card";
@@ -58,8 +67,15 @@ import { themeClasses } from "../../../utils/themeUtils";
 export const ChatContainer: React.FC = () => {
   const { conversationId } = useParams<{ conversationId?: string }>();
   const { currentUser } = useAuth();
-  const { markMessagesAsRead, isUserParticipant } = useMessageContext();
+  const { isUserParticipant } = useMessageContext();
   const toastContext = React.useContext(ToastContext);
+  const { addError } = useChatError();
+  const { executeWithErrorHandling } = useChatOperation();
+
+  // Rate limiters for messaging operations
+  const sendRateLimit = useMessageSendRateLimit();
+  const readRateLimit = useMessageReadRateLimit();
+
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [activeConversation, setActiveConversation] =
     useState<ChatConversation | null>(null);
@@ -76,6 +92,27 @@ export const ChatContainer: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
+  // Performance monitoring for real-time listeners
+  const messageListenerPerf = useListenerPerformance(
+    `messages-${activeConversation?.id || "none"}`,
+    {
+      maxListeners: 5,
+      memoryThreshold: 100, // 100MB
+      responseTimeThreshold: 5000, // 5 seconds (increased to reduce console noise)
+      enableLogging: process.env.NODE_ENV === "development",
+    }
+  );
+
+  const conversationListenerPerf = useListenerPerformance(
+    `conversations-${currentUser?.uid || "none"}`,
+    {
+      maxListeners: 3,
+      memoryThreshold: 50, // 50MB
+      responseTimeThreshold: 1500, // 1.5 seconds
+      enableLogging: process.env.NODE_ENV === "development",
+    }
+  );
+
   // Helper: normalize conversation objects from migration/compatibility services
   const normalizeConversation = (c: any): ChatConversation => {
     return {
@@ -87,9 +124,9 @@ export const ChatContainer: React.FC = () => {
       participantIds:
         Array.isArray(c?.participantIds) && c.participantIds.length > 0
           ? c.participantIds
-          : (Array.isArray(c?.participants)
-              ? c.participants.map((p: any) => p.id)
-              : []),
+          : Array.isArray(c?.participants)
+          ? c.participants.map((p: any) => p.id)
+          : [],
     } as ChatConversation;
   };
 
@@ -150,7 +187,10 @@ export const ChatContainer: React.FC = () => {
     const fetchConversations = async () => {
       try {
         const chatService = migrationRegistry.chat;
-        const list = await chatService.getUserConversations(currentUser.uid, 50);
+        const list = await chatService.getUserConversations(
+          currentUser.uid,
+          50
+        );
 
         // normalize all items before setting state (ensures participants is always an array)
         const normalizedList = list.map((c: any) => normalizeConversation(c));
@@ -166,16 +206,21 @@ export const ChatContainer: React.FC = () => {
 
         setLoading(false);
       } catch (err: any) {
-        console.error("Error fetching conversations:", err);
+        const error = err instanceof Error ? err : new Error(String(err));
+        console.error("Error fetching conversations:", error);
 
         // Handle permission errors gracefully - they're expected when user has no conversations
-        if (err.message?.includes('Missing or insufficient permissions')) {
-          console.log('No conversations found for user - this is expected if user has no conversations yet');
+        if (error.message?.includes("Missing or insufficient permissions")) {
+          console.log(
+            "No conversations found for user - this is expected if user has no conversations yet"
+          );
           setConversations([]);
           setLoading(false);
           setError(null); // Clear error since this is expected
         } else {
-          setError(err.message || "Failed to load conversations");
+          // Use centralized error handling for non-permission errors
+          addError(error, "loading conversations", { userId: currentUser.uid });
+          setError(error.message || "Failed to load conversations");
           setLoading(false);
         }
       }
@@ -194,9 +239,13 @@ export const ChatContainer: React.FC = () => {
     setLoading(true);
     setError(null);
 
+    const startTime = Date.now();
     const unsubscribe = getConversationMessages(
       activeConversation.id!,
       (messagesList) => {
+        const responseTime = Date.now() - startTime;
+        messageListenerPerf.trackActivity(responseTime);
+
         try {
           setMessages(messagesList);
           setLoading(false);
@@ -214,18 +263,37 @@ export const ChatContainer: React.FC = () => {
             );
             if (hasUnread) {
               const markAsReadDebounced = () => {
-                markConversationAsRead(
-                  activeConversation.id!,
-                  currentUser.uid
-                ).catch((error: any) => {
-                  console.log("Error marking messages as read:", error.message);
-                  if (!error.message?.includes("permission") && toastContext) {
-                    toastContext.addToast(
-                      "error",
-                      "Failed to mark messages as read"
+                // Use rate limiting for read operations
+                readRateLimit
+                  .executeAsyncWithRateLimit(
+                    async () => {
+                      await markConversationAsRead(
+                        activeConversation.id!,
+                        currentUser.uid
+                      );
+                    },
+                    (rateLimitResult) => {
+                      console.log(
+                        "Read operation rate limited:",
+                        rateLimitResult
+                      );
+                    }
+                  )
+                  .catch((error: any) => {
+                    console.log(
+                      "Error marking messages as read:",
+                      error.message
                     );
-                  }
-                });
+                    if (!error.message?.includes("permission")) {
+                      addError(
+                        error instanceof Error
+                          ? error
+                          : new Error(String(error)),
+                        "marking messages as read",
+                        { conversationId: activeConversation.id }
+                      );
+                    }
+                  });
               };
 
               if (lastMarkAsReadAttemptRef.current) {
@@ -245,8 +313,31 @@ export const ChatContainer: React.FC = () => {
           );
           setError(err.message || "Failed to process messages");
           setLoading(false);
+          messageListenerPerf.trackError(
+            err instanceof Error ? err : new Error(String(err))
+          );
+        }
+      },
+      // Add error handler for listener failures
+      (error: Error) => {
+        console.error("ChatContainer: Message listener error:", error);
+        setError(error.message || "Failed to load messages");
+        setLoading(false);
+        messageListenerPerf.trackError(error);
+
+        // Show user-friendly error for listener failures
+        if (toastContext && !error.message?.includes("permission")) {
+          toastContext.addToast(
+            "error",
+            "Connection lost. Trying to reconnect..."
+          );
         }
       }
+    );
+
+    // Register the listener for performance monitoring
+    const cleanupPerformanceMonitoring = messageListenerPerf.registerListener(
+      () => unsubscribe()
     );
 
     // Clean up on unmount
@@ -255,9 +346,9 @@ export const ChatContainer: React.FC = () => {
         clearTimeout(lastMarkAsReadAttemptRef.current);
         lastMarkAsReadAttemptRef.current = null;
       }
-      unsubscribe();
+      cleanupPerformanceMonitoring();
     };
-  }, [activeConversation, currentUser, isUserParticipant]);
+  }, [activeConversation, currentUser, isUserParticipant, toastContext]);
 
   // Memoize the fetchParticipantsData function to prevent unnecessary re-renders
   const fetchParticipantsData = useCallback(async () => {
@@ -316,18 +407,36 @@ export const ChatContainer: React.FC = () => {
       conversationCount: conversations.length,
       messageCount: messages.length,
       currentUserId: currentUser?.uid,
-      existingUserIds: Object.keys(usersData),
+      existingUserIds: Object.keys(usersData).sort().join(","), // Stable string representation
     }),
-    [conversations.length, messages.length, currentUser?.uid, usersData]
+    [
+      conversations.length,
+      messages.length,
+      currentUser?.uid,
+      Object.keys(usersData).sort().join(","),
+    ]
   );
 
-  // Use a separate useEffect with memoized dependencies
+  // Use a separate useEffect with memoized dependencies and proper cleanup
   useEffect(() => {
-    fetchParticipantsData();
+    let isMounted = true;
+
+    const fetchData = async () => {
+      if (!isMounted) return;
+      await fetchParticipantsData();
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [
     userDataDependencies.conversationCount,
     userDataDependencies.messageCount,
     userDataDependencies.currentUserId,
+    userDataDependencies.existingUserIds,
+    fetchParticipantsData,
   ]);
 
   // Scroll to bottom of messages when new messages are loaded
@@ -353,52 +462,92 @@ export const ChatContainer: React.FC = () => {
     if (!activeConversation) return;
     if (!currentUser) return;
 
+    // Check rate limit before proceeding
+    const rateLimitResult = sendRateLimit.checkRateLimit();
+    if (!rateLimitResult.allowed) {
+      const waitTime = Math.ceil(
+        (rateLimitResult.resetTime - Date.now()) / 1000
+      );
+      if (toastContext) {
+        toastContext.addToast(
+          "info",
+          `Please wait ${waitTime} seconds before sending another message.`
+        );
+      }
+      return;
+    }
+
     setSendingMessage(true);
     setError(null);
 
     try {
-      // Get the best profile picture available - we'll get this from usersData instead
-      const currentUserData = usersData[currentUser.uid];
-      const profilePicture: string | undefined =
-        currentUserData?.profilePicture || currentUserData?.photoURL;
+      // Execute with rate limiting
+      const result = await sendRateLimit.executeAsyncWithRateLimit(
+        async () => {
+          // Get the best profile picture available - we'll get this from usersData instead
+          const currentUserData = usersData[currentUser.uid];
+          const profilePicture: string | undefined =
+            currentUserData?.profilePicture || currentUserData?.photoURL;
 
-      const messageData = {
-        conversationId: activeConversation.id!,
-        senderId: currentUser.uid,
-        senderName:
-          currentUserData?.displayName ||
-          currentUser.email ||
-          ("You" as string),
-        senderAvatar: profilePicture,
-        content: content.trim(),
-        read: false,
-        status: "sent" as "sent" | "delivered" | "read" | "failed",
-        type: "text" as "text" | "image" | "file" | "link",
-      };
+          const messageData = {
+            conversationId: activeConversation.id!,
+            senderId: currentUser.uid,
+            senderName:
+              currentUserData?.displayName ||
+              currentUser.email ||
+              ("You" as string),
+            senderAvatar: profilePicture,
+            content: content.trim(),
+            read: false,
+            status: "sent" as "sent" | "delivered" | "read" | "failed",
+            type: "text" as "text" | "image" | "file" | "link",
+          };
 
-      console.log("Sending message with data:", messageData);
+          console.log("Sending message with data:", messageData);
 
-      // Call createMessage with conversationId and messageData
-      const { error: sendError } = await createMessage(
-        activeConversation.id!,
-        messageData
+          // Call createMessage with conversationId and messageData
+          const { error: sendError } = await createMessage(
+            activeConversation.id!,
+            messageData
+          );
+
+          if (sendError) {
+            throw new Error(sendError.message);
+          }
+
+          return messageData;
+        },
+        (rateLimitResult) => {
+          const waitTime = Math.ceil(
+            (rateLimitResult.resetTime - Date.now()) / 1000
+          );
+          if (toastContext) {
+            toastContext.addToast(
+              "info",
+              `Rate limit exceeded. Please wait ${waitTime} seconds.`
+            );
+          }
+        }
       );
 
-      if (sendError) {
-        throw new Error(sendError.message);
+      if (!result) {
+        // Rate limited or failed
+        return;
       }
 
       // Clear the input after sending
       // The messages will be updated by the real-time listener
     } catch (err: any) {
-      console.error("Error sending message:", err);
-      const errorMessage = err.message || "Failed to send message";
-      setError(errorMessage);
+      const error = err instanceof Error ? err : new Error(String(err));
+      console.error("Error sending message:", error);
 
-      // Show user-friendly error toast
-      if (toastContext) {
-        toastContext.addToast("error", errorMessage);
-      }
+      // Use centralized error handling
+      addError(error, "sending message", {
+        conversationId: activeConversation?.id || "unknown",
+        messageContent: content.trim(),
+      });
+
+      setError(error.message || "Failed to send message");
     } finally {
       setSendingMessage(false);
     }
