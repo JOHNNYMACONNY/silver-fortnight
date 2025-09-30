@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { useAuth } from "../AuthContext";
 import { ChatConversation } from "../types/chat";
+import { useChatError } from "./ChatErrorContext";
 
 interface MessageContextType {
   markMessagesAsRead: (messageIds: string[], userId: string) => Promise<any>;
@@ -21,6 +22,7 @@ export const MessageProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const { currentUser } = useAuth();
+  const { addError } = useChatError();
   const [_isProcessing, setIsProcessing] = useState(false);
   const [_error, setError] = useState<string | null>(null);
 
@@ -52,19 +54,20 @@ export const MessageProvider: React.FC<{ children: ReactNode }> = ({
         // using the chat service's markMessagesAsRead function
         return { data: null, error: null };
       } catch (err: any) {
-        // Silently handle permission errors - they're expected in some cases
-        // and we don't want to show errors to users for background operations
-        if (err.message?.includes("Missing or insufficient permissions")) {
+        const error = err instanceof Error ? err : new Error(String(err));
+
+        // Use centralized error handling
+        addError(error, "marking messages as read", { messageIds, userId });
+
+        // Return the error but don't update UI state for permission errors
+        if (error.message?.includes("Missing or insufficient permissions")) {
           console.log(
             "Permission error when marking messages as read (expected):",
-            err.message
+            error.message
           );
-        } else {
-          console.error("Error marking messages as read:", err.message);
         }
 
-        // Return the error but don't update UI state
-        return { error: { message: err.message || "An error occurred" } };
+        return { error: { message: error.message || "An error occurred" } };
       }
     },
     [currentUser]

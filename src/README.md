@@ -102,7 +102,7 @@ src/services/
 ```
 src/components/
 ├── layout/                   # Layout components
-│   ├── Navbar.tsx           # Main navigation
+│   ├── Navbar.tsx           # Main navigation with responsive behavior
 │   └── Footer.tsx           # Footer component
 ├── ui/                       # Reusable UI components
 │   ├── Button.tsx           # Button component
@@ -207,7 +207,7 @@ src/types/
 - ✅ **Challenge System**: Community challenges and competitions
 - ✅ **Admin Panel**: Administrative interface for user and content management
 - ✅ **Dark Mode**: Complete dark/light theme support
-- ✅ **Responsive Design**: Mobile-first responsive interface
+- ✅ **Responsive Design**: Mobile-first responsive interface with intelligent navigation
 - ✅ **Performance Optimization**: Lazy loading, code splitting, image optimization
 
 ### Migration Implementation Status
@@ -226,6 +226,37 @@ src/types/
 - 🔄 **Enhanced Testing**: Comprehensive test coverage expansion
 - 🔄 **Performance Monitoring**: Real-time performance metrics and optimization
 - 🔄 **Email Notifications**: Server-side email notification system
+
+### Responsive Navigation System
+
+**Intelligent Navigation Adaptation:**
+The navigation system automatically adapts to different screen sizes by intelligently hiding navigation items to prevent overlap and maintain usability:
+
+- **Large screens (1200px+)**: Shows all 6 navigation items (Trades, Collaborations, Directory, Challenges, Portfolio, Leaderboard)
+- **Medium screens (1000px-1199px)**: Hides Leaderboard to prevent overlap (5 items visible)
+- **Small screens (900px-999px)**: Hides Portfolio and Leaderboard (4 items visible)
+- **Very small screens (<900px)**: Shows only first 3 items (Trades, Collaborations, Directory)
+
+**Implementation Features:**
+- Dynamic viewport width tracking with React hooks
+- Intelligent item visibility based on available space
+- Responsive spacing that scales with screen size
+- Overlap prevention between navigation and search elements
+- Smooth transitions and consistent user experience
+
+**Technical Implementation:**
+```typescript
+// Viewport width tracking
+const [viewportWidth, setViewportWidth] = React.useState(1200);
+
+// Dynamic item visibility function
+const getVisibleNavItems = (viewportWidth: number) => {
+  if (viewportWidth >= 1200) return mainNavItems; // All 6 items
+  if (viewportWidth >= 1000) return mainNavItems.slice(0, 5); // Hide leaderboard
+  if (viewportWidth >= 900) return mainNavItems.slice(0, 4); // Hide portfolio + leaderboard
+  return mainNavItems.slice(0, 3); // Show only first 3
+};
+```
 
 ### Architecture Patterns
 

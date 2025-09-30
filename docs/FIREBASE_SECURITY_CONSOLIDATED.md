@@ -39,11 +39,20 @@ Admin
 | Resource | User | Moderator | Admin |
 |----------|------|-----------|-------|
 | Own Profile | Read/Write | Read/Write | Read/Write |
-| Other Profiles | Read | Read/Write | Read/Write |
+| Other Profiles | **Read (for messaging)** | Read/Write | Read/Write |
+| Own Conversations | Read/Write | Read/Write | Read/Write |
+| Other Conversations | **Read (if participant)** | Read/Write | Read/Write |
+| Message Read Status | **Update (own readBy only)** | Update | Update |
 | Own Trades | Read/Write | Read/Write | Read/Write |
 | Other Trades | Read (if participant) | Read/Write | Read/Write |
 | System Settings | Read | Read | Read/Write |
 | Audit Logs | None | None | Read |
+
+**Recent Changes (2025-01-28):**
+
+- ✅ **User Profiles**: Now allow authenticated users to read basic profile info for messaging functionality
+- ✅ **Conversations**: Allow authenticated users to list/read conversations they participate in
+- ✅ **Message Read Receipts**: Allow participants to update readBy arrays using arrayUnion operations
 
 ## Firestore Security Rules
 

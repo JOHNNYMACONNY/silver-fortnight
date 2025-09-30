@@ -110,6 +110,9 @@ node test-security-rules.js
 - ✅ User document should exist for `TozfQg0dAHe4ToLyiSnkDqe3ECj2`
 - ✅ Conversations should be accessible
 - ✅ Messages should show "Access granted" instead of permission errors
+- ✅ User data fetching should work for all authenticated users
+- ✅ Message read receipts should work without arrayUnion errors
+- ✅ No permission errors in browser console
 
 ### Manual Testing
 1. Go to your messages page

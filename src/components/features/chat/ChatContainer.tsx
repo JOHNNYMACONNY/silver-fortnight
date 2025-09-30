@@ -28,6 +28,7 @@ import { MessageListNew } from "./MessageListNew";
 import { MessageInput } from "./MessageInput";
 import { MessageHeader } from "./MessageHeader";
 import { fetchMultipleUsers } from "../../../utils/userUtils";
+import { getProfileImageUrl } from "../../../utils/imageUtils";
 import { useMessageContext } from "../../../contexts/MessageContext";
 import {
   markMessagesAsRead as markConversationAsRead,
@@ -98,8 +99,8 @@ export const ChatContainer: React.FC = () => {
     {
       maxListeners: 5,
       memoryThreshold: 100, // 100MB
-      responseTimeThreshold: 5000, // 5 seconds (increased to reduce console noise)
-      enableLogging: process.env.NODE_ENV === "development",
+      responseTimeThreshold: 5000,
+      enableLogging: false,
     }
   );
 
@@ -108,8 +109,8 @@ export const ChatContainer: React.FC = () => {
     {
       maxListeners: 3,
       memoryThreshold: 50, // 50MB
-      responseTimeThreshold: 1500, // 1.5 seconds
-      enableLogging: process.env.NODE_ENV === "development",
+      responseTimeThreshold: 1500,
+      enableLogging: false,
     }
   );
 
@@ -211,9 +212,7 @@ export const ChatContainer: React.FC = () => {
 
         // Handle permission errors gracefully - they're expected when user has no conversations
         if (error.message?.includes("Missing or insufficient permissions")) {
-          console.log(
-            "No conversations found for user - this is expected if user has no conversations yet"
-          );
+          // No conversations for user yet; not an error
           setConversations([]);
           setLoading(false);
           setError(null); // Clear error since this is expected
@@ -273,17 +272,11 @@ export const ChatContainer: React.FC = () => {
                       );
                     },
                     (rateLimitResult) => {
-                      console.log(
-                        "Read operation rate limited:",
-                        rateLimitResult
-                      );
+                      // Rate limited, silently ignore in production
                     }
                   )
                   .catch((error: any) => {
-                    console.log(
-                      "Error marking messages as read:",
-                      error.message
-                    );
+                    // Suppress noisy permission logs; errors still tracked centrally
                     if (!error.message?.includes("permission")) {
                       addError(
                         error instanceof Error
@@ -566,7 +559,7 @@ export const ChatContainer: React.FC = () => {
         return {
           id: otherUser.uid,
           name: otherUser.displayName || "Unknown",
-          avatar: otherUser.photoURL || null,
+          avatar: getProfileImageUrl(otherUser.profilePicture || null, 32),
         };
       }
 
@@ -602,15 +595,7 @@ export const ChatContainer: React.FC = () => {
           <AlertTitle>Error Loading Messages</AlertTitle>
           <AlertDescription>
             {error}
-            <div className="mt-2 text-sm">
-              <p>Debug Info:</p>
-              <ul className="list-disc list-inside">
-                <li>Current User: {currentUser?.uid || "Not authenticated"}</li>
-                <li>Active Conversation: {activeConversation?.id || "None"}</li>
-                <li>Conversations Count: {conversations.length}</li>
-                <li>Messages Count: {messages.length}</li>
-              </ul>
-            </div>
+            {/* Debug info removed for production cleanliness */}
           </AlertDescription>
         </Alert>
         <Button
@@ -633,29 +618,7 @@ export const ChatContainer: React.FC = () => {
           <AlertDescription>
             You don't have any conversations yet. Start a conversation with
             another user or create a test conversation to get started.
-            <div className="mt-4 space-x-2">
-              <Button asChild variant="outline">
-                <a href="/create-test-conversation">Create Test Conversation</a>
-              </Button>
-              <Button asChild variant="outline">
-                <a href="/simple-conversation-test">Debug Queries</a>
-              </Button>
-              <Button asChild variant="outline">
-                <a href="/test-messages">Test Messages (getDocs)</a>
-              </Button>
-              <Button asChild variant="outline">
-                <a href="/connections">Find Users to Message</a>
-              </Button>
-            </div>
-            <div className="mt-4 text-xs text-muted-foreground">
-              <p>Debug Info:</p>
-              <ul className="list-disc list-inside">
-                <li>Current User: {currentUser?.uid || "Not authenticated"}</li>
-                <li>Loading: {loading ? "Yes" : "No"}</li>
-                <li>Error: {error || "None"}</li>
-              </ul>
-              <p className="mt-2">Check browser console for detailed logs.</p>
-            </div>
+            {/* Removed debug/test actions and info */}
           </AlertDescription>
         </Alert>
       </div>
@@ -668,11 +631,11 @@ export const ChatContainer: React.FC = () => {
 
   return (
     <div role="main" aria-label="Chat interface" className="h-full">
-      <Card className="h-full flex flex-col md:flex-row overflow-hidden">
+      <Card className="h-full flex flex-col md:flex-row overflow-hidden max-w-full">
         <div
           className={`${
             showConversationList ? "block" : "hidden"
-          } md:block md:w-1/3 lg:w-1/4 w-full h-full border-r border-border flex flex-col`}
+          } md:block md:w-1/3 lg:w-1/4 xl:w-1/5 w-full h-full border-r border-border flex flex-col max-w-sm`}
           role="complementary"
           aria-label="Conversation list"
         >
@@ -692,7 +655,7 @@ export const ChatContainer: React.FC = () => {
         <div
           className={`${
             showConversationList ? "hidden" : "block"
-          } md:block flex-1 flex flex-col h-full`}
+          } md:block flex-1 flex flex-col h-full min-w-0`}
           role="main"
           aria-label="Message area"
         >

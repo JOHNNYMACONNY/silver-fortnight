@@ -1,33 +1,65 @@
-import React from 'react';
-import { cn } from '../../utils/cn';
-import { MobileMenu } from '../ui/MobileMenu';
-import Logo from '../ui/Logo';
-import { NavItem } from '../ui/NavItem';
-import { useNavigate } from 'react-router-dom';
-import { ThemeToggle } from '../ui/ThemeToggle';
-import { NotificationBell } from '../features/notifications/NotificationBell';
-import { useAuth } from '../../AuthContext';
-import { UserMenu } from '../ui/UserMenu';
-import { Button } from '../ui/Button';
-import { Menu, Command } from 'lucide-react';
-import { useNavigation } from '../../hooks/useNavigation';
-import { useMobileOptimization } from '../../hooks/useMobileOptimization';
-import { CommandPalette } from '../ui/CommandPalette';
-import { isThemeToggleEnabled } from '../../utils/featureFlags';
+import React from "react";
+import { cn } from "../../utils/cn";
+import { MobileMenu } from "../ui/MobileMenu";
+import Logo from "../ui/Logo";
+import { NavItem } from "../ui/NavItem";
+import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "../ui/ThemeToggle";
+import { NotificationBell } from "../features/notifications/NotificationBell";
+import { useAuth } from "../../AuthContext";
+import { UserMenu } from "../ui/UserMenu";
+import { Button } from "../ui/Button";
+import { Menu, Command } from "lucide-react";
+import { useNavigation } from "../../hooks/useNavigation";
+import { useMobileOptimization } from "../../hooks/useMobileOptimization";
+import { CommandPalette } from "../ui/CommandPalette";
+import { isThemeToggleEnabled } from "../../utils/featureFlags";
+import { ResponsiveDebug } from "../debug/ResponsiveDebug";
 
 const mainNavItems = [
-  { to: '/trades', label: 'Trades' },
-  { to: '/collaborations', label: 'Collaborations' },
-  { to: '/directory', label: 'Directory' },
-  { to: '/challenges', label: 'Challenges' },
-  { to: '/portfolio', label: 'Portfolio' },
+  { to: "/trades", label: "Trades" },
+  { to: "/collaborations", label: "Collaborations" },
+  { to: "/directory", label: "Directory" },
+  { to: "/challenges", label: "Challenges" },
+  { to: "/portfolio", label: "Portfolio" },
+  { to: "/leaderboard", label: "Leaderboard" },
 ];
+
+// Define which items to hide on smaller screens
+const getVisibleNavItems = (viewportWidth: number) => {
+  if (viewportWidth >= 1200) {
+    return mainNavItems; // Show all items on large screens
+  } else if (viewportWidth >= 1000) {
+    return mainNavItems.slice(0, 5); // Hide leaderboard on medium screens
+  } else if (viewportWidth >= 900) {
+    return mainNavItems.slice(0, 4); // Hide portfolio and leaderboard on smaller screens
+  } else {
+    return mainNavItems.slice(0, 3); // Show only first 3 items on very small screens
+  }
+};
 
 type NavbarProps = { showThemeToggle?: boolean };
 const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
   const displayThemeToggle = showThemeToggle ?? isThemeToggleEnabled();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+
+  // Track viewport width for responsive navigation
+  const [viewportWidth, setViewportWidth] = React.useState(1200);
+
+  React.useEffect(() => {
+    // Set initial viewport width
+    setViewportWidth(window.innerWidth);
+
+    const handleResize = () => {
+      setViewportWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const visibleNavItems = getVisibleNavItems(viewportWidth);
 
   // Phase 4.1: Use centralized navigation state
   const {
@@ -53,42 +85,49 @@ const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
   return (
     <>
       <nav
+        data-testid="navbar"
         className={cn(
           // Ensure navbar sits above stray z-50 content but below overlays
-          'sticky top-0 z-[55]',
+          "sticky top-0 z-[55]",
 
           // Mobile-optimized transitions
-          shouldUseReducedAnimations() ? 'transition-none' : 'transition-all duration-300',
+          shouldUseReducedAnimations()
+            ? "transition-none"
+            : "transition-all duration-300",
 
           // Enhanced glassmorphism based on scroll state
-          isScrolled ? (
-            'bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-xl backdrop-saturate-150 bg-clip-padding navbar-gradient-border'
-          ) : (
-            'bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md backdrop-saturate-150 bg-clip-padding border-b border-transparent'
-          ),
+          isScrolled
+            ? "bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-xl backdrop-saturate-150 bg-clip-padding navbar-gradient-border"
+            : "bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md backdrop-saturate-150 bg-clip-padding border-b border-transparent",
 
           // Mobile-specific optimizations
-          isMobile && 'touch-manipulation'
+          isMobile && "touch-manipulation"
         )}
       >
-        <div className={cn(
-          'max-w-7xl mx-auto',
-          // Responsive padding with mobile optimization
-          isMobile ? 'px-3' : 'px-4 sm:px-6 lg:px-8'
-        )}>
-          <div className={cn(
-            'flex justify-between items-center',
-            // Responsive height
-            isMobile ? 'h-14' : 'h-16'
-          )}>
-            
+        <div
+          className={cn(
+            "max-w-7xl mx-auto",
+            // Responsive padding with mobile optimization
+            isMobile ? "px-3" : "px-4 sm:px-6 lg:px-8"
+          )}
+        >
+          <div
+            className={cn(
+              "flex justify-between items-center",
+              // Responsive height
+              isMobile ? "h-14" : "h-16"
+            )}
+          >
             {/* Left side: Logo and main navigation */}
-            <div className="flex items-center">
-              <Logo size="medium" showText={true} />
-              
+            <div className="flex items-center min-w-0 flex-1">
+              <Logo data-testid="navbar-logo" size="medium" showText={true} />
+
               {/* Desktop navigation */}
-              <div className="hidden md:ml-6 md:flex md:space-x-8">
-                {mainNavItems.map((item) => (
+              <div
+                data-testid="nav-links"
+                className="hidden md:ml-6 md:flex md:space-x-2 lg:space-x-4 xl:space-x-6 min-w-0 overflow-hidden flex-1"
+              >
+                {visibleNavItems.map((item) => (
                   <NavItem
                     key={item.to}
                     to={item.to}
@@ -100,7 +139,7 @@ const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
             </div>
 
             {/* Right side: Actions and user menu */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-4 flex-shrink-0 ml-4">
               {/* Command Palette trigger button */}
               <Button
                 variant="ghost"
@@ -117,24 +156,22 @@ const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
                   ⌘K
                 </kbd>
               </Button>
-<div className="border-l border-border h-6" />
 
-{displayThemeToggle && <ThemeToggle />}
-<NotificationBell />
-
-              
               <div className="border-l border-border h-6" />
-              
+
+              {displayThemeToggle && <ThemeToggle />}
+              <NotificationBell />
+
+              <div className="border-l border-border h-6" />
+
               {currentUser ? (
                 <UserMenu />
               ) : (
                 <div className="flex items-center space-x-2">
-                  <Button variant="ghost" onClick={() => navigate('/login')}>
+                  <Button variant="ghost" onClick={() => navigate("/login")}>
                     Log In
                   </Button>
-                  <Button onClick={() => navigate('/signup')}>
-                    Sign Up
-                  </Button>
+                  <Button onClick={() => navigate("/signup")}>Sign Up</Button>
                 </div>
               )}
             </div>
@@ -147,10 +184,10 @@ const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
                 size="icon"
                 onClick={toggleCommandPalette}
                 className={cn(
-                  'text-muted-foreground dark:text-muted-foreground',
-                  getTouchTargetClass('large'),
-                  'hover:bg-gray-100/80 dark:hover:bg-gray-800/80',
-                  'active:scale-95 transition-transform duration-100'
+                  "text-muted-foreground dark:text-muted-foreground",
+                  getTouchTargetClass("large"),
+                  "hover:bg-gray-100/80 dark:hover:bg-gray-800/80",
+                  "active:scale-95 transition-transform duration-100"
                 )}
                 onTouchStart={(e) => handleTouchFeedback(e.currentTarget)}
                 aria-label="Open command palette"
@@ -160,14 +197,15 @@ const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
               </Button>
 
               <Button
+                data-testid="mobile-menu-button"
                 variant="ghost"
                 size="icon"
                 onClick={toggleMobileMenu}
                 className={cn(
-                  'text-muted-foreground dark:text-muted-foreground',
-                  getTouchTargetClass('large'),
-                  'hover:bg-gray-100/80 dark:hover:bg-gray-800/80',
-                  'active:scale-95 transition-transform duration-100'
+                  "text-muted-foreground dark:text-muted-foreground",
+                  getTouchTargetClass("large"),
+                  "hover:bg-gray-100/80 dark:hover:bg-gray-800/80",
+                  "active:scale-95 transition-transform duration-100"
                 )}
                 onTouchStart={(e) => handleTouchFeedback(e.currentTarget)}
                 aria-label="Open main menu"
@@ -189,10 +227,13 @@ const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
       />
 
       {/* Command Palette */}
-      <CommandPalette 
-        isOpen={isCommandPaletteOpen} 
-        onClose={closeCommandPalette} 
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={closeCommandPalette}
       />
+
+      {/* Debug component - only in development */}
+      <ResponsiveDebug />
     </>
   );
 };

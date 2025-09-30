@@ -146,12 +146,13 @@ describe("Firebase Security Rules", () => {
       await assertSucceeds(getDoc(profileRef));
     });
 
-    it("prevents users from reading other profiles without permission", async () => {
+    it("allows authenticated users to read other profiles for messaging", async () => {
       if (process.env.CI) {
         console.log("Skipping emulator-dependent test in CI environment");
         return;
       }
 
+      // Updated test: authenticated users can now read other profiles for messaging
       const context = testEnv.authenticatedContext("bob");
       const db = context.firestore() as Firestore;
       const aliceProfileRef = doc(
@@ -159,7 +160,8 @@ describe("Firebase Security Rules", () => {
         "users/alice"
       ) as DocumentReference<TestData>;
 
-      await assertFails(getDoc(aliceProfileRef));
+      // Updated expectation: should now succeed for authenticated users
+      await assertSucceeds(getDoc(aliceProfileRef));
     });
 
     it("allows users to update their own profile", async () => {
@@ -198,6 +200,34 @@ describe("Firebase Security Rules", () => {
           name: "Hacked Name",
         })
       );
+    });
+
+    it("allows authenticated users to read profiles for messaging functionality", async () => {
+      if (process.env.CI) {
+        console.log("Skipping emulator-dependent test in CI environment");
+        return;
+      }
+
+      // Test that any authenticated user can read basic profile info
+      const aliceContext = testEnv.authenticatedContext("alice");
+      const bobContext = testEnv.authenticatedContext("bob");
+
+      const aliceDb = aliceContext.firestore() as Firestore;
+      const bobDb = bobContext.firestore() as Firestore;
+
+      // Alice should be able to read Bob's profile for messaging
+      const bobProfileRef = doc(
+        aliceDb,
+        "users/bob"
+      ) as DocumentReference<TestData>;
+      await assertSucceeds(getDoc(bobProfileRef));
+
+      // Bob should be able to read Alice's profile for messaging
+      const aliceProfileRef = doc(
+        bobDb,
+        "users/alice"
+      ) as DocumentReference<TestData>;
+      await assertSucceeds(getDoc(aliceProfileRef));
     });
   });
 

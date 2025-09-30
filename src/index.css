@@ -677,3 +677,18 @@ body {
     grid-template-columns: repeat(4, 1fr) !important;
   }
 }
+
+/* CRITICAL FIX: Tailwind responsive classes not loading in development */
+/* This ensures mobile menu buttons are hidden on desktop */
+@media (min-width: 768px) {
+  .md\:hidden {
+    display: none !important;
+  }
+}
+
+/* Ensure desktop navigation shows on desktop */
+@media (min-width: 768px) {
+  .md\:flex {
+    display: flex !important;
+  }
+}

@@ -1,5 +1,5 @@
-import { lazy, ComponentType, LazyExoticComponent } from 'react';
-import { RouteObject } from 'react-router-dom';
+import { lazy, ComponentType, LazyExoticComponent } from "react";
+import { RouteObject } from "react-router-dom";
 
 /**
  * Advanced code splitting configuration
@@ -24,7 +24,7 @@ export interface CodeSplittingConfig {
  */
 export interface ComponentMetadata {
   name: string;
-  priority: 'high' | 'medium' | 'low';
+  priority: "high" | "medium" | "low";
   dependencies: string[];
   estimatedSize: number;
   usageFrequency: number;
@@ -37,7 +37,7 @@ export interface ComponentMetadata {
 export interface RouteMetadata {
   path: string;
   component: string;
-  priority: 'critical' | 'important' | 'normal' | 'low';
+  priority: "critical" | "important" | "normal" | "low";
   preloadConditions: string[];
   dependencies: string[];
   estimatedSize: number;
@@ -49,7 +49,10 @@ export interface RouteMetadata {
  */
 export class AdvancedCodeSplittingService {
   private config: CodeSplittingConfig;
-  private componentCache = new Map<string, LazyExoticComponent<ComponentType<any>>>();
+  private componentCache = new Map<
+    string,
+    LazyExoticComponent<ComponentType<any>>
+  >();
   private prefetchQueue = new Set<string>();
   private loadingComponents = new Set<string>();
   private componentMetadata = new Map<string, ComponentMetadata>();
@@ -64,7 +67,7 @@ export class AdvancedCodeSplittingService {
       prefetchDelay: 100,
       maxConcurrentPrefetches: 3,
       enableAnalyticsSplitting: true,
-      ...config
+      ...config,
     };
 
     this.initializeService();
@@ -86,8 +89,8 @@ export class AdvancedCodeSplittingService {
     importFn: () => Promise<{ default: T }>,
     metadata: Partial<ComponentMetadata> = {}
   ): LazyExoticComponent<T> {
-    const componentName = metadata.name || 'UnknownComponent';
-    
+    const componentName = metadata.name || "UnknownComponent";
+
     // Check if component is already cached
     if (this.componentCache.has(componentName)) {
       return this.componentCache.get(componentName) as LazyExoticComponent<T>;
@@ -96,12 +99,12 @@ export class AdvancedCodeSplittingService {
     // Store component metadata
     this.componentMetadata.set(componentName, {
       name: componentName,
-      priority: 'medium',
+      priority: "medium",
       dependencies: [],
       estimatedSize: 0,
       usageFrequency: 0,
       loadTime: 0,
-      ...metadata
+      ...metadata,
     });
 
     // Create enhanced import function with analytics
@@ -141,7 +144,7 @@ export class AdvancedCodeSplittingService {
    * Create intelligent route splitting
    */
   createIntelligentRoutes(routes: RouteObject[]): RouteObject[] {
-    return routes.map(route => this.enhanceRoute(route));
+    return routes.map((route) => this.enhanceRoute(route));
   }
 
   /**
@@ -152,19 +155,19 @@ export class AdvancedCodeSplittingService {
       return route;
     }
 
-    const routePath = route.path || 'unknown';
-    
+    const routePath = route.path || "unknown";
+
     // Create enhanced lazy loader
     const enhancedLazy = async () => {
       const startTime = performance.now();
-      
+
       try {
         const result = await route.lazy!();
         const loadTime = performance.now() - startTime;
-        
+
         this.trackRouteLoad(routePath, loadTime);
         this.updateUserBehavior(routePath);
-        
+
         return result;
       } catch (error) {
         this.trackRouteError(routePath, error);
@@ -174,7 +177,7 @@ export class AdvancedCodeSplittingService {
 
     return {
       ...route,
-      lazy: enhancedLazy
+      lazy: enhancedLazy,
     };
   }
 
@@ -182,7 +185,10 @@ export class AdvancedCodeSplittingService {
    * Prefetch component based on user behavior
    */
   async prefetchComponent(componentName: string): Promise<void> {
-    if (this.prefetchQueue.has(componentName) || this.loadingComponents.has(componentName)) {
+    if (
+      this.prefetchQueue.has(componentName) ||
+      this.loadingComponents.has(componentName)
+    ) {
       return;
     }
 
@@ -194,8 +200,10 @@ export class AdvancedCodeSplittingService {
 
     try {
       // Simulate prefetch delay
-      await new Promise(resolve => setTimeout(resolve, this.config.prefetchDelay));
-      
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.config.prefetchDelay)
+      );
+
       const component = this.componentCache.get(componentName);
       if (component) {
         // Trigger component loading by accessing it safely
@@ -230,7 +238,7 @@ export class AdvancedCodeSplittingService {
     try {
       // Prefetch route dependencies
       await Promise.all(
-        metadata.dependencies.map(dep => this.prefetchComponent(dep))
+        metadata.dependencies.map((dep) => this.prefetchComponent(dep))
       );
     } catch (error) {
       console.warn(`Failed to prefetch route ${routePath}:`, error);
@@ -244,10 +252,10 @@ export class AdvancedCodeSplittingService {
     if (!this.config.enableIntelligentPrefetch) return;
 
     // Track mouse movements for hover-based prefetching
-    document.addEventListener('mouseover', (event) => {
+    document.addEventListener("mouseover", (event) => {
       const target = event.target as HTMLElement;
-      const link = target.closest('a[href]') as HTMLAnchorElement;
-      
+      const link = target.closest("a[href]") as HTMLAnchorElement;
+
       if (link && link.href) {
         const path = new URL(link.href).pathname;
         this.scheduleRoutePrefetch(path);
@@ -256,7 +264,7 @@ export class AdvancedCodeSplittingService {
 
     // Track scroll patterns for predictive prefetching
     let scrollTimeout: NodeJS.Timeout;
-    document.addEventListener('scroll', () => {
+    document.addEventListener("scroll", () => {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
         this.analyzeScrollBehavior();
@@ -269,13 +277,13 @@ export class AdvancedCodeSplittingService {
    */
   private setupUserBehaviorTracking(): void {
     // Track page visits
-    window.addEventListener('popstate', () => {
+    window.addEventListener("popstate", () => {
       this.updateUserBehavior(window.location.pathname);
     });
 
     // Track time spent on pages
     const pageStartTime = Date.now();
-    window.addEventListener('beforeunload', () => {
+    window.addEventListener("beforeunload", () => {
       const timeSpent = Date.now() - pageStartTime;
       this.trackTimeSpent(window.location.pathname, timeSpent);
     });
@@ -286,16 +294,18 @@ export class AdvancedCodeSplittingService {
    */
   private setupPerformanceMonitoring(): void {
     // Monitor bundle sizes
-    if ('performance' in window && 'getEntriesByType' in performance) {
+    if ("performance" in window && "getEntriesByType" in performance) {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (entry.entryType === 'navigation') {
-            this.trackNavigationPerformance(entry as PerformanceNavigationTiming);
+          if (entry.entryType === "navigation") {
+            this.trackNavigationPerformance(
+              entry as PerformanceNavigationTiming
+            );
           }
         }
       });
-      
-      observer.observe({ entryTypes: ['navigation'] });
+
+      observer.observe({ entryTypes: ["navigation"] });
     }
   }
 
@@ -304,19 +314,25 @@ export class AdvancedCodeSplittingService {
    */
   private shouldPrefetchRoute(metadata: RouteMetadata): boolean {
     // Check priority
-    if (metadata.priority === 'low') return false;
+    if (metadata.priority === "low") return false;
 
     // Check user segments
     const userSegment = this.getCurrentUserSegment();
-    if (metadata.userSegments.length > 0 && !metadata.userSegments.includes(userSegment)) {
+    if (
+      metadata.userSegments.length > 0 &&
+      !metadata.userSegments.includes(userSegment)
+    ) {
       return false;
     }
 
     // Check network conditions
-    if ('connection' in navigator) {
+    if ("connection" in navigator) {
       const connection = (navigator as any).connection;
-      if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') {
-        return metadata.priority === 'critical';
+      if (
+        connection.effectiveType === "slow-2g" ||
+        connection.effectiveType === "2g"
+      ) {
+        return metadata.priority === "critical";
       }
     }
 
@@ -353,8 +369,8 @@ export class AdvancedCodeSplittingService {
   private prefetchLikelyNextRoutes(): void {
     const currentPath = window.location.pathname;
     const likelyRoutes = this.predictNextRoutes(currentPath);
-    
-    likelyRoutes.forEach(route => {
+
+    likelyRoutes.forEach((route) => {
       this.prefetchRoute(route);
     });
   }
@@ -365,15 +381,15 @@ export class AdvancedCodeSplittingService {
   private predictNextRoutes(currentPath: string): string[] {
     // Simple prediction based on common navigation patterns
     const predictions: string[] = [];
-    
-    if (currentPath === '/') {
-      predictions.push('/trades', '/collaborations', '/profile');
-    } else if (currentPath === '/trades') {
-      predictions.push('/trades/create', '/profile');
-    } else if (currentPath.startsWith('/trades/')) {
-      predictions.push('/trades', '/messages');
+
+    if (currentPath === "/") {
+      predictions.push("/trades", "/collaborations", "/profile");
+    } else if (currentPath === "/trades") {
+      predictions.push("/trades/create", "/profile");
+    } else if (currentPath.startsWith("/trades/")) {
+      predictions.push("/trades", "/messages");
     }
-    
+
     return predictions;
   }
 
@@ -382,7 +398,7 @@ export class AdvancedCodeSplittingService {
    */
   private getCurrentUserSegment(): string {
     // Implement user segmentation logic
-    return 'default';
+    return "default";
   }
 
   /**
@@ -397,7 +413,9 @@ export class AdvancedCodeSplittingService {
    * Track component loading performance
    */
   private trackComponentLoad(componentName: string, loadTime: number): void {
-    console.debug(`Component ${componentName} loaded in ${loadTime.toFixed(2)}ms`);
+    console.debug(
+      `Component ${componentName} loaded in ${loadTime.toFixed(2)}ms`
+    );
   }
 
   /**
@@ -433,12 +451,13 @@ export class AdvancedCodeSplittingService {
    */
   private trackNavigationPerformance(entry: PerformanceNavigationTiming): void {
     const metrics = {
-      domContentLoaded: entry.domContentLoadedEventEnd - entry.domContentLoadedEventStart,
+      domContentLoaded:
+        entry.domContentLoadedEventEnd - entry.domContentLoadedEventStart,
       loadComplete: entry.loadEventEnd - entry.loadEventStart,
-      firstPaint: entry.responseEnd - entry.requestStart
+      firstPaint: entry.responseEnd - entry.requestStart,
     };
-    
-    console.debug('Navigation performance:', metrics);
+
+    console.debug("Navigation performance:", metrics);
   }
 
   /**
@@ -465,22 +484,24 @@ export class AdvancedCodeSplittingService {
     prefetchHitRate: number;
   } {
     const totalComponents = this.componentMetadata.size;
-    const loadedComponents = Array.from(this.componentMetadata.values())
-      .filter(meta => meta.usageFrequency > 0).length;
-    
+    const loadedComponents = Array.from(this.componentMetadata.values()).filter(
+      (meta) => meta.usageFrequency > 0
+    ).length;
+
     const loadTimes = Array.from(this.componentMetadata.values())
-      .filter(meta => meta.loadTime > 0)
-      .map(meta => meta.loadTime);
-    
-    const averageLoadTime = loadTimes.length > 0 
-      ? loadTimes.reduce((sum, time) => sum + time, 0) / loadTimes.length 
-      : 0;
+      .filter((meta) => meta.loadTime > 0)
+      .map((meta) => meta.loadTime);
+
+    const averageLoadTime =
+      loadTimes.length > 0
+        ? loadTimes.reduce((sum, time) => sum + time, 0) / loadTimes.length
+        : 0;
 
     return {
       totalComponents,
       loadedComponents,
       averageLoadTime,
-      prefetchHitRate: 0 // TODO: Implement prefetch hit rate calculation
+      prefetchHitRate: 0, // TODO: Implement prefetch hit rate calculation
     };
   }
 }
@@ -492,7 +513,7 @@ export class IntelligentResourcePreloader {
   private preloadedResources = new Set<string>();
   private preloadQueue = new Map<string, Promise<void>>();
   private resourcePriorities = new Map<string, number>();
-  private isDevelopment = process.env.NODE_ENV === 'development';
+  private isDevelopment = process.env.NODE_ENV === "development";
 
   /**
    * Preload critical resources with Vite awareness
@@ -502,13 +523,18 @@ export class IntelligentResourcePreloader {
 
     // Use Promise.allSettled to handle individual failures gracefully
     const results = await Promise.allSettled(
-      criticalResources.map(resource => this.preloadResource(resource, 'high'))
+      criticalResources.map((resource) =>
+        this.preloadResource(resource, "high")
+      )
     );
 
     // Log any failures for debugging but don't throw
     results.forEach((result, index) => {
-      if (result.status === 'rejected') {
-        console.warn(`Failed to preload critical resource ${criticalResources[index]}:`, result.reason);
+      if (result.status === "rejected") {
+        console.warn(
+          `Failed to preload critical resource ${criticalResources[index]}:`,
+          result.reason
+        );
       }
     });
   }
@@ -517,23 +543,43 @@ export class IntelligentResourcePreloader {
    * Get critical resources based on environment
    */
   private getCriticalResources(): string[] {
-    const baseResources = [
-      '/assets/css/critical.css',
-      '/assets/fonts/inter-var.woff2'
+    const baseResources: string[] = [
+      // Remove critical.css from preloading as it's not used immediately
+      // This prevents "preloaded but not used" warnings
+      // '/assets/css/critical.css' // This file exists but causes preload warnings
+      // Remove non-existent font file: '/assets/fonts/inter-var.woff2'
     ];
 
     // Only include vendor.js in production or if it exists
     if (!this.isDevelopment) {
-      baseResources.push('/assets/js/vendor.js');
+      baseResources.push("/assets/js/vendor.js");
     }
 
-    return baseResources;
+    return baseResources.filter((resource) => {
+      // In development, verify resources exist before preloading
+      if (this.isDevelopment) {
+        // Skip known non-existent resources
+        if (
+          resource.includes("/assets/fonts/inter-var.woff2") ||
+          resource.includes("/assets/css/critical.css")
+        ) {
+          console.warn(
+            `Skipping resource to prevent preload warnings: ${resource}`
+          );
+          return false;
+        }
+      }
+      return true;
+    });
   }
 
   /**
    * Preload resource with priority and enhanced error handling
    */
-  async preloadResource(url: string, priority: 'high' | 'medium' | 'low' = 'medium'): Promise<void> {
+  async preloadResource(
+    url: string,
+    priority: "high" | "medium" | "low" = "medium"
+  ): Promise<void> {
     if (this.preloadedResources.has(url) || this.preloadQueue.has(url)) {
       return this.preloadQueue.get(url) || Promise.resolve();
     }
@@ -558,18 +604,20 @@ export class IntelligentResourcePreloader {
   private async performPreload(url: string, priority: string): Promise<void> {
     return new Promise((resolve, reject) => {
       // Check if resource exists first (for development)
-      if (this.isDevelopment && url.includes('/assets/')) {
-        this.checkResourceExists(url).then(exists => {
-          if (!exists) {
-            console.warn(`Resource ${url} not found, skipping preload`);
-            resolve(); // Resolve instead of reject to be resilient
-            return;
-          }
-          this.createPreloadLink(url, resolve, reject);
-        }).catch(() => {
-          // If existence check fails, still try to preload
-          this.createPreloadLink(url, resolve, reject);
-        });
+      if (this.isDevelopment && url.includes("/assets/")) {
+        this.checkResourceExists(url)
+          .then((exists) => {
+            if (!exists) {
+              console.warn(`Resource ${url} not found, skipping preload`);
+              resolve(); // Resolve instead of reject to be resilient
+              return;
+            }
+            this.createPreloadLink(url, resolve, reject);
+          })
+          .catch(() => {
+            // If existence check fails, still try to preload
+            this.createPreloadLink(url, resolve, reject);
+          });
       } else {
         this.createPreloadLink(url, resolve, reject);
       }
@@ -581,7 +629,7 @@ export class IntelligentResourcePreloader {
    */
   private async checkResourceExists(url: string): Promise<boolean> {
     try {
-      const response = await fetch(url, { method: 'HEAD' });
+      const response = await fetch(url, { method: "HEAD" });
       return response.ok;
     } catch {
       return false;
@@ -591,21 +639,25 @@ export class IntelligentResourcePreloader {
   /**
    * Create preload link element
    */
-  private createPreloadLink(url: string, resolve: () => void, reject: (error: Error) => void): void {
-    const link = document.createElement('link');
-    link.rel = 'preload';
+  private createPreloadLink(
+    url: string,
+    resolve: () => void,
+    reject: (error: Error) => void
+  ): void {
+    const link = document.createElement("link");
+    link.rel = "preload";
     link.href = url;
 
     // Determine resource type
-    if (url.includes('.css')) {
-      link.as = 'style';
-    } else if (url.includes('.js')) {
-      link.as = 'script';
-    } else if (url.includes('.woff') || url.includes('.woff2')) {
-      link.as = 'font';
-      link.crossOrigin = 'anonymous';
+    if (url.includes(".css")) {
+      link.as = "style";
+    } else if (url.includes(".js")) {
+      link.as = "script";
+    } else if (url.includes(".woff") || url.includes(".woff2")) {
+      link.as = "font";
+      link.crossOrigin = "anonymous";
     } else if (url.match(/\.(jpg|jpeg|png|webp|avif)$/)) {
-      link.as = 'image';
+      link.as = "image";
     }
 
     link.onload = () => resolve();
@@ -625,7 +677,7 @@ export class IntelligentResourcePreloader {
     return {
       preloadedCount: this.preloadedResources.size,
       queueSize: this.preloadQueue.size,
-      preloadedResources: Array.from(this.preloadedResources)
+      preloadedResources: Array.from(this.preloadedResources),
     };
   }
 }

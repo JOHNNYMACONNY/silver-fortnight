@@ -1,22 +1,33 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { 
-  User as AuthUser, 
-  getAuth, 
-  onAuthStateChanged, 
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
+import {
+  User as AuthUser,
+  getAuth,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
-  signInWithPopup,
-  signInWithRedirect,
   GoogleAuthProvider,
-  signOut as firebaseSignOut
-} from 'firebase/auth';
-import { autoCreateUserProfile } from './utils/autoCreateUserProfile';
-import { markLoginDay } from './services/streaks';
-import { User as FirestoreUser, getUserProfile } from './services/firestore-exports';
-import { signInWithGoogleFirebase, handleGoogleRedirectResult, isReturningFromRedirect } from './utils/firebaseGoogleAuth';
+  signOut as firebaseSignOut,
+} from "firebase/auth";
+import { autoCreateUserProfile } from "./utils/autoCreateUserProfile";
+import { markLoginDay } from "./services/streaks";
+import {
+  User as FirestoreUser,
+  getUserProfile,
+} from "./services/firestore-exports";
+import {
+  signInWithGoogleFirebase,
+  handleGoogleRedirectResult,
+  isReturningFromRedirect,
+} from "./utils/firebaseGoogleAuth";
 
 // Admin configuration - can be moved to environment variables later
 const ADMIN_UIDS: string[] = [
-  'TozfQg0dAHe4ToLyiSnkDqe3ECj2', // Existing admin UID from MigrationPage
+  "TozfQg0dAHe4ToLyiSnkDqe3ECj2", // Existing admin UID from MigrationPage
 ];
 
 const ADMIN_EMAILS: string[] = [
@@ -26,16 +37,16 @@ const ADMIN_EMAILS: string[] = [
 // Helper function to check if user is admin
 const checkIsAdmin = (user: AuthUser | null): boolean => {
   if (!user) return false;
-  
+
   const isAdminByUid = ADMIN_UIDS.includes(user.uid);
   const isAdminByEmail = user.email ? ADMIN_EMAILS.includes(user.email) : false;
-  
+
   return isAdminByUid || isAdminByEmail;
 };
 
 export interface AuthContextType {
   user: AuthUser | null;
-  currentUser: AuthUser | null;  // Alias for user for backward compatibility
+  currentUser: AuthUser | null; // Alias for user for backward compatibility
   userProfile: FirestoreUser | null;
   loading: boolean;
   error: Error | null;
@@ -44,59 +55,74 @@ export interface AuthContextType {
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
-  logout: () => Promise<void>;  // Alias for signOut for backward compatibility
+  logout: () => Promise<void>; // Alias for signOut for backward compatibility
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [userProfile, setUserProfile] = useState<FirestoreUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Create auth and provider instances only once
+  // Create auth instance only once
   const auth = useMemo(() => getAuth(), []);
-  const googleProvider = useMemo(() => new GoogleAuthProvider(), []);
 
   useEffect(() => {
-    console.log('AuthProvider: Setting up auth state listener');
-    
+    console.log("AuthProvider: Setting up auth state listener");
+
     // Check for redirect result first
     const checkRedirectResult = async () => {
       if (isReturningFromRedirect()) {
-        console.log('AuthProvider: Detected return from OAuth redirect, handling result...');
+        console.log(
+          "AuthProvider: Detected return from OAuth redirect, handling result..."
+        );
         try {
           const result = await handleGoogleRedirectResult();
           if (result) {
-            console.log('AuthProvider: Redirect sign-in successful');
+            console.log("AuthProvider: Redirect sign-in successful");
             setUser(result.user);
             setIsAdmin(checkIsAdmin(result.user));
             const { data: profile } = await getUserProfile(result.user.uid);
             setUserProfile(profile || null);
             await autoCreateUserProfile();
-            try { await markLoginDay(result.user.uid); } catch { /* non-blocking */ }
+            try {
+              await markLoginDay(result.user.uid);
+            } catch {
+              /* non-blocking */
+            }
           }
         } catch (error) {
-          console.error('AuthProvider: Error handling redirect result', error);
+          console.error("AuthProvider: Error handling redirect result", error);
           setError(error as Error);
         }
       }
     };
-    
+
     checkRedirectResult();
-    
-    const unsubscribe = onAuthStateChanged(auth,
+
+    const unsubscribe = onAuthStateChanged(
+      auth,
       async (user) => {
-        console.log('AuthProvider: Auth state changed', { hasUser: !!user, uid: user?.uid });
+        console.log("AuthProvider: Auth state changed", {
+          hasUser: !!user,
+          uid: user?.uid,
+        });
         setUser(user);
         setIsAdmin(checkIsAdmin(user));
         if (user) {
           const { data: profile } = await getUserProfile(user.uid);
           setUserProfile(profile || null);
           // Update login streak on session restore
-          try { await markLoginDay(user.uid); } catch { /* non-blocking */ }
+          try {
+            await markLoginDay(user.uid);
+          } catch {
+            /* non-blocking */
+          }
         } else {
           setUserProfile(null);
         }
@@ -104,7 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setError(null); // Clear any previous errors on successful state change
       },
       (error) => {
-        console.error('AuthProvider: Auth state change error', error);
+        console.error("AuthProvider: Auth state change error", error);
         setError(error);
         setUser(null);
         setUserProfile(null);
@@ -114,14 +140,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     return () => {
-      console.log('AuthProvider: Cleaning up auth state listener');
+      console.log("AuthProvider: Cleaning up auth state listener");
       unsubscribe();
     };
   }, [auth]); // Include auth in dependency array to fix React Hook Rules violation
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('AuthProvider: Attempting email sign in');
+      console.log("AuthProvider: Attempting email sign in");
       setLoading(true);
       setError(null);
       const result = await signInWithEmailAndPassword(auth, email, password);
@@ -131,10 +157,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUserProfile(profile || null);
       await autoCreateUserProfile(); // Ensure Firestore user doc exists
       // Update login streak on successful sign-in
-      try { await markLoginDay(result.user.uid); } catch { /* non-blocking */ }
-      console.log('AuthProvider: Email sign in successful');
+      try {
+        await markLoginDay(result.user.uid);
+      } catch {
+        /* non-blocking */
+      }
+      console.log("AuthProvider: Email sign in successful");
     } catch (err) {
-      console.error('AuthProvider: Email sign in error', err);
+      console.error("AuthProvider: Email sign in error", err);
       setError(err as Error);
       throw err;
     } finally {
@@ -142,17 +172,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signInWithEmail = signIn;  // Alias for backward compatibility
+  const signInWithEmail = signIn; // Alias for backward compatibility
 
   const signInWithGoogle = async () => {
     try {
-      console.log('AuthProvider: Attempting Google sign in with SIMPLE FIREBASE APPROACH');
+      console.log(
+        "AuthProvider: Attempting Google sign in with SIMPLE FIREBASE APPROACH"
+      );
       setLoading(true);
       setError(null);
-      
+
       // Use only Firebase's built-in OAuth
       const result = await signInWithGoogleFirebase();
-      
+
       if (result && result.user) {
         setUser(result.user);
         setIsAdmin(checkIsAdmin(result.user));
@@ -160,16 +192,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUserProfile(profile || null);
         await autoCreateUserProfile(); // Ensure Firestore user doc exists
         // Update login streak on successful Google sign-in
-        try { await markLoginDay(result.user.uid); } catch { /* non-blocking */ }
-        console.log('AuthProvider: Google sign in successful!');
-      } else if (result && result.error && result.error.code === 'auth/redirect-initiated') {
+        try {
+          await markLoginDay(result.user.uid);
+        } catch {
+          /* non-blocking */
+        }
+        console.log("AuthProvider: Google sign in successful!");
+      } else if (
+        result &&
+        result.error &&
+        result.error.code === "auth/redirect-initiated"
+      ) {
         // Redirect was initiated, the user will be redirected
-        console.log('AuthProvider: Redirect initiated, user will be redirected');
+        console.log(
+          "AuthProvider: Redirect initiated, user will be redirected"
+        );
         return;
       }
-
     } catch (err: any) {
-      console.error('AuthProvider: Google sign-in failed', err);
+      console.error("AuthProvider: Google sign-in failed", err);
       setError(err as Error);
       throw err;
     } finally {
@@ -179,16 +220,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const handleSignOut = async () => {
     try {
-      console.log('AuthProvider: Attempting sign out');
+      console.log("AuthProvider: Attempting sign out");
       setLoading(true);
       setError(null);
       await firebaseSignOut(auth);
       setUser(null);
       setUserProfile(null);
       setIsAdmin(false);
-      console.log('AuthProvider: Sign out successful');
+      console.log("AuthProvider: Sign out successful");
     } catch (err) {
-      console.error('AuthProvider: Sign out error', err);
+      console.error("AuthProvider: Sign out error", err);
       setError(err as Error);
       throw err;
     } finally {
@@ -197,11 +238,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = handleSignOut;
-  const logout = handleSignOut;  // Alias for backward compatibility
+  const logout = handleSignOut; // Alias for backward compatibility
 
   const value: AuthContextType = {
     user,
-    currentUser: user,  // Alias for backward compatibility
+    currentUser: user, // Alias for backward compatibility
     userProfile,
     loading,
     error,
@@ -210,27 +251,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInWithEmail,
     signInWithGoogle,
     signOut,
-    logout
+    logout,
   };
 
-  console.log('AuthProvider: Rendering with state', { 
-    hasUser: !!user, 
-    loading, 
-    hasError: !!error, 
-    isAdmin 
+  console.log("AuthProvider: Rendering with state", {
+    hasUser: !!user,
+    loading,
+    hasError: !!error,
+    isAdmin,
   });
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

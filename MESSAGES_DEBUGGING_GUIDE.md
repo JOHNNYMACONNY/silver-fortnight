@@ -103,3 +103,17 @@ Check the browser console for detailed debugging information.
 2. Verify Firebase configuration
 3. Check user authentication status
 4. Verify database permissions
+
+### ✅ RESOLVED ISSUES (2025-01-28):
+
+#### Firebase Permission Errors - FIXED
+- **userUtils.ts:90 Error** - ✅ Fixed by updating user profile read permissions
+- **chatService.ts:360 Error** - ✅ Fixed by updating message read receipt rules
+- **ChatContainer.tsx:221 Error** - ✅ Fixed by allowing arrayUnion operations
+
+#### Previous Common Errors (Now Resolved):
+- ❌ ~~"Missing or insufficient permissions" for user data fetching~~ → ✅ **FIXED**
+- ❌ ~~"Error marking messages as read" permission errors~~ → ✅ **FIXED**
+- ❌ ~~400 Bad Request for Firestore write operations~~ → ✅ **FIXED**
+
+**If you encounter these errors, ensure Firebase Security Rules are deployed with the latest updates.**
