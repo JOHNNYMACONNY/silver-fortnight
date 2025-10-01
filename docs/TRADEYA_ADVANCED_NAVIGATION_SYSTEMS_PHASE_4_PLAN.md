@@ -335,7 +335,7 @@ export const GlassmorphicNavbar: React.FC<GlassmorphicNavbarProps> = ({
       borderBottom: borderStyle === 'gradient' 
         ? '1px solid transparent'
         : borderStyle === 'subtle'
-        ? '1px solid rgba(255, 255, 255, 0.2)'
+        ? '1px solid rgba(255, 255, 255, 0.18)'
         : 'none'
     };
   }, [adaptiveBlur, navigationOpacity, brandColorScheme, borderStyle]);

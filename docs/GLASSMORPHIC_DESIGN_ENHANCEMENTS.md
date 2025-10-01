@@ -93,14 +93,16 @@ TradeYa has been enhanced with comprehensive glassmorphic design patterns to cre
 --glass-bg-light: rgba(255, 255, 255, 0.7);
 --glass-bg-medium: rgba(255, 255, 255, 0.8);
 --glass-bg-strong: rgba(255, 255, 255, 0.9);
---glass-border: rgba(255, 255, 255, 0.2);
+--glass-border: rgba(255, 255, 255, 0.18); /* Updated: Standardized to 18% */
 
 /* Dark Mode */
 --glass-bg-light: rgba(31, 41, 55, 0.6);
 --glass-bg-medium: rgba(31, 41, 55, 0.7);
 --glass-bg-strong: rgba(31, 41, 55, 0.8);
---glass-border: rgba(255, 255, 255, 0.1);
+--glass-border: rgba(255, 255, 255, 0.18); /* Updated: Standardized to 18% */
 ```
+
+**Note:** Both light and dark modes now use 18% opacity for consistent soft borders across the entire application.
 
 ### **Canonical Surface Utility**
 Use the universal `glassmorphic` utility for all glass surfaces. Do not combine ad‑hoc `backdrop-blur-*`, `bg-white/*`, or `border-white/*` on surfaces.

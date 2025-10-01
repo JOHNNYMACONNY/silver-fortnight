@@ -48,12 +48,10 @@ const SecureLoginPage = ({ onLoginSuccess, onError }: SecureLoginPageProps) => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
-      <Card className="w-full max-w-md">
+      <Card variant="glass" className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Secure Login</CardTitle>
-          <CardDescription>
-            Enter your password to continue
-          </CardDescription>
+          <CardDescription>Enter your password to continue</CardDescription>
         </CardHeader>
         <CardContent>
           {error && (

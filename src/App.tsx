@@ -50,6 +50,7 @@ const CollaborationDetailPage = lazy(
 const ConnectionsPage = lazy(() => import("./pages/ConnectionsPage"));
 const UserDirectoryPage = lazy(() => import("./pages/UserDirectoryPage"));
 const ChallengesPage = lazy(() => import("./pages/ChallengesPage"));
+const CreateChallengePage = lazy(() => import("./pages/CreateChallengePage"));
 const ChallengeDetailPage = lazy(() => import("./pages/ChallengeDetailPage"));
 const ChallengeCalendarPage = lazy(
   () => import("./pages/ChallengeCalendarPage")
@@ -296,6 +297,14 @@ function App() {
                   element={
                     <RouteErrorBoundary>
                       <ChallengesPage />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/challenges/create"
+                  element={
+                    <RouteErrorBoundary>
+                      <CreateChallengePage />
                     </RouteErrorBoundary>
                   }
                 />

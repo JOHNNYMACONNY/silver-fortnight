@@ -1,30 +1,34 @@
-import React, { useState, useCallback } from 'react';
-import { cn } from '../../utils/cn';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useCallback } from "react";
+import { cn } from "../../utils/cn";
+import { motion, AnimatePresence } from "framer-motion";
 
-interface GlassmorphicFormProps extends Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onDrag' | 'onDragEnd' | 'onDragStart'> {
+interface GlassmorphicFormProps
+  extends Omit<
+    React.FormHTMLAttributes<HTMLFormElement>,
+    "onDrag" | "onDragEnd" | "onDragStart"
+  > {
   children: React.ReactNode;
   className?: string;
-  
+
   // Phase 6.1: Advanced form variants
-  variant?: 'standard' | 'elevated' | 'modal' | 'stepped';
-  blurIntensity?: 'sm' | 'md' | 'lg' | 'xl';
-  brandAccent?: 'orange' | 'blue' | 'purple' | 'gradient';
-  shadow?: 'beautiful-shadow' | 'form-shadow' | 'elevated-shadow';
-  borders?: 'glass-borders' | 'dual-borders' | 'gradient-borders';
+  variant?: "standard" | "elevated" | "modal" | "stepped";
+  blurIntensity?: "sm" | "md" | "lg" | "xl";
+  brandAccent?: "orange" | "blue" | "purple" | "gradient";
+  shadow?: "beautiful-shadow" | "form-shadow" | "elevated-shadow";
+  borders?: "glass-borders" | "dual-borders" | "gradient-borders";
   zIndex?: number;
-  
+
   // Phase 6.1: Multi-step form support
   isMultiStep?: boolean;
   currentStep?: number;
   totalSteps?: number;
   onStepChange?: (step: number) => void;
-  
+
   // Phase 6.1: Form state management
   isLoading?: boolean;
   isSubmitting?: boolean;
-  validationState?: 'idle' | 'validating' | 'valid' | 'invalid';
-  
+  validationState?: "idle" | "validating" | "valid" | "invalid";
+
   // Phase 6.1: Integration with other phases
   integrateWithBackground?: boolean;
   harmonizeWithCards?: boolean;
@@ -33,12 +37,12 @@ interface GlassmorphicFormProps extends Omit<React.FormHTMLAttributes<HTMLFormEl
 
 export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
   children,
-  className = '',
-  variant = 'standard',
-  blurIntensity = 'md',
-  brandAccent = 'gradient',
-  shadow = 'beautiful-shadow',
-  borders = 'glass-borders',
+  className = "",
+  variant = "standard",
+  blurIntensity = "md",
+  brandAccent = "gradient",
+  shadow = "beautiful-shadow",
+  borders = "glass-borders",
   zIndex = 10,
   isMultiStep = false,
   currentStep = 1,
@@ -46,7 +50,7 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
   onStepChange,
   isLoading = false,
   isSubmitting = false,
-  validationState = 'idle',
+  validationState = "idle",
   integrateWithBackground = true,
   harmonizeWithCards = true,
   coordinateWithNavigation = true,
@@ -59,33 +63,34 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
     standard: `glassmorphic rounded-2xl p-6`,
     elevated: `glassmorphic rounded-3xl p-8 shadow-2xl`,
     modal: `glassmorphic rounded-2xl p-8 shadow-beautiful`,
-    stepped: `glassmorphic rounded-r-2xl pl-8 pr-6 py-6 border-l-4 border-gradient-to-b from-orange-500 to-blue-500`
+    stepped: `glassmorphic rounded-r-2xl pl-8 pr-6 py-6 border-l-4 border-gradient-to-b from-orange-500 to-blue-500`,
   };
 
   const blurClasses = {
-    sm: '',
-    md: '', 
-    lg: '',
-    xl: ''
+    sm: "",
+    md: "",
+    lg: "",
+    xl: "",
   };
 
   const brandAccentClasses = {
-    orange: 'ring-1 ring-ring/20 focus-within:ring-ring/40',
-    blue: 'ring-1 ring-ring/20 focus-within:ring-ring/40',
-    purple: 'ring-1 ring-ring/20 focus-within:ring-ring/40',
-    gradient: 'ring-1 ring-gradient-to-r from-primary/20 via-secondary/20 to-accent/20'
+    orange: "focus-within:ring-1 focus-within:ring-ring/40",
+    blue: "focus-within:ring-1 focus-within:ring-ring/40",
+    purple: "focus-within:ring-1 focus-within:ring-ring/40",
+    gradient: "focus-within:ring-1 focus-within:ring-primary/30",
   };
 
   const shadowClasses = {
-    'beautiful-shadow': 'shadow-[0_8px_32px_rgba(31,38,135,0.37)]',
-    'form-shadow': 'shadow-lg',
-    'elevated-shadow': 'shadow-2xl'
+    "beautiful-shadow": "shadow-[0_8px_32px_rgba(31,38,135,0.37)]",
+    "form-shadow": "shadow-lg",
+    "elevated-shadow": "shadow-2xl",
   };
 
   const borderClasses = {
-    'glass-borders': 'border-glass',
-    'dual-borders': 'border-strong',
-    'gradient-borders': 'border border-gradient-to-r from-orange-500/20 via-blue-500/20 to-purple-500/20'
+    "glass-borders": "border-glass",
+    "dual-borders": "border-strong",
+    "gradient-borders":
+      "border border-gradient-to-r from-orange-500/20 via-blue-500/20 to-purple-500/20",
   };
 
   // Phase 6.1: Multi-step progress indicator
@@ -107,7 +112,7 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
             className="bg-gradient-to-r from-orange-500 to-blue-500 h-2 rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${(currentStep / totalSteps) * 100}%` }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
           />
         </div>
       </div>
@@ -129,7 +134,9 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
         <div className="absolute inset-0 glassmorphic rounded-2xl flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-2"></div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Submitting...</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Submitting...
+            </p>
           </div>
         </div>
       );
@@ -140,32 +147,32 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
 
   // Phase 6.1: Validation state styling
   const validationClasses = {
-    idle: '',
-    validating: 'ring-2 ring-yellow-500/30',
-    valid: 'ring-2 ring-green-500/30',
-    invalid: 'ring-2 ring-red-500/30'
+    idle: "",
+    validating: "ring-2 ring-yellow-500/30",
+    valid: "ring-2 ring-green-500/30",
+    invalid: "ring-2 ring-red-500/30",
   };
 
   return (
     <motion.form
       className={cn(
-        'relative',
+        "relative",
         formVariants[variant],
         blurClasses[blurIntensity],
         brandAccentClasses[brandAccent],
         shadowClasses[shadow],
         borderClasses[borders],
         validationClasses[validationState],
-        'transition-all duration-300 ease-out',
-        integrateWithBackground && 'relative z-card-layer-1',
-        harmonizeWithCards && 'card-harmony-enabled',
-        coordinateWithNavigation && 'nav-coordination-enabled',
+        "transition-all duration-300 ease-out",
+        integrateWithBackground && "relative z-card-layer-1",
+        harmonizeWithCards && "card-harmony-enabled",
+        coordinateWithNavigation && "nav-coordination-enabled",
         className
       )}
       style={{ zIndex }}
       initial={{ opacity: 0 as number, y: 20 as number }}
       animate={{ opacity: 1 as number, y: 0 as number }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
       {...(props as any)}
@@ -181,9 +188,9 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-    >
-      {children}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            {children}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -194,4 +201,4 @@ export const GlassmorphicForm: React.FC<GlassmorphicFormProps> = ({
   );
 };
 
-export default GlassmorphicForm; 
+export default GlassmorphicForm;

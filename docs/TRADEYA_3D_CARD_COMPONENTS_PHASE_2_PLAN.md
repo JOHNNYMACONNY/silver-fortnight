@@ -403,7 +403,7 @@ const advancedGlassEffects = `
   --glass-blur-premium: blur(16px) saturate(200%) brightness(110%);
   --glass-blur-stats: blur(10px) contrast(125%);
   
-  --border-simple: 1px solid rgba(255, 255, 255, 0.2);
+  --border-simple: 1px solid rgba(255, 255, 255, 0.18);
   --border-dual: var(--border-simple), inset 0 0 0 1px rgba(249, 115, 22, 0.1);
   --border-gradient-mask: linear-gradient(135deg, transparent 0%, rgba(249, 115, 22, 0.2) 25%, rgba(14, 165, 233, 0.15) 75%, transparent 100%);
 `;
@@ -827,7 +827,7 @@ function applyQualityAdaptations(
   const adaptedBlur = Math.max(4, baseBlur * (1 - qualityConfig.blurReduction));
   
   if (qualityConfig.borderSimplification) {
-    return `backdrop-filter: blur(${adaptedBlur}px); border: 1px solid rgba(255,255,255,0.2);`;
+    return `backdrop-filter: blur(${adaptedBlur}px); border: 1px solid rgba(255,255,255,0.18);`;
   }
   
   const saturation = qualityConfig.shadowReduction > 0.5 ? 120 : 150;

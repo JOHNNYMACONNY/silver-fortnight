@@ -1,12 +1,20 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, X, Sparkles, TrendingUp, Clock, Users } from 'lucide-react';
-import { Input } from '../../ui/Input';
-import { Button } from '../../ui/Button';
-import { Badge } from '../../ui/Badge';
-import { cn } from '../../../utils/cn';
-import { classPatterns } from '../../../utils/designSystem';
-import { semanticClasses } from '../../../utils/semanticColors';
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Search,
+  Filter,
+  X,
+  Sparkles,
+  TrendingUp,
+  Clock,
+  Users,
+} from "lucide-react";
+import { Input } from "../../ui/Input";
+import { Button } from "../../ui/Button";
+import { Badge } from "../../ui/Badge";
+import { cn } from "../../../utils/cn";
+import { classPatterns } from "../../../utils/designSystem";
+import { semanticClasses } from "../../../utils/semanticColors";
 
 interface EnhancedSearchBarProps {
   searchTerm: string;
@@ -19,7 +27,7 @@ interface EnhancedSearchBarProps {
   isLoading?: boolean;
   placeholder?: string;
   className?: string;
-  topic?: 'trades' | 'collaboration' | 'community' | 'success';
+  topic?: "trades" | "collaboration" | "community" | "success";
 }
 
 export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
@@ -33,23 +41,23 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
   isLoading = false,
   placeholder = "Search collaborations by title, description, or participants...",
   className,
-  topic = 'trades'
+  topic = "trades",
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  
+
   // Get semantic colors for the topic
   const semanticClassesData = semanticClasses(topic);
 
   // Popular search suggestions
   const suggestions = [
-    'React Development',
-    'UI/UX Design', 
-    'Mobile App Development',
-    'Content Writing',
-    'Digital Marketing',
-    'Data Analysis'
+    "React Development",
+    "UI/UX Design",
+    "Mobile App Development",
+    "Content Writing",
+    "Digital Marketing",
+    "Data Analysis",
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -67,7 +75,7 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
   };
 
   const clearSearch = () => {
-    onSearchChange('');
+    onSearchChange("");
     inputRef.current?.focus();
   };
 
@@ -75,25 +83,39 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
     <div className={cn("w-full space-y-4", className)}>
       {/* Enhanced Search Bar */}
       <form onSubmit={handleSubmit} className="relative w-full">
-        <div className={cn(
-          "relative flex items-center w-full h-14 glassmorphic rounded-xl shadow-lg border border-white/20",
-          isFocused && semanticClassesData.ring,
-          "hover:shadow-xl hover:border-white/25 transition-all duration-200",
-          isFocused && topic === 'trades' && "shadow-orange-500/20 shadow-xl border-orange-500/25",
-          isFocused && topic === 'collaboration' && "shadow-purple-500/20 shadow-xl border-purple-500/25",
-          isFocused && topic === 'community' && "shadow-blue-500/20 shadow-xl border-blue-500/25",
-          isFocused && topic === 'success' && "shadow-green-500/20 shadow-xl border-green-500/25"
-        )}>
+        <div
+          className={cn(
+            "relative flex items-center w-full h-14 glassmorphic rounded-xl shadow-lg",
+            isFocused && semanticClassesData.ring,
+            "hover:shadow-xl transition-all duration-200",
+            isFocused &&
+              topic === "trades" &&
+              "shadow-orange-500/20 shadow-xl border-orange-500/25",
+            isFocused &&
+              topic === "collaboration" &&
+              "shadow-purple-500/20 shadow-xl border-purple-500/25",
+            isFocused &&
+              topic === "community" &&
+              "shadow-blue-500/20 shadow-xl border-blue-500/25",
+            isFocused &&
+              topic === "success" &&
+              "shadow-green-500/20 shadow-xl border-green-500/25"
+          )}
+        >
           {/* Search Icon */}
           <div className="absolute left-4">
             <motion.div
-              animate={isFocused ? { scale: 1.1, rotate: 5 } : { scale: 1, rotate: 0 }}
+              animate={
+                isFocused ? { scale: 1.1, rotate: 5 } : { scale: 1, rotate: 0 }
+              }
               transition={{ duration: 0.2, type: "spring", stiffness: 300 }}
             >
-              <Search className={cn(
-                "h-5 w-5 transition-colors duration-200",
-                isFocused ? semanticClassesData.text : "text-muted-foreground"
-              )} />
+              <Search
+                className={cn(
+                  "h-5 w-5 transition-colors duration-200",
+                  isFocused ? semanticClassesData.text : "text-muted-foreground"
+                )}
+              />
             </motion.div>
           </div>
 
@@ -144,10 +166,20 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
             onClick={onToggleFilters}
             className={cn(
               "absolute right-2 h-10 w-10 rounded-full transition-all duration-200",
-              hasActiveFilters ? cn(semanticClassesData.bgSolid, "text-white shadow-lg") : "hover:bg-muted/20"
+              hasActiveFilters
+                ? cn(semanticClassesData.bgSolid, "text-white shadow-lg")
+                : "hover:bg-muted/20"
             )}
-            aria-label={hasActiveFilters ? `${activeFiltersCount} filters active. Open filters` : 'Open filters'}
-            title={hasActiveFilters ? `${activeFiltersCount} filters active` : 'Open filters'}
+            aria-label={
+              hasActiveFilters
+                ? `${activeFiltersCount} filters active. Open filters`
+                : "Open filters"
+            }
+            title={
+              hasActiveFilters
+                ? `${activeFiltersCount} filters active`
+                : "Open filters"
+            }
           >
             <Filter className="h-4 w-4" />
             {hasActiveFilters && activeFiltersCount > 0 && (
@@ -159,14 +191,13 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
                 )}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 300 }}
+                transition={{ type: "spring", stiffness: 300 }}
               >
                 {Math.min(activeFiltersCount, 9)}
               </motion.span>
             )}
           </Button>
         </div>
-
       </form>
 
       {/* Search Suggestions */}
@@ -176,11 +207,13 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="w-full glassmorphic rounded-xl shadow-lg border border-white/20 p-4"
+            className="w-full glassmorphic rounded-xl shadow-lg p-4"
           >
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className={cn("h-4 w-4", semanticClassesData.text)} />
-              <span className="text-sm font-medium text-foreground">Popular searches</span>
+              <span className="text-sm font-medium text-foreground">
+                Popular searches
+              </span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {suggestions.map((suggestion, index) => (
@@ -208,32 +241,47 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="w-full glassmorphic rounded-lg border border-white/20 p-3"
+            className="w-full glassmorphic rounded-lg p-3"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <Sparkles className={cn("h-4 w-4", semanticClassesData.text)} />
+                  <Sparkles
+                    className={cn("h-4 w-4", semanticClassesData.text)}
+                  />
                   <span className="text-sm font-medium text-foreground">
                     {isLoading ? (
                       <span className="flex items-center gap-2">
                         <motion.div
-                          className={cn("h-4 w-4 border-2 border-t-transparent rounded-full", semanticClassesData.text)}
+                          className={cn(
+                            "h-4 w-4 border-2 border-t-transparent rounded-full",
+                            semanticClassesData.text
+                          )}
                           animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          transition={{
+                            duration: 1,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
                         />
                         Searching...
                       </span>
                     ) : (
-                      `${resultsCount} result${resultsCount !== 1 ? 's' : ''} found`
+                      `${resultsCount} result${
+                        resultsCount !== 1 ? "s" : ""
+                      } found`
                     )}
                   </span>
                 </div>
-                
+
                 {hasActiveFilters && activeFiltersCount > 0 && (
-                  <Badge variant="secondary" className={cn(semanticClassesData.badge)}>
+                  <Badge
+                    variant="secondary"
+                    className={cn(semanticClassesData.badge)}
+                  >
                     <Filter className="h-3 w-3 mr-1" />
-                    {activeFiltersCount} filter{activeFiltersCount === 1 ? '' : 's'}
+                    {activeFiltersCount} filter
+                    {activeFiltersCount === 1 ? "" : "s"}
                   </Badge>
                 )}
               </div>
@@ -248,4 +296,4 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
       </AnimatePresence>
     </div>
   );
-}; 
+};
