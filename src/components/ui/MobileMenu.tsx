@@ -319,7 +319,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                     // Phase 4.1: Enhanced auth button styling
                     "transition-all duration-200 hover:scale-[1.02]",
                     "active:scale-[0.98]",
-                    "border-gray-200/50 dark:border-gray-700/50",
+                    "border-navbar-glass-border dark:border-navbar-glass-border-dark",
                     "hover:bg-gray-50/80 dark:hover:bg-gray-800/80"
                   )}
                 >
