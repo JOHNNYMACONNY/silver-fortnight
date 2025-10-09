@@ -65,7 +65,7 @@ export const NotificationContainer: React.FC = () => {
   return (
     <>
       {/* Toast notifications container - positioned at top-right */}
-      <div className="fixed top-4 right-4 z-toast space-y-3 pointer-events-none">
+      <div className="fixed top-20 right-4 z-toast space-y-3 pointer-events-none">
         <AnimatePresence mode="popLayout">
           {xpGainNotifications.map((item) => (
             <motion.div
@@ -93,7 +93,7 @@ export const NotificationContainer: React.FC = () => {
       </div>
 
       {/* Streak milestone toasts */}
-      <div className="fixed top-4 right-4 z-toast space-y-3 pointer-events-none">
+      <div className="fixed top-20 right-4 z-toast space-y-3 pointer-events-none">
         <AnimatePresence mode="popLayout">
           {streakMilestoneToasts.map((item) => (
             <motion.div

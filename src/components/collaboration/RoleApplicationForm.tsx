@@ -4,7 +4,6 @@ import { EmbeddedEvidence } from '../../types/evidence';
 import EvidenceSubmitter from '../evidence/EvidenceSubmitter';
 import EvidenceGallery from '../evidence/EvidenceGallery';
 import { SkillBadge } from '../ui/SkillBadge';
-import { motion } from 'framer-motion';
 import { Button } from '../ui/Button';
 import Box from '../layout/primitives/Box';
 
@@ -55,12 +54,7 @@ export const RoleApplicationForm: React.FC<RoleApplicationFormProps> = ({
 
   return (
     <Box className="@container" style={{ containerType: 'inline-size' }}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="bg-card text-card-foreground border border-border rounded-lg shadow-sm p-6"
-      >
+      <div className="glassmorphic border-glass backdrop-blur-xl bg-white/5 rounded-xl p-6">
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-foreground">
             Apply for: {role.title}
@@ -168,10 +162,10 @@ export const RoleApplicationForm: React.FC<RoleApplicationFormProps> = ({
               aria-label="Submit application"
             >
               Submit Application
-            </Button>
-          </div>
+          </Button>
+        </div>
         </form>
-      </motion.div>
+      </div>
     </Box>
   );
 };

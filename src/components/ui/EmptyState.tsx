@@ -22,7 +22,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <div className={cn(
       'flex flex-col items-center justify-center text-center p-8 rounded-lg',
-      'bg-neutral-100 dark:bg-neutral-800 border-2 border-dashed border-neutral-200 dark:border-neutral-700',
+      'glassmorphic bg-white/5 dark:bg-white/5 border border-dashed border-white/20 dark:border-white/20',
       className
     )}>
       {icon && (
@@ -37,7 +37,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         </p>
       )}
       {actionLabel && onAction && (
-        <Button variant="default" onClick={onAction}>
+        <Button variant="glassmorphic" onClick={onAction} className="min-h-[44px]">
           {actionLabel}
         </Button>
       )}

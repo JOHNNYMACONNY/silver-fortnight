@@ -159,9 +159,9 @@ const TradeConfirmationForm: React.FC<TradeConfirmationFormProps> = ({
   };
 
   return (
-    <div className="bg-card text-card-foreground rounded-lg shadow-sm border border-border p-6">
+    <div className="glassmorphic border-glass backdrop-blur-xl bg-white/5 rounded-lg shadow-lg p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">
+        <h2 className="text-2xl font-bold text-foreground">
           {showChangeRequestForm ? 'Request Changes' : 'Confirm Trade Completion'}
         </h2>
         <AnimatedButton
@@ -169,7 +169,7 @@ const TradeConfirmationForm: React.FC<TradeConfirmationFormProps> = ({
           variant="ghost"
           size="sm"
           tradingContext="general"
-          className="text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground transition-colors duration-200"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -178,7 +178,7 @@ const TradeConfirmationForm: React.FC<TradeConfirmationFormProps> = ({
       </div>
 
       {error && (
-        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg mb-6">
+        <div className="glassmorphic border-glass bg-destructive/10 backdrop-blur-sm text-destructive px-4 py-3 rounded-lg mb-6">
           {error}
         </div>
       )}
@@ -186,7 +186,7 @@ const TradeConfirmationForm: React.FC<TradeConfirmationFormProps> = ({
       {!showChangeRequestForm ? (
         <>
           <div className="mb-6">
-            <div className="bg-primary/10 border border-primary/20 text-primary px-4 py-3 rounded-lg">
+            <div className="glassmorphic border-glass bg-primary/10 backdrop-blur-sm text-primary px-4 py-3 rounded-lg">
               <p className="font-medium">Completion Request</p>
               <p>The other participant has requested to mark this trade as complete. Please review their work and confirm if the trade is complete.</p>
             </div>
@@ -195,8 +195,8 @@ const TradeConfirmationForm: React.FC<TradeConfirmationFormProps> = ({
           {/* Completion Notes */}
           <div className="mb-6">
             <h3 className="text-lg font-medium text-foreground mb-2">Completion Notes</h3>
-            <div className="bg-muted/50 border border-border p-4 rounded-lg">
-              <p className="text-muted-foreground whitespace-pre-line">{trade.completionNotes || 'No notes provided.'}</p>
+            <div className="glassmorphic border-glass bg-muted/30 backdrop-blur-sm p-4 rounded-lg">
+              <p className="text-foreground whitespace-pre-line">{trade.completionNotes || 'No notes provided.'}</p>
             </div>
           </div>
 
@@ -211,7 +211,7 @@ const TradeConfirmationForm: React.FC<TradeConfirmationFormProps> = ({
                 emptyMessage="No evidence has been provided."
               />
             ) : (
-              <div className="bg-muted/50 border border-border p-4 rounded-lg">
+              <div className="glassmorphic border-glass bg-muted/30 backdrop-blur-sm p-4 rounded-lg">
                 <p className="text-muted-foreground italic">No evidence has been provided.</p>
               </div>
             )}
@@ -247,7 +247,7 @@ const TradeConfirmationForm: React.FC<TradeConfirmationFormProps> = ({
               value={changeReason}
               onChange={(e) => setChangeReason(e.target.value)}
               rows={4}
-              className="w-full rounded-md border border-input px-3 py-2 bg-input placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+              className="w-full rounded-md glassmorphic border-glass backdrop-blur-xl bg-white/5 px-3 py-2 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring text-foreground"
               placeholder="e.g., 'The final asset was not delivered in the agreed-upon format. Please provide a high-resolution PNG.'"
               disabled={isSubmitting}
             />

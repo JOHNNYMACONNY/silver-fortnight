@@ -174,16 +174,17 @@ export const classPatterns = {
 // Component Variants
 export const componentVariants = {
   card: {
-    default: 'bg-card text-card-foreground border border-border rounded-lg',
-    glass: 'glassmorphic',
-    elevated: 'bg-card text-card-foreground border border-border shadow-lg rounded-lg',
-    premium: 'glassmorphic shadow-xl',
+    default: 'glassmorphic border-glass text-card-foreground rounded-lg',
+    glass: 'glassmorphic border-glass rounded-lg',
+    elevated: 'glassmorphic border-glass shadow-lg rounded-lg',
+    premium: 'glassmorphic border-glass shadow-xl rounded-lg',
   },
   
   button: {
     primary: classPatterns.primaryButton,
     secondary: classPatterns.secondaryButton,
     ghost: classPatterns.ghostButton,
+    glassmorphic: 'glassmorphic text-foreground font-medium hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-200',
     destructive: 'bg-red-500 hover:bg-red-600 text-white font-medium px-6 py-3 rounded-lg transition-all duration-200',
   },
 

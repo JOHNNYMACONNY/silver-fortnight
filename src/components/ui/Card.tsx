@@ -78,10 +78,10 @@ const depthStyles = {
 
 // Enhanced variant styles - Tailwind v4 compatible
 const variantStyles = {
-  default: 'bg-card text-card-foreground border-standard',
-  glass: 'glassmorphic border-glass', // Universal glassmorphic utility
-  elevated: 'bg-card text-card-foreground border-standard shadow-lg',
-  premium: 'glassmorphic border-glass', // Universal glassmorphic utility
+  default: 'glassmorphic border-glass text-card-foreground bg-white/5 backdrop-blur-sm', // Enhanced glassmorphic with transparent background
+  glass: 'glassmorphic border-glass bg-white/5 backdrop-blur-sm', // Universal glassmorphic utility with transparent background
+  elevated: 'glassmorphic border-glass shadow-lg bg-white/5 backdrop-blur-sm', // Enhanced glassmorphic with extra shadow and transparent background
+  premium: 'glassmorphic border-glass bg-white/5 backdrop-blur-sm', // Universal glassmorphic utility with transparent background
 };
 
 // Browser compatibility check

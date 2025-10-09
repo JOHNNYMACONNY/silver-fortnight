@@ -6,7 +6,8 @@ import {
   runTransaction,
   Timestamp,
   collection,
-  addDoc
+  addDoc,
+  setDoc
 } from 'firebase/firestore';
 import { ServiceResponse } from '../types/services';
 import { 
@@ -76,7 +77,9 @@ export const completeChallenge = async (
 ): Promise<ChallengeCompletionResult> => {
   try {
     const db = getDb();
-    return await runTransaction(db, async (transaction) => {
+    
+    // Step 1: Run transaction to update UserChallenge and create completion record
+    const transactionResult = await runTransaction(db, async (transaction) => {
       // Get challenge and user challenge data
       const challengeRef = doc(db, 'challenges', challengeId);
       const userChallengeRef = doc(db, 'userChallenges', `${userId}_${challengeId}`);
@@ -94,8 +97,13 @@ export const completeChallenge = async (
         throw new Error('User challenge not found');
       }
 
-      const challenge = Object.assign({ id: challengeDoc.id }, challengeDoc.data()) as unknown as Challenge;
-      const userChallenge = userChallengeDoc.data() as UserChallenge;
+        const challenge = Object.assign({ id: challengeDoc.id }, challengeDoc.data()) as unknown as Challenge;
+        const userChallenge = userChallengeDoc.data() as UserChallenge;
+
+        // Debug: Log the userChallenge object to see what we're working with
+        console.log('Original userChallenge from Firestore:', JSON.stringify(userChallenge, null, 2));
+        console.log('userChallenge has mentorNotes?', 'mentorNotes' in userChallenge);
+        console.log('userChallenge.mentorNotes value:', userChallenge.mentorNotes);
 
       if ((userChallenge.status as any) === ChallengeStatus.COMPLETED) {
         throw new Error('Challenge already completed');
@@ -107,7 +115,7 @@ export const completeChallenge = async (
       const timeSpentMinutes = completionData.timeSpent || 
         Math.round((completionTime.getTime() - startTime.getTime()) / (1000 * 60));
 
-      // Update user challenge
+      // Update user challenge - filter out undefined values for Firestore
       const updatedUserChallenge: any = {
         ...userChallenge,
         status: ChallengeStatus.COMPLETED as unknown as UserChallenge['status'],
@@ -115,73 +123,104 @@ export const completeChallenge = async (
         completionTimeMinutes: timeSpentMinutes,
         completionMethod: completionData.completionMethod,
         submissionData: completionData.submissionData,
-        difficultyRating: completionData.difficultyRating,
-        qualityScore: completionData.qualityScore,
-        feedback: completionData.feedback,
-        mentorNotes: completionData.mentorNotes,
         progress: userChallenge.maxProgress || 100,
         lastUpdated: Timestamp.now()
       };
 
-      transaction.set(userChallengeRef, updatedUserChallenge as any, { merge: true });
-
-      // Calculate rewards
-      const rewards = await calculateCompletionRewards(
-        userId,
-        challenge,
-        updatedUserChallenge,
-        completionData
-      );
-
-      // Award XP
-      await awardXP(
-        userId,
-        rewards.xp + rewards.bonusXP,
-        XPSource.CHALLENGE_COMPLETION,
-        challengeId,
-        `Completed: ${challenge.title}`
-      );
-
-      // Update three-tier progression
-      if ([ChallengeType.SOLO, ChallengeType.TRADE, ChallengeType.COLLABORATION].includes(challenge.type)) {
-        const progressResult = await updateProgressionOnChallengeCompletion(
-          userId,
-          challenge.type,
-          challenge.category ? [challenge.category] : []
-        );
-
-        if (progressResult.success && progressResult.data) {
-          rewards.tierProgress = {
-            progressMade: 1,
-            tierUnlocked: progressResult.data.unlockedTiers?.slice(-1)[0]
-          };
-        }
+      // Only add optional fields if they have values (Firestore doesn't allow undefined)
+      if (completionData.difficultyRating !== undefined) {
+        updatedUserChallenge.difficultyRating = completionData.difficultyRating;
+      }
+      if (completionData.qualityScore !== undefined) {
+        updatedUserChallenge.qualityScore = completionData.qualityScore;
+      }
+      if (completionData.feedback !== undefined) {
+        updatedUserChallenge.feedback = completionData.feedback;
+      }
+      if (completionData.mentorNotes !== undefined) {
+        updatedUserChallenge.mentorNotes = completionData.mentorNotes;
       }
 
-      // Create completion record for analytics
-      const completionRecord = {
-        userId,
-        challengeId,
-        challengeType: challenge.type,
-        challengeDifficulty: challenge.difficulty,
-        challengeCategory: challenge.category,
-        completionTime: timeSpentMinutes,
-        completionMethod: completionData.completionMethod,
-        qualityScore: completionData.qualityScore,
-        difficultyRating: completionData.difficultyRating,
-        xpAwarded: rewards.xp + rewards.bonusXP,
-        completedAt: Timestamp.now()
-      };
+      // Remove any undefined values that might have come from the spread
+      Object.keys(updatedUserChallenge).forEach(key => {
+        if (updatedUserChallenge[key] === undefined) {
+          delete updatedUserChallenge[key];
+        }
+      });
 
-      const completionRef = doc(collection(db, 'challengeCompletions'));
-      transaction.set(completionRef, completionRecord);
+      // Debug: Log the object to see what's being sent
+      console.log('UpdatedUserChallenge before transaction:', JSON.stringify(updatedUserChallenge, null, 2));
+      console.log('Has undefined mentorNotes?', updatedUserChallenge.mentorNotes === undefined);
+
+      transaction.set(userChallengeRef, updatedUserChallenge as any, { merge: true });
 
       return {
-        success: true,
-        userChallenge: updatedUserChallenge,
-        rewards
+        challenge,
+        updatedUserChallenge,
+        completionTime,
+        timeSpentMinutes
       };
     });
+
+    // Step 2: Calculate rewards and create analytics records AFTER transaction completes
+    const { challenge, updatedUserChallenge, completionTime, timeSpentMinutes } = transactionResult;
+
+    // Calculate rewards (outside transaction)
+    const rewards = await calculateCompletionRewards(
+      userId,
+      challenge,
+      updatedUserChallenge,
+      completionData
+    );
+
+    // Create completion record for analytics (separate write, not in transaction)
+    const completionRecord = {
+      userId,
+      challengeId,
+      challengeType: challenge.type,
+      challengeDifficulty: challenge.difficulty,
+      challengeCategory: challenge.category,
+      completionTime: timeSpentMinutes,
+      completionMethod: completionData.completionMethod,
+      qualityScore: completionData.qualityScore,
+      difficultyRating: completionData.difficultyRating,
+      xpAwarded: rewards.xp + rewards.bonusXP,
+      completedAt: Timestamp.now()
+    };
+
+    const completionRef = doc(collection(db, 'challengeCompletions'));
+    await setDoc(completionRef, completionRecord);
+
+    // Award XP (external write, done after transaction)
+    await awardXP(
+      userId,
+      rewards.xp + rewards.bonusXP,
+      XPSource.CHALLENGE_COMPLETION,
+      challengeId,
+      `Completed: ${challenge.title}`
+    );
+
+    // Update three-tier progression (external write, done after transaction)
+    if ([ChallengeType.SOLO, ChallengeType.TRADE, ChallengeType.COLLABORATION].includes(challenge.type)) {
+      const progressResult = await updateProgressionOnChallengeCompletion(
+        userId,
+        challenge.type,
+        challenge.category ? [challenge.category] : []
+      );
+
+      if (progressResult.success && progressResult.data) {
+        rewards.tierProgress = {
+          progressMade: 1,
+          tierUnlocked: progressResult.data.unlockedTiers?.slice(-1)[0]
+        };
+      }
+    }
+
+    return {
+      success: true,
+      userChallenge: updatedUserChallenge,
+      rewards
+    };
   } catch (error) {
     console.error('Error completing challenge:', error);
     return {

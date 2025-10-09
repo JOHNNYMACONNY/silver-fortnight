@@ -19,6 +19,7 @@ import {
   ChallengeCategory,
 } from "../types/gamification";
 import { useToast } from "../contexts/ToastContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/Select";
 import {
   Award,
   Filter,
@@ -719,24 +720,23 @@ export const ChallengesPage: React.FC = () => {
                   >
                     Category
                   </label>
-                  <select
-                    id="category"
+                  <Select
                     value={selectedCategory}
-                    onChange={(e) =>
-                      setSelectedCategory(
-                        e.target.value as ChallengeCategory | ""
-                      )
-                    }
-                    className="w-full rounded-md border border-border-primary px-3 py-2 text-text-primary bg-background-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors duration-200"
+                    onValueChange={(value) => setSelectedCategory(value as ChallengeCategory | "")}
                   >
-                    <option value="">All Categories</option>
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category.charAt(0).toUpperCase() +
-                          category.slice(1).replace("_", " ")}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Categories</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category.charAt(0).toUpperCase() +
+                            category.slice(1).replace("_", " ")}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>

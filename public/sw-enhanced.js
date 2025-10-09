@@ -100,6 +100,11 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // Skip OAuth and authentication-related requests to prevent status 0 errors
+  if (isAuthenticationRequest(url)) {
+    return;
+  }
+
   event.respondWith(handleRequest(event.request));
 });
 
@@ -225,6 +230,13 @@ async function handleStaticAsset(request) {
   
   try {
     const networkResponse = await fetch(request);
+    
+    // Check for valid status code (0 means network error or CORS issue)
+    if (networkResponse.status === 0) {
+      console.warn('Enhanced SW: Received status 0, treating as network error');
+      throw new Error('Network request failed with status 0');
+    }
+    
     if (networkResponse.ok) {
       cache.put(request, networkResponse.clone());
     }
@@ -339,6 +351,21 @@ function isAPIRequest(url) {
   return url.hostname.includes('firebaseio.com') || 
          url.hostname.includes('googleapis.com') ||
          url.pathname.startsWith('/api/');
+}
+
+function isAuthenticationRequest(url) {
+  // Skip OAuth and authentication-related domains to prevent CORS/status 0 errors
+  const authDomains = [
+    'accounts.google.com',
+    'www.googleapis.com',
+    'securetoken.googleapis.com',
+    'identitytoolkit.googleapis.com',
+    'oauth2.googleapis.com',
+    'www.google.com',
+    'apis.google.com'
+  ];
+  
+  return authDomains.some(domain => url.hostname === domain || url.hostname.endsWith('.' + domain));
 }
 
 function updatePerformanceMetrics(responseTime, isCacheHit) {

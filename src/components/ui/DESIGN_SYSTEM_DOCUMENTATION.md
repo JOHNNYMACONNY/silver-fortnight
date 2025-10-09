@@ -615,7 +615,7 @@ The Modal component is used for dialogs and popovers. We provide two implementat
 - `title`: string (optional) - Title displayed in the header
 - `children`: ReactNode - Content of the modal
 - `footer`: ReactNode (optional) - Footer content, typically containing action buttons
-- `size`: 'sm' | 'md' | 'lg' | 'xl' | 'full' - Controls the width of the modal
+- `size`: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'full' - Controls the width of the modal
 - `closeOnClickOutside`: boolean - Whether clicking outside the modal closes it
 - `closeOnEsc`: boolean - Whether pressing the Escape key closes the modal
 

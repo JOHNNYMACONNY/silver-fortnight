@@ -319,6 +319,7 @@ export const EnhancedStyleGuide: React.FC = () => {
                 <Button className={componentVariants.button.primary}>Primary Button</Button>
                 <Button className={componentVariants.button.secondary}>Secondary Button</Button>
                 <Button className={componentVariants.button.ghost}>Ghost Button</Button>
+                <Button className={componentVariants.button.glassmorphic}>Glassmorphic Button</Button>
                 <Button className={componentVariants.button.destructive}>Destructive Button</Button>
               </CardContent>
             </Card>

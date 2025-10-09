@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { CollaborationRoleData, Skill } from '../../types/collaboration';
 import { SkillSelector } from '../ui/SkillSelector';
 import { cn } from '../../utils/cn';
-import { motion } from 'framer-motion';
 import { Button } from '../ui/Button';
 
 interface RoleDefinitionFormProps {
@@ -74,12 +73,7 @@ export const RoleDefinitionForm: React.FC<RoleDefinitionFormProps> = ({
   }, [requiredSkills]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className={cn("bg-card text-card-foreground border border-border rounded-lg shadow-sm", "p-6")}
-    >
+    <div className="glassmorphic border-glass backdrop-blur-xl bg-white/5 rounded-xl p-6">
       <h2 className={cn("text-xl font-semibold mb-4", "text-foreground")}>
         {initialRole ? 'Edit Role' : 'Add New Role'}
       </h2>
@@ -177,7 +171,7 @@ export const RoleDefinitionForm: React.FC<RoleDefinitionFormProps> = ({
           </Button>
         </div>
       </form>
-    </motion.div>
+    </div>
   );
 };
 

@@ -70,12 +70,12 @@ const TradeCompletionForm: React.FC<TradeCompletionFormProps> = ({
   };
 
   return (
-    <div className="bg-card text-card-foreground rounded-lg shadow-sm border-2 border-primary p-6">
+    <div className="glassmorphic border-glass backdrop-blur-xl bg-white/5 rounded-lg shadow-lg p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Request Trade Completion</h2>
+        <h2 className="text-2xl font-bold text-foreground">Request Trade Completion</h2>
         <button
           onClick={onCancel}
-          className="text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground transition-colors duration-200"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -84,7 +84,7 @@ const TradeCompletionForm: React.FC<TradeCompletionFormProps> = ({
       </div>
 
       <div className="mb-6">
-        <div className="bg-warning/10 border border-warning/20 text-warning-foreground px-4 py-3 rounded-lg">
+        <div className="glassmorphic border-glass bg-warning/10 backdrop-blur-sm text-warning-foreground px-4 py-3 rounded-lg">
           <p className="font-medium">Important:</p>
           <p>Both participants must submit evidence before the trade can be completed. After you submit your evidence, the other participant will be notified to submit their evidence as well.</p>
           <p className="mt-2">Once both participants have submitted evidence, the trade will move to the "Pending Confirmation" status, and either participant can confirm the trade as completed.</p>
@@ -92,7 +92,7 @@ const TradeCompletionForm: React.FC<TradeCompletionFormProps> = ({
       </div>
 
       {error && (
-        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg mb-6">
+        <div className="glassmorphic border-glass bg-destructive/10 backdrop-blur-sm text-destructive px-4 py-3 rounded-lg mb-6">
           {error}
         </div>
       )}
@@ -109,7 +109,7 @@ const TradeCompletionForm: React.FC<TradeCompletionFormProps> = ({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={4}
-              className="w-full rounded-md border border-input px-3 py-2 bg-input placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+              className="w-full rounded-md glassmorphic border-glass backdrop-blur-xl bg-white/5 px-3 py-2 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring text-foreground"
               placeholder={`Describe what you've completed for the trade: "${tradeName}"`}
               required
             />
@@ -134,7 +134,7 @@ const TradeCompletionForm: React.FC<TradeCompletionFormProps> = ({
 
             {/* Success message */}
             {successMessage && (
-              <div className="mb-4 p-2 bg-success/10 border border-success/20 rounded-lg">
+              <div className="mb-4 p-2 glassmorphic border-glass bg-success/10 backdrop-blur-sm rounded-lg">
                 <p className="text-success-foreground">{successMessage}</p>
               </div>
             )}
@@ -166,7 +166,7 @@ const TradeCompletionForm: React.FC<TradeCompletionFormProps> = ({
               <button
                 type="button"
                 onClick={() => setShowEvidenceForm(true)}
-                className="mb-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
+                className="mb-4 inline-flex items-center px-4 py-2 glassmorphic border-glass backdrop-blur-xl bg-primary/90 hover:bg-primary hover:shadow-orange-500/25 hover:shadow-lg text-sm font-medium rounded-md text-primary-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring transition-all duration-300"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
@@ -180,7 +180,7 @@ const TradeCompletionForm: React.FC<TradeCompletionFormProps> = ({
           <div className="flex space-x-4">
             <button
               type="submit"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              className="glassmorphic border-glass backdrop-blur-xl bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-orange-500/25 hover:shadow-lg px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all duration-300"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Submitting...' : 'Request Completion'}
@@ -188,7 +188,7 @@ const TradeCompletionForm: React.FC<TradeCompletionFormProps> = ({
             <button
               type="button"
               onClick={onCancel}
-              className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              className="glassmorphic border-glass backdrop-blur-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all duration-300"
               disabled={isSubmitting}
             >
               Cancel

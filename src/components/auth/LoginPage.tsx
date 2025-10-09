@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { rateLimiter } from '../../firebase-config';
 import { useToast } from '../../contexts/ToastContext';
@@ -31,22 +31,44 @@ const LoginPage: React.FC = () => {
   const { signInWithEmail, signInWithGoogle, error, loading, currentUser } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loginSuccess, setLoginSuccess] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as any)?.from || '/dashboard';
 
   // New state for input validation
   const [emailValid, setEmailValid] = useState<boolean | null>(null);
   const [passwordValid, setPasswordValid] = useState<boolean | null>(null);
 
+  // Track if we've already shown the success toast for this login session
+  const hasShownSuccessToastRef = useRef(false);
+
   const { addToast } = useToast();
 
   useEffect(() => {
-    if (currentUser && loginSuccess) {
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1500); // 1.5 second delay
+    // Only show toast and navigate if:
+    // 1. User is logged in
+    // 2. We haven't shown the toast yet for this session
+    // 3. User has a valid UID (not just a profile update)
+    if (currentUser && !hasShownSuccessToastRef.current && currentUser.uid) {
+      // Add a small delay to ensure this isn't just a transient state change
+      const timeoutId = setTimeout(() => {
+        if (currentUser && currentUser.uid && !hasShownSuccessToastRef.current) {
+          hasShownSuccessToastRef.current = true;
+          addToast('success', 'Successfully logged in!');
+          navigate(from, { replace: true });
+        }
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [currentUser, loginSuccess, navigate]);
+  }, [currentUser?.uid, navigate, from, addToast]);
+
+  // Reset the success toast flag when user logs out
+  useEffect(() => {
+    if (!currentUser) {
+      hasShownSuccessToastRef.current = false;
+    }
+  }, [currentUser]);
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -73,17 +95,13 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await signInWithEmail(email, password);
-
-    // Set login success flag to trigger the effect
-    setLoginSuccess(true);
+    // Effect handles redirect & toast
   };
 
   // Handle Google sign-in with success feedback
   const handleGoogleSignIn = async () => {
     await signInWithGoogle();
-
-    // Set login success flag to trigger the effect
-    setLoginSuccess(true);
+    // Effect handles redirect & toast
   };
 
   // Security logging function
@@ -148,9 +166,9 @@ const LoginPage: React.FC = () => {
           type="submit"
           className="w-full"
           isLoading={loading}
-          disabled={loading || (!!currentUser && loginSuccess)}
+          disabled={loading}
         >
-          {currentUser && loginSuccess ? 'Success!' : 'Log In'}
+          Log In
         </Button>
         <div className="mt-6 relative">
           <div className="absolute inset-0 flex items-center">
@@ -168,12 +186,10 @@ const LoginPage: React.FC = () => {
           onClick={handleGoogleSignIn}
           className="mt-4 w-full"
           isLoading={loading}
-          disabled={loading || (!!currentUser && loginSuccess)}
+          disabled={loading}
         >
           {loading ? (
             'Signing in...'
-          ) : currentUser && loginSuccess ? (
-            'Signed in with Google'
           ) : (
             <>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" className="mr-2">

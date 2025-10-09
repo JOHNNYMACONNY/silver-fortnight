@@ -529,7 +529,7 @@ export const EnhancedFeedbackSystem: React.FC<EnhancedFeedbackSystemProps> = ({
       </div>
 
       {/* Notifications */}
-      <div className="fixed top-6 right-6 z-toast space-y-2 max-w-sm">
+      <div className="fixed top-20 right-6 z-toast space-y-2 max-w-sm">
         <AnimatePresence>
           {notifications.map((notification) => (
             <motion.div

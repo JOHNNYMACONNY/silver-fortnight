@@ -8,12 +8,14 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '../../utils/cn';
 import { classPatterns } from '../../utils/designSystem';
+import { semanticClasses, type Topic } from '../../utils/semanticColors';
 
 export interface ProgressProps {
   value: number;
   max?: number;
   className?: string;
   variant?: 'default' | 'success' | 'warning' | 'error' | 'gradient';
+  topic?: Topic; // Semantic topic-based styling
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
   label?: string;
@@ -27,6 +29,7 @@ export const Progress: React.FC<ProgressProps> = ({
   max = 100,
   className = '',
   variant = 'default',
+  topic,
   size = 'md',
   showLabel = false,
   label,
@@ -43,13 +46,18 @@ export const Progress: React.FC<ProgressProps> = ({
     lg: 'h-3',
   };
 
-  // Variant configurations
+  // Get semantic classes if topic is provided
+  const semanticClassesForTopic = topic ? semanticClasses(topic) : null;
+  
+  // Variant configurations with improved contrast and glassmorphic styling
   const variantClasses = {
-    default: 'bg-primary',
-    success: 'bg-green-500',
-    warning: 'bg-yellow-500',
-    error: 'bg-red-500',
-    gradient: 'bg-gradient-to-r from-primary via-secondary to-accent',
+    default: topic && semanticClassesForTopic 
+      ? `bg-gradient-to-r ${semanticClassesForTopic.gradient.replace('bg-gradient-to-r ', '')} shadow-lg shadow-${semanticClassesForTopic.bgSolid.replace('bg-', '').replace('-500', '-500/25')}`
+      : 'bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg shadow-orange-500/25',
+    success: 'bg-gradient-to-r from-green-500 to-green-600 shadow-lg shadow-green-500/25',
+    warning: 'bg-gradient-to-r from-amber-500 to-amber-600 shadow-lg shadow-amber-500/25',
+    error: 'bg-gradient-to-r from-red-500 to-red-600 shadow-lg shadow-red-500/25',
+    gradient: 'bg-gradient-to-r from-orange-500 via-blue-500 to-purple-600 shadow-lg shadow-orange-500/20',
   };
 
   return (
@@ -68,10 +76,13 @@ export const Progress: React.FC<ProgressProps> = ({
         </div>
       )}
 
-      {/* Progress bar container */}
+      {/* Progress bar container with glassmorphic styling */}
       <div
         className={cn(
-          'w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden',
+          'w-full rounded-full overflow-hidden',
+          'bg-white/30 dark:bg-gray-600/60',
+          'backdrop-blur-sm border border-white/10 dark:border-gray-700/50',
+          'shadow-inner',
           sizeClasses[size]
         )}
         role="progressbar"
@@ -80,10 +91,12 @@ export const Progress: React.FC<ProgressProps> = ({
         aria-valuemax={max}
         aria-label={label || `Progress: ${Math.round(percentage)}%`}
       >
-        {/* Progress bar fill */}
+        {/* Progress bar fill with premium glassmorphic effects */}
         <motion.div
           className={cn(
             'h-full rounded-full transition-all duration-300 ease-out',
+            'relative overflow-hidden',
+            'border border-white/20 dark:border-white/10',
             variantClasses[variant],
             striped && 'bg-stripes',
             indeterminate && 'animate-pulse'
@@ -107,12 +120,17 @@ export const Progress: React.FC<ProgressProps> = ({
                 45deg,
                 transparent,
                 transparent 10px,
-                rgba(255,255,255,0.2) 10px,
-                rgba(255,255,255,0.2) 20px
+                rgba(255,255,255,0.3) 10px,
+                rgba(255,255,255,0.3) 20px
               )
             ` : undefined,
           }}
-        />
+        >
+          {/* Subtle shine effect for premium feel */}
+          {!indeterminate && (
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-60" />
+          )}
+        </motion.div>
       </div>
     </div>
   );
@@ -168,7 +186,7 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
           stroke="currentColor"
           strokeWidth={strokeWidth}
           fill="transparent"
-          className="text-gray-200 dark:text-gray-700"
+          className="text-gray-100 dark:text-gray-600"
         />
 
         {/* Progress circle */}
@@ -218,33 +236,103 @@ export interface StepProgressProps {
   }>;
   className?: string;
   orientation?: 'horizontal' | 'vertical';
+  topic?: Topic; // Semantic topic-based styling
 }
 
 export const StepProgress: React.FC<StepProgressProps> = ({
   steps,
   className = '',
   orientation = 'horizontal',
+  topic,
 }) => {
+  // Check if all steps are completed for "success" state
+  const allStepsCompleted = steps.every(step => step.completed);
+  
+  // Get semantic classes if topic is provided
+  const semanticClassesForTopic = topic ? semanticClasses(topic) : null;
+  
+  if (orientation === 'horizontal') {
+    return (
+      <div className={cn('flex items-start', className)}>
+        {steps.map((step, index) => (
+          <React.Fragment key={index}>
+            {/* Step container with circle and label */}
+            <div className="flex flex-col items-center relative flex-1">
+              {/* Step indicator with clean glassmorphic styling */}
+              <div className={cn(
+                'flex items-center justify-center rounded-full border transition-all duration-300 ease-out',
+                'relative backdrop-blur-sm shadow-sm z-10',
+                step.completed ? (allStepsCompleted ? 'bg-green-500/90 border-green-400/50 text-white' : 
+                  topic && semanticClassesForTopic ? `${semanticClassesForTopic.bgSolid}/90 border-${semanticClassesForTopic.bgSolid.replace('bg-', '').replace('-500', '-400')}/50 text-white` : 
+                  'bg-blue-500/90 border-blue-400/50 text-white') :
+                step.current ? (topic && semanticClassesForTopic ? `${semanticClassesForTopic.bgSolid}/90 border-${semanticClassesForTopic.bgSolid.replace('bg-', '').replace('-500', '-400')}/50 text-white` : 'bg-orange-500/90 border-orange-400/50 text-white') :
+                step.error ? 'bg-red-500/90 border-red-400/50 text-white' :
+                'bg-white/20 dark:bg-gray-800/30 border-white/30 dark:border-gray-600/50 text-gray-600 dark:text-gray-300',
+                'w-8 h-8'
+              )}>
+                {step.completed ? (
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                ) : step.error ? (
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <span className="text-sm font-medium">{index + 1}</span>
+                )}
+              </div>
+
+              {/* Step content */}
+              <div className="text-center mt-2">
+                <div className={cn(
+                  'text-sm font-medium',
+                  step.current ? 'text-foreground' : 'text-muted-foreground'
+                )}>
+                  {step.label}
+                </div>
+                {step.description && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {step.description}
+                  </div>
+                )}
+              </div>
+
+              {/* Connector line using pseudo-element - best practice approach */}
+              {index < steps.length - 1 && (
+                <div 
+                  className="absolute top-4 left-1/2 h-0.5 bg-gray-300/60 dark:bg-gray-600/60 rounded-full"
+                  style={{ 
+                    width: '100%',
+                    transform: 'translateX(0)',
+                    zIndex: 1
+                  }}
+                />
+              )}
+            </div>
+          </React.Fragment>
+        ))}
+      </div>
+    );
+  }
+
+  // Vertical orientation
   return (
-    <div className={cn(
-      'flex',
-      orientation === 'horizontal' ? 'flex-row items-center' : 'flex-col',
-      className
-    )}>
+    <div className={cn('flex flex-col', className)}>
       {steps.map((step, index) => (
         <React.Fragment key={index}>
-          <div className={cn(
-            'flex items-center',
-            orientation === 'vertical' ? 'flex-row' : 'flex-col'
-          )}>
-            {/* Step indicator */}
+          <div className="flex items-start relative">
+            {/* Step indicator with clean glassmorphic styling */}
             <div className={cn(
-              'flex items-center justify-center rounded-full border-2 transition-all duration-200',
-              step.completed ? 'bg-green-500 border-success text-white' :
-              step.current ? 'bg-primary border-primary text-white' :
-              step.error ? 'bg-red-500 border-error text-white' :
-              'bg-gray-200 border-gray-300 text-gray-500',
-              orientation === 'horizontal' ? 'w-8 h-8 mb-2' : 'w-8 h-8 mr-3'
+              'flex items-center justify-center rounded-full border transition-all duration-300 ease-out',
+              'relative backdrop-blur-sm shadow-sm z-10',
+              step.completed ? (allStepsCompleted ? 'bg-green-500/90 border-green-400/50 text-white' : 
+                topic && semanticClassesForTopic ? `${semanticClassesForTopic.bgSolid}/90 border-${semanticClassesForTopic.bgSolid.replace('bg-', '').replace('-500', '-400')}/50 text-white` : 
+                'bg-blue-500/90 border-blue-400/50 text-white') :
+              step.current ? (topic && semanticClassesForTopic ? `${semanticClassesForTopic.bgSolid}/90 border-${semanticClassesForTopic.bgSolid.replace('bg-', '').replace('-500', '-400')}/50 text-white` : 'bg-orange-500/90 border-orange-400/50 text-white') :
+              step.error ? 'bg-red-500/90 border-red-400/50 text-white' :
+              'bg-white/20 dark:bg-gray-800/30 border-white/30 dark:border-gray-600/50 text-gray-600 dark:text-gray-300',
+              'w-8 h-8 mr-3'
             )}>
               {step.completed ? (
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -260,34 +348,32 @@ export const StepProgress: React.FC<StepProgressProps> = ({
             </div>
 
             {/* Step content */}
-            <div className={cn(
-              'text-center',
-              orientation === 'vertical' ? 'text-left flex-1' : ''
-            )}>
+            <div className="text-left flex-1">
               <div className={cn(
-                classPatterns.bodySmall,
-                'font-medium',
+                'text-sm font-medium',
                 step.current ? 'text-foreground' : 'text-muted-foreground'
               )}>
                 {step.label}
               </div>
               {step.description && (
-                <div className={classPatterns.caption + ' text-muted-foreground'}>
+                <div className="text-xs text-muted-foreground mt-1">
                   {step.description}
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Connector line */}
-          {index < steps.length - 1 && (
-            <div className={cn(
-              'bg-gray-300',
-              orientation === 'horizontal'
-                ? 'flex-1 h-0.5 mx-4'
-                : 'w-0.5 h-8 ml-4 my-2'
-            )} />
-          )}
+            {/* Connector line for vertical layout - using same best practice approach */}
+            {index < steps.length - 1 && (
+              <div 
+                className="absolute left-4 top-1/2 w-0.5 bg-gray-300/60 dark:bg-gray-600/60 rounded-full"
+                style={{ 
+                  height: '100%',
+                  transform: 'translateY(0)',
+                  zIndex: 1
+                }}
+              />
+            )}
+          </div>
         </React.Fragment>
       ))}
     </div>

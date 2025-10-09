@@ -433,6 +433,21 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Challenge Completions - for tracking challenge completion analytics
+    match /challengeCompletions/{completionId} {
+      // Allow users to read their own completion records
+      allow read: if isAuthenticated() && (
+        (resource != null && resource.data.userId == request.auth.uid) ||
+        isAdmin()
+      );
+      // Allow users to create their own completion records
+      allow create: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid || isAdmin()
+      );
+      // Only admins can update/delete completion records (they should be immutable)
+      allow update, delete: if isAdmin();
+    }
+
     // Notifications
     match /notifications/{notificationId} {
       // Only the owner (userId or recipientId) or an admin can read

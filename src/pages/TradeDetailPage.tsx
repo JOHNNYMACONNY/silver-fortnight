@@ -26,20 +26,15 @@ import { getTradeStatusClasses, formatStatus } from '../utils/statusUtils';
 // Make sure we're using the correct getTradeActions function
 import { getTradeActions } from '../utils/tradeActionUtils';
 import { ReviewForm } from '../components/features/reviews/ReviewForm';
-import { MultipleImageUploader } from '../components/features/uploads/MultipleImageUploader';
 import PerformanceMonitor from '../components/ui/PerformanceMonitor';
 
 // Import home page design components
-import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '../components/ui/Card';
+import { Card, CardHeader, CardContent, CardTitle } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
-import AnimatedHeading from '../components/ui/AnimatedHeading';
-import GradientMeshBackground from '../components/ui/GradientMeshBackground';
-import Box from '../components/layout/primitives/Box';
-import Stack from '../components/layout/primitives/Stack';
+import { StepProgress } from '../components/ui/Progress';
 import { semanticClasses } from '../utils/semanticColors';
 
 import TradeProposalDashboard from '../components/features/trades/TradeProposalDashboard';
-import TradeStatusTimeline from '../components/features/trades/TradeStatusTimeline';
 import TradeCompletionForm from '../components/features/trades/TradeCompletionForm';
 import TradeConfirmationForm from '../components/features/trades/TradeConfirmationForm';
 import ChangeRequestHistory from '../components/features/trades/ChangeRequestHistory';
@@ -48,7 +43,8 @@ import { ConfirmationCountdown } from '../components/features/trades/Confirmatio
 import TradeProposalForm from '../components/features/trades/TradeProposalForm';
 import { useToast } from '../contexts/ToastContext';
 import { Modal } from '../components/ui/Modal';
-import { ArrowLeft, Edit, Trash2, MapPin, Clock, DollarSign, Users } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 
 // Additional interface for local state
@@ -100,6 +96,11 @@ export const TradeDetailPage: React.FC = () => {
   const locationState = location.state as { isEditing?: boolean } | null;
 
   const [confirmationInitialMode, setConfirmationInitialMode] = useState<'confirm' | 'requestChanges'>('confirm');
+  
+  // New state for collapsible sections
+  const [showStatusTimeline, setShowStatusTimeline] = useState(false);
+  const [showEvidence, setShowEvidence] = useState(false);
+  const [showChangeHistory, setShowChangeHistory] = useState(false);
 
   // Fetch trade details
   useEffect(() => {
@@ -432,6 +433,40 @@ export const TradeDetailPage: React.FC = () => {
     }
   };
 
+  // Helper function to convert trade status to step progress format
+  const getTradeSteps = (currentStatus: string) => {
+    const statusOrder = [
+      { id: 'open', label: 'Open', description: 'Accepting proposals' },
+      { id: 'in-progress', label: 'In Progress', description: 'Trade is active' },
+      { id: 'pending_evidence', label: 'Evidence Pending', description: 'Awaiting proof' },
+      { id: 'pending_confirmation', label: 'Confirmation', description: 'Final approval' },
+      { id: 'completed', label: 'Completed', description: 'Trade finished' }
+    ];
+
+    // Handle special statuses
+    if (currentStatus === 'cancelled') {
+      return [
+        { label: 'Cancelled', description: 'Trade was cancelled', current: true, error: true }
+      ];
+    }
+    
+    if (currentStatus === 'disputed') {
+      return [
+        { label: 'Disputed', description: 'Requires resolution', current: true, error: true }
+      ];
+    }
+
+    const currentIndex = statusOrder.findIndex(s => s.id === currentStatus);
+    
+    return statusOrder.map((step, index) => ({
+      label: step.label,
+      description: step.description,
+      completed: index < currentIndex,
+      current: index === currentIndex,
+      error: false
+    }));
+  };
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -477,226 +512,113 @@ export const TradeDetailPage: React.FC = () => {
       {/* Performance monitoring (invisible) */}
       <PerformanceMonitor pageName={`TradeDetailPage-${tradeId}`} />
 
-      <Box className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Stack gap="md">
-          {/* Hero Section with GradientMeshBackground */}
-          <Box className="relative rounded-2xl overflow-hidden mb-8">
-            <GradientMeshBackground variant="primary" intensity="medium" className="p-8 md:p-12">
-              <div className="flex items-center justify-between mb-4">
-                <Link to="/trades" className="font-medium text-primary hover:text-primary/90 flex items-center">
-                  ← Back to Trades
+      <main className="min-h-screen">
+        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header Section */}
+          <div className="mb-8">
+            <Link to="/trades" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 mb-4">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Trades
                 </Link>
-              </div>
-              <AnimatedHeading as="h1" animation="kinetic" className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                {trade.title}
-              </AnimatedHeading>
-              <div className="flex items-center text-muted-foreground text-sm">
+            
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-foreground mb-2">{trade.title}</h1>
+                <div className="flex items-center text-muted-foreground text-sm mb-4">
                 <span>Posted by {tradeCreator?.displayName || 'Unknown User'}</span>
                 <span className="mx-2">•</span>
                 <span>{formatDate(trade.createdAt.toDate())}</span>
               </div>
-            </GradientMeshBackground>
-          </Box>
-
-          {/* Trade Status and Category Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <Card 
-              variant="premium" 
-              tilt={true}
-              depth="lg"
-              glow="subtle"
-              glowColor="orange"
-              interactive={true}
-              className="h-[120px] flex flex-col"
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-semibold">Category</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 pb-3">
+                
+                {/* Inline Status and Category */}
+                <div className="flex items-center gap-3">
                 <Badge variant="default" topic="trades" className="text-sm">
                   {trade.category}
                 </Badge>
-              </CardContent>
-            </Card>
-
-            <Card 
-              variant="premium" 
-              tilt={true}
-              depth="lg"
-              glow="subtle"
-              glowColor="blue"
-              interactive={true}
-              className="h-[120px] flex flex-col"
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-semibold">Status</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 pb-3">
                 <span className={`${getTradeStatusClasses(trade.status)} text-sm font-medium px-3 py-1 rounded-full`}>
                   {formatStatus(trade.status)}
                 </span>
-              </CardContent>
-            </Card>
+                </div>
           </div>
 
-          {/* Trade Creator Profile Card */}
-          <Card 
-            variant="premium" 
-            tilt={true}
-            depth="lg"
-            glow="subtle"
-            glowColor="purple"
-            interactive={true}
-            className="mb-6"
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl font-semibold">Posted By</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 pb-3">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  {loadingCreator ? (
-                    <div className="w-16 h-16 rounded-full bg-muted animate-pulse"></div>
-                  ) : (
+              {/* Creator Profile - Compact */}
+              <div className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
                     <ProfileImageWithUser
                       userId={trade.creatorId || ''}
                       profileUrl={tradeCreator?.profilePicture || tradeCreator?.photoURL}
-                      size="medium"
-                      className="w-16 h-16 rounded-full"
-                    />
-                  )}
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-medium text-foreground">{tradeCreator?.displayName || 'Unknown User'}</h3>
-                  {tradeCreator && (
-                    <p className="text-muted-foreground text-sm">
-                      {tradeCreator.location || 'No location provided'}
-                    </p>
-                  )}
-                  <div className="mt-2">
+                  size="small"
+                  className="w-10 h-10 rounded-full"
+                />
+                <div>
+                  <p className="text-sm font-medium">{tradeCreator?.displayName || 'Unknown User'}</p>
                     <Link
                       to={`/profile/${trade.creatorId}`}
-                      className={`${semanticClasses('community').link} text-sm font-medium`}
+                    className="text-xs text-primary hover:text-primary/90"
                     >
                       View Profile →
                     </Link>
                   </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Left Column - Main Content */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Trade Description */}
+              <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg font-semibold">Description</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <p className="text-foreground leading-relaxed">{trade.description}</p>
+                </CardContent>
+              </Card>
+
+              {/* Skills Section */}
+              <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg font-semibold">Skills & Services</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="text-sm font-medium text-foreground mb-3">Offering</h4>
+                      {trade.offeredSkills && trade.offeredSkills.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {trade.offeredSkills.map((skill: any, index: number) => (
+                            <TradeSkillDisplay
+                              key={index}
+                              skill={skill}
+                              className="bg-success/10 text-success-foreground text-sm"
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No specific offerings listed</p>
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-foreground mb-3">Seeking</h4>
+                      {trade.requestedSkills && trade.requestedSkills.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {trade.requestedSkills.map((skill: any, index: number) => (
+                            <TradeSkillDisplay
+                              key={index}
+                              skill={skill}
+                              className="bg-info/10 text-info-foreground text-sm"
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Open to various proposals</p>
+                      )}
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Trade Status Timeline Card */}
-          <Card 
-            variant="premium" 
-            tilt={true}
-            depth="lg"
-            glow="subtle"
-            glowColor="blue"
-            interactive={true}
-            reducedHover={true}
-            className="mb-6"
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl font-semibold">Trade Status</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 pb-3">
-              <TradeStatusTimeline status={trade.status} />
-
-              {/* Status explanation based on current status */}
-              {trade.status === 'open' && (
-                <div className="mt-4 bg-info/10 border border-info/20 text-info-foreground px-4 py-3 rounded-lg">
-                  <p className="font-medium">Open for Proposals</p>
-                  <p>This trade is open and accepting proposals from interested users.</p>
-                </div>
-              )}
-
-              {trade.status === 'in-progress' && (
-                <div className="mt-4 bg-warning/10 border border-warning/20 text-warning-foreground px-4 py-3 rounded-lg">
-                  <p className="font-medium">In Progress</p>
-                  <p>This trade is currently in progress. When work is completed, either participant can request completion.</p>
-                </div>
-              )}
-
-              {trade.status === 'pending_evidence' && (
-                <div className="mt-4 bg-warning/10 border border-warning/20 text-warning-foreground px-4 py-3 rounded-lg">
-                  <p className="font-medium">Waiting for Evidence</p>
-                  <p>One user has submitted evidence. Waiting for the other user to submit their evidence.</p>
-                </div>
-              )}
-
-              {trade.status === 'pending_confirmation' && (
-                <div className="mt-4 bg-primary/10 border border-primary/20 text-primary-foreground px-4 py-3 rounded-lg">
-                  <p className="font-medium">Pending Confirmation</p>
-                  <p>Evidence has been submitted and the trade is awaiting final confirmation.</p>
-
-                  {/* Direct confirmation button */}
-                  {currentUser && trade.completionRequestedBy !== currentUser.uid && (
-                    <div className="mt-4">
-                      <button
-                        onClick={handleConfirmCompletion}
-                        className="w-full bg-success text-success-foreground px-4 py-2 rounded-md hover:bg-success/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors duration-200"
-                      >
-                        Confirm Trade Completion
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Auto-completion countdown for pending confirmation trades */}
-              {trade.status === 'pending_confirmation' && trade.completionRequestedAt && (
-                <ConfirmationCountdown
-                  completionRequestedAt={trade.completionRequestedAt}
-                  className="mt-4"
-                />
-              )}
-
-              {trade.status === 'completed' && (
-                <div className="mt-4 bg-success/10 border border-success/20 text-success-foreground px-4 py-3 rounded-lg">
-                  <p className="font-medium">Completed</p>
-                  <p>This trade has been successfully completed by both parties.</p>
-                  {trade.autoCompleted && (
-                    <div className="mt-2 p-2 bg-info/10 border border-info/20 rounded text-info-foreground">
-                      <p className="text-sm font-medium">Auto-Completed</p>
-                      <p className="text-xs">{trade.autoCompletionReason}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {trade.status === 'cancelled' && (
-                <div className="mt-4 bg-muted border border-border text-muted-foreground px-4 py-3 rounded-lg">
-                  <p className="font-medium">Cancelled</p>
-                  <p>This trade has been cancelled and is no longer active.</p>
-                </div>
-              )}
-
-              {trade.status === 'disputed' && (
-                <div className="mt-4 bg-destructive/10 border border-destructive/20 text-destructive-foreground px-4 py-3 rounded-lg">
-                  <p className="font-medium">Disputed</p>
-                  <p>This trade is currently disputed and requires resolution.</p>
-                </div>
-              )}
-
-              {/* Completion Form - Only show when explicitly triggered */}
-              {showCompletionForm && currentUser && (trade.status === 'in-progress' || trade.status === 'pending_evidence') &&
-                (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid) && (
-                <div className="mt-6 border-t border-border pt-6">
-                  <h3 className="text-lg font-medium text-foreground mb-4">Request Trade Completion</h3>
-                  <TradeCompletionForm
-                    tradeId={trade.id!}
-                    tradeName={trade.title}
-                    onSuccess={() => {
-                      setShowCompletionForm(false);
-                      fetchTrade();
-                    }}
-                    onCancel={() => setShowCompletionForm(false)}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
           {/* Confirmation Form Card */}
           {(() => {
@@ -706,20 +628,11 @@ export const TradeDetailPage: React.FC = () => {
                 trade.completionRequestedBy !== currentUser.uid &&
                 (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid)) {
               return (
-                <Card 
-                  variant="premium" 
-                  tilt={true}
-                  depth="lg"
-                  glow="subtle"
-                  glowColor="auto"
-                  interactive={true}
-                  reducedHover={true}
-                  className="mb-6"
-                >
+                <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5 mb-6">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-xl font-semibold">Confirm Trade Completion</CardTitle>
                   </CardHeader>
-                  <CardContent className="flex-1 pb-3">
+                  <CardContent className="p-6">
                     <TradeConfirmationForm
                       trade={trade}
                       initialMode={confirmationInitialMode} // Pass the initial mode
@@ -742,20 +655,11 @@ export const TradeDetailPage: React.FC = () => {
             return showConfirmationForm && currentUser && trade.status === 'pending_confirmation' &&
               trade.completionRequestedBy !== currentUser.uid &&
               (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid) && (
-              <Card 
-                variant="premium" 
-                tilt={true}
-                depth="lg"
-                glow="subtle"
-                glowColor="auto"
-                interactive={true}
-                reducedHover={true}
-                className="mb-6"
-              >
+              <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5 mb-6">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xl font-semibold">Confirm Trade Completion</CardTitle>
                 </CardHeader>
-                <CardContent className="flex-1 pb-3">
+                <CardContent className="p-6">
                   <TradeConfirmationForm
                     trade={trade}
                     initialMode={confirmationInitialMode} // Pass the initial mode
@@ -774,759 +678,229 @@ export const TradeDetailPage: React.FC = () => {
             );
           })()}
 
-          {/* Change Request History Card */}
-          {Array.isArray(trade.changeRequests) && trade.changeRequests.length > 0 && (
-            <Card 
-              variant="premium" 
-              tilt={true}
-              depth="lg"
-              glow="subtle"
-              glowColor="blue"
-              interactive={true}
-              reducedHover={true}
-              className="mb-6"
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl font-semibold">Change Request History</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 pb-3">
-                <ChangeRequestHistory changeRequests={trade.changeRequests} />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Completion Evidence Card - Visible for completed, pending_confirmation, and pending_evidence trades */}
-          {(trade.status === 'completed' || trade.status === 'pending_confirmation' || trade.status === 'pending_evidence') && (
-            <Card 
-              variant="premium" 
-              tilt={true}
-              depth="lg"
-              glow="subtle"
-              glowColor="purple"
-              interactive={true}
-              reducedHover={true}
-              className="mb-6"
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl font-semibold">Trade Evidence</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 pb-3">
-
-            {/* Status explanation */}
-            {trade.status === 'pending_evidence' && (
-              <div className="mb-6 bg-warning/10 border border-warning/20 text-warning-foreground px-4 py-3 rounded-lg">
-                <p className="font-medium">Waiting for Evidence</p>
-                <p>One user has submitted evidence. Waiting for the other user to submit their evidence.</p>
-              </div>
-            )}
-
-            {trade.status === 'pending_confirmation' && (
-              <div className="mb-6 bg-info/10 border border-info/20 text-info-foreground px-4 py-3 rounded-lg">
-                <p className="font-medium">Pending Confirmation</p>
-                <p>Both users have submitted evidence. The trade can now be confirmed as completed.</p>
-              </div>
-            )}
-
-            {trade.status === 'completed' && (
-              <div className="mb-6 bg-success/10 border border-success/20 text-success-foreground px-4 py-3 rounded-lg">
-                <p className="font-medium">Trade Completed</p>
-                <p>This trade has been successfully completed by both parties.</p>
-              </div>
-            )}
-
-            {/* Creator's Evidence Section */}
-            <div className="mb-8">
-              <h3 className="text-lg font-medium text-foreground mb-2">
-                Creator's Evidence
-                {trade.creatorName && ` (${trade.creatorName})`}
-              </h3>
-
-              {trade.completionEvidence && trade.completionEvidence.length > 0 ? (
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  {/* Display creator's completion notes if available */}
-                  {trade.completionNotes && (
-                    <div className="mb-4">
-                      <h4 className="text-md font-medium text-foreground mb-2">Notes</h4>
-                      <div className="bg-background p-3 rounded-lg border border-border">
-                        <p className="text-muted-foreground whitespace-pre-line">{trade.completionNotes}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Display creator's evidence */}
-                  <div>
-                    <h4 className="text-md font-medium text-foreground mb-2">Evidence</h4>
-                    <EvidenceGallery
-                      evidence={trade.completionEvidence}
-                      title=""
-                      emptyMessage="No evidence was provided."
-                    />
-                  </div>
-
-                  {/* Display timestamp */}
-                  {trade.completionRequestedAt && (
-                    <div className="mt-2 text-sm text-muted-foreground">
-                      <p>
-                        <strong>Submitted at:</strong> {new Date(trade.completionRequestedAt.toDate()).toLocaleString()}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <p className="text-muted-foreground italic">The creator has not submitted evidence yet.</p>
-                </div>
-              )}
             </div>
 
-            {/* Participant's Evidence Section */}
-            {trade.participantId && (
-              <div className="mb-6">
-                <h3 className="text-lg font-medium text-foreground mb-2">
-                  Participant's Evidence
-                  {trade.participantId && ` (${trade.participantId})`}
-                </h3>
-
-                {trade.completionEvidence && trade.completionEvidence.length > 0 ? (
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    {/* Display participant's completion notes if available */}
-                    {trade.completionNotes && (
-                      <div className="mb-4">
-                        <h4 className="text-md font-medium text-foreground mb-2">Notes</h4>
-                        <div className="bg-background p-3 rounded-lg border border-border">
-                          <p className="text-muted-foreground whitespace-pre-line">{trade.completionNotes}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Display participant's evidence */}
-                    <div>
-                      <h4 className="text-md font-medium text-foreground mb-2">Evidence</h4>
-                      <EvidenceGallery
-                        evidence={trade.completionEvidence}
-                        title=""
-                        emptyMessage="No evidence was provided."
-                      />
-                    </div>
-
-                    {/* Display timestamp */}
-                    {trade.completionRequestedAt && (
-                      <div className="mt-2 text-sm text-muted-foreground">
-                        <p>
-                          <strong>Submitted at:</strong> {new Date(trade.completionRequestedAt.toDate()).toLocaleString()}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    <p className="text-muted-foreground italic">The participant has not submitted evidence yet.</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Legacy Evidence Display (for backward compatibility) */}
-            {Array.isArray(trade.completionEvidence) && trade.completionEvidence.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-lg font-medium text-foreground mb-2">Legacy Evidence</h3>
-
-                {/* Display completion notes if available */}
-                {trade.completionNotes && (
-                  <div className="mb-4">
-                    <h4 className="text-md font-medium text-foreground mb-2">Notes</h4>
-                    <div className="bg-background p-3 rounded-lg border border-border">
-                      <p className="text-muted-foreground whitespace-pre-line">{trade.completionNotes}</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <EvidenceGallery
-                    evidence={trade.completionEvidence}
-                    title=""
-                    emptyMessage="No evidence was provided."
-                  />
-                </div>
-
-                {/* Display completion timestamps */}
-                <div className="mt-2 text-sm text-muted-foreground">
-                  <p>
-                    <strong>Requested by:</strong> {trade.completionRequestedBy === trade.creatorId ? 'Trade Creator' : 'Trade Participant'}
-                  </p>
-                  {trade.completionRequestedAt && (
-                    <p>
-                      <strong>Requested at:</strong> {new Date(trade.completionRequestedAt.toDate()).toLocaleString()}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-                {/* Display completion confirmation timestamp */}
-                {trade.status === 'completed' && trade.completionConfirmedAt && (
-                  <div className="mt-4 text-sm text-muted-foreground">
-                    <p>
-                      <strong>Confirmed at:</strong> {new Date(trade.completionConfirmedAt.toDate()).toLocaleString()}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Trade Details Card */}
-          <Card 
-            variant="premium" 
-            tilt={true}
-            depth="lg"
-            glow="subtle"
-            glowColor="orange"
-            interactive={true}
-            reducedHover={true}
-            className="mb-6"
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl font-semibold">Description</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 pb-3">
-              <p className="text-muted-foreground mb-6 whitespace-pre-line">{trade.description}</p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Offering</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {Array.isArray(trade.offeredSkills) && trade.offeredSkills.length > 0 ? (
-                      trade.offeredSkills.map((skill: any, index: number) => (
-                        <TradeSkillDisplay
-                          key={index}
-                          skill={skill} // Pass TradeSkill object directly
-                          className="bg-success/10 text-success-foreground"
-                        />
-                      ))
-                    ) : (
-                      <span className="text-muted-foreground">No skills offered</span>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Seeking</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {Array.isArray(trade.requestedSkills) && trade.requestedSkills.length > 0 ? (
-                      trade.requestedSkills.map((skill: any, index: number) => (
-                        <TradeSkillDisplay
-                          key={index}
-                          skill={skill} // Pass TradeSkill object directly
-                          className="bg-info/10 text-info-foreground"
-                        />
-                      ))
-                    ) : (
-                      <span className="text-muted-foreground">No skills requested</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Contact/Actions Card */}
-          <Card 
-            variant="premium" 
-            tilt={true}
-            depth="lg"
-            glow="subtle"
-            glowColor="purple"
-            interactive={true}
-            reducedHover={true}
-            className="mb-6"
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl font-semibold">
-                {isOwner ? 'Manage Trade' : 'Get in Touch'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 pb-3">
-              {isOwner ? (
-                <div className="bg-muted/50 p-4 rounded-lg">
-              {isEditing ? (
-                <form onSubmit={handleSaveTrade}>
-                  <h3 className="text-xl font-semibold text-foreground mb-4">Edit Trade</h3>
-
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-1">
-                        Images
-                      </label>
-                      <MultipleImageUploader
-                        onImagesChange={setImages}
-                        folder={`tradeya/trades/${trade.id}`}
-                        initialImageUrls={images}
-                        maxImages={5}
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="editTitle" className="block text-sm font-medium text-foreground mb-1">
-                        Title
-                      </label>
-                      <input
-                        id="editTitle"
-                        type="text"
-                        value={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                        className="w-full rounded-md border border-input px-3 py-2 bg-input placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="editDescription" className="block text-sm font-medium text-foreground mb-1">
-                        Description
-                      </label>
-                      <textarea
-                        id="editDescription"
-                        value={editDescription}
-                        onChange={(e) => setEditDescription(e.target.value)}
-                        rows={4}
-                        className="w-full rounded-md border border-input px-3 py-2 bg-input placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                        required
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label htmlFor="editOffering" className="block text-sm font-medium text-foreground mb-1">
-                          What You're Offering
-                        </label>
-                        <input
-                          id="editOffering"
-                          type="text"
-                          value={editOffering}
-                          onChange={(e) => setEditOffering(e.target.value)}
-                          className="w-full rounded-md border border-input px-3 py-2 bg-input placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                          placeholder="e.g. Web development, React, Next.js"
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <label htmlFor="editSeeking" className="block text-sm font-medium text-foreground mb-1">
-                          What You're Seeking
-                        </label>
-                        <input
-                          id="editSeeking"
-                          type="text"
-                          value={editSeeking}
-                          onChange={(e) => setEditSeeking(e.target.value)}
-                          className="w-full rounded-md border border-input px-3 py-2 bg-input placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                          placeholder="e.g. Graphic design, Logo design"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label htmlFor="editCategory" className="block text-sm font-medium text-foreground mb-1">
-                        Category
-                      </label>
-                      <select
-                        id="editCategory"
-                        value={editCategory}
-                        onChange={(e) => setEditCategory(e.target.value)}
-                        className="w-full rounded-md border border-input px-3 py-2 bg-input focus:outline-none focus:ring-2 focus:ring-ring"
-                        required
-                      >
-                        <option value="">Select a category</option>
-                        {categories.map((cat) => (
-                          <option key={cat} value={cat}>{cat}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label htmlFor="editStatus" className="block text-sm font-medium text-foreground mb-1">
-                        Status
-                      </label>
-                      <select
-                        id="editStatus"
-                        value={editStatus}
-                        onChange={(e) => setEditStatus(e.target.value)}
-                        className="w-full rounded-md border border-input px-3 py-2 bg-input focus:outline-none focus:ring-2 focus:ring-ring"
-                        required
-                      >
-                        <option value="open">Open</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="pending_confirmation">Pending Confirmation</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                        <option value="disputed">Disputed</option>
-                      </select>
-                    </div>
-
-                  <div className="flex space-x-4">
-                    <Button type="submit" variant="primary" disabled={isSaving}>
-                      {isSaving ? 'Saving...' : 'Save Changes'}
-                    </Button>
-                    <Button type="button" variant="secondary" onClick={() => setIsEditing(false)} disabled={isSaving}>
-                      Cancel
-                    </Button>
-                  </div>
-                  </div>
-                </form>
-              ) : (
-                <>
-                  <p className="text-muted-foreground">This is your trade listing.</p>
-                  <div className="mt-4 flex space-x-4">
-                    <Button variant="primary" onClick={() => setIsEditing(true)}>
-                      Edit Trade
-                    </Button>
-                    <Button variant="destructive" onClick={handleDeleteTrade} disabled={isDeleting}>
-                      {isDeleting ? 'Deleting...' : 'Delete Trade'}
-                    </Button>
-
-                    {/* Mark Complete button for trade creator */}
-                    {trade.status === 'in-progress' && (
-                      <Button variant="success" onClick={handleRequestCompletion}>
-                        Mark Complete
-                      </Button>
-                    )}
-                  </div>
-                </>
-              )}
-                </div>
-              ) : (
-            <div>
-
-              {/* Dynamic action buttons based on trade status and user role */}
-              {!showContactForm && !showCompletionForm && !showConfirmationForm ? (
-                  <div className="flex flex-col space-y-4">
-                    {/* Primary action button */}
-                    {currentUser && trade && (
-                      <>
-                        {(() => {
-                          const actions = getTradeActions(trade, currentUser.uid);
-
-                        // Handle primary action click
-                        const handlePrimaryAction = () => {
-
-                          switch (actions.primaryAction) {
-                            case 'Submit Evidence':
-                            case 'Mark Complete':
-                              handleRequestCompletion();
-                              break;
-                            case 'Confirm Completion':
-                              handleConfirmCompletion();
-                              break;
-                            case 'Submit Proposal':
-                              setShowProposalForm(true);
-                              break;
-                            case 'View Proposals':
-                              // Scroll to proposals section
-                              document.getElementById('proposals-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                              break;
-                            case 'Leave Review':
-                              setShowReviewForm(true);
-                              break;
-                            case 'Waiting for Other User':
-                              // Scroll to evidence section
-                              document.getElementById('evidence-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                              break;
-                            default:
-                              // Default action is to contact
-                              setShowContactForm(true);
-                          }
-                        };
-
-                        // Handle secondary action click
-                        const handleSecondaryAction = () => {
-                          if (actions.secondaryAction === 'Cancel Trade') {
-                            if (window.confirm('Are you sure you want to cancel this trade?')) {
-                              updateTrade(trade.id!, { status: 'cancelled' })
-                                .then(() => fetchTrade())
-                                .catch(err => console.error('Error cancelling trade:', err));
-                            }
-                          } else if (actions.secondaryAction === 'Request Changes') {
-                            // Show confirmation form with change request option
-                            handleRequestChangesAction();
-                          }
-                        };
-
-                        // Add special handling for pending confirmation
-                        if (trade.status === 'pending_confirmation' && trade.completionRequestedBy !== currentUser.uid) {
-                          return (
-                            <>
-                              {/* Prominent confirmation button */}
-                              <div className="w-full mb-4 p-4 bg-success/10 border border-success/20 rounded-lg">
-                                <h3 className="text-lg font-medium text-success-foreground mb-2">Trade Ready for Confirmation</h3>
-                                <p className="text-sm text-success-foreground mb-4">
-                                  The other user has requested completion. You can now confirm the trade is complete.
-                                </p>
-                                <Button className="w-full" variant="success" onClick={handleConfirmCompletion}>
-                                  Confirm Trade Completion
-                                </Button>
-                              </div>
-
-                              {/* Regular action buttons */}
-                              <Button className="w-full" variant="primary" onClick={handlePrimaryAction} disabled={actions.primaryDisabled}>
-                                {actions.primaryAction}
-                              </Button>
-
-                              {actions.secondaryAction && (
-                                <Button className="w-full" variant="secondary" onClick={handleSecondaryAction} disabled={actions.secondaryDisabled}>
-                                  {actions.secondaryAction}
-                                </Button>
-                              )}
-                            </>
-                          );
-                        }
-
-                        // Default return for other statuses
-                        return (
-                          <>
-                            <Button className="w-full" variant="primary" onClick={handlePrimaryAction} disabled={actions.primaryDisabled}>
-                              {actions.primaryAction}
-                            </Button>
-
-                            {actions.secondaryAction && (
-                              <Button className="w-full" variant="secondary" onClick={handleSecondaryAction} disabled={actions.secondaryDisabled}>
-                                {actions.secondaryAction}
-                              </Button>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </>
-                  )}
-
-                  {/* Contact button always available */}
-                  <button
-                    onClick={() => setShowContactForm(true)}
-                    className="w-full bg-secondary text-secondary-foreground px-4 py-2 rounded-md hover:bg-secondary/80 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors duration-200"
+            {/* Right Sidebar */}
+            <div className="space-y-4">
+              {/* Trade Status - Collapsible */}
+              <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
+                <CardHeader className="pb-2">
+                  <div
+                    className="cursor-pointer"
+                    onClick={() => setShowStatusTimeline(!showStatusTimeline)}
                   >
-                    Contact {tradeCreator?.displayName || 'User'}
-                  </button>
-                </div>
-              ) : showCompletionForm ? (
-                <TradeCompletionForm
-                  tradeId={trade.id!}
-                  tradeName={trade.title}
-                  onSuccess={() => {
-                    setShowCompletionForm(false);
-                    fetchTrade();
-                  }}
-                  onCancel={() => setShowCompletionForm(false)}
-                />
-              ) : showConfirmationForm ? (
-                <TradeConfirmationForm
-                  trade={trade}
-                  initialMode={confirmationInitialMode} // Pass the initial mode
-                  onSuccess={() => {
-                    setShowConfirmationForm(false);
-                    fetchTrade();
-                  }}
-                  onCancel={() => setShowConfirmationForm(false)}
-                  onRequestChanges={() => {
-                    setShowConfirmationForm(false);
-                    fetchTrade();
-                  }}
-                />
-              ) : (
-                <div className="bg-muted/50 p-4 rounded-lg transition-colors duration-200">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold text-foreground">Send a Message</h3>
-                    <button
-                      onClick={() => setShowContactForm(false)}
-                      className="text-muted-foreground hover:text-foreground transition-colors duration-200"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
+                    <CardTitle className="text-sm font-semibold flex items-center justify-between">
+                      Trade Status
+                      {showStatusTimeline ? (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </CardTitle>
                   </div>
-
-                  {messageSent ? (
-                    <div className="bg-success/10 border border-success/20 text-success-foreground px-4 py-3 rounded-lg mb-4 transition-colors duration-200">
-                      Message sent successfully! {tradeCreator?.displayName || 'The user'} will be notified.
-                    </div>
-                  ) : (
-                    <form onSubmit={handleSendMessage}>
-                      <div className="mb-4">
-                        <label htmlFor="message" className="block text-sm font-medium text-foreground mb-1">
-                          Your Message
-                        </label>
-                        <textarea
-                          id="message"
-                          value={message}
-                          onChange={(e) => setMessage(e.target.value)}
-                          rows={4}
-                          className="w-full rounded-md border border-input px-3 py-2 bg-input placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-colors duration-200"
-                          placeholder={`Hi ${tradeCreator?.displayName || 'there'}, I'm interested in your trade...`}
-                          required
-                        />
-                      </div>
-
-                  <div className="flex justify-end">
-                    <Button type="submit" variant="primary" disabled={sendingMessage}>
-                      {sendingMessage ? 'Sending...' : 'Send Message'}
-                    </Button>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className={`${getTradeStatusClasses(trade.status)} text-sm font-medium px-3 py-1 rounded-full`}>
+                      {formatStatus(trade.status)}
+                    </span>
                   </div>
-                    </form>
+                  {showStatusTimeline && (
+                    <StepProgress
+                      steps={getTradeSteps(trade.status)}
+                      orientation="vertical"
+                      topic="trades"
+                    />
                   )}
-                </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Actions */}
+              <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold">
+                    {isOwner ? 'Manage Trade' : 'Get in Touch'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    {isOwner ? (
+                      <>
+                        <Button
+                          variant="glassmorphic" 
+                          topic="trades"
+                          onClick={() => setIsEditing(true)}
+                          className="w-full hover:shadow-orange-500/25 hover:shadow-lg transition-all duration-300 min-h-[44px]"
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Trade
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={handleDeleteTrade}
+                          disabled={isDeleting}
+                          className="w-full min-h-[44px]"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          {isDeleting ? 'Deleting...' : 'Delete Trade'}
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          variant="glassmorphic"
+                          topic="trades"
+                          onClick={() => setShowProposalForm(true)}
+                          className="w-full hover:shadow-orange-500/25 hover:shadow-lg transition-all duration-300 min-h-[44px]"
+                        >
+                          Submit Proposal
+                        </Button>
+                        <Button
+                          variant="glassmorphic"
+                          topic="trades"
+                          onClick={() => setShowProposalForm(true)}
+                          className="w-full min-h-[44px]"
+                        >
+                          Contact {tradeCreator?.displayName || 'User'}
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Leave Review - Only for completed trades */}
+              {trade.status === 'completed' && currentUser && !isOwner && (
+                <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">Leave a Review</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Share your experience with this trade
+                    </p>
+                    <Button 
+                      variant="glassmorphic" 
+                      topic="trades"
+                      size="sm"
+                      onClick={() => setShowReviewForm(true)}
+                      className="w-full min-h-[44px]"
+                    >
+                      Write Review
+                    </Button>
+                  </CardContent>
+                </Card>
               )}
 
-              {!currentUser && (
-                <div className="mt-4 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    You need to be logged in to contact the trade owner.{' '}
-                    <Link to="/login" className="text-primary hover:text-primary/90 font-medium transition-colors duration-200">
-                      Log In
-                    </Link>
-                    {' '}or{' '}
-                    <Link to="/signup" className="text-primary hover:text-primary/90 font-medium transition-colors duration-200">
-                      Sign Up
-                    </Link>
-                  </p>
-                </div>
+              {/* Evidence - Collapsible */}
+              {(trade.status === 'pending_evidence' || 
+                trade.status === 'pending_confirmation' || 
+                trade.status === 'completed') && (
+                <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
+                  <CardHeader className="pb-2">
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => setShowEvidence(!showEvidence)}
+                    >
+                      <CardTitle className="text-sm font-semibold flex items-center justify-between">
+                        Trade Evidence
+                        {showEvidence ? (
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </CardTitle>
+                    </div>
+                  </CardHeader>
+                  {showEvidence && (
+                    <CardContent className="p-4 max-h-96 overflow-y-auto">
+                      {/* Status explanation */}
+                      {trade.status === 'pending_evidence' && (
+                        <div className="mb-4 bg-warning/10 border border-warning/20 text-warning-foreground px-3 py-2 rounded-lg text-xs">
+                          <p className="font-medium">Waiting for Evidence</p>
+                        </div>
+                      )}
+                      
+                      {trade.status === 'completed' && (
+                        <div className="mb-4 bg-success/10 border border-success/20 text-success-foreground px-3 py-2 rounded-lg text-xs">
+                          <p className="font-medium">Trade Completed</p>
+                        </div>
+                      )}
+
+                      {/* Compact evidence display */}
+                      {trade.completionEvidence && trade.completionEvidence.length > 0 ? (
+                        <div className="space-y-3">
+                          <div className="text-xs">
+                            <p className="font-medium text-foreground mb-1">Evidence Submitted</p>
+                            <EvidenceGallery
+                              evidence={trade.completionEvidence}
+                              title=""
+                              emptyMessage="No evidence provided"
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-muted-foreground italic">No evidence submitted yet</p>
+                      )}
+                    </CardContent>
+                  )}
+                </Card>
               )}
-                </div>
+
+              {/* Change History - Collapsible */}
+              {trade.changeRequests && trade.changeRequests.length > 0 && (
+                <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
+                  <CardHeader className="pb-2">
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => setShowChangeHistory(!showChangeHistory)}
+                    >
+                      <CardTitle className="text-sm font-semibold flex items-center justify-between">
+                        Change Requests ({trade.changeRequests.length})
+                        {showChangeHistory ? (
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </CardTitle>
+                    </div>
+                  </CardHeader>
+                  {showChangeHistory && (
+                    <CardContent className="p-4 max-h-64 overflow-y-auto">
+                      <ChangeRequestHistory changeRequests={trade.changeRequests} />
+                    </CardContent>
+                  )}
+                </Card>
               )}
-            </CardContent>
-          </Card>
-        </Stack>
-      </Box>
+            </div>
+          </div>
+
+
+
+
+                  </div>
+      </main>
 
       {/* Proposal section for trade creators */}
       {currentUser && trade && trade.creatorId === currentUser.uid && trade.status === 'open' && (
-        <Box className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Stack gap="md">
-            <AnimatedHeading as="h2" animation="slide" className="text-2xl md:text-3xl font-semibold text-foreground mb-6">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="space-y-6">
+            <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-6">
               Trade Proposals
-            </AnimatedHeading>
+            </h2>
 
             <TradeProposalDashboard
               tradeId={trade.id!}
               onProposalAccepted={() => {
-                // Refresh trade data to get updated status
-                if (tradeId) {
-                  getTrade(tradeId).then(({ data }) => {
-                    if (data) {
-                      setTrade(data as Trade);
-                    }
-                  });
-                }
+                // Refresh trade data when proposal is accepted
+                fetchTrade();
               }}
             />
-          </Stack>
-        </Box>
+          </div>
+        </div>
       )}
 
-      {/* Proposal form for other users */}
-      {currentUser && trade && trade.status === 'open' && trade.creatorId !== currentUser.uid && (
-        <Box className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Stack gap="md">
-            <AnimatedHeading as="h2" animation="slide" className="text-2xl md:text-3xl font-semibold text-foreground mb-6">
-              Submit a Proposal
-            </AnimatedHeading>
 
-            {!showProposalForm ? (
-              <Card 
-                variant="premium" 
-                tilt={true}
-                depth="lg"
-                glow="subtle"
-                glowColor="orange"
-                interactive={true}
-                reducedHover={true}
-                className="text-center"
-              >
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-medium text-foreground mb-2">Interested in this trade?</h3>
-                  <p className="text-muted-foreground mb-4">Submit a proposal to let the trade creator know you're interested.</p>
-                  <Button variant="primary" onClick={() => setShowProposalForm(true)}>
-                    Submit Proposal
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card 
-                variant="premium" 
-                tilt={true}
-                depth="lg"
-                glow="subtle"
-                glowColor="orange"
-                interactive={true}
-                reducedHover={true}
-              >
-                <CardContent className="p-6">
-                  <TradeProposalForm
-                    trade={trade as any}
-                    onSuccess={() => {
-                      setShowProposalForm(false);
-                      addToast('success', 'Proposal submitted successfully!');
-                    }}
-                    onCancel={() => setShowProposalForm(false)}
-                  />
-                </CardContent>
-              </Card>
-            )}
-          </Stack>
-        </Box>
-      )}
-
-      {/* Review section */}
-      {currentUser && trade && trade.id && currentUser.uid !== (trade.creatorId) && (
-        <Box className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Stack gap="md">
-            <AnimatedHeading as="h2" animation="slide" className="text-2xl md:text-3xl font-semibold text-foreground mb-6">
-              Leave a Review
-            </AnimatedHeading>
-
-            {showReviewForm ? (
-              <Card 
-                variant="premium" 
-                tilt={true}
-                depth="lg"
-                glow="subtle"
-                glowColor="purple"
-                interactive={true}
-                reducedHover={true}
-              >
-                <CardContent className="p-6">
-                  <ReviewForm
-                    tradeId={trade.id!}
-                    tradeName={trade.title}
-                    receiverId={trade.creatorId || trade.participantId || ''}
-                    receiverName={tradeCreator?.displayName || 'User'}
-                    onSuccess={() => setShowReviewForm(false)}
-                    onCancel={() => setShowReviewForm(false)}
-                  />
-                </CardContent>
-              </Card>
-            ) : (
-              <Card 
-                variant="premium" 
-                tilt={true}
-                depth="lg"
-                glow="subtle"
-                glowColor="purple"
-                interactive={true}
-                reducedHover={true}
-                className="text-center"
-              >
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-medium text-foreground mb-2">Have you completed a trade with this user?</h3>
-                  <p className="text-muted-foreground mb-4">Share your experience and help others in the community.</p>
-                  <Button variant="primary" onClick={() => setShowReviewForm(true)}>
-                    Write a Review
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </Stack>
-        </Box>
-      )}
 
       {/* Related trades section (could be added in the future) */}
       {/* <div className="mt-12">
@@ -1535,6 +909,40 @@ export const TradeDetailPage: React.FC = () => {
           {/* Related trades would go here */}
       {/* </div>
       </div> */}
+
+      {/* Proposal Form Modal */}
+      {showProposalForm && !isOwner && trade.status === 'open' && (
+        <Modal
+          isOpen={showProposalForm}
+          onClose={() => setShowProposalForm(false)}
+          title="Submit a Proposal"
+          size="xl"
+          closeOnClickOutside={false}
+        >
+          <TradeProposalForm
+            trade={trade}
+            onSuccess={() => {
+              setShowProposalForm(false);
+              addToast('success', 'Proposal submitted successfully!');
+            }}
+            onCancel={() => setShowProposalForm(false)}
+          />
+        </Modal>
+      )}
+
+      {/* Review Form Modal */}
+      {showReviewForm && (
+        <Modal isOpen={showReviewForm} onClose={() => setShowReviewForm(false)}>
+          <ReviewForm
+            tradeId={trade.id!}
+            tradeName={trade.title}
+            receiverId={trade.creatorId || trade.participantId || ''}
+            receiverName={tradeCreator?.displayName || 'Unknown User'}
+            onSuccess={() => setShowReviewForm(false)}
+            onCancel={() => setShowReviewForm(false)}
+          />
+        </Modal>
+      )}
     </>
   );
 };

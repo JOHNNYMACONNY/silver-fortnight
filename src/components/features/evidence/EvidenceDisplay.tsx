@@ -60,7 +60,17 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({
   };
 
   return (
-    <Card className={`overflow-hidden ${className}`}>
+    <Card
+      variant="premium"
+      tilt={true}
+      tiltIntensity={5}
+      depth="lg"
+      glow="subtle"
+      glowColor="orange"
+      hover={true}
+      interactive={true}
+      className={`overflow-hidden h-[380px] ${className}`}
+    >
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex items-center">

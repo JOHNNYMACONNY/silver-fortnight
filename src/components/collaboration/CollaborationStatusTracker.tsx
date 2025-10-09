@@ -1,6 +1,5 @@
 import React from 'react';
 import { CollaborationRoleData, RoleState, CollaborationStatus, CompletionRequestStatus } from '../../types/collaboration';
-import { motion } from 'framer-motion';
 import { CheckCircleIcon, ClockIcon, XCircleIcon } from 'lucide-react';
 import Box from '../layout/primitives/Box';
 
@@ -38,12 +37,7 @@ export const CollaborationStatusTracker: React.FC<CollaborationStatusTrackerProp
 
   return (
     <Box className={`@container ${className}`} style={{ containerType: 'inline-size' }}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="bg-card text-card-foreground border border-border rounded-lg shadow-sm p-6"
-      >
+      <div className="glassmorphic border-glass backdrop-blur-xl bg-white/5 p-6 rounded-xl">
         <h3 className="text-lg font-semibold mb-4 text-foreground">
           Collaboration Status
         </h3>
@@ -102,7 +96,7 @@ export const CollaborationStatusTracker: React.FC<CollaborationStatusTrackerProp
             ))}
           </div>
         </div>
-      </motion.div>
+      </div>
     </Box>
   );
 };

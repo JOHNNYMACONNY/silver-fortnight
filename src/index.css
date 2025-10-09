@@ -199,6 +199,8 @@ body {
   min-width: 320px;
   min-height: 100vh;
   transition: background-color 0.3s ease, color 0.3s ease;
+  /* Add padding-top to account for sticky navigation */
+  padding-top: var(--navbar-height);
 }
 
 /* Ensure backdrop-filter can affect underlying content on iOS/Safari by avoiding accidental stacking contexts */
@@ -348,7 +350,25 @@ body {
 .glassmorphic {
   /* Use only Tailwind utilities in @apply; set custom border color separately */
   @apply backdrop-blur-xl border rounded-xl shadow-lg;
+  background: rgba(255, 255, 255, 0.05);
   border-color: var(--color-glass-border);
+}
+
+.dark .glassmorphic {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Form elements need higher opacity to be visible against dark modal backgrounds */
+input.glassmorphic,
+textarea.glassmorphic,
+select.glassmorphic {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.dark input.glassmorphic,
+.dark textarea.glassmorphic,
+.dark select.glassmorphic {
+  background: rgba(255, 255, 255, 0.12) !important;
 }
 
 /* Phase 3.1: Container Query Support */
@@ -698,5 +718,121 @@ body {
 @media (min-width: 768px) {
   .md\:flex {
     display: flex !important;
+  }
+}
+
+/* ========================================
+   DESIGN SYSTEM FOUNDATIONS - PHASE 1
+   ======================================== */
+
+/* Typography Scale - Design System Integration */
+@layer base {
+  /* Base typography using design system scale */
+  h1, .text-display-large {
+    @apply text-5xl font-extrabold tracking-tight leading-tight;
+  }
+  
+  h2, .text-display-main {
+    @apply text-4xl font-bold tracking-tight leading-tight;
+  }
+  
+  h3, .text-section-heading {
+    @apply text-3xl font-bold tracking-tight leading-snug;
+  }
+  
+  h4, .text-subsection-heading {
+    @apply text-2xl font-semibold tracking-normal leading-snug;
+  }
+  
+  h5, .text-component-title {
+    @apply text-xl font-semibold tracking-normal leading-normal;
+  }
+  
+  h6, .text-body-large {
+    @apply text-lg font-medium tracking-normal leading-normal;
+  }
+  
+  p, .text-body {
+    @apply text-base font-normal tracking-normal leading-normal;
+  }
+  
+  .text-body-small {
+    @apply text-sm font-normal tracking-normal leading-normal;
+  }
+  
+  .text-caption {
+    @apply text-xs font-normal tracking-normal leading-normal;
+  }
+}
+
+/* Enhanced Focus System - Glassmorphic Design */
+@layer utilities {
+  /* Global focus overrides for premium glassmorphic design */
+  *:focus,
+  *:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Custom focus styles for glassmorphic components */
+  .glassmorphic:focus,
+  .glassmorphic:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Remove default focus rings from all interactive elements */
+  button:focus,
+  input:focus,
+  textarea:focus,
+  select:focus,
+  a:focus {
+    outline: none !important;
+  }
+
+  /* Design System Focus Styles */
+  .focus-glassmorphic {
+    @apply focus-visible:bg-white/10 focus-visible:backdrop-blur-sm focus-visible:shadow-lg focus-visible:shadow-orange-500/20 focus-visible:border focus-visible:border-orange-400/30;
+  }
+
+  .focus-subtle {
+    @apply focus-visible:ring-2 focus-visible:ring-orange-500/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  .focus-brand {
+    @apply focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+}
+
+/* Spacing Scale - Design System Integration */
+@layer utilities {
+  /* Semantic spacing utilities */
+  .space-section {
+    @apply space-y-8;
+  }
+  
+  .space-component {
+    @apply space-y-4;
+  }
+  
+  .space-element {
+    @apply space-y-2;
+  }
+  
+  .space-tight {
+    @apply space-y-1;
+  }
+  
+  /* Container spacing */
+  .container-section {
+    @apply py-12 px-4 sm:px-6 lg:px-8;
+  }
+  
+  .container-component {
+    @apply py-6 px-4 sm:px-6;
+  }
+  
+  .container-element {
+    @apply py-3 px-3;
   }
 }

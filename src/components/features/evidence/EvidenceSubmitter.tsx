@@ -18,29 +18,26 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '../../ui/Card';
-import { Input } from '../../ui/Input';
 import { Button } from '../../ui/Button';
+import { GlassmorphicInput } from '../../ui/GlassmorphicInput';
+import { AccessibleFormField } from '../../ui/AccessibleFormField';
 import { useToast } from '../../../contexts/ToastContext';
-import { Label } from '../../ui/Label';
-import { Textarea } from '../../ui/Textarea';
+import { CheckCircle, Eye, Loader2 } from 'lucide-react';
 
 interface EvidenceSubmitterProps {
   onSubmit: (evidence: EmbeddedEvidence) => Promise<void>;
   onCancel?: () => void;
-  // roleId is for future use when associating evidence with specific collaboration roles
-  roleId?: string;
+  variant?: 'standalone' | 'embedded';
   className?: string;
 }
 
 export const EvidenceSubmitter: React.FC<EvidenceSubmitterProps> = ({
   onSubmit,
   onCancel,
-  roleId = '', // Default to empty string to avoid unused parameter warning
+  variant = 'embedded',
   className = ''
 }) => {
   const { currentUser } = useAuth();
@@ -51,51 +48,102 @@ export const EvidenceSubmitter: React.FC<EvidenceSubmitterProps> = ({
   const [description, setDescription] = useState('');
   const [preview, setPreview] = useState<string | null>(null);
   const [serviceInfo, setServiceInfo] = useState<{ name: string; type: string } | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{
+    url?: string;
+    title?: string;
+    description?: string;
+  }>({});
 
-  // Validate URL and generate preview
+  // Real-time validation function
+  const validateField = (field: 'url' | 'title' | 'description', value: string) => {
+    const newErrors = { ...errors };
+    
+    switch (field) {
+      case 'url':
+        if (!value.trim()) {
+          newErrors.url = 'URL is required';
+        } else if (!isValidEmbedUrl(value)) {
+          newErrors.url = 'Please enter a valid URL from a supported service';
+        } else {
+          delete newErrors.url;
+        }
+        break;
+      case 'title':
+        if (!value.trim()) {
+          newErrors.title = 'Title is required';
+        } else if (value.length < 5) {
+          newErrors.title = 'Title must be at least 5 characters';
+        } else {
+          delete newErrors.title;
+        }
+        break;
+      case 'description':
+        if (!value.trim()) {
+          newErrors.description = 'Description is required';
+        } else if (value.length < 20) {
+          newErrors.description = 'Description must be at least 20 characters';
+        } else {
+          delete newErrors.description;
+        }
+        break;
+    }
+    
+    setErrors(newErrors);
+  };
+
+  // Validate URL and generate preview with debouncing
   useEffect(() => {
     if (!url) {
       setPreview(null);
       setServiceInfo(null);
+      setIsLoadingPreview(false);
       return;
     }
 
-    if (isValidEmbedUrl(url)) {
-      const service = detectService(url);
-      setServiceInfo(service);
+    setIsLoadingPreview(true);
+    
+    // Debounce preview generation
+    const timer = setTimeout(() => {
+      if (isValidEmbedUrl(url)) {
+        const service = detectService(url);
+        setServiceInfo(service);
+        const embedCode = generateSafeEmbedCode(url);
+        setPreview(embedCode);
+      } else {
+        setPreview(null);
+        setServiceInfo(null);
+      }
+      setIsLoadingPreview(false);
+    }, 500);
 
-      const embedCode = generateSafeEmbedCode(url);
-      setPreview(embedCode);
-      setError(null);
-    } else {
-      setPreview(null);
-      setServiceInfo(null);
-      setError('Unsupported URL. Please use a supported service.');
-    }
+    return () => clearTimeout(timer);
   }, [url]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!currentUser) {
-      setError('You must be logged in to submit evidence');
+      addToast('error', 'You must be logged in to submit evidence');
       return;
     }
 
-    if (!url || !title || !description) {
-      setError('All fields are required');
-      return;
-    }
+    // Validate all fields
+    validateField('url', url);
+    validateField('title', title);
+    validateField('description', description);
 
-    if (!isValidEmbedUrl(url)) {
-      setError('Please enter a valid URL from a supported service');
+    // Check if there are any errors
+    const hasErrors = !url.trim() || !title.trim() || !description.trim() || 
+                     !isValidEmbedUrl(url) || title.length < 5 || description.length < 20;
+    
+    if (hasErrors) {
+      addToast('error', 'Please fix the errors in your evidence submission.');
       return;
     }
 
     setIsSubmitting(true);
-    setError(null);
 
     try {
       const evidence = await createEmbeddedEvidence(
@@ -114,116 +162,187 @@ export const EvidenceSubmitter: React.FC<EvidenceSubmitterProps> = ({
       setTitle('');
       setDescription('');
       setPreview(null);
+      setErrors({});
 
       addToast('success', 'Evidence submitted successfully');
     } catch (err: any) {
       console.error('Error submitting evidence:', err);
-      setError(err.message || 'Failed to submit evidence');
       addToast('error', err.message || 'Failed to submit evidence');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return (
-    <Card className={`p-4 ${className}`}>
-      <CardHeader>
-        <CardTitle>Submit Evidence</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {/* Changed to div to prevent form submission */}
-        <div className="evidence-form">
-          {/* Hidden input to store roleId if provided */}
-          {roleId && <input type="hidden" name="roleId" value={roleId} />}
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="evidence-url">Evidence URL</Label>
-              <Input
-                id="evidence-url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="Paste a link from YouTube, Imgur, Google Drive, etc."
-                required
-              />
-              {serviceInfo && (
-                <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                  Detected: {serviceInfo.name} ({serviceInfo.type})
-                </p>
-              )}
-            </div>
+  const formContent = (
+    <div className={`space-y-3 sm:space-y-4 p-3 rounded-lg border border-border/30 bg-muted/10 ${className}`}>
+      <p className="text-muted-foreground text-sm">
+        Submit evidence from supported services to showcase your work.
+      </p>
+      
+      {/* Evidence URL Field */}
+      <AccessibleFormField
+        label="Evidence URL"
+        id="evidence-url"
+        required
+        hint="Paste a link from YouTube, Google Drive (files & folders), Google Docs/Sheets/Slides, Imgur, etc."
+        error={errors.url}
+      >
+        <GlassmorphicInput
+          id="evidence-url"
+          type="text"
+          value={url}
+          onChange={(e) => {
+            setUrl(e.target.value);
+            validateField('url', e.target.value);
+          }}
+          placeholder="https://youtube.com/watch?v=..."
+          required
+          className="text-foreground"
+          validationState={errors.url ? 'error' : serviceInfo ? 'success' : 'default'}
+        />
+      </AccessibleFormField>
+      
+      {/* Service Detection Badge */}
+      {serviceInfo && (
+        <div className="mt-2 flex items-center gap-2 text-sm text-success-foreground bg-success/10 border border-success/20 rounded-lg px-3 py-2">
+          <CheckCircle className="h-4 w-4" />
+          <span>Detected: {serviceInfo.name} ({serviceInfo.type})</span>
+        </div>
+      )}
 
-            <div>
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Give your evidence a title"
-                required
-              />
-            </div>
+      {/* Title Field */}
+      <AccessibleFormField
+        label="Title"
+        id="title"
+        required
+        hint="Give your evidence a descriptive title"
+        error={errors.title}
+      >
+        <GlassmorphicInput
+          id="title"
+          type="text"
+          value={title}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            validateField('title', e.target.value);
+          }}
+          placeholder="My Portfolio Project"
+          required
+          className="text-foreground"
+          validationState={errors.title ? 'error' : title.length >= 5 ? 'success' : 'default'}
+        />
+      </AccessibleFormField>
+      
+      {/* Character Counter for Title */}
+      <div className="text-xs text-muted-foreground -mt-2">
+        {title.length}/50 characters
+      </div>
 
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe what this evidence shows"
-                rows={3}
-                required
-              />
-            </div>
+      {/* Description Field */}
+      <AccessibleFormField
+        label="Description"
+        id="description"
+        required
+        hint="Describe what this evidence shows and how it demonstrates your skills"
+        error={errors.description}
+      >
+        <GlassmorphicInput
+          id="description"
+          type="textarea"
+          value={description}
+          onChange={(e) => {
+            setDescription(e.target.value);
+            validateField('description', e.target.value);
+          }}
+          placeholder="This project demonstrates my skills in..."
+          required
+          className="text-foreground min-h-[80px] max-h-[150px]"
+          validationState={errors.description ? 'error' : description.length >= 20 ? 'success' : 'default'}
+        />
+      </AccessibleFormField>
+      
+      {/* Character Counter for Description */}
+      <div className="text-xs text-muted-foreground -mt-2">
+        {description.length}/100 characters
+      </div>
 
-            {preview && (
-              <div className="mt-4">
-                <h4 className="text-lg font-medium mb-2">Preview</h4>
-                <div
-                  className="border rounded-lg p-2 bg-muted"
-                  dangerouslySetInnerHTML={{ 
-                    __html: DOMPurify.sanitize(preview, {
-                      ALLOWED_TAGS: ['iframe', 'video', 'audio', 'source', 'img', 'div', 'span', 'p', 'br', 'a', 'blockquote'],
-                      ALLOWED_ATTR: ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'controls', 'autoplay', 'loop', 'muted', 'poster', 'alt', 'class', 'style', 'href', 'title', 'data-id'],
-                      ALLOW_DATA_ATTR: false,
-                      FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur', 'onsubmit'],
-                      FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input', 'button', 'link']
-                    })
-                  }}
-                />
-              </div>
-            )}
-
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
+      {/* Preview Section */}
+      {preview && (
+        <div className="mt-4">
+          <h4 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+            <Eye className="h-4 w-4" />
+            Preview
+          </h4>
+          <div className="border border-border/50 rounded-lg p-4 bg-muted/20 max-h-[200px] sm:max-h-[250px] overflow-y-auto">
+            <div
+              dangerouslySetInnerHTML={{ 
+                __html: DOMPurify.sanitize(preview, {
+                  ALLOWED_TAGS: ['iframe', 'video', 'audio', 'source', 'img', 'div', 'span', 'p', 'br', 'a', 'blockquote'],
+                  ALLOWED_ATTR: ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'controls', 'autoplay', 'loop', 'muted', 'poster', 'alt', 'class', 'style', 'href', 'title', 'data-id'],
+                  ALLOW_DATA_ATTR: false,
+                  FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur', 'onsubmit'],
+                  FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input', 'button', 'link']
+                })
+              }}
+            />
           </div>
         </div>
-      </CardContent>
-      <CardFooter className="flex justify-end space-x-2">
+      )}
+
+      {/* Loading State for Preview */}
+      {isLoadingPreview && (
+        <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Generating preview...</span>
+        </div>
+      )}
+
+      {/* Form Actions */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 pt-3 sm:pt-4">
         {onCancel && (
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             onClick={onCancel}
             disabled={isSubmitting}
+            className="w-full sm:w-auto"
           >
             Cancel
           </Button>
         )}
         <Button
           type="button"
-          onClick={(e) => handleSubmit(e as any)}
+          onClick={handleSubmit}
+          variant="premium"
+          topic="trades"
           disabled={
             isSubmitting ||
-            !url ||
-            !title ||
-            !description ||
-            !isValidEmbedUrl(url)
+            !url.trim() ||
+            !title.trim() ||
+            !description.trim() ||
+            !isValidEmbedUrl(url) ||
+            title.length < 5 ||
+            description.length < 20
           }
+          className="w-full sm:w-auto hover:shadow-orange-500/25 hover:shadow-lg transition-all duration-300"
         >
           {isSubmitting ? 'Submitting...' : 'Submit Evidence'}
         </Button>
-      </CardFooter>
+      </div>
+    </div>
+  );
+
+  // Return with or without Card wrapper based on variant
+  return variant === 'standalone' ? (
+    <Card className="p-6">
+      <CardHeader>
+        <CardTitle>Submit Evidence</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {formContent}
+      </CardContent>
     </Card>
+  ) : (
+    formContent
   );
 };

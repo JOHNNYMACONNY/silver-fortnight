@@ -13,8 +13,8 @@ interface ToastOptions {
 }
 
 interface ToastContextType {
-  addToast: (type: 'success' | 'error' | 'info', message: string) => void;
-  showToast: (message: string, type: 'success' | 'error' | 'info', options?: ToastOptions) => void;
+  addToast: (type: 'success' | 'error' | 'info' | 'warning' | 'trades' | 'collaboration' | 'community' | 'xp' | 'achievement' | 'level-up' | 'streak' | 'connection' | 'maintenance', message: string) => void;
+  showToast: (message: string, type: 'success' | 'error' | 'info' | 'warning' | 'trades' | 'collaboration' | 'community' | 'xp' | 'achievement' | 'level-up' | 'streak' | 'connection' | 'maintenance', options?: ToastOptions) => void;
   removeToast: (id: string) => void;
 }
 
@@ -32,11 +32,11 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [toasts, setToasts] = useState<ToastData[]>([]);
   const counterRef = useRef(0);
 
-  const addToast = (type: 'success' | 'error' | 'info', message: string) => {
+  const addToast = (type: 'success' | 'error' | 'info' | 'warning' | 'trades' | 'collaboration' | 'community' | 'xp' | 'achievement' | 'level-up' | 'streak' | 'connection' | 'maintenance', message: string) => {
     showToast(message, type);
   };
 
-  const showToast = (message: string, type: 'success' | 'error' | 'info', options: ToastOptions = {}) => {
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' | 'trades' | 'collaboration' | 'community' | 'xp' | 'achievement' | 'level-up' | 'streak' | 'connection' | 'maintenance', options: ToastOptions = {}) => {
     // Increment counter immediately to ensure uniqueness
     counterRef.current += 1;
 
@@ -70,7 +70,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <ToastContext.Provider value={{ addToast, showToast, removeToast }}>
       {children}
-      <div className="fixed top-4 right-4 z-toast space-y-4">
+      <div className="fixed top-20 right-4 z-toast space-y-4">
         {toasts.map(toast => (
           <Toast
             key={toast.id}
