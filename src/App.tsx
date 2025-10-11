@@ -5,9 +5,10 @@
  */
 
 import React, { Suspense, lazy, useEffect, useState } from "react";
-import { Navigate, Route, Routes, Link } from "react-router-dom";
+import { Navigate, Route, Routes, Link, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { NotificationsProvider } from "./contexts/NotificationsContext";
+import { ToastProvider } from "./contexts/ToastContext";
 import { RouteErrorBoundary } from "./components/ui/ErrorBoundary";
 import EnhancedErrorBoundary from "./components/ui/EnhancedErrorBoundary";
 import { errorService } from "./services/errorService";
@@ -99,14 +100,14 @@ const HelpReputation = lazy(() => import("./pages/HelpReputation"));
 
 // Import pages that we've created
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
-import { TradesPage } from "./pages/TradesPage";
-import { TradeDetailPage } from "./pages/TradeDetailPage";
-import PortfolioPage from "./pages/PortfolioPage";
+const TradesPage = lazy(() => import("./pages/TradesPage").then(module => ({ default: module.TradesPage })));
+const TradeDetailPage = lazy(() => import("./pages/TradeDetailPage").then(module => ({ default: module.TradeDetailPage })));
+const PortfolioPage = lazy(() => import("./pages/PortfolioPage"));
 import LoginPage from "./components/auth/LoginPage";
-import DashboardPage from "./pages/DashboardPage";
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 import { SignUpPage } from "./pages/SignUpPage";
 import { PasswordResetPage } from "./pages/PasswordResetPage";
-import { NotificationsPage } from "./pages/NotificationsPage";
+const NotificationsPage = lazy(() => import("./pages/NotificationsPage").then(module => ({ default: module.NotificationsPage })));
 
 // Import Component Status Checker
 import ComponentStatusChecker from "./components/ui/ComponentStatusChecker";
@@ -114,9 +115,11 @@ import ComponentStatusChecker from "./components/ui/ComponentStatusChecker";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { currentUser } = useAuth();
+  const location = useLocation();
 
   if (!currentUser) {
-    return <Navigate to="/login" />;
+    // Save intended destination in location state
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
   return <>{children}</>;
@@ -185,8 +188,9 @@ function App() {
 
   return (
     <EnhancedErrorBoundary>
-      <NotificationsProvider>
-        <GamificationNotificationProvider>
+      <ToastProvider>
+        <NotificationsProvider>
+          <GamificationNotificationProvider>
           <MainLayout containerized={false}>
             {/* Preload critical application resources */}
             <AppPreloader />
@@ -585,7 +589,8 @@ function App() {
           </MainLayout>
         </GamificationNotificationProvider>
       </NotificationsProvider>
-    </EnhancedErrorBoundary>
+    </ToastProvider>
+  </EnhancedErrorBoundary>
   );
 }
 

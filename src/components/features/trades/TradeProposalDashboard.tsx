@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../AuthContext';
 import { getTradeProposals, updateTradeProposalStatus, getTrade, Trade, TradeProposal } from '../../../services/firestore-exports';
 import TradeProposalCard from './TradeProposalCard';
+import CompactProposalCard from './CompactProposalCard';
 import { useToast } from '../../../contexts/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/Card';
@@ -10,6 +11,7 @@ import { Badge } from '../../ui/Badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/Select';
 import { Skeleton } from '../../ui/skeletons/Skeleton';
 import { EmptyState } from '../../ui/EmptyState';
+import { Modal } from '../../ui/Modal';
 
 interface TradeProposalDashboardProps {
   tradeId: string;
@@ -28,6 +30,7 @@ const TradeProposalDashboard: React.FC<TradeProposalDashboardProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'pending' | 'accepted' | 'rejected'>('pending');
   const [sortBy, setSortBy] = useState<'date' | 'skillMatch'>('date');
+  const [expandedProposal, setExpandedProposal] = useState<TradeProposal | null>(null);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -157,13 +160,14 @@ const TradeProposalDashboard: React.FC<TradeProposalDashboardProps> = ({
     rejected: proposals.filter(p => p.status === 'rejected').length
   };
 
-  // Animation variants
+  // Animation variants - optimized for grid layout
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
+        staggerChildren: 0.05, // Faster stagger for grid layout
+        delayChildren: 0.1 // Small delay before children start animating
       }
     }
   };
@@ -171,85 +175,172 @@ const TradeProposalDashboard: React.FC<TradeProposalDashboardProps> = ({
   const isTradeCreator = !!currentUser && !!trade && currentUser.uid === trade.creatorId;
 
   return (
-    <Card variant="premium" tilt={true} depth="lg" glow="subtle" glowColor="blue" interactive={true} reducedHover={true}>
-      <CardHeader className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4">
-        <CardTitle className="text-xl font-semibold">Trade Proposals</CardTitle>
-        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-          <div className="flex items-center justify-start sm:justify-end">
-            <Select onValueChange={(value) => setSortBy(value as 'date' | 'skillMatch')} defaultValue={sortBy}>
-              <SelectTrigger className="w-full sm:w-[160px]">
-                <SelectValue placeholder="Sort by..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="date">Date (Newest)</SelectItem>
-                <SelectItem value="skillMatch">Skill Match</SelectItem>
-              </SelectContent>
-            </Select>
+    <div className="w-full space-y-6">
+      {/* Dashboard Header with Controls */}
+      <Card variant="premium" depth="md" glow="subtle" glowColor="blue" className="backdrop-blur-lg glassmorphic bg-white/5 border-glass shadow-lg">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col gap-4">
+            {/* Title and Summary */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+              <div>
+                <CardTitle className="text-xl sm:text-2xl font-bold">Trade Proposals</CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {counts.pending} pending · {counts.accepted} accepted · {counts.rejected} rejected
+                </p>
+              </div>
+              
+              {/* Sort Selector */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground hidden sm:inline">Sort by:</span>
+                <Select onValueChange={(value) => setSortBy(value as 'date' | 'skillMatch')} defaultValue={sortBy}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Sort by..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="date">Date (Newest First)</SelectItem>
+                    <SelectItem value="skillMatch">Skill Match Score</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="flex flex-wrap gap-2">
+              {(['all', 'pending', 'accepted', 'rejected'] as const).map((status) => (
+                <Button
+                  key={status}
+                  variant="glassmorphic"
+                  topic={filter === status ? 'trades' : undefined}
+                  size="sm"
+                  onClick={() => setFilter(status)}
+                  className={`flex items-center gap-2 transition-all duration-200 min-h-[44px] ${
+                    filter === status 
+                      ? 'ring-2 ring-orange-500/30 bg-orange-500/10 hover:bg-orange-500/15' 
+                      : 'bg-white/5 hover:bg-white/10 hover:ring-1 hover:ring-white/20'
+                  }`}
+                >
+                  <span className="capitalize">{status}</span>
+                  <Badge 
+                    variant={filter === status ? 'secondary' : 'outline'} 
+                    className="ml-1 min-w-[24px] justify-center"
+                  >
+                    {counts[status]}
+                  </Badge>
+                </Button>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {(['pending', 'accepted', 'rejected', 'all'] as const).map((status) => (
-              <Button
-                key={status}
-                variant={filter === status ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setFilter(status)}
-                className="flex items-center min-w-0"
-              >
-                <span className="truncate">{status.charAt(0).toUpperCase() + status.slice(1)}</span>
-                <Badge variant={filter === status ? 'default' : 'outline'} className="ml-2 flex-shrink-0">
-                  {counts[status]}
-                </Badge>
-              </Button>
+        </CardHeader>
+      </Card>
+
+      {/* Proposals List */}
+      <div className="w-full">
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 w-full">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i} variant="glass" className="p-6 h-full glassmorphic bg-white/5 backdrop-blur-sm border-glass">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4 sm:gap-5">
+                    <Skeleton className="h-14 w-14 sm:h-16 sm:w-16 rounded-full" />
+                    <div className="space-y-2 flex-1">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-20 w-full" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-8 w-24" />
+                    <Skeleton className="h-8 w-24" />
+                  </div>
+                </div>
+              </Card>
             ))}
           </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {loading ? (
-          <div className="space-y-4">
-            {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-24 w-full" />)}
-          </div>
         ) : error ? (
-          <EmptyState
-            title="Error"
-            description={error}
-          />
+          <Card variant="glass" className="p-8 glassmorphic bg-white/5 backdrop-blur-sm border-glass">
+            <EmptyState
+              title="Error Loading Proposals"
+              description={error}
+            />
+          </Card>
         ) : filteredProposals.length > 0 ? (
-          <div className="max-h-[800px] overflow-y-auto pr-2">
-            <motion.div
-              className="space-y-4"
-              initial="hidden"
-              animate="visible"
-              variants={containerVariants}
-            >
-              <AnimatePresence>
-                {filteredProposals.map(proposal => (
-                  <motion.div 
-                    key={proposal.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <TradeProposalCard
-                      proposal={proposal}
-                      onAccept={() => handleAcceptProposal(proposal.id!)}
-                      onReject={() => handleRejectProposal(proposal.id!)}
-                      isCreator={isTradeCreator}
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </motion.div>
-          </div>
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 w-full"
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+          >
+            <AnimatePresence mode="popLayout">
+              {filteredProposals.map((proposal, index) => (
+                <motion.div
+                  key={proposal.id}
+                  className="h-full w-full"
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                  transition={{
+                    duration: 0.3,
+                    delay: index * 0.05, // Stagger effect
+                    ease: "easeOut"
+                  }}
+                  layout
+                >
+                  <CompactProposalCard
+                    proposal={proposal}
+                    onAccept={() => handleAcceptProposal(proposal.id!)}
+                    onReject={() => handleRejectProposal(proposal.id!)}
+                    onExpand={() => setExpandedProposal(proposal)}
+                    isCreator={isTradeCreator}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
         ) : (
-          <EmptyState
-            title="No Proposals"
-            description={`There are no ${filter !== 'all' ? filter : ''} proposals for this trade yet.`}
-          />
+          <Card variant="glass" className="p-12 glassmorphic bg-white/5 backdrop-blur-sm border-glass">
+            <EmptyState
+              title={`No ${filter !== 'all' ? filter.charAt(0).toUpperCase() + filter.slice(1) : ''} Proposals`}
+              description={
+                filter === 'pending'
+                  ? "No pending proposals at the moment. New proposals will appear here."
+                  : filter === 'accepted'
+                  ? "No proposals have been accepted yet."
+                  : filter === 'rejected'
+                  ? "No proposals have been rejected yet."
+                  : "No proposals have been submitted for this trade yet. Share your trade to get more proposals!"
+              }
+            />
+          </Card>
         )}
-      </CardContent>
-    </Card>
+
+        {/* Detailed Proposal Modal */}
+        {expandedProposal && (
+          <Modal
+            isOpen={!!expandedProposal}
+            onClose={() => setExpandedProposal(null)}
+            title={`Proposal from ${expandedProposal.proposerName || 'Anonymous'}`}
+            size="lg"
+            closeOnClickOutside={true}
+            closeOnEsc={true}
+          >
+            <div className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+              <TradeProposalCard
+                proposal={expandedProposal}
+                onAccept={() => {
+                  handleAcceptProposal(expandedProposal.id!);
+                  setExpandedProposal(null);
+                }}
+                onReject={() => {
+                  handleRejectProposal(expandedProposal.id!);
+                  setExpandedProposal(null);
+                }}
+                isCreator={isTradeCreator}
+              />
+            </div>
+          </Modal>
+        )}
+      </div>
+    </div>
   );
 };
 

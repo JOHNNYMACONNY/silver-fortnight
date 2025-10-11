@@ -5,13 +5,13 @@ import { cn } from '../../utils/cn';
 import { MOTION_VARIANTS } from '../../utils/animations';
 import Box from '../layout/primitives/Box';
 
-interface ModalProps {
+export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'full';
   closeOnClickOutside?: boolean;
   closeOnEsc?: boolean;
 }
@@ -32,11 +32,12 @@ export const ModalComponent: React.FC<ModalProps> = ({
 
   // Size classes - memoized as a constant outside of render
   const sizeClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-xl',
-    full: 'max-w-full'
+    sm: 'max-w-sm w-full',
+    md: 'max-w-md w-full',
+    lg: 'max-w-lg w-full lg:max-w-2xl',
+    xl: 'max-w-xl w-full md:max-w-2xl lg:max-w-3xl',
+    xxl: 'max-w-2xl w-full md:max-w-3xl lg:max-w-4xl xl:max-w-5xl',
+    full: 'max-w-full w-[calc(100%-1rem)] sm:w-[calc(100%-2rem)] md:w-[calc(100%-4rem)] lg:w-[calc(100%-6rem)]'
   };
 
   // Handle ESC key press - memoized with useCallback
@@ -184,9 +185,9 @@ export const ModalComponent: React.FC<ModalProps> = ({
         <>
           {/* Backdrop with fade animation */}
           <motion.div
-            className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-black bg-opacity-60 motion-reduce:animate-none motion-reduce:transition-none"
+            className="fixed inset-0 z-[70] flex items-center justify-center p-2 sm:p-4 md:p-6 lg:p-8 bg-black/40 motion-reduce:animate-none motion-reduce:transition-none"
             onClick={handleBackdropClick}
-            style={{ backdropFilter: 'blur(2px)' }}
+            style={{ backdropFilter: 'blur(12px)' }}
             initial="hidden"
             animate={shouldReduceMotion ? undefined : 'visible'}
             exit={shouldReduceMotion ? undefined : 'exit'}
@@ -196,7 +197,12 @@ export const ModalComponent: React.FC<ModalProps> = ({
             <Box
               ref={modalRef}
               className={cn(
-                'w-full rounded-lg overflow-hidden bg-card text-card-foreground shadow-lg @container border-glass',
+                'w-full rounded-xl sm:rounded-2xl overflow-hidden backdrop-blur-2xl shadow-2xl shadow-orange-500/10 @container',
+                'border border-white/20',
+                '!max-h-[98vh] sm:!max-h-[95vh] md:!max-h-[90vh] lg:!max-h-[85vh]',
+                '!flex !flex-col',
+                'bg-white/5 dark:bg-white/5',
+                'mx-auto',
                 sizeClasses[size]
               )}
               style={{ containerType: 'inline-size' }}
@@ -208,33 +214,45 @@ export const ModalComponent: React.FC<ModalProps> = ({
               tabIndex={-1}
             >
               <motion.div
+                className="flex flex-col h-full min-h-0"
                 initial={shouldReduceMotion ? undefined : 'hidden'}
                 animate={shouldReduceMotion ? undefined : 'visible'}
                 exit={shouldReduceMotion ? undefined : 'exit'}
                 variants={MOTION_VARIANTS.modal as import('framer-motion').Variants}
               >
                 {title && (
-                  <div className={cn('px-6 py-4 border-b border-divider')}>
-                    <div className="flex items-center justify-between">
-                      <h3 id="modal-title" className={cn('text-lg font-medium text-foreground')}>{title}</h3>
+                  <header className={cn('px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5 border-b border-border/30 flex-shrink-0')}>
+                    <div className="flex items-center justify-between gap-2 sm:gap-4">
+                      <h2 
+                        id="modal-title" 
+                        className={cn('text-base sm:text-lg md:text-xl font-semibold text-foreground truncate flex-1 min-w-0')}
+                      >
+                        {title}
+                      </h2>
                       <motion.button
                         type="button"
                         className={cn(
-                          'text-neutral-400 hover:text-neutral-500 dark:text-neutral-500 dark:hover:text-neutral-400',
-                          'focus:outline-none'
+                          'text-muted-foreground hover:text-foreground',
+                          'focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-lg',
+                          'p-1.5 sm:p-2',
+                          'transition-colors duration-200',
+                          'min-w-[44px] min-h-[44px]',
+                          'flex items-center justify-center flex-shrink-0'
                         )}
                         onClick={handleCloseClick}
                         whileHover={{ scale: 1.1, rotate: 90 }}
                         whileTap={{ scale: 0.9 }}
                         transition={{ duration: 0.2 }}
+                        aria-label="Close modal"
                       >
                         <span className="sr-only">Close</span>
                         <svg
-                          className="h-6 w-6"
+                          className="h-5 w-5 sm:h-6 sm:w-6"
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
+                          aria-hidden="true"
                         >
                           <path
                             strokeLinecap="round"
@@ -245,17 +263,17 @@ export const ModalComponent: React.FC<ModalProps> = ({
                         </svg>
                       </motion.button>
                     </div>
-                  </div>
+                  </header>
                 )}
 
-                <div className="px-6 py-4">
+                <section className="px-3 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6 overflow-y-auto flex-1 min-h-0">
                   {children}
-                </div>
+                </section>
 
                 {footer && (
-                  <div className={cn('px-6 py-4 border-t border-divider')}>
+                  <footer className={cn('px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-t border-border/30 flex-shrink-0')}>
                     {footer}
-                  </div>
+                  </footer>
                 )}
               </motion.div>
             </Box>
@@ -268,4 +286,4 @@ export const ModalComponent: React.FC<ModalProps> = ({
 };
 
 // Memoize the Modal component to prevent unnecessary re-renders
-export const Modal = memo(ModalComponent);
+export const Modal = memo(ModalComponent) as React.FC<ModalProps>;

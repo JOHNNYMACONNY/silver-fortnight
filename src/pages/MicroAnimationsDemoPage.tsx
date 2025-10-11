@@ -274,7 +274,7 @@ const MicroAnimationsDemoPage: React.FC = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -50, scale: 0.8 }}
                     transition={{ duration: 0.3 }}
-                    className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-toast"
+                    className="fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-toast"
                   >
                     <div className="flex items-center space-x-2">
                       <span>✅</span>

@@ -2,11 +2,12 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Collaboration } from '../../../services/firestore-exports';
 import { cn } from '../../../utils/cn';
-import { MapPin, Calendar, Clock, DollarSign } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, Plus } from 'lucide-react';
 import ProfileAvatarButton from '../../ui/ProfileAvatarButton';
 import { Card, CardHeader, CardContent, CardTitle } from '../../ui/Card';
 import { Badge } from '../../ui/Badge';
 import { formatDate } from '../../../utils/dateUtils';
+import { getSkillBadgeProps } from '../../../utils/skillMapping';
 
 interface CollaborationCardProps {
   collaboration: Collaboration;
@@ -61,11 +62,11 @@ export const CollaborationCard: React.FC<CollaborationCardProps> = ({
       className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
     >
       <Card 
-        variant={variant}
+        variant="premium"
         tilt={enhanced}
         depth="lg"
         glow={enhanced ? "subtle" : "none"}
-        glowColor="purple" // Keep purple for collaboration theme
+        glowColor="purple"
         hover={true}
         interactive={true}
         onClick={handleCardClick}
@@ -142,12 +143,19 @@ export const CollaborationCard: React.FC<CollaborationCardProps> = ({
         {/* Skills Section */}
         {collaboration.skillsNeeded && collaboration.skillsNeeded.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
-            {collaboration.skillsNeeded.slice(0, compact ? 3 : 5).map((skill, index) => (
-              <Badge key={index} variant="secondary">{skill}</Badge>
-            ))}
+            {collaboration.skillsNeeded.slice(0, compact ? 3 : 5).map((skill, index) => {
+              const { topic, Icon } = getSkillBadgeProps(skill);
+              return (
+                <Badge key={index} variant="default" topic={topic} className="flex items-center gap-1">
+                  <Icon className="h-3 w-3" />
+                  {skill}
+                </Badge>
+              );
+            })}
 
             {collaboration.skillsNeeded.length > (compact ? 3 : 5) && (
-              <Badge variant="outline">
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Plus className="h-3 w-3" />
                 +{collaboration.skillsNeeded.length - (compact ? 3 : 5)} more
               </Badge>
             )}

@@ -128,12 +128,12 @@ export const ItemDetailsStep: React.FC<StepComponentProps> = ({
 
       {/* Validation Status */}
       <div className={cn(
-        'flex items-center space-x-2 text-sm transition-all duration-200',
-        isValid ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
+        'flex items-center space-x-2 text-sm transition-all duration-200 p-3 rounded-lg glassmorphic border-glass backdrop-blur-sm',
+        isValid ? 'text-green-600 dark:text-green-400 bg-green-500/5' : 'text-gray-500 dark:text-gray-400 bg-white/5'
       )}>
         <div className={cn(
           'w-2 h-2 rounded-full transition-all duration-200',
-          isValid ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+          isValid ? 'bg-gradient-to-r from-green-400 to-green-500 shadow-lg shadow-green-500/50' : 'bg-gradient-to-r from-gray-400/50 to-gray-500/50'
         )} />
         <span>
           {isValid ? 'Item details complete' : 'Please fill in all required fields'}
@@ -218,7 +218,7 @@ export const PricingStep: React.FC<StepComponentProps> = ({
         hint="Help others know if their items might interest you"
       />
 
-      <div className="glassmorphic p-4">
+      <div className="glassmorphic border-glass backdrop-blur-xl bg-white/5 p-4">
         <h4 className="font-medium text-gray-900 dark:text-white mb-2">Trade Value Guidelines</h4>
         <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
           <li>• Be realistic about your item's current market value</li>
@@ -230,12 +230,12 @@ export const PricingStep: React.FC<StepComponentProps> = ({
 
       {/* Validation Status */}
       <div className={cn(
-        'flex items-center space-x-2 text-sm transition-all duration-200',
-        isValid ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
+        'flex items-center space-x-2 text-sm transition-all duration-200 p-3 rounded-lg glassmorphic border-glass backdrop-blur-sm',
+        isValid ? 'text-green-600 dark:text-green-400 bg-green-500/5' : 'text-gray-500 dark:text-gray-400 bg-white/5'
       )}>
         <div className={cn(
           'w-2 h-2 rounded-full transition-all duration-200',
-          isValid ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+          isValid ? 'bg-gradient-to-r from-green-400 to-green-500 shadow-lg shadow-green-500/50' : 'bg-gradient-to-r from-gray-400/50 to-gray-500/50'
         )} />
         <span>
           {isValid ? 'Pricing information complete' : 'Please enter valid pricing information'}
@@ -295,18 +295,18 @@ export const PreferencesStep: React.FC<StepComponentProps> = ({
         />
       </div>
 
-      <div className="space-y-4">
-        <label className="flex items-center space-x-3">
+      <div className="space-y-3">
+        <label className="flex items-center space-x-3 p-3 glassmorphic border-glass backdrop-blur-sm bg-white/5 rounded-lg hover:bg-white/10 transition-all cursor-pointer">
           <input
             type="checkbox"
             checked={data.allowCounterOffers || false}
             onChange={(e) => onChange('allowCounterOffers', e.target.checked)}
-            className="w-4 h-4 text-primary bg-white/20 border-border rounded focus:ring-ring focus:ring-2"
+            className="w-4 h-4 text-primary bg-white/20 border-white/30 rounded focus:ring-ring focus:ring-2"
           />
           <span className="text-gray-900 dark:text-white">Allow counter-offers</span>
         </label>
 
-        <label className="flex items-center space-x-3">
+        <label className="flex items-center space-x-3 p-3 glassmorphic border-glass backdrop-blur-sm bg-white/5 rounded-lg hover:bg-white/10 transition-all cursor-pointer">
           <input
             type="checkbox"
             checked={data.allowPartialTrades || false}
@@ -316,7 +316,7 @@ export const PreferencesStep: React.FC<StepComponentProps> = ({
           <span className="text-gray-900 dark:text-white">Allow partial trades (multiple items for one)</span>
         </label>
 
-        <label className="flex items-center space-x-3">
+        <label className="flex items-center space-x-3 p-3 glassmorphic border-glass backdrop-blur-sm bg-white/5 rounded-lg hover:bg-white/10 transition-all cursor-pointer">
           <input
             type="checkbox"
             checked={data.urgentTrade || false}
@@ -343,12 +343,12 @@ export const PreferencesStep: React.FC<StepComponentProps> = ({
 
       {/* Validation Status */}
       <div className={cn(
-        'flex items-center space-x-2 text-sm transition-all duration-200',
-        isValid ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
+        'flex items-center space-x-2 text-sm transition-all duration-200 p-3 rounded-lg glassmorphic border-glass backdrop-blur-sm',
+        isValid ? 'text-green-600 dark:text-green-400 bg-green-500/5' : 'text-gray-500 dark:text-gray-400 bg-white/5'
       )}>
         <div className={cn(
           'w-2 h-2 rounded-full transition-all duration-200',
-          isValid ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+          isValid ? 'bg-gradient-to-r from-green-400 to-green-500 shadow-lg shadow-green-500/50' : 'bg-gradient-to-r from-gray-400/50 to-gray-500/50'
         )} />
         <span>
           {isValid ? 'Trade preferences complete' : 'Please complete required preference fields'}
@@ -386,9 +386,9 @@ export const ConfirmationStep: React.FC<StepComponentProps> = ({
       </div>
 
       {/* Item Details Summary */}
-      <div className="glassmorphic p-6">
+      <div className="glassmorphic border-glass backdrop-blur-xl bg-white/5 p-6">
         <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-          <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold mr-3">1</span>
+          <span className="w-8 h-8 bg-gradient-to-br from-primary/80 to-primary backdrop-blur-sm text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold mr-3 shadow-lg shadow-primary/30">1</span>
           Item Details
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -416,9 +416,9 @@ export const ConfirmationStep: React.FC<StepComponentProps> = ({
       </div>
 
       {/* Pricing Summary */}
-      <div className="glassmorphic p-6">
+      <div className="glassmorphic border-glass backdrop-blur-xl bg-white/5 p-6">
         <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-          <span className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">2</span>
+          <span className="w-8 h-8 bg-gradient-to-br from-blue-400/80 to-blue-500 backdrop-blur-sm text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 shadow-lg shadow-blue-500/30">2</span>
           Pricing & Value
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -440,9 +440,9 @@ export const ConfirmationStep: React.FC<StepComponentProps> = ({
       </div>
 
       {/* Preferences Summary */}
-      <div className="glassmorphic p-6">
+      <div className="glassmorphic border-glass backdrop-blur-xl bg-white/5 p-6">
         <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-          <span className="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">3</span>
+          <span className="w-8 h-8 bg-gradient-to-br from-purple-400/80 to-purple-500 backdrop-blur-sm text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 shadow-lg shadow-purple-500/30">3</span>
           Trade Preferences
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -462,19 +462,19 @@ export const ConfirmationStep: React.FC<StepComponentProps> = ({
         <div className="mt-4 space-y-2">
           {data.allowCounterOffers && (
             <div className="flex items-center text-sm text-green-600 dark:text-green-400">
-              <span className="w-4 h-4 bg-green-500 rounded-full mr-2"></span>
+              <span className="w-4 h-4 bg-gradient-to-br from-green-400 to-green-500 rounded-full mr-2 shadow-sm"></span>
               Counter-offers allowed
             </div>
           )}
           {data.allowPartialTrades && (
             <div className="flex items-center text-sm text-blue-600 dark:text-blue-400">
-              <span className="w-4 h-4 bg-blue-500 rounded-full mr-2"></span>
+              <span className="w-4 h-4 bg-gradient-to-br from-blue-400 to-blue-500 rounded-full mr-2 shadow-sm"></span>
               Partial trades allowed
             </div>
           )}
           {data.urgentTrade && (
             <div className="flex items-center text-sm text-primary">
-              <span className="w-4 h-4 bg-primary rounded-full mr-2"></span>
+              <span className="w-4 h-4 bg-gradient-to-br from-primary/80 to-primary rounded-full mr-2 shadow-sm"></span>
               Urgent trade
             </div>
           )}
@@ -489,9 +489,9 @@ export const ConfirmationStep: React.FC<StepComponentProps> = ({
       </div>
 
       {/* Final confirmation */}
-      <div className="glassmorphic p-6">
+      <div className="glassmorphic border-glass backdrop-blur-xl bg-white/5 p-6">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-blue-500 rounded-full flex items-center justify-center">
+          <div className="w-12 h-12 bg-gradient-to-r from-orange-500/90 to-blue-500/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg shadow-primary/30">
             <span className="text-white text-xl">✓</span>
           </div>
           <div>

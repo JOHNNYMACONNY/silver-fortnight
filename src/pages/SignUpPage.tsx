@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import { GlassmorphicInput } from '../components/ui/GlassmorphicInput';
 import { motion } from 'framer-motion';
 import { Card } from '../components/ui/Card';
@@ -10,11 +11,15 @@ import { Button } from '../components/ui/Button';
 
 export const SignUpPage: React.FC = () => {
   const { signInWithGoogle, error, loading, currentUser } = useAuth();
+  const { addToast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
+  const hasProcessedSignupRef = useRef(false);
+  const hasShownSignupToastRef = useRef(false);
   const navigate = useNavigate();
 
   // Validation states
@@ -22,17 +27,38 @@ export const SignUpPage: React.FC = () => {
   const [passwordValid, setPasswordValid] = useState<boolean | null>(null);
   const [passwordsMatch, setPasswordsMatch] = useState<boolean | null>(null);
 
-  // Navigate to profile page after successful registration
+  // Show success toast and navigate to profile page after successful registration
   useEffect(() => {
-    if (registrationSuccess && currentUser && !loading && !error) {
-      // Short delay to allow toast to be seen
-      const timer = setTimeout(() => {
-        navigate('/profile');
-      }, 1500);
+    if (registrationSuccess && currentUser && !loading && !error && !hasRedirected && currentUser.uid && !hasShownSignupToastRef.current) {
+      // Add a small delay to ensure this isn't just a transient state change
+      const timeoutId = setTimeout(() => {
+        if (currentUser && currentUser.uid && !hasShownSignupToastRef.current) {
+          hasProcessedSignupRef.current = true;
+          hasShownSignupToastRef.current = true;
+          addToast('success', 'Account created successfully! Welcome to TradeYa!');
+          // Short delay to allow toast to be seen
+          const timer = setTimeout(() => {
+            navigate('/profile');
+            setHasRedirected(true);
+          }, 1500);
 
-      return () => clearTimeout(timer);
+          return () => clearTimeout(timer);
+        }
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [registrationSuccess, currentUser, loading, error, navigate]);
+  }, [registrationSuccess, currentUser?.uid, loading, error, navigate, hasRedirected, addToast]);
+
+  // Reset all signup-related state when user logs out
+  useEffect(() => {
+    if (!currentUser) {
+      setHasRedirected(false);
+      setRegistrationSuccess(false);
+      hasProcessedSignupRef.current = false;
+      hasShownSignupToastRef.current = false;
+    }
+  }, [currentUser]);
 
   // Email validation
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,6 +138,18 @@ export const SignUpPage: React.FC = () => {
     // For now, we'll use the signInWithEmail method since signUpWithEmail doesn't exist
     // This would need to be implemented in AuthContext for proper signup
     setFormError("Sign up functionality needs to be implemented in AuthContext");
+  };
+
+  const handleGoogleSignUp = async () => {
+    try {
+      await signInWithGoogle();
+      if (!error && currentUser && currentUser.uid && !hasProcessedSignupRef.current) {
+        hasProcessedSignupRef.current = true;
+        setRegistrationSuccess(true);
+      }
+    } catch (err) {
+      console.error('Google signup failed:', err);
+    }
   };
 
   return (
@@ -228,12 +266,7 @@ export const SignUpPage: React.FC = () => {
             type="button"
             variant="outline"
             className="mt-4 w-full"
-            onClick={async () => {
-              await signInWithGoogle();
-              if (!error && currentUser) {
-                setRegistrationSuccess(true);
-              }
-            }}
+            onClick={handleGoogleSignUp}
             disabled={loading}
             isLoading={loading}
           >

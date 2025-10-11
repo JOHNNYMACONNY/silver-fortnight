@@ -1,29 +1,41 @@
 # Evidence Embed System: Comprehensive Documentation
 
-**Last Updated**: December 15, 2024  
+**Last Updated**: October 6, 2025  
 **Status**: Fully Implemented ✅  
-**Version**: 1.0
+**Version**: 1.1
 
 This document provides comprehensive information about the Evidence Embed System in the TradeYa application, including technical implementation details, usage guidelines, and integration points.
 
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Implementation Status](#implementation-status)
-3. [Key Features](#key-features)
-4. [Supported Services](#supported-services)
-5. [Data Model](#data-model)
-6. [Technical Implementation](#technical-implementation)
-7. [UI Components](#ui-components)
-8. [Security Considerations](#security-considerations)
-9. [Integration Points](#integration-points)
-10. [Usage Examples](#usage-examples)
-11. [Testing](#testing)
-12. [Future Enhancements](#future-enhancements)
+2. [Changelog](#changelog)
+3. [Implementation Status](#implementation-status)
+4. [Key Features](#key-features)
+5. [Supported Services](#supported-services)
+6. [Data Model](#data-model)
+7. [Technical Implementation](#technical-implementation)
+8. [UI Components](#ui-components)
+9. [Security Considerations](#security-considerations)
+10. [Integration Points](#integration-points)
+11. [Usage Examples](#usage-examples)
+12. [Testing](#testing)
+13. [Future Enhancements](#future-enhancements)
 
 ## Overview
 
 The Evidence Embed System is a cost-effective, scalable solution that allows users to showcase their work through embedded content from third-party platforms without storing media files directly. This system serves as a foundation for the Trade Confirmation System and Collaboration Roles System, enabling users to provide evidence of completed work.
+
+## Changelog
+
+### Version 1.1 (October 6, 2025)
+- **Added**: Support for generic Google Drive file links (`drive.google.com/file/d/*`)
+- **Added**: Support for Google Drive folder links (`drive.google.com/drive/folders/*`)
+- **Enhanced**: Updated documentation to clarify Google Drive support
+- **Enhanced**: Updated EvidenceSubmitter hint text to reflect expanded Google Drive support
+
+### Version 1.0 (December 15, 2024)
+- Initial implementation with support for YouTube, Vimeo, Loom, Imgur, Google Docs, Google Sheets, Google Slides, GitHub Gist, CodePen, and Figma
 
 ### System Benefits
 
@@ -96,7 +108,8 @@ The Evidence Embed System has been fully implemented with the following componen
 | Google Docs | docs.google.com/document/d/* | iframe embed | Collaborative documents |
 | Google Sheets | docs.google.com/spreadsheets/d/* | iframe embed | Spreadsheets |
 | Google Slides | docs.google.com/presentation/d/* | iframe embed | Presentations |
-| PDF (Google Drive) | drive.google.com/file/d/* | iframe embed | PDF files |
+| Google Drive Files | drive.google.com/file/d/* | iframe embed | PDFs, images, videos, and other files |
+| Google Drive Folders | drive.google.com/drive/folders/* | iframe embed | Folder view with multiple files |
 
 ### Code Hosting
 | Service | URL Pattern | Embed Method | Notes |
@@ -618,9 +631,29 @@ Planned enhancements for the Evidence Embed System include:
 
 - **Images**: Upload to Imgur and use the direct image link
 - **Videos**: Upload to YouTube (can be unlisted) or Vimeo
-- **Documents**: Share via Google Drive with "Anyone with the link can view"
+- **Documents**: Share via Google Drive with "Anyone with the link can view" - supports individual files (PDFs, images, videos) and entire folders
+- **Google Workspace**: Share Google Docs, Sheets, or Slides with "Anyone with the link can view"
 - **Code**: Create GitHub Gists or CodePen demos
 - **Designs**: Share Figma prototypes or Behance projects
+
+### Google Drive URL Formats
+
+The system supports multiple Google Drive URL formats:
+
+**Google Workspace Documents:**
+- Google Docs: `https://docs.google.com/document/d/FILE_ID/edit`
+- Google Sheets: `https://docs.google.com/spreadsheets/d/FILE_ID/edit`
+- Google Slides: `https://docs.google.com/presentation/d/FILE_ID/edit`
+
+**Generic Google Drive Files:**
+- Standard format: `https://drive.google.com/file/d/FILE_ID/view`
+- Open format: `https://drive.google.com/open?id=FILE_ID`
+- Direct link format: `https://drive.google.com/uc?id=FILE_ID`
+
+**Google Drive Folders:**
+- Folder format: `https://drive.google.com/drive/folders/FOLDER_ID`
+
+**Important**: Ensure your Google Drive files and folders are shared with "Anyone with the link can view" permission for them to be visible in embedded previews.
 
 ---
 

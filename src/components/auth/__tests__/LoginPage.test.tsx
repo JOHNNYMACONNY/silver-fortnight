@@ -21,7 +21,7 @@ const mockAuthContext = {
 
 jest.mock('../../../AuthContext', () => ({
   useAuth: () => mockAuthContext,
-  AuthProvider: ({ children }: { children: React.ReactNode }) => React.createElement('div', null, children),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
 jest.mock('../../../firebase-config', () => ({

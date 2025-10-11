@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../../AuthContext';
 import { createCollaboration, updateCollaboration, Collaboration } from '../../../services/firestore-exports';
-import { MultipleImageUploader } from '../../features/uploads/MultipleImageUploader';
+import { EvidenceSubmitter } from '../../features/evidence/EvidenceSubmitter';
+import { EmbeddedEvidence } from '../../../types/evidence';
 import { useToast } from '../../../contexts/ToastContext';
 import { Timestamp } from 'firebase/firestore';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../ui/Card';
@@ -13,6 +14,7 @@ import { Button } from '../../ui/Button';
 import { Alert, AlertDescription } from '../../ui/Alert';
 import { Checkbox } from '../../ui/Checkbox';
 import { cn } from '../../../utils/cn';
+import { PlusCircle, XCircle } from 'lucide-react';
 
 interface CollaborationFormProps {
   collaboration?: Collaboration;
@@ -46,7 +48,8 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
   const [compensation, setCompensation] = useState(collaboration?.compensation || '');
   const [location, setLocation] = useState(collaboration?.location || '');
   const [isRemote, setIsRemote] = useState(collaboration?.isRemote ?? true);
-  const [images, setImages] = useState<string[]>(collaboration?.images || []);
+  const [mediaEvidence, setMediaEvidence] = useState<EmbeddedEvidence[]>(collaboration?.mediaEvidence || []);
+  const [showEvidenceForm, setShowEvidenceForm] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +81,7 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
         compensation,
         location,
         isRemote,
-        images,
+        mediaEvidence,
         creatorId: currentUser.uid,
         ownerId: currentUser.uid,
         ownerName: userProfile.displayName || 'Anonymous',
@@ -252,12 +255,64 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
         <div>
           <h3 className="text-lg font-semibold text-foreground mb-6 text-center">Collaboration Media</h3>
           <div className="space-y-4">
-            <Label className="text-sm font-medium">Collaboration Images</Label>
-            <MultipleImageUploader
-              onImagesChange={setImages}
-              initialImageUrls={images}
-              folder={`collaborations/${collaboration?.id || 'new'}`}
-            />
+            <Label className="text-sm font-medium">Collaboration Media Links</Label>
+            <p className="text-xs text-muted-foreground">Add links to images, videos, documents, or design files to showcase your collaboration</p>
+            
+            {/* Display existing media */}
+            {mediaEvidence.length > 0 && (
+              <div className="space-y-3 rounded-lg glassmorphic border-glass backdrop-blur-xl bg-white/5 p-4">
+                {mediaEvidence.map((evidence, index) => (
+                  <div 
+                    key={`media-${evidence.id || index}`}
+                    className="flex items-center justify-between rounded-lg glassmorphic border-glass backdrop-blur-sm bg-white/5 p-3 hover:bg-white/10 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">{evidence.title}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{evidence.embedService} - {evidence.embedType}</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        if (window.confirm(`Remove "${evidence.title}"?`)) {
+                          const updated = [...mediaEvidence];
+                          updated.splice(index, 1);
+                          setMediaEvidence(updated);
+                        }
+                      }}
+                      className="text-muted-foreground hover:text-destructive"
+                      aria-label={`Remove ${evidence.title}`}
+                    >
+                      <XCircle className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add Evidence Form or Button */}
+            {showEvidenceForm ? (
+              <EvidenceSubmitter
+                onSubmit={async (evidence) => {
+                  setMediaEvidence([...mediaEvidence, evidence]);
+                  setShowEvidenceForm(false);
+                  addToast('success', 'Media added successfully');
+                }}
+                onCancel={() => setShowEvidenceForm(false)}
+              />
+            ) : (
+              <Button
+                type="button"
+                variant="glassmorphic"
+                topic="collaboration"
+                onClick={() => setShowEvidenceForm(true)}
+                className="w-full hover:shadow-purple-500/25 hover:shadow-lg transition-all duration-300 min-h-[44px]"
+              >
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Media Link
+              </Button>
+            )}
           </div>
         </div>
       </div>

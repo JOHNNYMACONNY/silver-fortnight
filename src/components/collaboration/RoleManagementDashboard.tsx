@@ -9,9 +9,8 @@ import { AnimatePresence } from 'framer-motion';
 import { getRoleApplications } from '../../services/roleApplications';
 import { Button } from '../ui/Button';
 import { ApplicationCard } from './ApplicationCard';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
-import { Alert, AlertDescription, AlertTitle } from '../ui/Alert';
+import { Alert, AlertDescription } from '../ui/Alert';
 import Box from '../layout/primitives/Box';
 
 interface RoleManagementDashboardProps {
@@ -77,16 +76,15 @@ const RoleManagementCard: React.FC<RoleManagementCardProps> = ({
   }, [collaborationId, role.id]);
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <CardTitle>{role.title}</CardTitle>
+    <div className="glassmorphic border-glass backdrop-blur-xl bg-white/5 rounded-xl">
+      <div className="p-6">
+        <div className="flex justify-between items-start mb-4">
+          <h3 className="text-lg font-semibold text-foreground">{role.title}</h3>
           <Badge variant={role.status === RoleState.OPEN ? 'default' : 'secondary'}>
             {role.status === RoleState.OPEN ? 'Open' : 'Filled'}
           </Badge>
         </div>
-      </CardHeader>
-      <CardContent>
+        <div>
         <p className="mt-2 text-sm">{role.description}</p>
 
         {/* Role Hierarchy Section */}
@@ -174,8 +172,9 @@ const RoleManagementCard: React.FC<RoleManagementCardProps> = ({
             )}
           </div>
         )}
-      </CardContent>
-    </Card>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -190,22 +189,20 @@ const RoleManagementDashboard: React.FC<RoleManagementDashboardProps> = ({
 
   return (
     <Box className="@container" style={{ containerType: 'inline-size' }}>
-      <Card>
-        <CardContent className="p-6">
-          <div className="space-y-6">
-            {filteredRoles.map((role: CollaborationRoleData) => (
-              <RoleManagementCard
-                key={role.id}
-                role={role}
-                collaborationId={collaboration.id}
-                onAcceptApplication={onAcceptApplication}
-                onRejectApplication={onRejectApplication}
-                onUpdateHierarchy={onUpdateHierarchy}
-              />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="glassmorphic border-glass backdrop-blur-xl bg-white/5 rounded-xl p-6">
+        <div className="space-y-6">
+          {filteredRoles.map((role: CollaborationRoleData) => (
+            <RoleManagementCard
+              key={role.id}
+              role={role}
+              collaborationId={collaboration.id}
+              onAcceptApplication={onAcceptApplication}
+              onRejectApplication={onRejectApplication}
+              onUpdateHierarchy={onUpdateHierarchy}
+            />
+          ))}
+        </div>
+      </div>
     </Box>
   );
 };

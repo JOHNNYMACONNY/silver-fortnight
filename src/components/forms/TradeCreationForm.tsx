@@ -197,9 +197,9 @@ export const TradeCreationForm: React.FC<TradeCreationFormProps> = ({
 
       {/* Error Display */}
       {submitError && (
-        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+        <div className="mb-6 p-4 glassmorphic border-glass backdrop-blur-xl bg-destructive/5">
           <div className="flex items-center space-x-2">
-            <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+            <div className="w-5 h-5 bg-gradient-to-br from-red-500/80 to-red-600/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
               <span className="text-white text-xs">!</span>
             </div>
             <p className="text-red-600 dark:text-red-400 font-medium">
@@ -240,7 +240,7 @@ export const TradeCreationForm: React.FC<TradeCreationFormProps> = ({
       )}
 
       {/* Help Section */}
-      <div className="mt-12 glassmorphic p-6">
+      <div className="mt-12 glassmorphic border-glass backdrop-blur-xl bg-white/5 p-6">
         <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
           Tips for a Successful Trade
         </h3>

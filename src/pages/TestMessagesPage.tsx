@@ -34,7 +34,7 @@ export const TestMessagesPage: React.FC = () => {
       console.log('TestMessagesPage: Loading conversations for user:', userId);
 
       // Try different query approaches
-      let conversations: any[] = [];
+      const conversations: any[] = [];
 
       // Approach 1: participantIds query
       try {

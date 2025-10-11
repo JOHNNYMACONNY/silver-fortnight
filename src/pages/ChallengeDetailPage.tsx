@@ -3,12 +3,13 @@ import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { onChallengeSubmissions, getChallenge, joinChallenge, getUserChallengeProgress } from '../services/challenges';
 import { getUserThreeTierProgress } from '../services/threeTierProgression';
-import type { Challenge } from '../types/gamification';
+import type { Challenge, UserChallenge } from '../types/gamification';
 import EvidenceGallery from '../components/evidence/EvidenceGallery';
 import { EmbeddedEvidence } from '../types/evidence';
 import { useToast } from '../contexts/ToastContext';
 import { ArrowLeft, Award, Clock, Calendar, User, Zap, Gift, Info } from 'lucide-react';
 import { Tooltip } from '../components/ui/Tooltip';
+import { ChallengeCompletionInterface } from '../components/challenges/ChallengeCompletionInterface';
 
 export const ChallengeDetailPage: React.FC = () => {
   const { challengeId } = useParams<{ challengeId: string }>();
@@ -24,6 +25,8 @@ export const ChallengeDetailPage: React.FC = () => {
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [isLocked, setIsLocked] = useState(false);
   const [lockReason, setLockReason] = useState<string>('');
+  const [userChallenge, setUserChallenge] = useState<UserChallenge | null>(null);
+  const [showCompletionForm, setShowCompletionForm] = useState(false);
 
   useEffect(() => {
     if (challengeId) {
@@ -45,9 +48,14 @@ export const ChallengeDetailPage: React.FC = () => {
         if (prog.success) {
           setIsParticipating(true);
           setProgressPercentage(Math.round(prog.progressPercentage || 0));
+          // Set userChallenge for completion interface
+          if (prog.userChallenge) {
+            setUserChallenge(prog.userChallenge as UserChallenge);
+          }
         } else {
           setIsParticipating(false);
           setProgressPercentage(0);
+          setUserChallenge(null);
         }
       } catch {
         // ignore
@@ -221,7 +229,7 @@ export const ChallengeDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-6">
         <Link
           to="/challenges"
@@ -232,11 +240,11 @@ export const ChallengeDetailPage: React.FC = () => {
         </Link>
       </div>
 
-      <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden transition-all duration-200">
+      <article className="glassmorphic overflow-hidden transition-all duration-200" role="article" aria-labelledby="challenge-title">
         {/* Header */}
-          <div className="px-6 py-5 border-b border-border flex justify-between items-center transition-colors duration-200">
+        <header className="px-6 py-5 border-b border-glass flex justify-between items-center transition-colors duration-200">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{challenge.title}</h1>
+            <h1 id="challenge-title" className="text-2xl font-bold text-foreground">{challenge.title}</h1>
             <div className="flex items-center mt-2 space-x-4">
               {(
                 // always show difficulty with safe default
@@ -275,17 +283,18 @@ export const ChallengeDetailPage: React.FC = () => {
                   : 'bg-primary hover:bg-primary/90 text-primary-foreground'
               } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200`}
               title={isLocked ? 'Unlock criteria not met yet' : undefined}
+              aria-label={isParticipating ? 'Currently participating in challenge' : 'Join this challenge'}
             >
               {isParticipating ? 'Participating' : 'Participate'}
             </button>
           )}
-        </div>
+        </header>
 
         {/* Content */}
         <div className="p-6">
           {/* Challenge details */}
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold text-foreground mb-3">Challenge Details</h2>
+          <section className="mb-8" aria-labelledby="challenge-details">
+            <h2 id="challenge-details" className="text-lg font-semibold text-foreground mb-3">Challenge Details</h2>
             <p className="text-muted-foreground mb-6">{challenge.description}</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -317,11 +326,11 @@ export const ChallengeDetailPage: React.FC = () => {
                 </div>
               )}
             </div>
-          </div>
+          </section>
 
           {/* Rewards Overview */}
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+          <section className="mb-8" aria-labelledby="rewards-section">
+            <h2 id="rewards-section" className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
               <Gift className="w-4 h-4" /> Rewards
               <Tooltip content={<div>Base XP is guaranteed on completion. Bonus XP depends on performance and timing.</div>}>
                 <button aria-label="Rewards info" className="text-muted-foreground hover:text-foreground">
@@ -330,13 +339,13 @@ export const ChallengeDetailPage: React.FC = () => {
               </Tooltip>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-lg border border-border bg-card/50">
+              <div className="glassmorphic p-4 rounded-lg border-glass bg-card/30 backdrop-blur-lg">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                   <Zap className="w-4 h-4 text-yellow-500" /> Base XP
                 </div>
                 <div className="text-2xl font-bold text-foreground">+{(challenge as any)?.rewards?.xp ?? 0}</div>
               </div>
-              <div className="p-4 rounded-lg border border-border bg-card/50">
+              <div className="glassmorphic p-4 rounded-lg border-glass bg-card/40 backdrop-blur-md">
                 <div className="text-sm font-medium text-foreground mb-2">Potential Bonuses</div>
                 <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-1">
                   <li>Quality bonus: up to +50% of base</li>
@@ -346,21 +355,21 @@ export const ChallengeDetailPage: React.FC = () => {
                 </ul>
               </div>
             </div>
-          </div>
+          </section>
 
           {/* Unlock Checklist (soft guidance) */}
           {isLocked && (
-            <div className="mb-8 p-4 rounded-lg border border-border bg-amber-50 dark:bg-amber-900/10">
-              <h3 className="text-sm font-semibold text-foreground mb-2">Unlock criteria</h3>
+            <section className="mb-8 glassmorphic p-4 rounded-lg border-glass bg-amber-50/50 dark:bg-amber-900/20 backdrop-blur-sm" aria-labelledby="unlock-criteria">
+              <h3 id="unlock-criteria" className="text-sm font-semibold text-foreground mb-2">Unlock criteria</h3>
               <p className="text-xs text-muted-foreground">{lockReason}</p>
-            </div>
+            </section>
           )}
 
           {/* Rules and Requirements */}
           {(challenge as any).rules && (
-            <div className="mb-8">
-              <h2 className="text-lg font-semibold text-foreground mb-3">Rules and Requirements</h2>
-              <div className="bg-background p-4 rounded-lg transition-colors duration-200">
+            <section className="mb-8" aria-labelledby="rules-section">
+              <h2 id="rules-section" className="text-lg font-semibold text-foreground mb-3">Rules and Requirements</h2>
+              <div className="glassmorphic p-4 rounded-lg border-glass transition-colors duration-200 backdrop-blur-md">
                 <ul className="list-disc pl-5 space-y-2">
                   {Array.isArray((challenge as any).rules) ? (
                     (challenge as any).rules.map((rule: string, index: number) => (
@@ -371,14 +380,14 @@ export const ChallengeDetailPage: React.FC = () => {
                   )}
                 </ul>
               </div>
-            </div>
+            </section>
           )}
 
           {/* Prizes */}
           {(challenge as any).prizes && (
-            <div className="mb-8">
-              <h2 className="text-lg font-semibold text-foreground mb-3">Prizes</h2>
-              <div className="bg-background p-4 rounded-lg transition-colors duration-200">
+            <section className="mb-8" aria-labelledby="prizes-section">
+              <h2 id="prizes-section" className="text-lg font-semibold text-foreground mb-3">Prizes</h2>
+              <div className="glassmorphic p-4 rounded-lg border-glass transition-colors duration-200 backdrop-blur-md">
                 <ul className="list-disc pl-5 space-y-2">
                   {Array.isArray((challenge as any).prizes) ? (
                     (challenge as any).prizes.map((prize: string, index: number) => (
@@ -389,26 +398,26 @@ export const ChallengeDetailPage: React.FC = () => {
                   )}
                 </ul>
               </div>
-            </div>
+            </section>
           )}
 
           {/* Submission Guidelines */}
           {(challenge as any).submissionGuidelines && (
-            <div className="mb-8">
-              <h2 className="text-lg font-semibold text-foreground mb-3">Submission Guidelines</h2>
-              <div className="bg-background p-4 rounded-lg transition-colors duration-200">
+            <section className="mb-8" aria-labelledby="submission-guidelines">
+              <h2 id="submission-guidelines" className="text-lg font-semibold text-foreground mb-3">Submission Guidelines</h2>
+              <div className="glassmorphic p-4 rounded-lg border-glass transition-colors duration-200 backdrop-blur-md">
                 <p className="text-muted-foreground">{(challenge as any).submissionGuidelines}</p>
               </div>
-            </div>
+            </section>
           )}
 
           {/* Recent Submissions (with embedded evidence) */}
           {submissions && submissions.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-lg font-semibold text-foreground mb-3">Recent Submissions</h2>
+            <section className="mb-8" aria-labelledby="recent-submissions">
+              <h2 id="recent-submissions" className="text-lg font-semibold text-foreground mb-3">Recent Submissions</h2>
               <div className="space-y-6">
                 {submissions.slice(0, 5).map((submission) => (
-                  <div key={submission.id} className="bg-background p-4 rounded-lg border border-border">
+                  <div key={submission.id} className="glassmorphic p-4 rounded-lg border-glass bg-card/20 backdrop-blur-sm">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-md font-medium text-foreground">
                         {submission.title || 'Submission'}
@@ -425,38 +434,76 @@ export const ChallengeDetailPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
           {/* Participation status and progress */}
-          <div className="mt-8 flex flex-col items-center gap-3">
+          <section className="mt-8 flex flex-col items-center gap-3" aria-labelledby="participation-section">
             {isParticipating ? (
-              <div className="w-full max-w-md">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Your Progress</span>
-                  <span className="text-sm text-foreground font-medium">{progressPercentage}%</span>
+              <>
+                <div className="glassmorphic w-full max-w-md p-6 rounded-xl border-glass backdrop-blur-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-muted-foreground">Your Progress</span>
+                    <span className="text-sm text-foreground font-medium" aria-live="polite">{progressPercentage}%</span>
+                  </div>
+                  <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all duration-300"
+                      style={{ width: `${Math.min(100, Math.max(0, progressPercentage))}%` }}
+                      role="progressbar"
+                      aria-valuenow={progressPercentage}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={`Challenge progress: ${progressPercentage}%`}
+                    />
+                  </div>
                 </div>
-                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary transition-all duration-300"
-                    style={{ width: `${Math.min(100, Math.max(0, progressPercentage))}%` }}
-                  />
-                </div>
-              </div>
+                
+                {/* Complete Challenge Button */}
+                {progressPercentage < 100 && !showCompletionForm && (
+                  <button
+                    onClick={() => setShowCompletionForm(true)}
+                    className="px-6 py-3 rounded-md text-lg font-medium bg-success hover:bg-success/90 text-success-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-success transition-colors duration-200"
+                    aria-label="Complete this challenge"
+                  >
+                    Complete Challenge
+                  </button>
+                )}
+              </>
             ) : (
               normalizeStatus((challenge as any).status) === 'OPEN' && (
                 <button
                   onClick={handleParticipate}
                   className="px-6 py-3 rounded-md text-lg font-medium bg-primary hover:bg-primary/90 text-primary-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200"
+                  aria-label="Join this challenge"
                 >
                   Join this Challenge
                 </button>
               )
             )}
-          </div>
+          </section>
+
+          {/* Challenge Completion Interface */}
+          {showCompletionForm && isParticipating && userChallenge && challenge && currentUser && (
+            <section className="mt-8 glassmorphic p-6 rounded-xl border-glass backdrop-blur-xl" aria-labelledby="completion-interface">
+              <ChallengeCompletionInterface
+                challenge={challenge}
+                userChallenge={userChallenge}
+                userId={currentUser.uid}
+                onComplete={(rewards) => {
+                  addToast('success', `Challenge completed! You earned ${rewards.totalXP} XP!`);
+                  setShowCompletionForm(false);
+                  setProgressPercentage(100);
+                  // Refresh challenge data
+                  if (challengeId) fetchChallenge(challengeId);
+                }}
+                onCancel={() => setShowCompletionForm(false)}
+              />
+            </section>
+          )}
         </div>
-      </div>
-    </div>
+      </article>
+    </main>
   );
 };
 

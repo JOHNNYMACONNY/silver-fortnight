@@ -17,7 +17,8 @@ import {
   CheckCircle,
   XCircle,
   Play,
-  Pause
+  Pause,
+  Plus
 } from 'lucide-react';
 import { Collaboration } from '../../../services/firestore-exports';
 import { cn } from '../../../utils/cn';
@@ -27,6 +28,7 @@ import { Card, CardHeader, CardContent, CardFooter } from '../../ui/Card';
 import { Badge } from '../../ui/Badge';
 import { Button } from '../../ui/Button';
 import { Tooltip } from '../../ui/Tooltip';
+import { getSkillBadgeProps } from '../../../utils/skillMapping';
 
 interface SearchResultPreviewProps {
   collaboration: Collaboration;
@@ -301,13 +303,18 @@ export const SearchResultPreview: React.FC<SearchResultPreviewProps> = ({
           {/* Skills Section */}
           {collaboration.skillsNeeded && collaboration.skillsNeeded.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {collaboration.skillsNeeded.slice(0, variant === 'compact' ? 2 : 4).map((skill, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">
-                  {skill}
-                </Badge>
-              ))}
+              {collaboration.skillsNeeded.slice(0, variant === 'compact' ? 2 : 4).map((skill, index) => {
+                const { topic, Icon } = getSkillBadgeProps(skill);
+                return (
+                  <Badge key={index} variant="default" topic={topic} size="sm" className="flex items-center gap-1">
+                    <Icon className="h-3 w-3" />
+                    {skill}
+                  </Badge>
+                );
+              })}
               {collaboration.skillsNeeded.length > (variant === 'compact' ? 2 : 4) && (
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" size="sm" className="flex items-center gap-1">
+                  <Plus className="h-3 w-3" />
                   +{collaboration.skillsNeeded.length - (variant === 'compact' ? 2 : 4)} more
                 </Badge>
               )}

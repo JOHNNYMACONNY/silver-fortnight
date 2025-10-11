@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { getCollaborations, Collaboration } from '../services/firestore-exports';
 import { useToast } from '../contexts/ToastContext';
-import { PlusCircle } from '../utils/icons';
+import { PlusCircle, Search, Filter, X, ChevronUp, ChevronDown } from 'lucide-react';
 import PerformanceMonitor from '../components/ui/PerformanceMonitor';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { GlassmorphicInput } from "../components/ui/GlassmorphicInput";
 // Import the enhanced CollaborationCard component
 import { CollaborationCard } from '../components/features/collaborations/CollaborationCard';
 import { SearchResultPreview } from '../components/features/search/SearchResultPreview';
@@ -13,7 +14,6 @@ import { SearchEmptyState } from '../components/features/search/SearchEmptyState
 import { EnhancedSearchBar } from '../components/features/search/EnhancedSearchBar';
 import { EnhancedFilterPanel } from '../components/features/search/EnhancedFilterPanel';
 import { Button } from '../components/ui/Button';
-import { Link } from 'react-router-dom';
 import StatChip from '../components/ui/StatChip';
 // Import search functionality
 import { useCollaborationSearch } from '../hooks/useCollaborationSearch';
@@ -29,6 +29,9 @@ import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '../compone
 import { Badge } from '../components/ui/Badge';
 import { classPatterns, animations } from '../utils/designSystem';
 import { semanticClasses } from '../utils/semanticColors';
+import { Modal } from "../components/ui/Modal";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/Select";
+import { Target, Tag, Clock, MapPin } from 'lucide-react';
 import { TopicLink } from '../components/ui/TopicLink';
 import Box from '../components/layout/primitives/Box';
 import Stack from '../components/layout/primitives/Stack';
@@ -87,11 +90,13 @@ export const CollaborationsPage: React.FC = () => {
   const [savedCollaborations, setSavedCollaborations] = useState<Set<string>>(new Set());
   const [joinedCollaborations, setJoinedCollaborations] = useState<Set<string>>(new Set());
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const [visibleCount, setVisibleCount] = useState(12);
   const activeFiltersCount = useMemo(() => {
     const entries = Object.entries(filters || {});
     return entries.filter(([_, v]) => v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0)).length;
   }, [filters]);
+
 
   // Realtime collaborations subscription (waits for Firebase init)
   useEffect(() => {
@@ -195,8 +200,31 @@ export const CollaborationsPage: React.FC = () => {
   const displayLoading = searchTerm || hasActiveFilters ? searchLoading : loading;
   const displayError = searchError || error;
   const totalVisible = displayCollaborations.length;
-  const savedCount = savedCollaborations.size;
-  const joinedCount = joinedCollaborations.size;
+
+  // Available skills for filter panel (now after displayCollaborations is defined)
+  const availableSkills = useMemo(() => {
+    const frequencyByKey: Record<string, number> = {};
+    const displayByKey: Record<string, string> = {};
+    (displayCollaborations || []).forEach(collab => {
+      const req: unknown[] = (collab as any).skillsRequired || [];
+      const needed: unknown[] = (collab as any).skillsNeeded || [];
+      [...req, ...needed].forEach((raw) => {
+        const s = String(raw || '').trim();
+        if (!s) return;
+        const key = s.toLowerCase();
+        if (!displayByKey[key]) displayByKey[key] = s;
+        frequencyByKey[key] = (frequencyByKey[key] || 0) + 1;
+      });
+    });
+    return Object.keys(frequencyByKey)
+      .sort((a, b) => {
+        const byFreq = (frequencyByKey[b] || 0) - (frequencyByKey[a] || 0);
+        if (byFreq !== 0) return byFreq;
+        return displayByKey[a].localeCompare(displayByKey[b]);
+      })
+      .map(k => displayByKey[k])
+      .slice(0, 50);
+  }, [displayCollaborations]);
 
   // Debounced search when term or filters change (MVP: 300ms)
   useEffect(() => {
@@ -224,10 +252,10 @@ export const CollaborationsPage: React.FC = () => {
             intensity="medium" 
             className={classPatterns.homepageHeroContent}
           >
-            <AnimatedHeading 
-              as="h1" 
-              animation="kinetic" 
-              className="text-4xl md:text-5xl font-bold text-foreground mb-4"
+            <AnimatedHeading
+              as="h1"
+              animation="kinetic"
+              className={`text-4xl md:text-5xl font-bold ${semanticClasses('collaboration').text} mb-4`}
             >
               Collaborations
             </AnimatedHeading>
@@ -235,43 +263,29 @@ export const CollaborationsPage: React.FC = () => {
               Join forces with other creators to bring your ideas to life and build amazing projects together.
             </p>
             <Cluster gap="sm" align="center">
-              <Button asChild topic="collaboration" variant="primary">
-            <Link to="/collaborations/new">
-              <PlusCircle className="me-2 h-4 w-4" />
-              Create Collaboration
-            </Link>
-          </Button>
-              <Badge variant="default" topic="collaboration" className="text-xs">
+              <Button
+                onClick={() => navigate("/collaborations/new")}
+                variant="glassmorphic"
+                topic="collaboration"
+              >
+                <PlusCircle className="me-2 h-4 w-4" />
+                Create New Collaboration
+              </Button>
+              <Badge variant="default" topic="collaboration" className="text-caption">
                 {displayCollaborations.length} Active Collaborations
               </Badge>
             </Cluster>
           </GradientMeshBackground>
         </Box>
 
-        {/* Summary Stats with HomePage-style cards */}
-        <Grid columns={{ base: 2, md: 3 }} gap="sm" className="mb-6">
-          <Card variant="glass" className="p-4">
-            <CardContent className="text-center">
-              <div className="text-2xl font-bold text-foreground">{totalVisible}</div>
-              <div className="text-sm text-muted-foreground">Results</div>
-            </CardContent>
-          </Card>
-          <Card variant="glass" className="p-4 hidden sm:block">
-            <CardContent className="text-center">
-              <div className="text-2xl font-bold text-foreground">{savedCount}</div>
-              <div className="text-sm text-muted-foreground">Saved</div>
-            </CardContent>
-          </Card>
-          <Card variant="glass" className="p-4 hidden sm:block">
-            <CardContent className="text-center">
-              <div className="text-2xl font-bold text-foreground">{joinedCount}</div>
-              <div className="text-sm text-muted-foreground">Joined</div>
-            </CardContent>
-          </Card>
-        </Grid>
 
         {/* Enhanced Search Section with HomePage-style card */}
-        <Card variant="glass" className="static rounded-xl p-4 md:p-6 mb-8">
+        <Card
+          variant="glass"
+          className="rounded-xl p-4 md:p-6 mb-lg hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300"
+          interactive={true}
+          hover={true}
+        >
           <CardHeader className={classPatterns.homepageCardHeader}>
             <CardTitle className="text-lg font-semibold flex items-center justify-between">
               Find Your Perfect Collaboration
@@ -281,52 +295,405 @@ export const CollaborationsPage: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className={classPatterns.homepageCardContent}>
-            <EnhancedSearchBar
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              onSearch={(term) => handleSearch(term, filters)}
-              onToggleFilters={() => setShowFilterPanel(true)}
-              hasActiveFilters={hasActiveFilters}
-              activeFiltersCount={activeFiltersCount}
-              resultsCount={displayCollaborations.length}
-              isLoading={searchLoading}
-              placeholder="Type here to search collaborations..."
+            <div className="space-y-md w-full">
+              {/* Enhanced Search Input with Design System */}
+              <Box className="relative w-full">
+                <GlassmorphicInput
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search collaborations by skill, category, or description..."
+                  variant="glass"
+                  size="lg"
+                  brandAccent="purple"
+                  icon={<Search className="h-5 w-5" />}
+                  className="pr-20 bg-white/10 backdrop-blur-xl w-full"
+                />
+                <Button
+                  onClick={() => setShowFilterPanel(true)}
+                  variant="glassmorphic"
+                  size="sm"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 min-h-[44px] min-w-[44px]"
+                  topic="collaboration"
+                >
+                  <Filter className="h-4 w-4" />
+                  Filters
+                </Button>
+              </Box>
+
+              {/* Active Filters Display - Always show when filters are active */}
+              {hasActiveFilters && (
+                <Card variant="glass" className="p-md hover:shadow-md hover:shadow-purple-500/5 transition-all duration-200" interactive={true}>
+                  <CardHeader className="pb-3">
+                    <Cluster justify="between" align="center">
+                      <CardTitle className="text-body-large text-purple-600 dark:text-purple-400">Active Filters</CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        topic="collaboration"
+                        onClick={() => {
+                          setFilters({});
+                          clearSearch();
+                        }}
+                        className="text-body-small min-h-[44px] min-w-[44px]"
+                      >
+                        Clear All
+                      </Button>
+                    </Cluster>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-xs">
+                      {Object.entries(filters).map(([key, value]) => {
+                        if (!value || (Array.isArray(value) && value.length === 0)) return null;
+
+                        let displayValue = '';
+                        if (Array.isArray(value)) {
+                          displayValue = value.join(', ');
+                        } else if (typeof value === 'object' && value && 'start' in value && 'end' in value) {
+                          displayValue = `${(value as any).start} - ${(value as any).end}`;
+                        } else {
+                          displayValue = String(value);
+                        }
+
+                        return (
+                          <Badge
+                            key={key}
+                            variant="default"
               topic="collaboration"
-            />
+                            className="cursor-pointer"
+                            onClick={() => {
+                              const newFilters = { ...filters };
+                              delete newFilters[key];
+                              setFilters(newFilters);
+                              search(searchTerm, newFilters);
+                            }}
+                          >
+                            {key.charAt(0).toUpperCase() + key.slice(1)}: {displayValue}
+                            <X className="h-3 w-3 ml-1" />
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Clear Search Button */}
+              {searchTerm && (
+                <div className="text-right">
+                  <Button
+                    type="button"
+                    onClick={() => setSearchTerm("")}
+                    variant="ghost"
+                    size="sm"
+                    className="text-body-small text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 underline"
+                    aria-label="Clear search"
+                  >
+                    Clear search
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardContent>
         
-        <EnhancedFilterPanel
+        {/* Enhanced Filter Panel with Modal Component */}
+        <Modal
           isOpen={showFilterPanel}
           onClose={() => setShowFilterPanel(false)}
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-          onClearFilters={() => setFilters({})}
-          availableSkills={useMemo(() => {
-            const frequencyByKey: Record<string, number> = {};
-            const displayByKey: Record<string, string> = {};
-            (displayCollaborations || []).forEach(collab => {
-              const req: unknown[] = (collab as any).skillsRequired || [];
-              const needed: unknown[] = (collab as any).skillsNeeded || [];
-              [...req, ...needed].forEach((raw) => {
-                const s = String(raw || '').trim();
-                if (!s) return;
-                const key = s.toLowerCase();
-                if (!displayByKey[key]) displayByKey[key] = s;
-                frequencyByKey[key] = (frequencyByKey[key] || 0) + 1;
-              });
-            });
-            return Object.keys(frequencyByKey)
-              .sort((a, b) => {
-                const byFreq = (frequencyByKey[b] || 0) - (frequencyByKey[a] || 0);
-                if (byFreq !== 0) return byFreq;
-                return displayByKey[a].localeCompare(displayByKey[b]);
-              })
-              .map(k => displayByKey[k])
-              .slice(0, 50);
-          }, [displayCollaborations])}
-          persistenceKey="collabs-filters"
-        />
+          title="Advanced Filters"
+          size="xxl"
+        >
+          <div className="space-y-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-300 glassmorphic border-glass backdrop-blur-2xl bg-white/5 p-4 sm:p-6 rounded-xl max-h-[85vh] overflow-y-auto">
+            <p className="glassmorphic border-glass backdrop-blur-sm bg-white/5 text-white/90 p-3 sm:p-4 rounded-xl mb-4 text-sm sm:text-base">
+              Refine your search with specific criteria
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4 gap-6 sm:gap-8 p-4 sm:p-6">
+              {/* Status Filter */}
+              <Card
+                variant="glass"
+                className="p-4 sm:p-5 lg:p-6 border-glass backdrop-blur-xl bg-white/5 hover:bg-white/10 transition-all duration-300"
+                glow="subtle"
+                glowColor="purple"
+                interactive={true}
+                hover={true}
+              >
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="text-sm sm:text-base lg:text-lg font-medium flex items-center gap-2 sm:gap-3 text-white/95">
+                    <Target className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400 flex-shrink-0" />
+                    <span className="leading-tight break-words">Collaboration Status</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <Select
+                    value={filters.status || "all"}
+                    onValueChange={(value) => {
+                      const newFilters = { ...filters, status: value === "all" ? undefined : value };
+                      setFilters(newFilters);
+                      search(searchTerm, newFilters);
+                    }}
+                  >
+                    <SelectTrigger className="glassmorphic border-glass backdrop-blur-sm bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-purple-400/30 transition-all duration-200 h-10 sm:h-11 text-sm sm:text-base">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent className="glassmorphic border-glass backdrop-blur-xl bg-white/10">
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="open">Open</SelectItem>
+                      <SelectItem value="recruiting">Recruiting</SelectItem>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </CardContent>
+              </Card>
+
+              {/* Skills Filter */}
+              <Card
+                variant="glass"
+                className="p-4 sm:p-5 lg:p-6 border-glass backdrop-blur-xl bg-white/5 hover:bg-white/10 transition-all duration-300"
+                glow="subtle"
+                glowColor="purple"
+                interactive={true}
+                hover={true}
+              >
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="text-sm sm:text-base lg:text-lg font-medium flex items-center gap-2 sm:gap-3 text-white/95">
+                    <Tag className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400 flex-shrink-0" />
+                    <span className="leading-tight break-words">Skills Needed</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <Select
+                    value={filters.skills || "all"}
+                    onValueChange={(value) => {
+                      const newFilters = { ...filters, skills: value === "all" ? undefined : [value] };
+                      setFilters(newFilters);
+                      search(searchTerm, newFilters);
+                    }}
+                  >
+                    <SelectTrigger className="glassmorphic border-glass backdrop-blur-sm bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-purple-400/30 transition-all duration-200 h-10 sm:h-11 text-sm sm:text-base">
+                      <SelectValue placeholder="Select skill" />
+                    </SelectTrigger>
+                    <SelectContent className="glassmorphic border-glass backdrop-blur-xl bg-white/10">
+                      <SelectItem value="all">All Skills</SelectItem>
+                      {availableSkills.map((skill) => (
+                        <SelectItem key={skill} value={skill}>{skill}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </CardContent>
+              </Card>
+
+              {/* Timeline Filter */}
+              <Card
+                variant="glass"
+                className="p-4 sm:p-5 lg:p-6 border-glass backdrop-blur-xl bg-white/5 hover:bg-white/10 transition-all duration-300"
+                glow="subtle"
+                glowColor="purple"
+                interactive={true}
+                hover={true}
+              >
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="text-sm sm:text-base lg:text-lg font-medium flex items-center gap-2 sm:gap-3 text-white/95">
+                    <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400 flex-shrink-0" />
+                    <span className="leading-tight break-words">Timeline</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <Select
+                    value={filters.timeline || "all"}
+                    onValueChange={(value) => {
+                      const newFilters = { ...filters, timeline: value === "all" ? undefined : value };
+                      setFilters(newFilters);
+                      search(searchTerm, newFilters);
+                    }}
+                  >
+                    <SelectTrigger className="glassmorphic border-glass backdrop-blur-sm bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-purple-400/30 transition-all duration-200 h-10 sm:h-11 text-sm sm:text-base">
+                      <SelectValue placeholder="Select timeline" />
+                    </SelectTrigger>
+                    <SelectContent className="glassmorphic border-glass backdrop-blur-xl bg-white/10">
+                      <SelectItem value="all">Any Timeline</SelectItem>
+                      <SelectItem value="short-term">Short-term (days)</SelectItem>
+                      <SelectItem value="medium-term">Medium-term (weeks)</SelectItem>
+                      <SelectItem value="long-term">Long-term (months)</SelectItem>
+                      <SelectItem value="ongoing">Ongoing</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </CardContent>
+              </Card>
+
+              {/* Location Filter */}
+              <Card
+                variant="glass"
+                className="p-4 sm:p-5 lg:p-6 border-glass backdrop-blur-xl bg-white/5 hover:bg-white/10 transition-all duration-300"
+                glow="subtle"
+                glowColor="purple"
+                interactive={true}
+                hover={true}
+              >
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="text-sm sm:text-base lg:text-lg font-medium flex items-center gap-2 sm:gap-3 text-white/95">
+                    <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400 flex-shrink-0" />
+                    <span className="leading-tight break-words">Location</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <Select
+                    value={filters.location || "all"}
+                    onValueChange={(value) => {
+                      const newFilters = { ...filters, location: value === "all" ? undefined : value };
+                      setFilters(newFilters);
+                      search(searchTerm, newFilters);
+                    }}
+                  >
+                    <SelectTrigger className="glassmorphic border-glass backdrop-blur-sm bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-purple-400/30 transition-all duration-200 h-10 sm:h-11 text-sm sm:text-base">
+                      <SelectValue placeholder="Select location" />
+                    </SelectTrigger>
+                    <SelectContent className="glassmorphic border-glass backdrop-blur-xl bg-white/10">
+                      <SelectItem value="all">All Locations</SelectItem>
+                      <SelectItem value="remote">Remote</SelectItem>
+                      <SelectItem value="in-person">In-person</SelectItem>
+                      <SelectItem value="hybrid">Hybrid</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Clear All Filters */}
+            <div className="pt-3 sm:pt-4 lg:pt-6">
+              <Button
+                variant="premium-outline"
+                topic="collaboration"
+                onClick={() => {
+                  setFilters({});
+                  clearSearch();
+                }}
+                className="w-full glassmorphic border-glass backdrop-blur-sm bg-white/5 hover:bg-white/10 focus:ring-2 focus:ring-purple-400/30 transition-all duration-300 h-10 sm:h-11 text-sm sm:text-base min-h-[44px]"
+              >
+                <X className="h-3 w-3 sm:h-4 sm:w-4 lg:h-4 lg:w-4 mr-1 sm:mr-2" />
+                <span className="break-words">Clear All Filters</span>
+              </Button>
+            </div>
+          </div>
+        </Modal>
         </Card>
+
+        {/* Collapsible Analytics Section */}
+        <section className="mb-lg">
+          <div className="mb-lg">
+            <button
+              onClick={() => setShowAnalytics(!showAnalytics)}
+              className="text-foreground hover:text-foreground/80 transition-all duration-200 flex items-center gap-2 group"
+            >
+              <AnimatedHeading as="h2" animation="slide" className="text-section-heading md:text-3xl">
+                Collaboration Analytics
+              </AnimatedHeading>
+              {showAnalytics ? (
+                <ChevronUp className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
+              ) : (
+                <ChevronDown className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
+              )}
+            </button>
+          </div>
+          {showAnalytics && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg animate-in fade-in-0 slide-in-from-top-4 duration-300">
+              <Card
+                variant="premium"
+                className="p-lg hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300"
+                tilt={true}
+                depth="lg"
+                glow="subtle"
+                glowColor="purple"
+                interactive={true}
+                hover={true}
+              >
+                <CardHeader>
+                  <CardTitle className="text-component-title text-foreground">Active Collaborations</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">{displayCollaborations.length}</div>
+                  <div className="text-sm text-muted-foreground">Currently available</div>
+                  {/* Simple bar chart placeholder */}
+                  <div className="mt-4 flex items-end gap-1 h-16">
+                    <div className="bg-purple-500/20 rounded-t w-full h-12"></div>
+                    <div className="bg-purple-500/40 rounded-t w-full h-8"></div>
+                    <div className="bg-purple-500/60 rounded-t w-full h-16"></div>
+                    <div className="bg-purple-500/30 rounded-t w-full h-6"></div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card
+                variant="premium"
+                className="p-lg hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300"
+                tilt={true}
+                depth="lg"
+                glow="subtle"
+                glowColor="purple"
+                interactive={true}
+                hover={true}
+              >
+                <CardHeader>
+                  <CardTitle className="text-component-title text-purple-600 dark:text-purple-400">Skills Categories</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+                    {new Set(displayCollaborations.map(collab => (collab as any).category)).size}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Skill categories</div>
+                  {/* Pie chart placeholder */}
+                  <div className="mt-4 w-16 h-16 mx-auto">
+                    <svg viewBox="0 0 100 100" className="w-full h-full">
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="60 100" className="text-purple-500/60" />
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="40 100" strokeDashoffset="-60" className="text-purple-400" />
+                    </svg>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card
+                variant="premium"
+                className="p-lg hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300"
+                tilt={true}
+                depth="lg"
+                glow="subtle"
+                glowColor="purple"
+                interactive={true}
+                hover={true}
+              >
+                <CardHeader>
+                  <CardTitle className="text-component-title text-purple-600 dark:text-purple-400">Success Rate</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">85%</div>
+                  <div className="text-sm text-muted-foreground">Completion rate</div>
+                  {/* Dynamic progress ring */}
+                  <div className="mt-4 w-16 h-16 mx-auto relative">
+                    <svg viewBox="0 0 100 100" className="w-full h-full">
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" className="text-purple-500/20" />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="8"
+                        strokeDasharray="213 251"
+                        className="text-purple-500 transition-all duration-1000 ease-out"
+                        strokeLinecap="round"
+                        transform="rotate(-90 50 50)"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-purple-600 dark:text-purple-400">
+                      85%
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </section>
 
       {/* Mobile helper: show applied filters + clear beneath sticky search */}
       {hasActiveFilters && (

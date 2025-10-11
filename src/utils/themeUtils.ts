@@ -15,17 +15,41 @@ export const themeClasses = {
   textInverse: 'text-white dark:text-neutral-900',
   textAccent: 'text-primary-500 dark:text-primary-400',
 
-  // Typography
+  // Enhanced Typography System - Premium Glassmorphic Design
+  // Hero & Display Typography
+  heroHeading: 'font-black tracking-tighter leading-none text-6xl text-foreground hover:text-primary transition-colors cursor-pointer',
+  displayLarge: 'font-extrabold tracking-tight leading-tight text-5xl text-foreground hover:text-secondary transition-colors cursor-pointer',
+  displayMain: 'font-bold tracking-tight leading-tight text-4xl text-foreground hover:text-primary transition-colors cursor-pointer',
+  
+  // Section Typography
+  sectionHeading: 'font-bold tracking-tight leading-snug text-3xl text-foreground hover:text-primary transition-colors cursor-pointer',
+  subsectionHeading: 'font-semibold tracking-normal leading-snug text-2xl text-foreground hover:text-secondary transition-colors cursor-pointer',
+  componentTitle: 'font-semibold tracking-normal leading-normal text-xl text-foreground hover:text-primary transition-colors cursor-pointer',
+  
+  // Body Typography
+  bodyLarge: 'font-medium tracking-normal leading-normal text-lg text-foreground hover:text-secondary transition-colors cursor-pointer',
+  body: 'font-normal leading-relaxed text-base text-foreground hover:text-primary transition-colors cursor-pointer',
+  bodySmall: 'font-normal leading-relaxed text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer',
+  caption: 'font-medium leading-relaxed text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer',
+  labelSmall: 'font-medium leading-relaxed text-2xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer',
+  
+  // Premium Font Weights with Context
+  fontThinHeading: 'font-thin tracking-wide text-2xl text-foreground',
+  fontLightHeading: 'font-light tracking-wide text-xl text-foreground',
+  fontNormalBody: 'font-normal leading-relaxed text-base text-foreground',
+  fontMediumEmphasis: 'font-medium tracking-tight text-lg text-foreground',
+  fontSemiboldSection: 'font-semibold tracking-tight text-lg text-foreground',
+  fontBoldMain: 'font-bold tracking-tight text-xl text-foreground',
+  fontExtraboldHero: 'font-extrabold tracking-tighter text-2xl text-foreground',
+  fontBlackDisplay: 'font-black tracking-tighter text-3xl text-foreground',
+  
+  // Legacy Typography (for backward compatibility)
   heading1: 'font-heading font-bold text-4xl md:text-5xl text-neutral-900 dark:text-white',
   heading2: 'font-heading font-semibold text-3xl md:text-4xl text-neutral-900 dark:text-white',
   heading3: 'font-heading font-semibold text-2xl md:text-3xl text-neutral-900 dark:text-white',
   heading4: 'font-heading font-medium text-xl md:text-2xl text-neutral-900 dark:text-white',
   heading5: 'font-heading font-medium text-lg md:text-xl text-neutral-900 dark:text-white',
   heading6: 'font-heading font-medium text-base md:text-lg text-neutral-900 dark:text-white',
-  bodyLarge: 'font-sans text-lg text-neutral-700 dark:text-neutral-300 leading-relaxed',
-  body: 'font-sans text-base text-neutral-700 dark:text-neutral-300 leading-relaxed',
-  bodySmall: 'font-sans text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed',
-  caption: 'font-sans text-xs text-neutral-500 dark:text-neutral-500',
   overline: 'font-sans text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-500 font-medium',
   link: 'text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 underline-offset-2 hover:underline',
 

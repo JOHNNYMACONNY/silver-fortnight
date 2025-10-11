@@ -74,6 +74,8 @@ export const EvidenceDemo: React.FC = () => {
                 <li>Google Docs (docs.google.com)</li>
                 <li>Google Sheets (sheets.google.com)</li>
                 <li>Google Slides (slides.google.com)</li>
+                <li>Google Drive Files (drive.google.com/file)</li>
+                <li>Google Drive Folders (drive.google.com/drive/folders)</li>
               </ul>
             </div>
 

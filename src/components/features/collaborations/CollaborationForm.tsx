@@ -505,7 +505,7 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto glassmorphic border-glass backdrop-blur-xl bg-white/5 rounded-xl">
       <form onSubmit={handleSubmit}>
         <CardHeader>
           <CardTitle>{isCreating ? 'Create New Collaboration' : 'Edit Collaboration'}</CardTitle>
@@ -614,7 +614,7 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-    </Card>
+    </div>
   );
 };
 

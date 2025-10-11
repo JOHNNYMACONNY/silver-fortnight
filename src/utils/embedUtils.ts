@@ -142,6 +142,28 @@ export const SUPPORTED_SERVICES: SupportedService[] = [
     generateEmbed: (id: string) => `<iframe src="https://docs.google.com/presentation/d/${id}/embed" width="640" height="480" frameborder="0" allowfullscreen></iframe>`,
     generateThumbnail: undefined
   },
+  {
+    name: 'google-drive-file',
+    pattern: /drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)/i,
+    type: 'document',
+    extractId: (url: string) => {
+      const match = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)/i);
+      return match ? match[1] : null;
+    },
+    generateEmbed: (id: string) => `<iframe src="https://drive.google.com/file/d/${id}/preview" width="640" height="480" frameborder="0" allowfullscreen></iframe>`,
+    generateThumbnail: undefined
+  },
+  {
+    name: 'google-drive-folder',
+    pattern: /drive\.google\.com\/drive\/folders\/([a-zA-Z0-9_-]+)/i,
+    type: 'document',
+    extractId: (url: string) => {
+      const match = url.match(/drive\.google\.com\/drive\/folders\/([a-zA-Z0-9_-]+)/i);
+      return match ? match[1] : null;
+    },
+    generateEmbed: (id: string) => `<iframe src="https://drive.google.com/embeddedfolderview?id=${id}" width="640" height="480" frameborder="0" allowfullscreen></iframe>`,
+    generateThumbnail: undefined
+  },
 
   // Code Services
   {

@@ -13,6 +13,9 @@ import {
 } from '../../services/firestore-exports';
 import { getGamificationMetrics7d, GamificationMetrics7d } from '../../services/adminGamificationMetrics';
 import { useToast } from '../../contexts/ToastContext';
+import { Button } from '../../components/ui/Button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/Select';
+import { Card, CardContent } from '../../components/ui/Card';
 import {
   Users,
   ShoppingBag,
@@ -166,19 +169,22 @@ const AdminDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats && (
           <>
-            <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
-              <div className="flex items-center">
-                <div className="p-3 rounded-full bg-primary/10 text-primary">
-                  <Users className="h-6 w-6" />
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-full bg-primary/10 text-primary">
+                    <Users className="h-6 w-6" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-muted-foreground">Total Users</p>
+                    <h3 className="text-2xl font-bold text-foreground">{stats.totalUsers}</h3>
+                  </div>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Total Users</p>
-                  <h3 className="text-2xl font-bold text-foreground">{stats.totalUsers}</h3>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+            <Card>
+              <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="p-3 rounded-full bg-success/10 text-success">
                   <ShoppingBag className="h-6 w-6" />
@@ -188,9 +194,11 @@ const AdminDashboard: React.FC = () => {
                   <h3 className="text-2xl font-bold text-foreground">{stats.totalTrades}</h3>
                 </div>
               </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+            <Card>
+              <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="p-3 rounded-full bg-secondary/10 text-secondary">
                   <Briefcase className="h-6 w-6" />
@@ -200,9 +208,11 @@ const AdminDashboard: React.FC = () => {
                   <h3 className="text-2xl font-bold text-foreground">{stats.totalCollaborations}</h3>
                 </div>
               </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+            <Card>
+              <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="p-3 rounded-full bg-accent/10 text-accent">
                   <MessageSquare className="h-6 w-6" />
@@ -212,7 +222,8 @@ const AdminDashboard: React.FC = () => {
                   <h3 className="text-2xl font-bold text-foreground">{stats.totalMessages}</h3>
                 </div>
               </div>
-            </div>
+              </CardContent>
+            </Card>
           </>
         )}
       </div>
@@ -220,7 +231,7 @@ const AdminDashboard: React.FC = () => {
       {/* Gamification Metrics (Last 7 days) */}
       <div className="flex items-center justify-between mt-6">
         <h3 className="text-lg font-medium text-foreground">Gamification (Last 7 days)</h3>
-        <button onClick={refreshGamificationMetrics} className="px-3 py-1.5 text-sm rounded-md bg-muted hover:bg-muted/80 text-foreground border border-border">Refresh</button>
+        <Button onClick={refreshGamificationMetrics} variant="outline" size="sm">Refresh</Button>
       </div>
       {gamiMetrics && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
@@ -344,16 +355,20 @@ const AdminDashboard: React.FC = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center space-x-2">
-                    <select
+                    <Select
                       value={user.role || 'user'}
-                      onChange={(e) => handleRoleChange(user.id, e.target.value as 'user' | 'admin' | 'moderator')}
-                      className="block w-full pl-3 pr-10 py-2 text-base border-border focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md bg-background text-foreground"
+                      onValueChange={(value) => handleRoleChange(user.id, value as 'user' | 'admin' | 'moderator')}
                       disabled={user.id === userProfile?.uid}
                     >
-                      <option value="user">User</option>
-                      <option value="moderator">Moderator</option>
-                      <option value="admin">Admin</option>
-                    </select>
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="user">User</SelectItem>
+                        <SelectItem value="moderator">Moderator</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
                     {user.id !== userProfile?.uid && (
                       <button
                         onClick={() => handleDeleteUser(user.id, user.email || '')}

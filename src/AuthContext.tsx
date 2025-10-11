@@ -151,7 +151,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setLoading(true);
       setError(null);
       const result = await signInWithEmailAndPassword(auth, email, password);
-      setUser(result.user);
+      // Don't call setUser here - let the onAuthStateChanged callback handle it
+      // This prevents double setUser calls that cause duplicate toasts
       setIsAdmin(checkIsAdmin(result.user));
       const { data: profile } = await getUserProfile(result.user.uid);
       setUserProfile(profile || null);
@@ -186,7 +187,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const result = await signInWithGoogleFirebase();
 
       if (result && result.user) {
-        setUser(result.user);
+        // Don't call setUser here - let the onAuthStateChanged callback handle it
+        // This prevents double setUser calls that cause duplicate toasts
         setIsAdmin(checkIsAdmin(result.user));
         const { data: profile } = await getUserProfile(result.user.uid);
         setUserProfile(profile || null);

@@ -10,7 +10,6 @@ import {
 } from '../services/firestore-exports';
 import { useToast } from '../contexts/ToastContext';
 import { Button } from '../components/ui/Button';
-import { ProposalSubmitButton, AnimatedButton } from '../components/animations';
 import { GlassmorphicInput } from '../components/ui/GlassmorphicInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/Select';
 import { Textarea } from '../components/ui/Textarea';
@@ -172,25 +171,25 @@ const CreateTradePage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+      <div className="glassmorphic border-glass backdrop-blur-xl bg-white/5 rounded-lg shadow-lg p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-card-foreground">Create a New Trade</h1>
-          <AnimatedButton
+          <h1 className="text-3xl font-bold text-foreground">Create a New Trade</h1>
+          <Button
             variant="ghost"
-            size="sm"
+            size="lg"
             onClick={() => navigate('/trades')}
-            tradingContext="general"
+            className="text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all duration-200"
           >
-            <X className="h-6 w-6" />
-          </AnimatedButton>
+            <X className="h-5 w-5" />
+          </Button>
         </div>
 
-        {error && (
-          <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg mb-6 flex items-center">
-            <AlertCircle className="h-5 w-5 mr-2" />
-            {error}
-          </div>
-        )}
+         {error && (
+           <div className="glassmorphic border-red-500/20 bg-red-500/5 backdrop-blur-xl text-red-600 dark:text-red-400 px-4 py-3 rounded-lg mb-6 flex items-center">
+             <AlertCircle className="h-5 w-5 mr-2" />
+             {error}
+           </div>
+         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information */}
@@ -215,10 +214,10 @@ const CreateTradePage: React.FC = () => {
               <label htmlFor="category" className="block text-sm font-medium text-muted-foreground mb-1">
                 Category <span className="text-destructive">*</span>
               </label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
+               <Select value={category} onValueChange={setCategory}>
+                 <SelectTrigger id="category" className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
+                   <SelectValue placeholder="Select a category" />
+                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
                     <SelectItem key={cat} value={cat}>{cat}</SelectItem>
@@ -231,14 +230,15 @@ const CreateTradePage: React.FC = () => {
               <label htmlFor="description" className="block text-sm font-medium text-muted-foreground mb-1">
                 Description <span className="text-destructive">*</span>
               </label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={4}
-                placeholder="Describe what you're offering and what you're looking for in detail..."
-                required
-              />
+               <Textarea
+                 id="description"
+                 value={description}
+                 onChange={(e) => setDescription(e.target.value)}
+                 rows={4}
+                 placeholder="Describe what you're offering and what you're looking for in detail..."
+                 required
+                 className="glassmorphic border-glass backdrop-blur-xl bg-white/5"
+               />
             </div>
           </div>
 
@@ -261,10 +261,10 @@ const CreateTradePage: React.FC = () => {
                 animatedLabel
                 realTimeValidation
               />
-              <Select value={newOfferedSkillLevel} onValueChange={(value) => setNewOfferedSkillLevel(value as 'beginner' | 'intermediate' | 'expert')}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+               <Select value={newOfferedSkillLevel} onValueChange={(value) => setNewOfferedSkillLevel(value as 'beginner' | 'intermediate' | 'expert')}>
+                 <SelectTrigger className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
+                   <SelectValue />
+                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="beginner">Beginner</SelectItem>
                   <SelectItem value="intermediate">Intermediate</SelectItem>
@@ -280,16 +280,16 @@ const CreateTradePage: React.FC = () => {
             </div>
             
             {/* Offered skills list */}
-            <div className="flex flex-wrap gap-2">
-              {offeredSkills.map((skill, index) => (
-                <div key={index} className="flex items-center bg-primary/10 text-primary rounded-full px-3 py-1 text-sm font-medium">
-                  <span>{skill.name} ({skill.level})</span>
-                  <button type="button" onClick={() => removeOfferedSkill(index)} className="ml-2 text-primary hover:text-primary/90">
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
+             <div className="flex flex-wrap gap-2">
+               {offeredSkills.map((skill, index) => (
+                 <div key={index} className="flex items-center glassmorphic border-glass backdrop-blur-xl bg-green-500/10 text-green-600 dark:text-green-400 rounded-full px-3 py-1 text-sm font-medium">
+                   <span>{skill.name} ({skill.level})</span>
+                   <button type="button" onClick={() => removeOfferedSkill(index)} className="ml-2 text-green-600 dark:text-green-400 hover:text-green-500">
+                     <X className="h-4 w-4" />
+                   </button>
+                 </div>
+               ))}
+             </div>
           </div>
           
           {/* Skills You're Requesting */}
@@ -311,10 +311,10 @@ const CreateTradePage: React.FC = () => {
                 animatedLabel
                 realTimeValidation
               />
-              <Select value={newRequestedSkillLevel} onValueChange={(value) => setNewRequestedSkillLevel(value as 'beginner' | 'intermediate' | 'expert')}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+               <Select value={newRequestedSkillLevel} onValueChange={(value) => setNewRequestedSkillLevel(value as 'beginner' | 'intermediate' | 'expert')}>
+                 <SelectTrigger className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
+                   <SelectValue />
+                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="beginner">Beginner</SelectItem>
                   <SelectItem value="intermediate">Intermediate</SelectItem>
@@ -330,26 +330,36 @@ const CreateTradePage: React.FC = () => {
             </div>
             
             {/* Requested skills list */}
-            <div className="flex flex-wrap gap-2">
-              {requestedSkills.map((skill, index) => (
-                <div key={index} className="flex items-center bg-primary/10 text-primary rounded-full px-3 py-1 text-sm font-medium">
-                  <span>{skill.name} ({skill.level})</span>
-                  <button type="button" onClick={() => removeRequestedSkill(index)} className="ml-2 text-primary hover:text-primary/90">
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
+             <div className="flex flex-wrap gap-2">
+               {requestedSkills.map((skill, index) => (
+                 <div key={index} className="flex items-center glassmorphic border-glass backdrop-blur-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-full px-3 py-1 text-sm font-medium">
+                   <span>{skill.name} ({skill.level})</span>
+                   <button type="button" onClick={() => removeRequestedSkill(index)} className="ml-2 text-purple-600 dark:text-purple-400 hover:text-purple-500">
+                     <X className="h-4 w-4" />
+                   </button>
+                 </div>
+               ))}
+             </div>
           </div>
 
           <div className="flex justify-end pt-4">
-            <ProposalSubmitButton
+            <Button
               type="submit"
+              variant="premium"
+              size="lg"
+              topic="trades"
               disabled={isSubmitting}
-              loading={isSubmitting}
+              className="min-h-[44px] min-w-[140px] hover:shadow-orange-500/25 hover:shadow-lg transition-all duration-300 hover:scale-105"
             >
-              Create Trade
-            </ProposalSubmitButton>
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                  Creating...
+                </>
+              ) : (
+                'Create Trade'
+              )}
+            </Button>
           </div>
         </form>
       </div>

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { RoleApplication } from '../../types/collaboration';
-import { motion } from 'framer-motion';
 import { Button } from '../ui/Button';
 import ProfileImageWithUser from '../ui/ProfileImageWithUser';
 import { EvidenceGallery } from '../features/evidence/EvidenceGallery';
 import { EmbeddedEvidence } from '../../types/evidence';
+import { Card, CardContent } from '../ui/Card';
 import Box from '../layout/primitives/Box';
 
 interface ApplicationCardProps {
@@ -40,12 +40,16 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
 
   return (
     <Box className="@container mb-4" style={{ containerType: 'inline-size' }}>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        className="bg-card text-card-foreground border border-border rounded-lg shadow-sm p-4"
+      <Card 
+        variant="premium"
+        tilt={true}
+        depth="md"
+        glow="subtle"
+        glowColor="purple"
+        hover={true}
+        interactive={true}
       >
+        <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center">
             <ProfileImageWithUser
@@ -93,7 +97,8 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
             Accept
           </Button>
         </div>
-      </motion.div>
+        </CardContent>
+      </Card>
     </Box>
   );
 };

@@ -393,6 +393,7 @@ export interface Collaboration {
   skillsNeeded?: string[];
   collaborators?: string[];
   images?: string[];
+  mediaEvidence?: any[]; // EmbeddedEvidence[] - using any[] to avoid circular imports
   category?: string;
   visibility?: "public" | "private" | "unlisted";
   public?: boolean;
@@ -2431,43 +2432,12 @@ export const searchTrades = async (
     const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(
       tradeConverter
     );
-    const baseConstraints: QueryConstraint[] = [];
-    if (!options.includeNonPublic) {
-      baseConstraints.push(where("visibility", "==", "public"));
-    }
-    baseConstraints.push(where("title", ">=", searchTerm));
-    baseConstraints.push(where("title", "<=", searchTerm + "\uf8ff"));
+    // Ultra-simplified query to avoid ANY composite index requirements
+    // Just get all trades and filter client-side
+    let searchQuery: Query<Trade> = query(tradesCollection, limitQuery(100));
 
-    let searchQuery: Query<Trade> = query(tradesCollection, ...baseConstraints);
-
-    // Apply filters...
-    if (filters) {
-      const constraints: QueryConstraint[] = [];
-      if (filters.category) {
-        constraints.push(where("category", "==", filters.category));
-      }
-      if (filters.status) {
-        constraints.push(where("status", "==", filters.status));
-      }
-      if (filters.skills && filters.skills.length > 0) {
-        const normalized = filters.skills.map((s) => s.toLowerCase());
-        constraints.push(
-          where("skillsIndex", "array-contains-any", normalized.slice(0, 10))
-        );
-      }
-      searchQuery = query(searchQuery, ...constraints);
-    }
-
+    // Note: Filters will be applied client-side to avoid Firebase index issues
     const totalCountQuery = searchQuery;
-
-    if (pagination?.orderByField) {
-      searchQuery = query(
-        searchQuery,
-        orderBy(pagination.orderByField, pagination.orderDirection || "asc")
-      );
-    } else {
-      searchQuery = query(searchQuery, orderBy("title"));
-    }
 
     if (pagination?.startAfterDoc) {
       searchQuery = query(searchQuery, startAfter(pagination.startAfterDoc));
@@ -2480,17 +2450,57 @@ export const searchTrades = async (
       getDocs(totalCountQuery),
     ]);
 
-    const trades = querySnapshot.docs.map((doc) => doc.data());
+    let trades = querySnapshot.docs.map((doc) => doc.data());
+
+    // Apply client-side filtering to avoid Firebase index issues
+    // First filter by visibility
+    if (!options.includeNonPublic) {
+      trades = trades.filter((trade) => trade.visibility === "public");
+    }
+    
+    // Then apply search term filtering
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      trades = trades.filter((trade) => 
+        trade.title?.toLowerCase().includes(searchLower) ||
+        trade.description?.toLowerCase().includes(searchLower) ||
+        trade.category?.toLowerCase().includes(searchLower) ||
+        trade.skills?.some((skill: string) => skill.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Apply filters client-side
+    if (filters) {
+      if (filters.category) {
+        trades = trades.filter((trade) => trade.category === filters.category);
+      }
+      if (filters.status) {
+        trades = trades.filter((trade) => trade.status === filters.status);
+      }
+      if (filters.skills && filters.skills.length > 0) {
+        const normalizedFilters = filters.skills.map((s) => s.toLowerCase());
+        trades = trades.filter((trade) => 
+          trade.skills?.some((skill: string) => 
+            normalizedFilters.includes(skill.toLowerCase())
+          )
+        );
+      }
+    }
+
+    // Apply pagination to filtered results
+    const startIndex = 0;
+    const endIndex = startIndex + (pagination?.limit || 10);
+    const paginatedTrades = trades.slice(startIndex, endIndex);
 
     const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
-    const hasMore = trades.length === (pagination?.limit || 10);
+    const hasMore = paginatedTrades.length === (pagination?.limit || 10);
 
     return {
       data: {
-        items: trades,
+        items: paginatedTrades,
         hasMore,
         lastDoc,
-        totalCount: totalCountSnapshot.size,
+        totalCount: trades.length, // Use filtered count instead of total snapshot size
       },
       error: null,
     };
@@ -2502,3 +2512,4 @@ export const searchTrades = async (
     };
   }
 };
+
