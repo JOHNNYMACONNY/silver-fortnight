@@ -50,8 +50,14 @@ export const AnimatedXPBar: React.FC<AnimatedXPBarProps> = ({
   const config = sizeConfig[size];
 
   // Calculate progress percentage
-  const progressPercentage = Math.min((displayXP / maxXP) * 100, 100);
-  const targetPercentage = Math.min((currentXP / maxXP) * 100, 100);
+  const effectiveMax = Number.isFinite(maxXP) && maxXP > 0
+    ? maxXP
+    : Math.max(currentXP, previousXP ?? currentXP, 1);
+  const progressPercentage = Math.min((displayXP / effectiveMax) * 100, 100);
+  const targetPercentage = Math.min((currentXP / effectiveMax) * 100, 100);
+  const formattedMax = Number.isFinite(maxXP)
+    ? maxXP.toLocaleString()
+    : '∞';
 
   // Animate XP changes
   useEffect(() => {
@@ -103,7 +109,7 @@ export const AnimatedXPBar: React.FC<AnimatedXPBarProps> = ({
             Level {level}
           </span>
           <span className={cn('text-muted')}>
-            {Math.round(displayXP).toLocaleString()} / {maxXP.toLocaleString()} XP
+            {Math.round(displayXP).toLocaleString()} / {formattedMax} XP
           </span>
         </div>
       )}
