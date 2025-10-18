@@ -1,0 +1,102 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - navigation [ref=e5]:
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - link "TradeYa Logo TradeYa.io" [ref=e9] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e10] [cursor=pointer]:
+            - img "TradeYa Logo" [ref=e11] [cursor=pointer]
+            - generic [ref=e12] [cursor=pointer]: TradeYa.io
+        - generic [ref=e13]:
+          - link "Trades" [ref=e14] [cursor=pointer]:
+            - /url: /trades
+            - generic [ref=e16] [cursor=pointer]: Trades
+          - link "Collaborations" [ref=e17] [cursor=pointer]:
+            - /url: /collaborations
+            - generic [ref=e19] [cursor=pointer]: Collaborations
+          - link "Directory" [ref=e20] [cursor=pointer]:
+            - /url: /directory
+            - generic [ref=e22] [cursor=pointer]: Directory
+          - link "Challenges" [ref=e23] [cursor=pointer]:
+            - /url: /challenges
+            - generic [ref=e25] [cursor=pointer]: Challenges
+          - link "Portfolio" [ref=e26] [cursor=pointer]:
+            - /url: /portfolio
+            - generic [ref=e28] [cursor=pointer]: Portfolio
+          - link "Leaderboard" [ref=e29] [cursor=pointer]:
+            - /url: /leaderboard
+            - generic [ref=e31] [cursor=pointer]: Leaderboard
+      - generic [ref=e32]:
+        - button "Search ⌘K" [ref=e33]:
+          - img [ref=e34]
+          - generic [ref=e36]: Search
+          - generic [ref=e37]: ⌘K
+        - button "Notifications" [ref=e39]:
+          - img [ref=e40]
+          - generic [ref=e43]: Notifications
+        - generic [ref=e45]:
+          - button "Log In" [ref=e46]
+          - button "Sign Up" [ref=e47]
+  - generic [ref=e48]:
+    - generic [ref=e49]: "Width: 1280px"
+    - generic [ref=e50]: "Mobile: ✗"
+    - generic [ref=e51]: "Tablet: ✗"
+    - generic [ref=e52]: "Desktop: ✓"
+    - generic [ref=e53]: "Screen: 1280x720"
+  - generic [ref=e54]:
+    - generic [ref=e55]:
+      - img [ref=e57]
+      - paragraph [ref=e62]: Loading…
+    - button "Open Dev Dashboard" [ref=e63]:
+      - img [ref=e64]
+  - contentinfo [ref=e76]:
+    - generic [ref=e77]:
+      - generic [ref=e78]:
+        - generic [ref=e79]:
+          - link "TradeYa Logo TradeYa.io" [ref=e81] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e82] [cursor=pointer]:
+              - img "TradeYa Logo" [ref=e83] [cursor=pointer]
+              - generic [ref=e84] [cursor=pointer]: TradeYa.io
+          - paragraph [ref=e85]: Exchange skills and services with others in your community.
+        - generic [ref=e86]:
+          - heading "Resources" [level=3] [ref=e87]
+          - list [ref=e88]:
+            - listitem [ref=e89]:
+              - link "Help Center" [ref=e90] [cursor=pointer]:
+                - /url: /help
+            - listitem [ref=e91]:
+              - link "Guides" [ref=e92] [cursor=pointer]:
+                - /url: /guides
+            - listitem [ref=e93]:
+              - link "Blog" [ref=e94] [cursor=pointer]:
+                - /url: /blog
+        - generic [ref=e95]:
+          - heading "Company" [level=3] [ref=e96]
+          - list [ref=e97]:
+            - listitem [ref=e98]:
+              - link "About" [ref=e99] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e100]:
+              - link "Careers" [ref=e101] [cursor=pointer]:
+                - /url: /careers
+            - listitem [ref=e102]:
+              - link "Contact" [ref=e103] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e104]:
+          - heading "Legal" [level=3] [ref=e105]
+          - list [ref=e106]:
+            - listitem [ref=e107]:
+              - link "Privacy Policy" [ref=e108] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e109]:
+              - link "Terms of Service" [ref=e110] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e111]:
+              - link "Cookie Policy" [ref=e112] [cursor=pointer]:
+                - /url: /cookies
+      - paragraph [ref=e114]: © 2025 TradeYa.io. All rights reserved.
+```

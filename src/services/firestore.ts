@@ -506,10 +506,10 @@ export interface CollaborationApplication {
   roleId: string;
   applicantId: string;
   applicantName?: string;
-  applicantPhotoURL?: string;
+  applicantPhotoURL?: string | null;
   message: string;
   skills: string[];
-  status: "pending" | "accepted" | "rejected";
+  status: "pending" | "accepted" | "rejected" | "PENDING" | "ACCEPTED" | "REJECTED"; // Support both lowercase and uppercase
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -533,7 +533,7 @@ export interface TradeProposal {
   tradeId: string;
   proposerId: string;
   proposerName?: string;
-  proposerPhotoURL?: string;
+  proposerPhotoURL?: string | null;
   message: string;
   skillsOffered: TradeSkill[];
   skillsRequested: TradeSkill[];
@@ -1855,9 +1855,60 @@ export const getCollaborationApplications = async (
       const applicationsSnapshot = await getDocs(applicationsQuery);
 
       const roleApplications = applicationsSnapshot.docs.map(
-        (doc) => doc.data() as CollaborationApplication
+        (doc) => {
+          const data = doc.data() as CollaborationApplication;
+          // Patch old applications that are missing required fields
+          return {
+            ...data,
+            collaborationId: data.collaborationId || collaborationId, // Add if missing
+            skills: data.skills || [] // Add empty array if missing
+          };
+        }
       );
       allApplications.push(...roleApplications);
+    }
+
+    // ALSO check for general applications (from general "Apply to Collaborate" button)
+    // These use roleId 'general' which isn't in the roles collection
+    // NOTE: This may fail with permissions error if 'general' role doesn't exist
+    // We catch and ignore since it's expected behavior
+    try {
+      // First check if 'general' role exists to avoid permission errors
+      const generalRoleRef = doc(db, COLLECTIONS.COLLABORATIONS, collaborationId, "roles", "general");
+      const generalRoleExists = await getDoc(generalRoleRef);
+      
+      if (generalRoleExists.exists()) {
+        const generalApplicationsQuery = query(
+          collection(
+            db,
+            COLLECTIONS.COLLABORATIONS,
+            collaborationId,
+            "roles",
+            "general",
+            "applications"
+          ).withConverter(collaborationApplicationConverter)
+        );
+        const generalApplicationsSnapshot = await getDocs(generalApplicationsQuery);
+        
+        const generalApplications = generalApplicationsSnapshot.docs.map(
+          (doc) => {
+            const data = doc.data() as CollaborationApplication;
+            // Patch old applications that are missing required fields
+            return {
+              ...data,
+              collaborationId: data.collaborationId || collaborationId, // Add if missing
+              skills: data.skills || [] // Add empty array if missing
+            };
+          }
+        );
+        allApplications.push(...generalApplications);
+      }
+    } catch (generalError: any) {
+      // It's okay if general role doesn't exist - just means no general applications
+      // Silently ignore permission errors for non-existent 'general' role
+      if (!generalError?.message?.includes('permission')) {
+        console.log('Note: General applications check skipped:', generalError?.message || 'Unknown reason');
+      }
     }
 
     return { data: allApplications, error: null };
@@ -1890,7 +1941,67 @@ export const updateCollaborationApplication = async (
       "applications",
       applicationId
     );
-    await updateDoc(appRef, updates);
+    
+    // If accepting, update role and collaboration
+    if (updates.status === "accepted") {
+      const { runTransaction, getDoc, Timestamp } = await import('firebase/firestore');
+      
+      await runTransaction(db, async (transaction) => {
+        // *** IMPORTANT: All reads must happen before any writes in Firestore transactions ***
+        
+        // Read 1: Get application data
+        const appSnap = await transaction.get(appRef);
+        if (!appSnap.exists()) {
+          throw new Error('Application not found');
+        }
+        const appData = appSnap.data() as any;
+        
+        // Read 2: Get collaboration data (must read before any writes!)
+        const collabRef = doc(db, COLLECTIONS.COLLABORATIONS, collaborationId);
+        const collabSnap = await transaction.get(collabRef);
+        
+        // *** Now we can do all writes ***
+        
+        // Write 1: Update application status
+        transaction.update(appRef, {
+          ...updates,
+          updatedAt: Timestamp.now()
+        });
+        
+        // Write 2: Update role with participant info
+        const roleRef = doc(db, COLLECTIONS.COLLABORATIONS, collaborationId, "roles", roleId);
+        transaction.update(roleRef, {
+          status: 'filled',
+          participantId: appData.applicantId,
+          participantName: appData.applicantName,
+          participantPhotoURL: appData.applicantPhotoURL,
+          filledAt: Timestamp.now(),
+          updatedAt: Timestamp.now()
+        });
+        
+        // Write 3: Add user to collaborators array
+        if (collabSnap.exists()) {
+          const collabData = collabSnap.data() as any;
+          const currentCollaborators = collabData?.collaborators || collabData?.participants || [];
+          const updatedCollaborators = currentCollaborators.includes(appData.applicantId)
+            ? currentCollaborators
+            : [...currentCollaborators, appData.applicantId];
+          
+          transaction.update(collabRef, {
+            collaborators: updatedCollaborators,
+            participants: updatedCollaborators,
+            updatedAt: Timestamp.now()
+          });
+        }
+      });
+    } else {
+      // Just update application status for rejection
+      await updateDoc(appRef, {
+        ...updates,
+        updatedAt: (await import('firebase/firestore')).Timestamp.now()
+      });
+    }
+    
     return { data: null, error: null };
   } catch (error) {
     console.error(`Error updating application ${applicationId}:`, error);

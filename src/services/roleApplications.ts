@@ -97,14 +97,17 @@ export const submitRoleApplication = async (
     // Create application
     const applicationRef = doc(collection(getSyncFirebaseDb(), `collaborations/${collaborationId}/roles/${roleId}/applications`));
 
+    // Create application with all required fields for CollaborationApplication interface
     const newApplication: RoleApplication = {
       id: applicationRef.id,
+      collaborationId, // CRITICAL: Add collaborationId for getCollaborationApplications to work
       roleId,
       applicantId: userId,
       applicantName: userData?.displayName || '',
       applicantPhotoURL: userData?.photoURL || null,
       message: applicationData.message,
       evidence: applicationData.evidence || [],
+      skills: [], // Add skills field (required by CollaborationApplication interface)
       status: ApplicationStatus.PENDING,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now()
@@ -299,12 +302,23 @@ export const updateApplicationStatus = async (
 
         const allFilled = allRoles.every(r => r.status === RoleState.FILLED || r.status === RoleState.COMPLETED);
 
+        // Update collaboration: Add accepted user to collaborators array
+        const currentCollaborators = collaboration?.collaborators || collaboration?.participants || [];
+        const updatedCollaborators = currentCollaborators.includes(application.applicantId)
+          ? currentCollaborators
+          : [...currentCollaborators, application.applicantId];
+
+        const collaborationUpdates: any = {
+          collaborators: updatedCollaborators,
+          participants: updatedCollaborators, // Keep both for backward compatibility
+          updatedAt: Timestamp.now()
+        };
+
         if (allFilled && collaboration?.status === 'open') {
-          transaction.update(collaborationRef, {
-            status: 'in-progress',
-            updatedAt: Timestamp.now()
-          });
+          collaborationUpdates.status = 'in-progress';
         }
+
+        transaction.update(collaborationRef, collaborationUpdates);
       });
 
       // Create acceptance notification

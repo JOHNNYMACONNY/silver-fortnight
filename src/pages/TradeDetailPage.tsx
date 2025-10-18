@@ -678,6 +678,28 @@ export const TradeDetailPage: React.FC = () => {
             );
           })()}
 
+          {/* Completion Form Card */}
+          {showCompletionForm && currentUser && trade.status === 'in-progress' &&
+            (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid) && (
+            <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5 mb-6" data-completion-form>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl font-semibold">Request Trade Completion</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <TradeCompletionForm
+                  tradeId={trade.id!}
+                  tradeName={trade.title}
+                  onSuccess={() => {
+                    setShowCompletionForm(false);
+                    fetchTrade();
+                    addToast('Completion request submitted successfully!', 'success');
+                  }}
+                  onCancel={() => setShowCompletionForm(false)}
+                />
+              </CardContent>
+            </Card>
+          )}
+
             </div>
 
             {/* Right Sidebar */}
@@ -714,6 +736,32 @@ export const TradeDetailPage: React.FC = () => {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Next Steps - Request Completion */}
+              {trade.status === 'in-progress' && currentUser &&
+                (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid) && (
+                <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">Next Steps</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      When you've completed your part of the trade, request completion to move forward.
+                    </p>
+                    <Button
+                      variant="glassmorphic"
+                      topic="trades"
+                      onClick={handleRequestCompletion}
+                      className="w-full hover:shadow-orange-500/25 hover:shadow-lg transition-all duration-300 min-h-[44px]"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      Request Completion
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Quick Actions */}
               <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5">

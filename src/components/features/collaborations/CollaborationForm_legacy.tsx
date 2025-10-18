@@ -85,7 +85,7 @@ export const CollaborationForm_legacy: React.FC<CollaborationFormProps> = ({ col
         creatorId: currentUser.uid,
         ownerId: currentUser.uid,
         ownerName: userProfile.displayName || 'Anonymous',
-        ownerPhotoURL: userProfile.photoURL,
+        ownerPhotoURL: userProfile.photoURL || null,
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
         status: 'open' as const,

@@ -436,6 +436,14 @@
         {"fieldPath": "userId", "order": "ASCENDING"},
         {"fieldPath": "source", "order": "ASCENDING"}
       ]
+    },
+    {
+      "collectionGroup": "collaborations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "public", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
+      ]
     }
   ],
 

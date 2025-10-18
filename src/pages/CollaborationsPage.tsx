@@ -120,7 +120,9 @@ export const CollaborationsPage: React.FC = () => {
         const { db } = await getFirebaseInstances();
         const collabCol = collection(db, 'collaborations');
         const constraints = [orderBy('createdAt', 'desc'), limit(50)];
-        const visibilityConstraint = includeNonPublic ? [] : [where('visibility', '==', 'public')];
+        // Fix: Always filter by public flag for list queries (Firestore requirement)
+        // List queries require ALL documents in result to pass security rules
+        const visibilityConstraint = [where('public', '==', true)];
         const q = fsQuery(collabCol, ...visibilityConstraint, ...constraints);
 
         unsubscribe = onSnapshot(q, (snapshot) => {

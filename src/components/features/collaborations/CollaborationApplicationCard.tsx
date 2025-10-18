@@ -76,8 +76,12 @@ export const CollaborationApplicationCard: React.FC<CollaborationApplicationCard
             </div>
           </ProfileHoverCard>
           
-          <Badge variant={application.status === 'pending' ? 'default' : application.status === 'accepted' ? 'default' : 'destructive'}>
-            {statusLabels[application.status]}
+          <Badge variant={
+            (application.status === 'pending' || application.status === 'PENDING') ? 'default' : 
+            (application.status === 'accepted' || application.status === 'ACCEPTED') ? 'default' : 
+            'destructive'
+          }>
+            {statusLabels[application.status.toLowerCase() as keyof typeof statusLabels] || application.status}
           </Badge>
         </div>
       </CardHeader>
@@ -88,7 +92,7 @@ export const CollaborationApplicationCard: React.FC<CollaborationApplicationCard
         </p>
       </CardContent>
         
-      {isOwner && application.status === 'pending' && application.id && (
+      {isOwner && (application.status === 'pending' || application.status === 'PENDING') && application.id && (
         <CardFooter className="flex justify-end space-x-3">
           <Button
             variant="outline"

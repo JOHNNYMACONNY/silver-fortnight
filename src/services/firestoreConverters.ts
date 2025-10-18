@@ -97,8 +97,12 @@ export const reviewConverter = {
 export const tradeProposalConverter = {
   toFirestore: (proposal: TradeProposal): DocumentData => {
     const { id, ...data } = proposal;
+    // Filter out undefined values - Firebase doesn't accept them
+    const cleanData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== undefined)
+    );
     return {
-      ...data,
+      ...cleanData,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
@@ -118,8 +122,12 @@ export const tradeProposalConverter = {
 export const collaborationApplicationConverter = {
   toFirestore: (application: CollaborationApplication): DocumentData => {
     const { id, ...data } = application;
+    // Filter out undefined values - Firebase doesn't accept them
+    const cleanData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== undefined)
+    );
     return {
-      ...data,
+      ...cleanData,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };

@@ -1,0 +1,201 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - navigation [ref=e5]:
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - link "TradeYa Logo TradeYa.io" [ref=e9] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e10] [cursor=pointer]:
+            - img "TradeYa Logo" [ref=e11] [cursor=pointer]
+            - generic [ref=e12] [cursor=pointer]: TradeYa.io
+        - generic [ref=e13]:
+          - link "Trades" [ref=e14] [cursor=pointer]:
+            - /url: /trades
+            - generic [ref=e16] [cursor=pointer]: Trades
+          - link "Collaborations" [ref=e17] [cursor=pointer]:
+            - /url: /collaborations
+            - generic [ref=e19] [cursor=pointer]: Collaborations
+          - link "Directory" [ref=e20] [cursor=pointer]:
+            - /url: /directory
+            - generic [ref=e22] [cursor=pointer]: Directory
+          - link "Challenges" [ref=e23] [cursor=pointer]:
+            - /url: /challenges
+            - generic [ref=e25] [cursor=pointer]: Challenges
+          - link "Portfolio" [ref=e26] [cursor=pointer]:
+            - /url: /portfolio
+            - generic [ref=e28] [cursor=pointer]: Portfolio
+          - link "Leaderboard" [ref=e29] [cursor=pointer]:
+            - /url: /leaderboard
+            - generic [ref=e31] [cursor=pointer]: Leaderboard
+      - generic [ref=e32]:
+        - button "Search ⌘K" [ref=e33]:
+          - img [ref=e34]
+          - generic [ref=e36]: Search
+          - generic [ref=e37]: ⌘K
+        - button "Notifications" [ref=e39]:
+          - img [ref=e40]
+          - generic [ref=e43]: Notifications
+        - generic [ref=e45]:
+          - button "Log In" [ref=e46]
+          - button "Sign Up" [ref=e47]
+  - generic [ref=e48]:
+    - generic [ref=e49]: "Width: 1280px"
+    - generic [ref=e50]: "Mobile: ✗"
+    - generic [ref=e51]: "Tablet: ✗"
+    - generic [ref=e52]: "Desktop: ✓"
+    - generic [ref=e53]: "Screen: 1280x720"
+  - generic [ref=e54]:
+    - generic [ref=e56]:
+      - generic [ref=e60]:
+        - heading "Welcome to TradeYa" [level=1] [ref=e61]
+        - paragraph [ref=e62]: Connect with others, exchange skills, and collaborate on exciting collaborations.
+      - heading "Discover What's Possible" [level=2] [ref=e63]
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - generic [ref=e68] [cursor=pointer]:
+            - generic [ref=e70] [cursor=pointer]:
+              - heading "Quick Actions" [level=3] [ref=e71] [cursor=pointer]
+              - generic [ref=e72] [cursor=pointer]: Popular
+            - generic [ref=e73] [cursor=pointer]:
+              - paragraph [ref=e74] [cursor=pointer]: Get started quickly with our most popular features.
+              - generic [ref=e75] [cursor=pointer]:
+                - link "Browse Trades →" [ref=e76] [cursor=pointer]:
+                  - /url: /trades
+                  - generic [ref=e77] [cursor=pointer]: Browse Trades
+                  - generic [ref=e78] [cursor=pointer]: →
+                - link "Find Collaborations →" [ref=e79] [cursor=pointer]:
+                  - /url: /collaborations
+                  - generic [ref=e80] [cursor=pointer]: Find Collaborations
+                  - generic [ref=e81] [cursor=pointer]: →
+          - generic [ref=e84] [cursor=pointer]:
+            - generic [ref=e86] [cursor=pointer]:
+              - heading "Skill Trades" [level=3] [ref=e87] [cursor=pointer]
+              - generic [ref=e88] [cursor=pointer]: Active
+            - generic [ref=e89] [cursor=pointer]:
+              - paragraph [ref=e90] [cursor=pointer]: Exchange your skills with others in the community. Find the perfect match for your needs.
+              - generic [ref=e91] [cursor=pointer]:
+                - generic [ref=e92] [cursor=pointer]:
+                  - generic [ref=e93] [cursor=pointer]: 1,247
+                  - generic [ref=e94] [cursor=pointer]: Active Trades
+                - generic [ref=e95] [cursor=pointer]:
+                  - generic [ref=e96] [cursor=pointer]: "892"
+                  - generic [ref=e97] [cursor=pointer]: Completed
+            - link "Start Trading Skills →" [ref=e99] [cursor=pointer]:
+              - /url: /trades
+        - generic [ref=e100]:
+          - generic [ref=e103] [cursor=pointer]:
+            - generic [ref=e105] [cursor=pointer]:
+              - heading "Collaborations" [level=3] [ref=e106] [cursor=pointer]
+              - generic [ref=e107] [cursor=pointer]: Team
+            - generic [ref=e108] [cursor=pointer]:
+              - paragraph [ref=e109] [cursor=pointer]: Join collaborative efforts or start your own. Find team members with the skills you need.
+              - generic [ref=e110] [cursor=pointer]:
+                - generic [ref=e113] [cursor=pointer]: Design Team - 3 members needed
+                - generic [ref=e116] [cursor=pointer]: Mobile App - 2 developers
+                - generic [ref=e119] [cursor=pointer]: Content Creation - Writers & Designers
+            - link "Explore Collaborations →" [ref=e121] [cursor=pointer]:
+              - /url: /collaborations
+          - generic [ref=e124] [cursor=pointer]:
+            - generic [ref=e126] [cursor=pointer]:
+              - heading "Challenges" [level=3] [ref=e127] [cursor=pointer]
+              - generic [ref=e128] [cursor=pointer]: Rewards
+            - generic [ref=e129] [cursor=pointer]:
+              - paragraph [ref=e130] [cursor=pointer]: Participate in weekly and monthly challenges to showcase your skills and win rewards.
+              - generic [ref=e132] [cursor=pointer]:
+                - generic [ref=e133] [cursor=pointer]: UI/UX Design Sprint
+                - generic [ref=e134] [cursor=pointer]: Ends in 3 days
+            - link "View Challenges →" [ref=e136] [cursor=pointer]:
+              - /url: /challenges
+        - generic [ref=e137]:
+          - generic [ref=e140] [cursor=pointer]:
+            - generic [ref=e142] [cursor=pointer]:
+              - heading "Community Stats" [level=3] [ref=e143] [cursor=pointer]
+              - generic [ref=e144] [cursor=pointer]: Live
+            - generic [ref=e146] [cursor=pointer]:
+              - generic [ref=e147] [cursor=pointer]:
+                - generic [ref=e148] [cursor=pointer]: 5,892
+                - generic [ref=e149] [cursor=pointer]: Active Users
+              - generic [ref=e150] [cursor=pointer]:
+                - generic [ref=e151] [cursor=pointer]: 1,247
+                - generic [ref=e152] [cursor=pointer]: Skills Traded
+          - generic [ref=e155] [cursor=pointer]:
+            - generic [ref=e157] [cursor=pointer]:
+              - heading "Recent Activity" [level=3] [ref=e158] [cursor=pointer]
+              - generic [ref=e159] [cursor=pointer]: Real-time
+            - generic [ref=e161] [cursor=pointer]:
+              - generic [ref=e165] [cursor=pointer]: "New trade: Web Dev for UI Design"
+              - generic [ref=e170] [cursor=pointer]: "Joined: Mobile App Team"
+              - generic [ref=e175] [cursor=pointer]: "Completed: UI/UX Design Sprint"
+              - generic [ref=e179] [cursor=pointer]: "New user: Sarah Chen (Designer)"
+            - link "Browse Community →" [ref=e181] [cursor=pointer]:
+              - /url: /users
+      - generic [ref=e182]:
+        - heading "More Ways to Connect" [level=2] [ref=e183]
+        - generic [ref=e184]:
+          - generic [ref=e186] [cursor=pointer]:
+            - heading "User Directory" [level=3] [ref=e188] [cursor=pointer]
+            - paragraph [ref=e190] [cursor=pointer]: Discover talented individuals in our community and connect with people who share your interests.
+            - link "Browse Users →" [ref=e192] [cursor=pointer]:
+              - /url: /users
+          - generic [ref=e194] [cursor=pointer]:
+            - heading "Messages" [level=3] [ref=e196] [cursor=pointer]
+            - paragraph [ref=e198] [cursor=pointer]: Connect and communicate with other members through our integrated messaging system.
+            - link "Open Messages →" [ref=e200] [cursor=pointer]:
+              - /url: /messages
+          - generic [ref=e202] [cursor=pointer]:
+            - heading "Leaderboard" [level=3] [ref=e204] [cursor=pointer]
+            - paragraph [ref=e206] [cursor=pointer]: See who's leading the community and get inspired by top performers.
+            - link "View Leaderboard →" [ref=e208] [cursor=pointer]:
+              - /url: /leaderboard
+    - button "Open Dev Dashboard" [ref=e209]:
+      - img [ref=e210]
+  - contentinfo [ref=e222]:
+    - generic [ref=e223]:
+      - generic [ref=e224]:
+        - generic [ref=e225]:
+          - link "TradeYa Logo TradeYa.io" [ref=e227] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e228] [cursor=pointer]:
+              - img "TradeYa Logo" [ref=e229] [cursor=pointer]
+              - generic [ref=e230] [cursor=pointer]: TradeYa.io
+          - paragraph [ref=e231]: Exchange skills and services with others in your community.
+        - generic [ref=e232]:
+          - heading "Resources" [level=3] [ref=e233]
+          - list [ref=e234]:
+            - listitem [ref=e235]:
+              - link "Help Center" [ref=e236] [cursor=pointer]:
+                - /url: /help
+            - listitem [ref=e237]:
+              - link "Guides" [ref=e238] [cursor=pointer]:
+                - /url: /guides
+            - listitem [ref=e239]:
+              - link "Blog" [ref=e240] [cursor=pointer]:
+                - /url: /blog
+        - generic [ref=e241]:
+          - heading "Company" [level=3] [ref=e242]
+          - list [ref=e243]:
+            - listitem [ref=e244]:
+              - link "About" [ref=e245] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e246]:
+              - link "Careers" [ref=e247] [cursor=pointer]:
+                - /url: /careers
+            - listitem [ref=e248]:
+              - link "Contact" [ref=e249] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e250]:
+          - heading "Legal" [level=3] [ref=e251]
+          - list [ref=e252]:
+            - listitem [ref=e253]:
+              - link "Privacy Policy" [ref=e254] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e255]:
+              - link "Terms of Service" [ref=e256] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e257]:
+              - link "Cookie Policy" [ref=e258] [cursor=pointer]:
+                - /url: /cookies
+      - paragraph [ref=e260]: © 2025 TradeYa.io. All rights reserved.
+```

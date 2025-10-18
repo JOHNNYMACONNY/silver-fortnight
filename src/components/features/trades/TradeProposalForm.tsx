@@ -57,7 +57,7 @@ const TradeProposalForm: React.FC<TradeProposalFormProps> = ({ trade, onSuccess,
         tradeId: trade.id!,
         proposerId: currentUser.uid,
         proposerName: currentUser.displayName || undefined,
-        proposerPhotoURL: currentUser.photoURL || undefined,
+        proposerPhotoURL: currentUser.photoURL || null,
         message,
         skillsOffered: trade.skillsWanted, // What proposer can provide
         skillsRequested: trade.skillsOffered, // What proposer wants
