@@ -1,10 +1,10 @@
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
+import {
+  doc,
+  setDoc,
+  getDoc,
   getDocs,
-  collection, 
-  addDoc, 
+  collection,
+  addDoc,
   Timestamp,
   query,
   where,
@@ -22,13 +22,17 @@ import {
   DocumentData,
   Query,
   CollectionReference,
-   Firestore,
-   FirestoreDataConverter
-} from 'firebase/firestore';
-import { getFirebaseInstances, initializeFirebase, getSyncFirebaseDb } from '../../firebase-config';
-import { ServiceResult } from '../../types/ServiceError';
-import { errorService } from '../errorService';
-import { AppError, ErrorCode, ErrorSeverity } from '../../types/errors';
+  Firestore,
+  FirestoreDataConverter,
+} from "firebase/firestore";
+import {
+  getFirebaseInstances,
+  initializeFirebase,
+  getSyncFirebaseDb,
+} from "../../firebase-config";
+import { ServiceResult } from "../../types/ServiceError";
+import { errorService } from "../errorService";
+import { AppError, ErrorCode, ErrorSeverity } from "../../types/errors";
 
 /**
  * Base service class providing common Firestore operations
@@ -39,7 +43,10 @@ export abstract class BaseService<T> {
   protected collectionName: string;
   protected converter?: FirestoreDataConverter<T, DocumentData, DocumentData>;
 
-  constructor(collectionName: string, converter?: FirestoreDataConverter<T, DocumentData, DocumentData>) {
+  constructor(
+    collectionName: string,
+    converter?: FirestoreDataConverter<T, DocumentData, DocumentData>
+  ) {
     // Support both ESM and CommonJS interop for firebase config used in tests.
     // Prefer named getSyncFirebaseDb, otherwise try default/db aliases provided by the CJS fallback.
     this.collectionName = collectionName;
@@ -55,7 +62,7 @@ export abstract class BaseService<T> {
       await initializeFirebase();
       const { db } = await getFirebaseInstances();
       if (!db) {
-        throw new Error('Firestore not initialized');
+        throw new Error("Firestore not initialized");
       }
       this.db = db;
       return db;
@@ -64,14 +71,30 @@ export abstract class BaseService<T> {
 
   /**
    * Remove undefined values from an object recursively. Keeps nulls intact so callers
-   * can explicitly clear fields by setting them to null. Arrays are preserved as-is.
+   * can explicitly clear fields by setting them to null. Arrays are deep-sanitized so
+   * nested objects also have undefined entries removed.
    */
   protected sanitizeData<D extends Record<string, any>>(data: D): D {
+    const isPlainObject = (value: unknown): value is Record<string, any> => {
+      if (value === null || typeof value !== "object") {
+        return false;
+      }
+
+      const prototype = Object.getPrototypeOf(value);
+      return prototype === Object.prototype || prototype === null;
+    };
+
     const sanitize = (value: any): any => {
       if (value === undefined) return undefined;
       if (value === null) return null;
-      if (Array.isArray(value)) return value;
-      if (typeof value === 'object') {
+      if (Array.isArray(value)) {
+        const sanitizedArray = value
+          .map((item) => sanitize(item))
+          .filter((item) => item !== undefined);
+
+        return sanitizedArray;
+      }
+      if (isPlainObject(value)) {
         const result: Record<string, any> = {};
         for (const [key, val] of Object.entries(value)) {
           const sanitized = sanitize(val);
@@ -94,7 +117,11 @@ export abstract class BaseService<T> {
   protected async getCollection(): Promise<CollectionReference<T>> {
     const db = await this.resolveDb();
     const collectionRef = collection(db, this.collectionName);
-    return this.converter ? (collectionRef.withConverter(this.converter) as unknown as CollectionReference<T>) : (collectionRef as CollectionReference<T>);
+    return this.converter
+      ? (collectionRef.withConverter(
+          this.converter
+        ) as unknown as CollectionReference<T>)
+      : (collectionRef as CollectionReference<T>);
   }
 
   /**
@@ -109,11 +136,14 @@ export abstract class BaseService<T> {
   /**
    * Generic create operation
    */
-  protected async create(data: Partial<T>, id?: string): Promise<ServiceResult<T>> {
+  protected async create(
+    data: Partial<T>,
+    id?: string
+  ): Promise<ServiceResult<T>> {
     try {
       const cleanData = this.sanitizeData(data as Record<string, any>);
       const collectionRef = await this.getCollection();
-      
+
       if (id) {
         const docRef = await this.getDocRef(id);
         await setDoc(docRef as any, cleanData as any);
@@ -129,9 +159,12 @@ export abstract class BaseService<T> {
         ErrorSeverity.HIGH,
         { collection: this.collectionName, data }
       );
-      
+
       await errorService.handleError(appError);
-      return { data: null, error: { code: 'create-failed', message: appError.message } };
+      return {
+        data: null,
+        error: { code: "create-failed", message: appError.message },
+      };
     }
   }
 
@@ -142,14 +175,17 @@ export abstract class BaseService<T> {
     try {
       const docRef = await this.getDocRef(id);
       const docSnap = await getDoc(docRef);
-      
+
       if (!docSnap.exists()) {
-        return { 
-          data: null, 
-          error: { code: 'not-found', message: `${this.collectionName} document not found` } 
+        return {
+          data: null,
+          error: {
+            code: "not-found",
+            message: `${this.collectionName} document not found`,
+          },
         };
       }
-      
+
       return { data: docSnap.data() as T, error: null };
     } catch (error) {
       const appError = new AppError(
@@ -158,21 +194,27 @@ export abstract class BaseService<T> {
         ErrorSeverity.MEDIUM,
         { collection: this.collectionName, id }
       );
-      
+
       await errorService.handleError(appError);
-      return { data: null, error: { code: 'read-failed', message: appError.message } };
+      return {
+        data: null,
+        error: { code: "read-failed", message: appError.message },
+      };
     }
   }
 
   /**
    * Generic update operation
    */
-  protected async update(id: string, data: Partial<T>): Promise<ServiceResult<T>> {
+  protected async update(
+    id: string,
+    data: Partial<T>
+  ): Promise<ServiceResult<T>> {
     try {
       const cleanData = this.sanitizeData(data as Record<string, any>);
       const docRef = await this.getDocRef(id);
       await updateDoc(docRef, cleanData as any);
-      
+
       // Return updated document
       const updatedDoc = await this.read(id);
       return updatedDoc;
@@ -183,9 +225,12 @@ export abstract class BaseService<T> {
         ErrorSeverity.HIGH,
         { collection: this.collectionName, id, data }
       );
-      
+
       await errorService.handleError(appError);
-      return { data: null, error: { code: 'update-failed', message: appError.message } };
+      return {
+        data: null,
+        error: { code: "update-failed", message: appError.message },
+      };
     }
   }
 
@@ -204,9 +249,12 @@ export abstract class BaseService<T> {
         ErrorSeverity.HIGH,
         { collection: this.collectionName, id }
       );
-      
+
       await errorService.handleError(appError);
-      return { data: null, error: { code: 'delete-failed', message: appError.message } };
+      return {
+        data: null,
+        error: { code: "delete-failed", message: appError.message },
+      };
     }
   }
 
@@ -215,8 +263,19 @@ export abstract class BaseService<T> {
    */
   protected async list(
     constraints: QueryConstraint[] = [],
-    pagination?: { limit?: number; startAfter?: QueryDocumentSnapshot<T, DocumentData> | DocumentSnapshot<DocumentData, DocumentData, DocumentData> }
-  ): Promise<ServiceResult<{ items: T[]; hasMore: boolean; lastDoc?: QueryDocumentSnapshot<T, DocumentData> }>> {
+    pagination?: {
+      limit?: number;
+      startAfter?:
+        | QueryDocumentSnapshot<T, DocumentData>
+        | DocumentSnapshot<DocumentData, DocumentData, DocumentData>;
+    }
+  ): Promise<
+    ServiceResult<{
+      items: T[];
+      hasMore: boolean;
+      lastDoc?: QueryDocumentSnapshot<T, DocumentData>;
+    }>
+  > {
     try {
       const collectionRef = await this.getCollection();
       let queryRef: Query<T> = collectionRef;
@@ -236,13 +295,53 @@ export abstract class BaseService<T> {
       }
 
       const querySnapshot = await getDocs(queryRef);
-      const items = querySnapshot.docs.map(doc => doc.data());
+      const items = querySnapshot.docs.map((doc) => {
+        const data = doc.data() as T;
+        if (data && typeof data === "object") {
+          const record = data as Record<string, any>;
+          const hasId = Object.prototype.hasOwnProperty.call(record, "id");
+          if (!hasId || record.id === undefined || record.id === null) {
+            return { ...record, id: doc.id } as T;
+          }
+        }
+        return data;
+      });
       const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
-      const hasMore = querySnapshot.docs.length === (pagination?.limit || 20);
+      const appliedLimit =
+        pagination?.limit ??
+        constraints.reduce<number | undefined>((currentLimit, constraint) => {
+          if (currentLimit !== undefined) {
+            return currentLimit;
+          }
 
-      return { 
-        data: { items, hasMore, lastDoc }, 
-        error: null 
+          const constraintType = (constraint as any)?.type;
+          if (constraintType === "limit") {
+            return (
+              (constraint as any)?._limit ??
+              (constraint as any)?.limit ??
+              undefined
+            );
+          }
+
+          if (constraintType === "limitToLast") {
+            return (
+              (constraint as any)?._limit ??
+              (constraint as any)?._limitToLast ??
+              undefined
+            );
+          }
+
+          return undefined;
+        }, undefined as number | undefined);
+
+      const hasMore =
+        appliedLimit !== undefined
+          ? querySnapshot.docs.length === appliedLimit
+          : false;
+
+      return {
+        data: { items, hasMore, lastDoc },
+        error: null,
       };
     } catch (error) {
       const appError = new AppError(
@@ -251,39 +350,50 @@ export abstract class BaseService<T> {
         ErrorSeverity.MEDIUM,
         { collection: this.collectionName, constraints: constraints.length }
       );
-      
+
       await errorService.handleError(appError);
-      return { data: null, error: { code: 'list-failed', message: appError.message } };
+      return {
+        data: null,
+        error: { code: "list-failed", message: appError.message },
+      };
     }
   }
 
   /**
    * Generic batch operation
    */
-  protected async batchOperation(operations: Array<{
-    type: 'create' | 'update' | 'delete';
-    id?: string;
-    data?: Partial<T>;
-  }>): Promise<ServiceResult<boolean>> {
+  protected async batchOperation(
+    operations: Array<{
+      type: "create" | "update" | "delete";
+      id?: string;
+      data?: Partial<T>;
+    }>
+  ): Promise<ServiceResult<boolean>> {
     try {
       const db = await this.resolveDb();
       const batch = writeBatch(db);
 
       for (const operation of operations) {
         switch (operation.type) {
-          case 'create':
+          case "create":
             if (operation.id && operation.data) {
               const docRef = await this.getDocRef(operation.id);
-              batch.set(docRef as any, this.sanitizeData(operation.data as Record<string, any>) as any);
+              batch.set(
+                docRef as any,
+                this.sanitizeData(operation.data as Record<string, any>) as any
+              );
             }
             break;
-          case 'update':
+          case "update":
             if (operation.id && operation.data) {
               const docRef = await this.getDocRef(operation.id);
-              batch.update(docRef as any, this.sanitizeData(operation.data as Record<string, any>) as any);
+              batch.update(
+                docRef as any,
+                this.sanitizeData(operation.data as Record<string, any>) as any
+              );
             }
             break;
-          case 'delete':
+          case "delete":
             if (operation.id) {
               const docRef = await this.getDocRef(operation.id);
               batch.delete(docRef as any);
@@ -301,9 +411,12 @@ export abstract class BaseService<T> {
         ErrorSeverity.HIGH,
         { collection: this.collectionName, operationCount: operations.length }
       );
-      
+
       await errorService.handleError(appError);
-      return { data: null, error: { code: 'batch-failed', message: appError.message } };
+      return {
+        data: null,
+        error: { code: "batch-failed", message: appError.message },
+      };
     }
   }
 
@@ -324,18 +437,28 @@ export abstract class BaseService<T> {
         ErrorSeverity.MEDIUM,
         { collection: this.collectionName, context }
       );
-      
+
       await errorService.handleError(appError);
-      return { data: null, error: { code: 'query-failed', message: appError.message } };
+      return {
+        data: null,
+        error: { code: "query-failed", message: appError.message },
+      };
     }
   }
 
   /**
    * Validate data before operations
    */
-  protected validateData(data: Partial<T>, requiredFields: string[] = []): boolean {
+  protected validateData(
+    data: Partial<T>,
+    requiredFields: string[] = []
+  ): boolean {
     for (const field of requiredFields) {
-      if (!(field in data) || data[field as keyof T] === undefined || data[field as keyof T] === null) {
+      if (
+        !(field in data) ||
+        data[field as keyof T] === undefined ||
+        data[field as keyof T] === null
+      ) {
         throw new AppError(
           `Required field '${field}' is missing`,
           ErrorCode.VALIDATION_ERROR,
@@ -350,15 +473,18 @@ export abstract class BaseService<T> {
   /**
    * Add timestamp fields to data
    */
-  protected addTimestamps(data: Partial<T>, isUpdate: boolean = false): Partial<T> {
+  protected addTimestamps(
+    data: Partial<T>,
+    isUpdate: boolean = false
+  ): Partial<T> {
     const now = Timestamp.now();
     const timestampData = { ...data } as any;
-    
+
     if (!isUpdate) {
       timestampData.createdAt = now;
     }
     timestampData.updatedAt = now;
-    
+
     return timestampData;
   }
 }
