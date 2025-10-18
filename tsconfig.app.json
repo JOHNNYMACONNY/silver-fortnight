@@ -14,7 +14,8 @@
     "e2e/**",
     "scripts/**",
     "playwright-report/**",
-    "public/**"
+    "public/**",
+    "src/pages/CreateTradePageOld.tsx"
   ]
 }
 

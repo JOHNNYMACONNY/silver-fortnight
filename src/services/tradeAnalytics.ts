@@ -66,11 +66,11 @@ export const calculateTradeAnalytics = async (
     // Calculate analytics
     const totalTrades = trades.length;
     const completedTrades = trades.filter(trade => trade.status === 'completed').length;
-    const activeTrades = trades.filter(trade => trade.status === 'open').length;
+    const activeStatuses: TradeStatus[] = ['open', 'in-progress', 'pending_confirmation', 'pending_evidence'];
+    const activeTrades = trades.filter(trade => activeStatuses.includes(trade.status)).length;
     const cancelledTrades = trades.filter(trade => trade.status === 'cancelled').length;
-    const inProgressTrades = trades.filter(trade => 
-      ['in-progress', 'pending_confirmation', 'pending_evidence'].includes(trade.status)
-    ).length;
+    const inProgressStatuses: TradeStatus[] = ['in-progress', 'pending_confirmation', 'pending_evidence'];
+    const inProgressTrades = trades.filter(trade => inProgressStatuses.includes(trade.status)).length;
     
     // Calculate success rate (completed / (completed + cancelled))
     const settledTrades = completedTrades + cancelledTrades;
