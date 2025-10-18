@@ -13,6 +13,20 @@ export const XPBreakdown: React.FC<XPBreakdownProps> = ({ userId, days = 30, cla
   const [history, setHistory] = useState<XPTransaction[] | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const normalizeDate = (value: XPTransaction['createdAt']): Date => {
+    if (!value) return new Date(0);
+    if (typeof (value as any).toDate === 'function') {
+      try {
+        return (value as any).toDate();
+      } catch {}
+    }
+    if (value instanceof Date) {
+      return value;
+    }
+    const parsed = new Date(value as any);
+    return Number.isNaN(parsed.getTime()) ? new Date(0) : parsed;
+  };
+
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -34,7 +48,7 @@ export const XPBreakdown: React.FC<XPBreakdownProps> = ({ userId, days = 30, cla
     const now = new Date();
     const cutoff = new Date(now);
     cutoff.setDate(now.getDate() - days);
-    const recent = history.filter((t) => t.createdAt.toDate() >= cutoff);
+    const recent = history.filter((t) => normalizeDate(t.createdAt) >= cutoff);
     const totals = new Map<XPSource, number>();
     for (const tx of recent) {
       const sum = totals.get(tx.source as XPSource) || 0;

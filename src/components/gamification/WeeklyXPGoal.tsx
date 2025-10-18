@@ -38,12 +38,27 @@ export const WeeklyXPGoal: React.FC<WeeklyXPGoalProps> = ({ userId, target = 500
     return () => { mounted = false; };
   }, [userId]);
 
+  const normalizeDate = (value: XPTransaction['createdAt']): Date => {
+    if (!value) return new Date(0);
+    // Support Firestore Timestamp, JS Date, or ISO string values
+    if (typeof (value as any).toDate === 'function') {
+      try {
+        return (value as any).toDate();
+      } catch {}
+    }
+    if (value instanceof Date) {
+      return value;
+    }
+    const parsed = new Date(value as any);
+    return Number.isNaN(parsed.getTime()) ? new Date(0) : parsed;
+  };
+
   const { weekXP, percent } = useMemo(() => {
     if (!history) return { weekXP: 0, percent: 0 };
     const now = new Date();
     const weekAgo = new Date(now);
     weekAgo.setDate(now.getDate() - 7);
-    const weekTransactions = history.filter((t) => t.createdAt.toDate() >= weekAgo);
+    const weekTransactions = history.filter((t) => normalizeDate(t.createdAt) >= weekAgo);
     const weekXP = weekTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
     const activeTarget = Math.max(100, Math.min(5000, Number.isFinite(targetValue) ? targetValue : target));
     const percent = Math.min(100, Math.round((weekXP / activeTarget) * 100));
