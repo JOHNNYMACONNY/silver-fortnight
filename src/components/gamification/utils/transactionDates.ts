@@ -18,22 +18,32 @@ interface RawTimestamp {
   _nanoseconds?: number;
 }
 
+const toFiniteNumber = (value: unknown): number | undefined => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  return undefined;
+};
+
 const extractRawTimestamp = (value: unknown): RawTimestamp | null => {
   if (!value || typeof value !== "object") return null;
 
   const { seconds, nanoseconds } = value as RawTimestamp;
-  const normalizedSeconds = typeof seconds === "number" ? seconds : undefined;
-  const normalizedNanoseconds =
-    typeof nanoseconds === "number" ? nanoseconds : undefined;
+  const normalizedSeconds = toFiniteNumber(seconds);
+  const normalizedNanoseconds = toFiniteNumber(nanoseconds);
 
-  const fallbackSeconds =
-    typeof (value as RawTimestamp)._seconds === "number"
-      ? (value as RawTimestamp)._seconds
-      : undefined;
-  const fallbackNanoseconds =
-    typeof (value as RawTimestamp)._nanoseconds === "number"
-      ? (value as RawTimestamp)._nanoseconds
-      : undefined;
+  const fallbackSeconds = toFiniteNumber((value as RawTimestamp)._seconds);
+  const fallbackNanoseconds = toFiniteNumber(
+    (value as RawTimestamp)._nanoseconds
+  );
 
   const finalSeconds = normalizedSeconds ?? fallbackSeconds;
   const finalNanoseconds = normalizedNanoseconds ?? fallbackNanoseconds;
@@ -49,19 +59,8 @@ const extractRawTimestamp = (value: unknown): RawTimestamp | null => {
 };
 
 const normalizeNumericInput = (value: number | string): number | null => {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value === "string") {
-    const trimmed = value.trim();
-    if (!trimmed) return null;
-
-    const parsed = Number(trimmed);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-
-  return null;
+  const parsed = toFiniteNumber(value);
+  return typeof parsed === "number" ? parsed : null;
 };
 
 export const normalizeTransactionDate = (
