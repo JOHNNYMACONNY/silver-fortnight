@@ -18,44 +18,7 @@ import { StreakWidget } from "../features/StreakWidget";
 import { StreakUpcomingMilestones } from "../features/StreakUpcomingMilestones";
 import { markSkillPracticeDay } from "../../services/streaks";
 import { useToast } from "../../contexts/ToastContext";
-
-const normalizeTransactionDate = (
-  value: XPTransaction["createdAt"]
-): Date | null => {
-  if (!value) return null;
-  const maybeTimestamp = value as any;
-
-  if (typeof maybeTimestamp?.toDate === "function") {
-    try {
-      const date = maybeTimestamp.toDate();
-      if (date instanceof Date && !Number.isNaN(date.getTime())) {
-        return date;
-      }
-    } catch {}
-  }
-
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return value;
-  }
-
-  try {
-    const parsed = new Date(value as any);
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed;
-    }
-  } catch {}
-
-  return null;
-};
-
-const formatTransactionDate = (
-  value: XPTransaction["createdAt"],
-  { includeTime }: { includeTime?: boolean } = {}
-): string => {
-  const date = normalizeTransactionDate(value);
-  if (!date) return "Unknown date";
-  return includeTime ? date.toLocaleString() : date.toLocaleDateString();
-};
+import { formatTransactionDate } from "./utils/transactionDates";
 
 interface GamificationDashboardProps {
   userId?: string;
