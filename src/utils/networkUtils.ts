@@ -27,27 +27,35 @@ export interface NetworkInfo {
  * @returns NetworkInfo object with connection details
  */
 export const getNetworkInfo = (): NetworkInfo => {
-  // Default values for browsers without NetworkInformation API
+  const hasNavigator = typeof navigator !== "undefined";
+
   const defaultInfo: NetworkInfo = {
-    online: navigator.onLine,
+    online: hasNavigator ? navigator.onLine : true,
     connectionType: "unknown",
     downlink: 10, // Assume decent connection by default
     rtt: 50, // Assume decent latency by default
     saveData: false,
   };
 
-  // Check if the NetworkInformation API is available
+  if (!hasNavigator) {
+    return defaultInfo;
+  }
+
+  const nav = navigator as Navigator & {
+    connection?: any;
+    mozConnection?: any;
+    webkitConnection?: any;
+  };
+
   const connection =
-    navigator.connection ||
-    navigator.mozConnection ||
-    navigator.webkitConnection;
+    nav.connection || nav.mozConnection || nav.webkitConnection;
 
   if (!connection) {
     return defaultInfo;
   }
 
   return {
-    online: navigator.onLine,
+    online: nav.onLine,
     connectionType: connection.effectiveType || "unknown",
     downlink: connection.downlink || defaultInfo.downlink,
     rtt: connection.rtt || defaultInfo.rtt,
@@ -92,6 +100,10 @@ export const isDataSaverEnabled = (): boolean => {
  * @returns boolean indicating if the device is offline
  */
 export const isOffline = (): boolean => {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
   return !navigator.onLine;
 };
 
@@ -106,6 +118,10 @@ export const addConnectionListeners = (
   onOnline: () => void,
   onOffline: () => void
 ): (() => void) => {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
   window.addEventListener("online", onOnline);
   window.addEventListener("offline", onOffline);
 
@@ -124,11 +140,19 @@ export const addConnectionListeners = (
 export const addConnectionChangeListener = (
   onChange: (info: NetworkInfo) => void
 ): (() => void) => {
+  if (typeof navigator === "undefined") {
+    return () => {};
+  }
+
+  const nav = navigator as Navigator & {
+    connection?: any;
+    mozConnection?: any;
+    webkitConnection?: any;
+  };
+
   // Check if the NetworkInformation API is available
   const connection =
-    navigator.connection ||
-    navigator.mozConnection ||
-    navigator.webkitConnection;
+    nav.connection || nav.mozConnection || nav.webkitConnection;
 
   if (!connection) {
     return () => {}; // No cleanup needed
@@ -188,9 +212,17 @@ export async function retryWithBackoff<T>(
 export const createTimeoutController = (timeoutMs: number): AbortController => {
   const controller = new AbortController();
 
-  setTimeout(() => {
+  const timeoutId = setTimeout(() => {
     controller.abort();
   }, timeoutMs);
+
+  controller.signal.addEventListener(
+    "abort",
+    () => {
+      clearTimeout(timeoutId);
+    },
+    { once: true }
+  );
 
   return controller;
 };
@@ -275,13 +307,22 @@ export const loadImageWithRetry = (
  * @returns boolean indicating if the device is low-end
  */
 export const isLowEndDevice = (): boolean => {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
+  const nav = navigator as Navigator & { deviceMemory?: number };
+
   // Check for memory constraints
-  if ((navigator as any).deviceMemory && (navigator as any).deviceMemory < 4) {
+  if (typeof nav.deviceMemory === "number" && nav.deviceMemory < 4) {
     return true;
   }
 
   // Check for CPU constraints
-  if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) {
+  if (
+    typeof nav.hardwareConcurrency === "number" &&
+    nav.hardwareConcurrency < 4
+  ) {
     return true;
   }
 
