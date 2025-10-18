@@ -11,6 +11,59 @@ type NormalizableInput =
   | null
   | undefined;
 
+interface RawTimestamp {
+  seconds?: number;
+  nanoseconds?: number;
+  _seconds?: number;
+  _nanoseconds?: number;
+}
+
+const extractRawTimestamp = (value: unknown): RawTimestamp | null => {
+  if (!value || typeof value !== "object") return null;
+
+  const { seconds, nanoseconds } = value as RawTimestamp;
+  const normalizedSeconds = typeof seconds === "number" ? seconds : undefined;
+  const normalizedNanoseconds =
+    typeof nanoseconds === "number" ? nanoseconds : undefined;
+
+  const fallbackSeconds =
+    typeof (value as RawTimestamp)._seconds === "number"
+      ? (value as RawTimestamp)._seconds
+      : undefined;
+  const fallbackNanoseconds =
+    typeof (value as RawTimestamp)._nanoseconds === "number"
+      ? (value as RawTimestamp)._nanoseconds
+      : undefined;
+
+  const finalSeconds = normalizedSeconds ?? fallbackSeconds;
+  const finalNanoseconds = normalizedNanoseconds ?? fallbackNanoseconds;
+
+  if (typeof finalSeconds === "number") {
+    return {
+      seconds: finalSeconds,
+      nanoseconds: typeof finalNanoseconds === "number" ? finalNanoseconds : 0,
+    };
+  }
+
+  return null;
+};
+
+const normalizeNumericInput = (value: number | string): number | null => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  return null;
+};
+
 export const normalizeTransactionDate = (
   value: NormalizableInput
 ): Date | null => {
@@ -28,8 +81,26 @@ export const normalizeTransactionDate = (
     }
   }
 
+  const rawTimestamp = extractRawTimestamp(value);
+  if (rawTimestamp) {
+    const millis =
+      rawTimestamp.seconds * 1000 + Math.floor(rawTimestamp.nanoseconds / 1e6);
+    const date = new Date(millis);
+    if (isValidDate(date)) {
+      return date;
+    }
+  }
+
   if (isValidDate(value)) {
     return value;
+  }
+
+  const maybeNumeric = normalizeNumericInput(value as number | string);
+  if (maybeNumeric !== null) {
+    const date = new Date(maybeNumeric);
+    if (isValidDate(date)) {
+      return date;
+    }
   }
 
   try {

@@ -23,6 +23,21 @@ describe("normalizeTransactionDate", () => {
     expect(normalizeTransactionDate(1704164645000)?.toISOString()).toBe(
       "2024-01-02T03:04:05.000Z"
     );
+    expect(normalizeTransactionDate("1704164645000")?.toISOString()).toBe(
+      "2024-01-02T03:04:05.000Z"
+    );
+  });
+
+  it("parses raw Firestore timestamp objects", () => {
+    const firestoreJson = { seconds: 1701906600, nanoseconds: 0 };
+    const legacyJson = { _seconds: 1701906600, _nanoseconds: 123000000 };
+
+    expect(normalizeTransactionDate(firestoreJson as any)?.toISOString()).toBe(
+      "2023-12-06T23:50:00.000Z"
+    );
+    expect(normalizeTransactionDate(legacyJson as any)?.toISOString()).toBe(
+      "2023-12-06T23:50:00.123Z"
+    );
   });
 
   it("returns null when parsing fails", () => {
