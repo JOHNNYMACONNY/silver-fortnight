@@ -47,7 +47,7 @@ export const CollaborationApplicationForm: React.FC<CollaborationApplicationForm
         message,
         applicantId: currentUser.uid,
         applicantName: userProfile.displayName || 'Anonymous',
-        applicantPhotoURL: userProfile.photoURL,
+        applicantPhotoURL: userProfile.photoURL || null,
         skills: userProfile.skills || [],
         status: 'pending' as const
       };

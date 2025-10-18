@@ -207,12 +207,14 @@ export enum CompletionRequestStatus {
  */
 export interface RoleApplication {
   id: string;
+  collaborationId: string; // Added to match CollaborationApplication interface
   roleId: string;
   applicantId: string;
   applicantName?: string;
   applicantPhotoURL?: string;
   message: string;
   evidence?: any[];
+  skills?: string[]; // Added to match CollaborationApplication interface
   status: ApplicationStatus; // Updated to use enum
   createdAt: any; // Timestamp from Firestore
   updatedAt: any; // Timestamp from Firestore

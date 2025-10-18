@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import CollaborationForm_legacy from '../components/features/collaborations/CollaborationForm_legacy';
+import CollaborationForm from '../components/features/collaborations/CollaborationForm';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 
@@ -48,9 +48,10 @@ export const CreateCollaborationPage: React.FC = () => {
       <div className="bg-card rounded-lg shadow-sm border border-border p-6">
         <h1 className="text-2xl font-bold text-card-foreground mb-6">Create a New Collaboration</h1>
         
-        <CollaborationForm_legacy
+        <CollaborationForm
           onSuccess={handleSuccess}
           onCancel={handleCancel}
+          isCreating={true}
         />
       </div>
     </div>

@@ -1,0 +1,126 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - navigation [ref=e5]:
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - link "TradeYa Logo TradeYa.io" [ref=e9] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e10] [cursor=pointer]:
+            - img "TradeYa Logo" [ref=e11] [cursor=pointer]
+            - generic [ref=e12] [cursor=pointer]: TradeYa.io
+        - generic [ref=e13]:
+          - link "Trades" [ref=e14] [cursor=pointer]:
+            - /url: /trades
+            - generic [ref=e16] [cursor=pointer]: Trades
+          - link "Collaborations" [ref=e17] [cursor=pointer]:
+            - /url: /collaborations
+            - generic [ref=e19] [cursor=pointer]: Collaborations
+          - link "Directory" [ref=e20] [cursor=pointer]:
+            - /url: /directory
+            - generic [ref=e22] [cursor=pointer]: Directory
+          - link "Challenges" [ref=e23] [cursor=pointer]:
+            - /url: /challenges
+            - generic [ref=e25] [cursor=pointer]: Challenges
+          - link "Portfolio" [ref=e26] [cursor=pointer]:
+            - /url: /portfolio
+            - generic [ref=e28] [cursor=pointer]: Portfolio
+          - link "Leaderboard" [ref=e29] [cursor=pointer]:
+            - /url: /leaderboard
+            - generic [ref=e31] [cursor=pointer]: Leaderboard
+      - generic [ref=e32]:
+        - button "Search ⌘K" [ref=e33]:
+          - img [ref=e34]
+          - generic [ref=e36]: Search
+          - generic [ref=e37]: ⌘K
+        - button "Notifications" [ref=e39]:
+          - img [ref=e40]
+          - generic [ref=e43]: Notifications
+        - generic [ref=e45]:
+          - button "Log In" [ref=e46]
+          - button "Sign Up" [ref=e47]
+  - generic [ref=e48]:
+    - generic [ref=e49]: "Width: 1280px"
+    - generic [ref=e50]: "Mobile: ✗"
+    - generic [ref=e51]: "Tablet: ✗"
+    - generic [ref=e52]: "Desktop: ✓"
+    - generic [ref=e53]: "Screen: 1280x720"
+  - generic [ref=e54]:
+    - generic [ref=e58]:
+      - generic [ref=e59]:
+        - generic [ref=e60]:
+          - img "TradeYa Logo" [ref=e61]
+          - generic [ref=e62]: TradeYa.io
+        - heading "Log In" [level=1] [ref=e63]
+      - generic [ref=e64]:
+        - generic [ref=e65]: Email
+        - generic [ref=e67]:
+          - img [ref=e69]
+          - textbox "Email" [ref=e72]
+      - link "Forgot password?" [ref=e74] [cursor=pointer]:
+        - /url: /reset-password
+      - generic [ref=e75]:
+        - generic [ref=e76]: Password
+        - generic [ref=e78]:
+          - img [ref=e80]
+          - textbox "Password" [ref=e83]
+      - button "Log In" [ref=e84]
+      - generic [ref=e89]: Or continue with
+      - button "Sign in with Google" [ref=e90]:
+        - img [ref=e91]
+        - text: Sign in with Google
+      - paragraph [ref=e96]:
+        - text: New to TradeYa?
+        - link "Sign up" [ref=e97] [cursor=pointer]:
+          - /url: /signup
+    - button "Open Dev Dashboard" [ref=e98]:
+      - img [ref=e99]
+  - contentinfo [ref=e108]:
+    - generic [ref=e109]:
+      - generic [ref=e110]:
+        - generic [ref=e111]:
+          - link "TradeYa Logo TradeYa.io" [ref=e113] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e114] [cursor=pointer]:
+              - img "TradeYa Logo" [ref=e115] [cursor=pointer]
+              - generic [ref=e116] [cursor=pointer]: TradeYa.io
+          - paragraph [ref=e117]: Exchange skills and services with others in your community.
+        - generic [ref=e118]:
+          - heading "Resources" [level=3] [ref=e119]
+          - list [ref=e120]:
+            - listitem [ref=e121]:
+              - link "Help Center" [ref=e122] [cursor=pointer]:
+                - /url: /help
+            - listitem [ref=e123]:
+              - link "Guides" [ref=e124] [cursor=pointer]:
+                - /url: /guides
+            - listitem [ref=e125]:
+              - link "Blog" [ref=e126] [cursor=pointer]:
+                - /url: /blog
+        - generic [ref=e127]:
+          - heading "Company" [level=3] [ref=e128]
+          - list [ref=e129]:
+            - listitem [ref=e130]:
+              - link "About" [ref=e131] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e132]:
+              - link "Careers" [ref=e133] [cursor=pointer]:
+                - /url: /careers
+            - listitem [ref=e134]:
+              - link "Contact" [ref=e135] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e136]:
+          - heading "Legal" [level=3] [ref=e137]
+          - list [ref=e138]:
+            - listitem [ref=e139]:
+              - link "Privacy Policy" [ref=e140] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e141]:
+              - link "Terms of Service" [ref=e142] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e143]:
+              - link "Cookie Policy" [ref=e144] [cursor=pointer]:
+                - /url: /cookies
+      - paragraph [ref=e146]: © 2025 TradeYa.io. All rights reserved.
+```

@@ -150,7 +150,17 @@ service cloud.firestore {
   // Proposals should be visible to authenticated users or explicitly public
   allow read: if isAuthenticated() || (resource.data != null && resource.data.visibility == 'public');
         allow create: if isAuthenticated();
-        allow update, delete: if false;
+        // Allow trade creator to update proposals (accept/reject)
+        // Allow proposer to update/delete their own proposals
+        allow update: if isAuthenticated() && (
+          get(/databases/$(database)/documents/trades/$(tradeId)).data.creatorId == request.auth.uid ||
+          resource.data.proposerId == request.auth.uid ||
+          isAdmin()
+        );
+        allow delete: if isAuthenticated() && (
+          resource.data.proposerId == request.auth.uid ||
+          isAdmin()
+        );
       }
 
       // Messages subcollection
@@ -264,17 +274,26 @@ service cloud.firestore {
       // Require authentication to read collaborations by default; allow explicit public flag
       allow read: if isAuthenticated() || (resource.data != null && resource.data.public == true);
       allow create: if isAuthenticated();
-      allow update, delete: if isAuthenticated() && (resource.data.creatorId == request.auth.uid || isAdmin());
+      allow update, delete: if isAuthenticated() && (
+        resource.data.creatorId == request.auth.uid || 
+        isAdmin() ||
+        // Allow updates that only modify collaborators/participants arrays and updatedAt (for accepting applications)
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['collaborators', 'participants', 'updatedAt']))
+      );
 
       // Roles subcollection
       match /roles/{roleId} {
   // Roles are visible to authenticated users or explicitly public
   allow read: if isAuthenticated() || (resource.data != null && resource.data.public == true);
-        allow create, delete: if isAuthenticated() && (get(/databases/$(database)/documents/collaborations/$(collaborationId)).data.creatorId == request.auth.uid || isAdmin());
+        // Allow role creation for any authenticated user (collaboration creation handles this in transaction)
+        // Delete permission requires admin rights
+        allow create: if isAuthenticated();
+        allow delete: if isAuthenticated() && isAdmin();
         allow update: if isAuthenticated() && (
-          get(/databases/$(database)/documents/collaborations/$(collaborationId)).data.creatorId == request.auth.uid ||
           isAdmin() ||
-          (resource.data.participantId == request.auth.uid)
+          (resource.data.participantId == request.auth.uid) ||
+          // Allow collaboration creator to update roles (e.g., when accepting applications)
+          get(/databases/$(database)/documents/collaborations/$(collaborationId)).data.creatorId == request.auth.uid
         );
 
         // Applications subcollection

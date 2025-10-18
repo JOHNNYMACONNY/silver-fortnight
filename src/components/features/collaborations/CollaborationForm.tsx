@@ -144,14 +144,16 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
           description,
           creatorId: currentUser.uid,
           creatorName: userProfile.displayName || 'Anonymous',
-          creatorPhotoURL: userProfile.photoURL || userProfile.profilePicture,
+          creatorPhotoURL: userProfile.photoURL || userProfile.profilePicture || null,
           status: 'recruiting',
           createdAt: now,
           updatedAt: now,
           roleCount: roles.length,
           filledRoleCount: 0,
           completedRoleCount: 0,
-          participants: [currentUser.uid]
+          participants: [currentUser.uid],
+          public: true,
+          visibility: 'public'
         };
 
         const { id } = await runTransaction(getSyncFirebaseDb(), async (transaction) => {

@@ -50,7 +50,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ conversationId }) => {
         conversationId,
         senderId: currentUser.uid,
         senderName: userProfile.displayName || 'Unknown User',
-        senderAvatar: userProfile.photoURL,
+        senderAvatar: userProfile.photoURL || null,
         content: message.trim(),
         type: 'text'
       });

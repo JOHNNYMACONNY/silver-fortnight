@@ -11,15 +11,17 @@ import {
   CollaborationApplication,
   User
 } from '../services/firestore-exports';
-import CollaborationForm_legacy from '../components/features/collaborations/CollaborationForm_legacy';
+import { getRoles } from '../services/collaborations';
+import CollaborationForm from '../components/features/collaborations/CollaborationForm';
 import CollaborationApplicationForm from '../components/features/collaborations/CollaborationApplicationForm';
 import CollaborationApplicationCard from '../components/features/collaborations/CollaborationApplicationCard';
 import { RoleCard } from '../components/collaboration/RoleCard';
+import { RoleApplicationForm } from '../components/collaboration/RoleApplicationForm';
 import { useToast } from '../contexts/ToastContext';
 import { Modal } from '../components/ui/Modal';
 import { ArrowLeft, Edit, Trash2, MapPin, Clock, DollarSign, Users } from 'lucide-react';
 import ProfileHoverCard from '../components/ui/ProfileHoverCard';
-import { CollaborationRoleData, RoleState, Skill } from '../types/collaboration';
+import { CollaborationRoleData, RoleState, Skill, ApplicationStatus } from '../types/collaboration';
 
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -64,6 +66,7 @@ export const CollaborationDetailPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [collaboration, setCollaboration] = useState<Collaboration | undefined>(undefined);
+  const [roles, setRoles] = useState<CollaborationRoleData[]>([]);
   const [applications, setApplications] = useState<CollaborationApplication[]>([]);
   const [creatorProfile, setCreatorProfile] = useState<User | null>(null);
   const [isLoadingCreator, setIsLoadingCreator] = useState(false);
@@ -76,6 +79,8 @@ export const CollaborationDetailPage: React.FC = () => {
   const [showApplicationForm, setShowApplicationForm] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'applications'>('details');
+  const [selectedRoleForApplication, setSelectedRoleForApplication] = useState<CollaborationRoleData | null>(null);
+  const [showRoleApplicationModal, setShowRoleApplicationModal] = useState(false);
 
   // Check if current user is a collaborator
   const isCollaborator = currentUser && collaboration && collaboration.collaborators?.includes(currentUser.uid);
@@ -109,6 +114,12 @@ export const CollaborationDetailPage: React.FC = () => {
           setIsLoadingCreator(false);
         }
 
+        // Fetch roles from subcollection
+        const rolesData = await getRoles(collaborationId);
+        if (rolesData && Array.isArray(rolesData)) {
+          setRoles(rolesData);
+        }
+
         // Fetch applications only if collaboration is loaded
         const { data: applicationsData, error: applicationsError } = await getCollaborationApplications(collaborationId);
         if (applicationsError) {
@@ -132,6 +143,19 @@ export const CollaborationDetailPage: React.FC = () => {
   const handleUpdateCollaboration = async () => {
     setIsEditing(false);
     addToast('success', 'Collaboration updated successfully');
+    
+    // Refetch collaboration and roles to show latest data
+    if (collaborationId) {
+      const { data: updatedCollaboration } = await getCollaboration(collaborationId);
+      if (updatedCollaboration) {
+        setCollaboration(updatedCollaboration);
+      }
+      
+      const updatedRoles = await getRoles(collaborationId);
+      if (updatedRoles && Array.isArray(updatedRoles)) {
+        setRoles(updatedRoles);
+      }
+    }
   };
 
   const handleDeleteCollaboration = async () => {
@@ -158,6 +182,46 @@ export const CollaborationDetailPage: React.FC = () => {
     setHasApplied(true);
   };
 
+  const handleRoleApply = (role: CollaborationRoleData) => {
+    if (!currentUser) {
+      addToast('error', 'You must be logged in to apply for a role');
+      return;
+    }
+    setSelectedRoleForApplication(role);
+    setShowRoleApplicationModal(true);
+  };
+
+  const handleRoleApplicationSubmit = async (applicationData: { message: string; evidence?: any[] }) => {
+    if (!selectedRoleForApplication || !collaborationId || !currentUser) return;
+
+    try {
+      const { submitRoleApplication } = await import('../services/roleApplications');
+      const result = await submitRoleApplication(
+        collaborationId,
+        selectedRoleForApplication.id,
+        currentUser.uid,
+        applicationData
+      );
+
+      if (result.success) {
+        addToast('success', 'Application submitted successfully');
+        setShowRoleApplicationModal(false);
+        setSelectedRoleForApplication(null);
+        
+        // Refetch roles to update application count
+        const updatedRoles = await getRoles(collaborationId);
+        if (updatedRoles && Array.isArray(updatedRoles)) {
+          setRoles(updatedRoles);
+        }
+      } else {
+        throw new Error(result.error || 'Failed to submit application');
+      }
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      addToast('error', error instanceof Error ? error.message : 'Failed to submit application');
+    }
+  };
+
   const handleAcceptApplication = async (applicationId: string) => {
     const application = applications.find(app => app.id === applicationId);
     if (!application) {
@@ -170,20 +234,31 @@ export const CollaborationDetailPage: React.FC = () => {
       return;
     }
     
-    const { error } = await updateCollaborationApplication(applicationId, { status: 'accepted' }, collaborationId, application.roleId);
+    const { error } = await updateCollaborationApplication(applicationId, { status: 'accepted' as any }, collaborationId, application.roleId);
     if (error) {
       setError(`Failed to accept application: ${error.message}`);
       return;
     }
 
     addToast('success', 'Application accepted');
+    
+    // Update local state
     setApplications(prevApps =>
       prevApps.map(app =>
         app.id === applicationId ? { ...app, status: 'accepted' } : app
       )
     );
-    if (collaboration && collaboration.status !== 'in-progress') {
-      setCollaboration(prevCollaboration => prevCollaboration ? { ...prevCollaboration, status: 'in-progress' } : undefined);
+    
+    // Refetch collaboration to get updated collaborators array
+    const { data: updatedCollaboration } = await getCollaboration(collaborationId);
+    if (updatedCollaboration) {
+      setCollaboration(updatedCollaboration);
+    }
+    
+    // Refetch roles to get updated role status
+    const updatedRoles = await getRoles(collaborationId);
+    if (updatedRoles && Array.isArray(updatedRoles)) {
+      setRoles(updatedRoles);
     }
   };
 
@@ -199,7 +274,7 @@ export const CollaborationDetailPage: React.FC = () => {
       return;
     }
     
-    const { error } = await updateCollaborationApplication(applicationId, { status: 'rejected' }, collaborationId, application.roleId);
+    const { error } = await updateCollaborationApplication(applicationId, { status: 'rejected' as any }, collaborationId, application.roleId);
     if (error) {
       setError(`Failed to reject application: ${error.message}`);
       return;
@@ -284,10 +359,11 @@ export const CollaborationDetailPage: React.FC = () => {
               <p className="text-base text-muted-foreground">Update the information below to improve your collaboration</p>
             </CardHeader>
             <CardContent>
-              <CollaborationForm_legacy
+              <CollaborationForm
                 collaboration={collaboration}
                 onSuccess={handleUpdateCollaboration}
                 onCancel={() => setIsEditing(false)}
+                isCreating={false}
               />
             </CardContent>
           </Card>
@@ -500,7 +576,7 @@ export const CollaborationDetailPage: React.FC = () => {
                   </div>
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <div className="text-2xl font-bold text-foreground mb-1">
-                      {applications.filter(app => app.status === 'pending').length}
+                      {applications.filter(app => app.status === ApplicationStatus.PENDING || app.status === 'pending').length}
                     </div>
                     <div className="text-xs text-muted-foreground uppercase tracking-wide">
                       Pending Applications
@@ -508,7 +584,7 @@ export const CollaborationDetailPage: React.FC = () => {
                   </div>
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <div className="text-2xl font-bold text-foreground mb-1">
-                      {((collaboration as any).roles?.length || 0)}
+                      {roles.length}
                     </div>
                     <div className="text-xs text-muted-foreground uppercase tracking-wide">
                       Available Roles
@@ -543,19 +619,20 @@ export const CollaborationDetailPage: React.FC = () => {
           </div>
 
           {/* Roles Section - Most Important Content */}
-          {collaborationId && ((collaboration as any).roles && Array.isArray((collaboration as any).roles) && (collaboration as any).roles.length > 0) && (
+          {collaborationId && roles && roles.length > 0 && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-semibold text-foreground mb-2">Available Roles</h2>
                 <p className="text-base text-muted-foreground">Choose a role that matches your skills and interests</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {transformLegacyRoles((collaboration as any).roles, collaborationId).map((role) => (
+                {roles.map((role) => (
                   <div key={role.id} className="w-full h-full">
                     <RoleCard
                       role={role}
                       collaborationId={collaborationId}
                       isCreator={isOwner}
+                      onApply={!isOwner ? () => handleRoleApply(role) : undefined}
                     />
                   </div>
                 ))}
@@ -587,7 +664,7 @@ export const CollaborationDetailPage: React.FC = () => {
                       : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                   } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
                 >
-                  Applications ({applications.filter(app => app.status === 'pending').length})
+                  Applications ({applications.filter(app => app.status === ApplicationStatus.PENDING || app.status === 'pending').length})
                 </button>
               )}
             </nav>
@@ -622,10 +699,10 @@ export const CollaborationDetailPage: React.FC = () => {
                   <CardTitle className="text-lg font-semibold">Pending Applications</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {applications.filter(app => app.status === 'pending').length > 0 ? (
+                  {applications.filter(app => app.status === ApplicationStatus.PENDING || app.status === 'pending').length > 0 ? (
                     <div className="space-y-4">
                       {applications
-                        .filter(app => app.status === 'pending' && app.id)
+                        .filter(app => (app.status === ApplicationStatus.PENDING || app.status === 'pending') && app.id)
                         .map(application => (
                           <CollaborationApplicationCard
                             key={application.id}
@@ -671,6 +748,28 @@ export const CollaborationDetailPage: React.FC = () => {
             collaborationTitle={collaboration.title}
             onSuccess={handleApplicationSubmit}
             onCancel={() => setShowApplicationForm(false)}
+          />
+        )}
+      </Modal>
+
+      {/* Role-Specific Application Modal */}
+      <Modal
+        isOpen={showRoleApplicationModal}
+        onClose={() => {
+          setShowRoleApplicationModal(false);
+          setSelectedRoleForApplication(null);
+        }}
+        title={selectedRoleForApplication ? `Apply for: ${selectedRoleForApplication.title}` : 'Apply for Role'}
+      >
+        {selectedRoleForApplication && (
+          <RoleApplicationForm
+            role={selectedRoleForApplication}
+            collaborationTitle={collaboration?.title || ''}
+            onSubmit={handleRoleApplicationSubmit}
+            onCancel={() => {
+              setShowRoleApplicationModal(false);
+              setSelectedRoleForApplication(null);
+            }}
           />
         )}
       </Modal>
