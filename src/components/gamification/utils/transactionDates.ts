@@ -67,7 +67,9 @@ const normalizeNumericInput = (value: number | string): number | null => {
 export const normalizeTransactionDate = (
   value: NormalizableInput
 ): Date | null => {
-  if (!value) return null;
+  if (value === null || value === undefined) {
+    return null;
+  }
 
   const maybeTimestamp = value as { toDate?: () => unknown } | null | undefined;
   if (typeof maybeTimestamp?.toDate === "function") {
@@ -97,7 +99,11 @@ export const normalizeTransactionDate = (
 
   const maybeNumeric = normalizeNumericInput(value as number | string);
   if (maybeNumeric !== null) {
-    const date = new Date(maybeNumeric);
+    const epochMillis =
+      Math.abs(maybeNumeric) < 1e12
+        ? Math.trunc(maybeNumeric * 1000)
+        : maybeNumeric;
+    const date = new Date(epochMillis);
     if (isValidDate(date)) {
       return date;
     }

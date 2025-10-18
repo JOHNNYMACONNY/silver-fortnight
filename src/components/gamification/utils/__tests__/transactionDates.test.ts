@@ -47,6 +47,21 @@ describe("normalizeTransactionDate", () => {
     expect(normalizeTransactionDate("not-a-date")).toBeNull();
     expect(normalizeTransactionDate(null as any)).toBeNull();
   });
+
+  it("supports epoch seconds and zero values", () => {
+    expect(normalizeTransactionDate(1701906600)?.toISOString()).toBe(
+      "2023-12-06T23:50:00.000Z"
+    );
+    expect(normalizeTransactionDate("1701906600")?.toISOString()).toBe(
+      "2023-12-06T23:50:00.000Z"
+    );
+    expect(normalizeTransactionDate(0)?.toISOString()).toBe(
+      "1970-01-01T00:00:00.000Z"
+    );
+    expect(normalizeTransactionDate("0")?.toISOString()).toBe(
+      "1970-01-01T00:00:00.000Z"
+    );
+  });
 });
 
 describe("formatTransactionDate", () => {
