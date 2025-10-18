@@ -27,7 +27,6 @@ import {
   QueryConstraint,
   arrayRemove,
   DocumentData,
-  Query,
   CollectionReference,
   Firestore,
 } from "firebase/firestore";
@@ -95,6 +94,8 @@ export type TradeSkill = {
   name: string;
   level: "beginner" | "intermediate" | "expert";
 };
+
+type TradeSkillLike = TradeSkill | string;
 
 export type TradeStatus =
   | "open"
@@ -474,14 +475,22 @@ export interface Trade {
   participantName?: string;
   participantPhotoURL?: string;
   category: string;
-  skillsOffered: TradeSkill[];
-  skillsWanted: TradeSkill[];
+  skillsOffered?: TradeSkillLike[];
+  skillsWanted?: TradeSkillLike[];
   // Aliases for backward compatibility
-  offeredSkills: TradeSkill[];
-  requestedSkills: TradeSkill[];
+  offeredSkills?: TradeSkillLike[];
+  requestedSkills?: TradeSkillLike[];
   status: TradeStatus;
   interestedUsers?: string[];
   acceptedUserId?: string;
+  /**
+   * Legacy flat skills array used by older search implementations
+   */
+  skills?: string[];
+  /**
+   * Normalized lower-case skill index created by the service layer
+   */
+  skillsIndex?: string[];
   createdAt: Timestamp;
   updatedAt: Timestamp;
   completionRequestedAt?: Timestamp;
@@ -509,7 +518,13 @@ export interface CollaborationApplication {
   applicantPhotoURL?: string | null;
   message: string;
   skills: string[];
-  status: "pending" | "accepted" | "rejected" | "PENDING" | "ACCEPTED" | "REJECTED"; // Support both lowercase and uppercase
+  status:
+    | "pending"
+    | "accepted"
+    | "rejected"
+    | "PENDING"
+    | "ACCEPTED"
+    | "REJECTED"; // Support both lowercase and uppercase
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -814,10 +829,17 @@ export const createTrade = async (
     const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(
       tradeConverter
     );
+    const resolvedSkills = resolveTradeSkills(tradeData);
+
     const payload: Trade = {
       ...tradeData,
+      ...resolvedSkills,
       visibility: tradeData.visibility ?? "public",
     } as Trade;
+
+    const normalizedSkills = getNormalizedTradeSkillNames(payload);
+    payload.skillsIndex = normalizedSkills;
+    payload.skills = normalizedSkills;
     const docRef = await addDoc(tradesCollection, payload);
     return { data: docRef.id, error: null };
   } catch (error) {
@@ -858,8 +880,51 @@ export const updateTrade = async (
 ): Promise<ServiceResult<void>> => {
   try {
     const db = getSyncFirebaseDb();
-    const tradeRef = doc(db, COLLECTIONS.TRADES, tradeId);
-    await updateDoc(tradeRef, updates);
+    const tradeRef = doc(db, COLLECTIONS.TRADES, tradeId).withConverter(
+      tradeConverter
+    );
+
+    let payload: Partial<Trade> = { ...updates };
+    const skillFields: (keyof Trade)[] = [
+      "skillsOffered",
+      "skillsWanted",
+      "offeredSkills",
+      "requestedSkills",
+      "skills",
+      "skillsIndex",
+    ];
+
+    const shouldNormalizeSkills = skillFields.some((field) =>
+      Object.prototype.hasOwnProperty.call(updates, field)
+    );
+
+    if (shouldNormalizeSkills) {
+      const existingSnapshot = await getDoc(tradeRef);
+      const existingTrade = existingSnapshot.exists()
+        ? (existingSnapshot.data() as Trade)
+        : undefined;
+
+      const mergedTrade = {
+        ...(existingTrade ?? {}),
+        ...updates,
+      } as Partial<Trade>;
+
+      const normalizedSkillsState = resolveTradeSkills(mergedTrade);
+      const normalizedSkills = getNormalizedTradeSkillNames({
+        ...mergedTrade,
+        ...normalizedSkillsState,
+      });
+
+      payload = {
+        ...payload,
+        ...normalizedSkillsState,
+        skillsIndex: normalizedSkills,
+      };
+
+      payload.skills = normalizedSkills;
+    }
+
+    await updateDoc(tradeRef, payload);
     return { data: null, error: null };
   } catch (error) {
     console.error(`Error updating trade ${tradeId}:`, error);
@@ -907,35 +972,21 @@ export const getAllTrades = async (
     if (filters?.category) {
       baseConstraints.push(where("category", "==", filters.category));
     }
+    const { items, totalFiltered, hasMore, lastDoc } =
+      await collectTradesWithClientFiltering(
+        tradesCollection,
+        baseConstraints,
+        {
+          pagination,
+          filters,
+          includeNonPublic: options.includeNonPublic,
+        }
+      );
 
-    let tradesQuery: Query<Trade> =
-      baseConstraints.length > 0
-        ? query(tradesCollection, ...baseConstraints)
-        : query(tradesCollection);
-
-    // Apply pagination
-    if (pagination) {
-      const constraints: QueryConstraint[] = [];
-      if (pagination.orderByField) {
-        constraints.push(
-          orderBy(pagination.orderByField, pagination.orderDirection || "asc")
-        );
-      }
-      if (pagination.startAfterDoc) {
-        constraints.push(startAfter(pagination.startAfterDoc));
-      }
-      constraints.push(limitQuery(pagination.limit || 10));
-      tradesQuery = query(tradesQuery, ...constraints);
-    }
-
-    const querySnapshot = await getDocs(tradesQuery);
-
-    const trades = querySnapshot.docs.map((doc) => doc.data());
-
-    const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
-    const hasMore = (pagination?.limit || 0) <= trades.length;
-
-    return { data: { items: trades, hasMore, lastDoc }, error: null };
+    return {
+      data: { items, hasMore, lastDoc, totalCount: totalFiltered },
+      error: null,
+    };
   } catch (error) {
     console.error("Error getting all trades:", error);
     return {
@@ -1854,17 +1905,15 @@ export const getCollaborationApplications = async (
       );
       const applicationsSnapshot = await getDocs(applicationsQuery);
 
-      const roleApplications = applicationsSnapshot.docs.map(
-        (doc) => {
-          const data = doc.data() as CollaborationApplication;
-          // Patch old applications that are missing required fields
-          return {
-            ...data,
-            collaborationId: data.collaborationId || collaborationId, // Add if missing
-            skills: data.skills || [] // Add empty array if missing
-          };
-        }
-      );
+      const roleApplications = applicationsSnapshot.docs.map((doc) => {
+        const data = doc.data() as CollaborationApplication;
+        // Patch old applications that are missing required fields
+        return {
+          ...data,
+          collaborationId: data.collaborationId || collaborationId, // Add if missing
+          skills: data.skills || [], // Add empty array if missing
+        };
+      });
       allApplications.push(...roleApplications);
     }
 
@@ -1874,9 +1923,15 @@ export const getCollaborationApplications = async (
     // We catch and ignore since it's expected behavior
     try {
       // First check if 'general' role exists to avoid permission errors
-      const generalRoleRef = doc(db, COLLECTIONS.COLLABORATIONS, collaborationId, "roles", "general");
+      const generalRoleRef = doc(
+        db,
+        COLLECTIONS.COLLABORATIONS,
+        collaborationId,
+        "roles",
+        "general"
+      );
       const generalRoleExists = await getDoc(generalRoleRef);
-      
+
       if (generalRoleExists.exists()) {
         const generalApplicationsQuery = query(
           collection(
@@ -1888,8 +1943,10 @@ export const getCollaborationApplications = async (
             "applications"
           ).withConverter(collaborationApplicationConverter)
         );
-        const generalApplicationsSnapshot = await getDocs(generalApplicationsQuery);
-        
+        const generalApplicationsSnapshot = await getDocs(
+          generalApplicationsQuery
+        );
+
         const generalApplications = generalApplicationsSnapshot.docs.map(
           (doc) => {
             const data = doc.data() as CollaborationApplication;
@@ -1897,7 +1954,7 @@ export const getCollaborationApplications = async (
             return {
               ...data,
               collaborationId: data.collaborationId || collaborationId, // Add if missing
-              skills: data.skills || [] // Add empty array if missing
+              skills: data.skills || [], // Add empty array if missing
             };
           }
         );
@@ -1906,8 +1963,11 @@ export const getCollaborationApplications = async (
     } catch (generalError: any) {
       // It's okay if general role doesn't exist - just means no general applications
       // Silently ignore permission errors for non-existent 'general' role
-      if (!generalError?.message?.includes('permission')) {
-        console.log('Note: General applications check skipped:', generalError?.message || 'Unknown reason');
+      if (!generalError?.message?.includes("permission")) {
+        console.log(
+          "Note: General applications check skipped:",
+          generalError?.message || "Unknown reason"
+        );
       }
     }
 
@@ -1941,56 +2001,67 @@ export const updateCollaborationApplication = async (
       "applications",
       applicationId
     );
-    
+
     // If accepting, update role and collaboration
     if (updates.status === "accepted") {
-      const { runTransaction, getDoc, Timestamp } = await import('firebase/firestore');
-      
+      const { runTransaction, getDoc, Timestamp } = await import(
+        "firebase/firestore"
+      );
+
       await runTransaction(db, async (transaction) => {
         // *** IMPORTANT: All reads must happen before any writes in Firestore transactions ***
-        
+
         // Read 1: Get application data
         const appSnap = await transaction.get(appRef);
         if (!appSnap.exists()) {
-          throw new Error('Application not found');
+          throw new Error("Application not found");
         }
         const appData = appSnap.data() as any;
-        
+
         // Read 2: Get collaboration data (must read before any writes!)
         const collabRef = doc(db, COLLECTIONS.COLLABORATIONS, collaborationId);
         const collabSnap = await transaction.get(collabRef);
-        
+
         // *** Now we can do all writes ***
-        
+
         // Write 1: Update application status
         transaction.update(appRef, {
           ...updates,
-          updatedAt: Timestamp.now()
+          updatedAt: Timestamp.now(),
         });
-        
+
         // Write 2: Update role with participant info
-        const roleRef = doc(db, COLLECTIONS.COLLABORATIONS, collaborationId, "roles", roleId);
+        const roleRef = doc(
+          db,
+          COLLECTIONS.COLLABORATIONS,
+          collaborationId,
+          "roles",
+          roleId
+        );
         transaction.update(roleRef, {
-          status: 'filled',
+          status: "filled",
           participantId: appData.applicantId,
           participantName: appData.applicantName,
           participantPhotoURL: appData.applicantPhotoURL,
           filledAt: Timestamp.now(),
-          updatedAt: Timestamp.now()
+          updatedAt: Timestamp.now(),
         });
-        
+
         // Write 3: Add user to collaborators array
         if (collabSnap.exists()) {
           const collabData = collabSnap.data() as any;
-          const currentCollaborators = collabData?.collaborators || collabData?.participants || [];
-          const updatedCollaborators = currentCollaborators.includes(appData.applicantId)
+          const currentCollaborators =
+            collabData?.collaborators || collabData?.participants || [];
+          const updatedCollaborators = currentCollaborators.includes(
+            appData.applicantId
+          )
             ? currentCollaborators
             : [...currentCollaborators, appData.applicantId];
-          
+
           transaction.update(collabRef, {
             collaborators: updatedCollaborators,
             participants: updatedCollaborators,
-            updatedAt: Timestamp.now()
+            updatedAt: Timestamp.now(),
           });
         }
       });
@@ -1998,10 +2069,10 @@ export const updateCollaborationApplication = async (
       // Just update application status for rejection
       await updateDoc(appRef, {
         ...updates,
-        updatedAt: (await import('firebase/firestore')).Timestamp.now()
+        updatedAt: (await import("firebase/firestore")).Timestamp.now(),
       });
     }
-    
+
     return { data: null, error: null };
   } catch (error) {
     console.error(`Error updating application ${applicationId}:`, error);
@@ -2532,6 +2603,363 @@ export const searchUsers = async (
   }
 };
 
+type TradeSkillScope = "all" | "offered" | "wanted";
+
+const normalizeSkillName = (skill?: string | null): string | null => {
+  if (!skill) return null;
+  const normalized = skill.trim().toLowerCase();
+  return normalized.length > 0 ? normalized : null;
+};
+
+const toSkillArray = (
+  value: TradeSkillLike[] | TradeSkillLike | string | null | undefined
+): TradeSkillLike[] => {
+  if (Array.isArray(value)) {
+    return value.filter(
+      (entry): entry is TradeSkillLike => entry !== null && entry !== undefined
+    );
+  }
+
+  if (!value) {
+    return [];
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0);
+  }
+
+  return [value];
+};
+
+const resolveTradeSkills = (
+  trade: Partial<Trade>
+): Required<
+  Pick<
+    Trade,
+    "skillsOffered" | "skillsWanted" | "offeredSkills" | "requestedSkills"
+  >
+> => {
+  const primaryOffered = toSkillArray(trade.skillsOffered);
+  const legacyOffered = toSkillArray(trade.offeredSkills);
+  const primaryWanted = toSkillArray(trade.skillsWanted);
+  const legacyWanted = toSkillArray(trade.requestedSkills);
+
+  const normalizedOffered =
+    primaryOffered.length > 0 ? primaryOffered : legacyOffered;
+  const normalizedWanted =
+    primaryWanted.length > 0 ? primaryWanted : legacyWanted;
+
+  return {
+    skillsOffered: normalizedOffered,
+    skillsWanted: normalizedWanted,
+    offeredSkills: legacyOffered.length > 0 ? legacyOffered : normalizedOffered,
+    requestedSkills: legacyWanted.length > 0 ? legacyWanted : normalizedWanted,
+  };
+};
+
+const collectSkillNamesFromArray = (
+  values: Array<TradeSkill | string | null | undefined> | undefined,
+  target: Set<string>
+) => {
+  if (!Array.isArray(values)) return;
+  values.forEach((value) => {
+    if (!value) return;
+    if (typeof value === "string") {
+      const normalized = normalizeSkillName(value);
+      if (normalized) target.add(normalized);
+      return;
+    }
+
+    const normalized = normalizeSkillName(value.name);
+    if (normalized) {
+      target.add(normalized);
+    }
+  });
+};
+
+const collectSkillNamesFromLegacyField = (
+  value: TradeSkillLike[] | TradeSkillLike | string | null | undefined,
+  target: Set<string>
+) => {
+  const normalizedValues = toSkillArray(value);
+  if (normalizedValues.length === 0) {
+    return;
+  }
+
+  collectSkillNamesFromArray(normalizedValues, target);
+};
+
+/**
+ * Extracts normalized skill names from trade data across legacy and modern schemas.
+ *
+ * @param trade Trade document
+ * @param scope Which subsets of skills to extract
+ */
+export const getNormalizedTradeSkillNames = (
+  trade: Partial<Trade>,
+  scope: TradeSkillScope = "all"
+): string[] => {
+  const skillNames = new Set<string>();
+
+  const { skillsOffered, skillsWanted, offeredSkills, requestedSkills } =
+    resolveTradeSkills(trade);
+
+  if (scope === "all" || scope === "offered") {
+    collectSkillNamesFromArray(skillsOffered, skillNames);
+    collectSkillNamesFromArray(offeredSkills, skillNames);
+  }
+
+  if (scope === "all" || scope === "wanted") {
+    collectSkillNamesFromArray(skillsWanted, skillNames);
+    collectSkillNamesFromArray(requestedSkills, skillNames);
+  }
+
+  if (scope === "all") {
+    collectSkillNamesFromLegacyField(trade.skills, skillNames);
+    collectSkillNamesFromLegacyField(trade.skillsIndex, skillNames);
+  }
+
+  return Array.from(skillNames);
+};
+
+const normalizeFilterValues = (values?: string[]): string[] =>
+  Array.isArray(values)
+    ? values
+        .map((value) => value?.toLowerCase().trim())
+        .filter((value): value is string => Boolean(value))
+    : [];
+
+export const tradeMatchesSkillFilters = (
+  trade: Partial<Trade>,
+  filters?: TradeFilters
+): boolean => {
+  if (!filters) {
+    return true;
+  }
+
+  const generalFilters = normalizeFilterValues(filters.skills);
+  if (generalFilters.length > 0) {
+    const normalizedSkills = getNormalizedTradeSkillNames(trade);
+    if (!normalizedSkills.some((skill) => generalFilters.includes(skill))) {
+      return false;
+    }
+  }
+
+  const offeredFilters = normalizeFilterValues(filters.skillsOffered);
+  if (offeredFilters.length > 0) {
+    const offeredSkills = getNormalizedTradeSkillNames(trade, "offered");
+    if (!offeredSkills.some((skill) => offeredFilters.includes(skill))) {
+      return false;
+    }
+  }
+
+  const wantedFilters = normalizeFilterValues(filters.skillsWanted);
+  if (wantedFilters.length > 0) {
+    const wantedSkills = getNormalizedTradeSkillNames(trade, "wanted");
+    if (!wantedSkills.some((skill) => wantedFilters.includes(skill))) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+const tradeMatchesCoreFilters = (
+  trade: Partial<Trade>,
+  filters?: TradeFilters
+): boolean => {
+  if (!filters) {
+    return true;
+  }
+
+  if (filters.category && trade.category !== filters.category) {
+    return false;
+  }
+
+  if (filters.status && trade.status !== filters.status) {
+    return false;
+  }
+
+  if (filters.creatorId && trade.creatorId !== filters.creatorId) {
+    return false;
+  }
+
+  if (filters.participantId && trade.participantId !== filters.participantId) {
+    return false;
+  }
+
+  return true;
+};
+
+export const tradeMatchesFilters = (
+  trade: Partial<Trade>,
+  filters?: TradeFilters
+): boolean =>
+  tradeMatchesCoreFilters(trade, filters) &&
+  tradeMatchesSkillFilters(trade, filters);
+
+export const tradeMatchesSearchTerm = (
+  trade: Partial<Trade>,
+  searchLower?: string
+): boolean => {
+  if (!searchLower) {
+    return true;
+  }
+
+  const normalizedSkills = getNormalizedTradeSkillNames(trade);
+  const title = trade.title?.toLowerCase() ?? "";
+  const description = trade.description?.toLowerCase() ?? "";
+  const category = trade.category?.toLowerCase() ?? "";
+
+  return (
+    title.includes(searchLower) ||
+    description.includes(searchLower) ||
+    category.includes(searchLower) ||
+    normalizedSkills.some((skill) => skill.includes(searchLower))
+  );
+};
+
+type TradeFilteringContext = {
+  includeNonPublic: boolean;
+  filters?: TradeFilters;
+  searchLower?: string;
+};
+
+export const isTradeVisibleToPublic = (trade: Partial<Trade>): boolean => {
+  const visibility = trade.visibility ?? "public";
+  return visibility === "public";
+};
+
+const filterTradesForClient = (
+  trades: Trade[],
+  context: TradeFilteringContext
+): Trade[] => {
+  const { includeNonPublic, filters, searchLower } = context;
+
+  return trades.filter((trade) => {
+    if (!includeNonPublic && !isTradeVisibleToPublic(trade)) {
+      return false;
+    }
+
+    if (!tradeMatchesFilters(trade, filters)) {
+      return false;
+    }
+
+    return tradeMatchesSearchTerm(trade, searchLower);
+  });
+};
+
+const DEFAULT_TRADE_PAGE_LIMIT = 10;
+const MAX_TRADE_QUERY_BATCHES = 5;
+
+type TradePaginationAccumulator = {
+  items: Trade[];
+  totalFiltered: number;
+  hasMore: boolean;
+  lastDoc?: QueryDocumentSnapshot<Trade>;
+};
+
+const collectTradesWithClientFiltering = async (
+  tradesCollection: CollectionReference<Trade>,
+  baseConstraints: QueryConstraint[],
+  options: {
+    pagination?: PaginationOptions;
+    filters?: TradeFilters;
+    includeNonPublic?: boolean;
+    searchTerm?: string;
+  }
+): Promise<TradePaginationAccumulator> => {
+  const { pagination, filters, includeNonPublic, searchTerm } = options;
+  const searchLower = searchTerm?.trim().toLowerCase() || undefined;
+  const includePrivate = Boolean(includeNonPublic);
+
+  if (!pagination) {
+    const baseQuery =
+      baseConstraints.length > 0
+        ? query(tradesCollection, ...baseConstraints)
+        : query(tradesCollection);
+    const snapshot = await getDocs(baseQuery);
+    const trades = snapshot.docs.map((doc) => doc.data());
+    const filtered = filterTradesForClient(trades, {
+      includeNonPublic: includePrivate,
+      filters,
+      searchLower,
+    });
+
+    return {
+      items: filtered,
+      totalFiltered: filtered.length,
+      hasMore: false,
+      lastDoc: snapshot.docs[snapshot.docs.length - 1],
+    };
+  }
+
+  const pageSize = pagination.limit ?? DEFAULT_TRADE_PAGE_LIMIT;
+  const orderConstraints = pagination.orderByField
+    ? [orderBy(pagination.orderByField, pagination.orderDirection || "asc")]
+    : [];
+
+  let cursor: DocumentSnapshot | undefined = pagination.startAfterDoc;
+  const collected: Trade[] = [];
+  let totalFiltered = 0;
+  let iterations = 0;
+  let exhausted = false;
+  let iterationLimitReached = false;
+  let lastDoc: QueryDocumentSnapshot<Trade> | undefined;
+
+  while (collected.length < pageSize && iterations < MAX_TRADE_QUERY_BATCHES) {
+    iterations += 1;
+
+    const queryConstraints: QueryConstraint[] = [
+      ...baseConstraints,
+      ...orderConstraints,
+      ...(cursor ? [startAfter(cursor)] : []),
+      limitQuery(pageSize),
+    ];
+
+    const snapshot = await getDocs(
+      query(tradesCollection, ...queryConstraints)
+    );
+
+    if (snapshot.empty) {
+      exhausted = true;
+      break;
+    }
+
+    lastDoc = snapshot.docs[snapshot.docs.length - 1];
+    cursor = lastDoc;
+
+    const trades = snapshot.docs.map((doc) => doc.data());
+    const filteredBatch = filterTradesForClient(trades, {
+      includeNonPublic: includePrivate,
+      filters,
+      searchLower,
+    });
+
+    totalFiltered += filteredBatch.length;
+    collected.push(...filteredBatch);
+
+    if (snapshot.docs.length < pageSize) {
+      exhausted = true;
+      break;
+    }
+  }
+
+  if (iterations >= MAX_TRADE_QUERY_BATCHES && collected.length < pageSize) {
+    iterationLimitReached = true;
+  }
+
+  return {
+    items: collected.slice(0, pageSize),
+    totalFiltered,
+    hasMore: iterationLimitReached || (!exhausted && Boolean(lastDoc)),
+    lastDoc,
+  };
+};
+
 export const searchTrades = async (
   searchTerm: string,
   pagination?: PaginationOptions,
@@ -2543,75 +2971,21 @@ export const searchTrades = async (
     const tradesCollection = collection(db, COLLECTIONS.TRADES).withConverter(
       tradeConverter
     );
-    // Ultra-simplified query to avoid ANY composite index requirements
-    // Just get all trades and filter client-side
-    let searchQuery: Query<Trade> = query(tradesCollection, limitQuery(100));
 
-    // Note: Filters will be applied client-side to avoid Firebase index issues
-    const totalCountQuery = searchQuery;
-
-    if (pagination?.startAfterDoc) {
-      searchQuery = query(searchQuery, startAfter(pagination.startAfterDoc));
-    }
-
-    const finalQuery = query(searchQuery, limitQuery(pagination?.limit || 10));
-
-    const [querySnapshot, totalCountSnapshot] = await Promise.all([
-      getDocs(finalQuery),
-      getDocs(totalCountQuery),
-    ]);
-
-    let trades = querySnapshot.docs.map((doc) => doc.data());
-
-    // Apply client-side filtering to avoid Firebase index issues
-    // First filter by visibility
-    if (!options.includeNonPublic) {
-      trades = trades.filter((trade) => trade.visibility === "public");
-    }
-    
-    // Then apply search term filtering
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      trades = trades.filter((trade) => 
-        trade.title?.toLowerCase().includes(searchLower) ||
-        trade.description?.toLowerCase().includes(searchLower) ||
-        trade.category?.toLowerCase().includes(searchLower) ||
-        trade.skills?.some((skill: string) => skill.toLowerCase().includes(searchLower))
-      );
-    }
-
-    // Apply filters client-side
-    if (filters) {
-      if (filters.category) {
-        trades = trades.filter((trade) => trade.category === filters.category);
-      }
-      if (filters.status) {
-        trades = trades.filter((trade) => trade.status === filters.status);
-      }
-      if (filters.skills && filters.skills.length > 0) {
-        const normalizedFilters = filters.skills.map((s) => s.toLowerCase());
-        trades = trades.filter((trade) => 
-          trade.skills?.some((skill: string) => 
-            normalizedFilters.includes(skill.toLowerCase())
-          )
-        );
-      }
-    }
-
-    // Apply pagination to filtered results
-    const startIndex = 0;
-    const endIndex = startIndex + (pagination?.limit || 10);
-    const paginatedTrades = trades.slice(startIndex, endIndex);
-
-    const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
-    const hasMore = paginatedTrades.length === (pagination?.limit || 10);
+    const { items, totalFiltered, hasMore, lastDoc } =
+      await collectTradesWithClientFiltering(tradesCollection, [], {
+        pagination,
+        filters,
+        includeNonPublic: options.includeNonPublic,
+        searchTerm,
+      });
 
     return {
       data: {
-        items: paginatedTrades,
+        items,
         hasMore,
         lastDoc,
-        totalCount: trades.length, // Use filtered count instead of total snapshot size
+        totalCount: totalFiltered,
       },
       error: null,
     };
@@ -2623,4 +2997,3 @@ export const searchTrades = async (
     };
   }
 };
-
