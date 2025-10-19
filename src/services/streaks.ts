@@ -1,18 +1,29 @@
- 
-
-import { getSyncFirebaseDb } from '../firebase-config';
+import { getSyncFirebaseDb } from "../firebase-config";
 import {
   doc,
   getDoc,
   setDoc,
   runTransaction,
   Timestamp,
-} from 'firebase/firestore';
-import { UserStreak, StreakType, XP_VALUES, XPSource } from '../types/gamification';
-import { getStreakMilestoneThresholds, getStreakMaxFreezes, isAutoFreezeEnabled } from './streakConfig';
-import { ServiceResponse } from '../types/services';
-import { awardXPWithLeaderboardUpdate, emitGamificationNotification } from './gamification';
-import { createNotification } from './notifications';
+} from "firebase/firestore";
+import {
+  UserStreak,
+  StreakType,
+  XP_VALUES,
+  XPSource,
+} from "../types/gamification";
+import {
+  getStreakMilestoneThresholds,
+  getStreakMaxFreezes,
+  isAutoFreezeEnabled,
+} from "./streakConfig";
+import { ServiceResponse } from "../types/services";
+import {
+  awardXPWithLeaderboardUpdate,
+  emitGamificationNotification,
+} from "./gamification";
+import { createNotification } from "./notifications";
+import { removeUndefinedDeep } from "../utils/firestore";
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -33,7 +44,7 @@ export const updateUserStreak = async (
   try {
     const db = getSyncFirebaseDb();
     const streakId = `${userId}_${type}`;
-    const streakRef = doc(db, 'userStreaks', streakId);
+    const streakRef = doc(db, "userStreaks", streakId);
 
     let milestoneHit: number | undefined;
 
@@ -54,11 +65,17 @@ export const updateUserStreak = async (
           createdAt: nowTs,
           updatedAt: nowTs,
         };
-        tx.set(streakRef, streak as any);
+        // Clean undefined values before setting
+        const cleanedStreak = removeUndefinedDeep(streak);
+        tx.set(streakRef, cleanedStreak as any);
       } else {
         const existing = snap.data() as UserStreak;
         const last = existing.lastActivity?.toDate() ?? new Date(0);
-        const diffDays = Math.floor((activityTime.setHours(0,0,0,0) - new Date(last).setHours(0,0,0,0)) / ONE_DAY_MS);
+        const diffDays = Math.floor(
+          (activityTime.setHours(0, 0, 0, 0) -
+            new Date(last).setHours(0, 0, 0, 0)) /
+            ONE_DAY_MS
+        );
 
         let nextCurrent = existing.currentStreak;
         let nextFreezesUsed = existing.freezesUsed || 0;
@@ -88,16 +105,24 @@ export const updateUserStreak = async (
           currentStreak: nextCurrent,
           longestStreak: longest,
           lastActivity: nowTs,
-          lastFreezeAt: nextFreezesUsed !== (existing.freezesUsed ?? 0) ? nowTs : existing.lastFreezeAt,
+          lastFreezeAt:
+            nextFreezesUsed !== (existing.freezesUsed ?? 0)
+              ? nowTs
+              : existing.lastFreezeAt,
           freezesUsed: nextFreezesUsed,
           updatedAt: nowTs,
         };
-        tx.set(streakRef, streak as any);
+        // Clean undefined values before setting
+        const cleanedStreak = removeUndefinedDeep(streak);
+        tx.set(streakRef, cleanedStreak as any);
       }
 
       // Calculate milestone hit (only on incremented day)
       const thresholds = getStreakMilestoneThresholds();
-      if (streak.currentStreak > 1 && thresholds.includes(streak.currentStreak)) {
+      if (
+        streak.currentStreak > 1 &&
+        thresholds.includes(streak.currentStreak)
+      ) {
         milestoneHit = streak.currentStreak;
       }
 
@@ -117,80 +142,102 @@ export const updateUserStreak = async (
         // Notify user of milestone
         await createNotification({
           recipientId: userId,
-          type: 'streak_milestone',
-          title: '🔥 Streak Milestone Reached!',
-          message: `You hit a ${milestoneHit}-day ${type.replace('_', ' ')} streak! +${XP_VALUES.CHALLENGE_STREAK_BONUS} XP`,
+          type: "streak_milestone",
+          title: "🔥 Streak Milestone Reached!",
+          message: `You hit a ${milestoneHit}-day ${type.replace(
+            "_",
+            " "
+          )} streak! +${XP_VALUES.CHALLENGE_STREAK_BONUS} XP`,
           data: { type, milestone: milestoneHit },
-          createdAt: Timestamp.now()
+          createdAt: Timestamp.now(),
         });
         // Emit realtime notification to in-app queue
         emitGamificationNotification({
-          type: 'streak_milestone',
-          message: `You hit a ${milestoneHit}-day ${type.replace('_', ' ')} streak! +${XP_VALUES.CHALLENGE_STREAK_BONUS} XP`,
+          type: "streak_milestone",
+          message: `You hit a ${milestoneHit}-day ${type.replace(
+            "_",
+            " "
+          )} streak! +${XP_VALUES.CHALLENGE_STREAK_BONUS} XP`,
           userId,
           timestamp: new Date(),
         });
       } catch (e) {
         // Log but do not fail the core update
-        console.warn('Failed to award streak milestone XP', e);
+        console.warn("Failed to award streak milestone XP", e);
       }
     }
 
-    return { success: true, data: { streak: result, hitMilestone: milestoneHit } };
+    return {
+      success: true,
+      data: { streak: result, hitMilestone: milestoneHit },
+    };
   } catch (error: any) {
-    console.error('updateUserStreak failed', error);
-    return { success: false, error: error?.message || 'Failed to update streak' };
+    console.error("updateUserStreak failed", error);
+    return {
+      success: false,
+      error: error?.message || "Failed to update streak",
+    };
   }
 };
 
 /**
  * Convenience function: mark a completed challenge day for the user's challenge streak.
  */
-export const markChallengeDay = async (userId: string, when: Date = new Date()) =>
-  updateUserStreak(userId, 'challenge', when);
-
+export const markChallengeDay = async (
+  userId: string,
+  when: Date = new Date()
+) => updateUserStreak(userId, "challenge", when);
 
 /**
  * Convenience function: mark a login day for the user's login streak.
  */
 export const markLoginDay = async (userId: string, when: Date = new Date()) =>
-  updateUserStreak(userId, 'login', when);
+  updateUserStreak(userId, "login", when);
 
 /**
  * Convenience function: mark a skill practice day for the user's skill streak.
  */
-export const markSkillPracticeDay = async (userId: string, when: Date = new Date()) =>
-  updateUserStreak(userId, 'skill_practice', when);
+export const markSkillPracticeDay = async (
+  userId: string,
+  when: Date = new Date()
+) => updateUserStreak(userId, "skill_practice", when);
 
 /**
  * Fetch a user's streak document for a given type.
  */
-export const getUserStreak = async (userId: string, type: StreakType): Promise<ServiceResponse<UserStreak | null>> => {
+export const getUserStreak = async (
+  userId: string,
+  type: StreakType
+): Promise<ServiceResponse<UserStreak | null>> => {
   try {
     const db = getSyncFirebaseDb();
-    const ref = doc(db, 'userStreaks', `${userId}_${type}`);
+    const ref = doc(db, "userStreaks", `${userId}_${type}`);
     const snap = await getDoc(ref);
     if (!snap.exists()) return { success: true, data: null };
     return { success: true, data: snap.data() as UserStreak };
   } catch (error: any) {
-    console.error('getUserStreak failed', error);
-    return { success: false, error: error?.message || 'Failed to load streak' };
+    console.error("getUserStreak failed", error);
+    return { success: false, error: error?.message || "Failed to load streak" };
   }
 };
 
 /**
  * Returns true if the user's skill practice streak has activity today.
  */
-export const hasPracticedToday = async (userId: string, today: Date = new Date()): Promise<boolean> => {
+export const hasPracticedToday = async (
+  userId: string,
+  today: Date = new Date()
+): Promise<boolean> => {
   try {
-    const res = await getUserStreak(userId, 'skill_practice');
+    const res = await getUserStreak(userId, "skill_practice");
     if (!res.success || !res.data?.lastActivity) return false;
     const last = res.data.lastActivity.toDate();
-    const a = new Date(today); a.setHours(0,0,0,0);
-    const b = new Date(last); b.setHours(0,0,0,0);
+    const a = new Date(today);
+    a.setHours(0, 0, 0, 0);
+    const b = new Date(last);
+    b.setHours(0, 0, 0, 0);
     return a.getTime() === b.getTime();
   } catch {
     return false;
   }
 };
-

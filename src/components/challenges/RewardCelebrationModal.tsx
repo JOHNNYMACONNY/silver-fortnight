@@ -1,6 +1,6 @@
 /**
  * RewardCelebrationModal
- * 
+ *
  * Premium glassmorphic celebration modal that displays rewards after challenge completion.
  * Features:
  * - Subtle particle effects using canvas-confetti
@@ -11,13 +11,13 @@
  * - Auto-dismiss after 5 seconds
  */
 
-import { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import confetti from 'canvas-confetti';
-import { X, Award, TrendingUp, Star, Zap } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { Badge } from '../ui/Badge';
-import { CompletionReward } from '../../types/gamification';
+import { useEffect, useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import confetti from "canvas-confetti";
+import { X, Award, TrendingUp, Star, Zap } from "lucide-react";
+import { Button } from "../ui/Button";
+import { Badge } from "../ui/Badge";
+import type { CompletionReward } from "../../services/challengeCompletion";
 
 interface RewardCelebrationModalProps {
   isOpen: boolean;
@@ -39,7 +39,8 @@ export const RewardCelebrationModal: React.FC<RewardCelebrationModalProps> = ({
   const autoDismissTimer = useRef<NodeJS.Timeout | null>(null);
 
   const totalXP = rewards.xp + rewards.bonusXP;
-  const hasAchievements = rewards.achievements && rewards.achievements.length > 0;
+  const hasAchievements =
+    rewards.achievements && rewards.achievements.length > 0;
   const hasTierProgress = rewards.tierProgress?.tierUnlocked;
 
   // Trigger celebration effects when modal opens
@@ -84,8 +85,8 @@ export const RewardCelebrationModal: React.FC<RewardCelebrationModalProps> = ({
         angle: 60,
         spread: 60, // Increased spread
         origin: { x: 0, y: 0.6 },
-        colors: ['#ffffff', '#10b981', '#34d399', '#6ee7b7', '#a5b4fc'], // Added green
-        shapes: ['circle'],
+        colors: ["#ffffff", "#10b981", "#34d399", "#6ee7b7", "#a5b4fc"], // Added green
+        shapes: ["circle"],
         gravity: 0.8,
         scalar: 1.0, // Increased from 0.8
         drift: 0,
@@ -98,8 +99,8 @@ export const RewardCelebrationModal: React.FC<RewardCelebrationModalProps> = ({
         angle: 120,
         spread: 60, // Increased spread
         origin: { x: 1, y: 0.6 },
-        colors: ['#ffffff', '#10b981', '#34d399', '#6ee7b7', '#a5b4fc'], // Added green
-        shapes: ['circle'],
+        colors: ["#ffffff", "#10b981", "#34d399", "#6ee7b7", "#a5b4fc"], // Added green
+        shapes: ["circle"],
         gravity: 0.8,
         scalar: 1.0, // Increased from 0.8
         drift: 0,
@@ -125,7 +126,7 @@ export const RewardCelebrationModal: React.FC<RewardCelebrationModalProps> = ({
     const timer = setInterval(() => {
       step++;
       current += increment;
-      
+
       if (step >= steps) {
         setDisplayedXP(totalXP);
         clearInterval(timer);
@@ -162,11 +163,11 @@ export const RewardCelebrationModal: React.FC<RewardCelebrationModalProps> = ({
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              transition={{ 
-                type: "spring", 
-                damping: 25, 
+              transition={{
+                type: "spring",
+                damping: 25,
                 stiffness: 300,
-                duration: 0.3 
+                duration: 0.3,
               }}
               className="pointer-events-auto relative w-full max-w-lg"
               onClick={(e) => e.stopPropagation()}
@@ -189,7 +190,11 @@ export const RewardCelebrationModal: React.FC<RewardCelebrationModalProps> = ({
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                      transition={{
+                        delay: 0.2,
+                        type: "spring",
+                        stiffness: 200,
+                      }}
                       className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-green-400/20 to-green-600/20 border border-green-400/30 backdrop-blur-sm"
                     >
                       <Award className="h-8 w-8 text-green-400" />
@@ -235,8 +240,8 @@ export const RewardCelebrationModal: React.FC<RewardCelebrationModalProps> = ({
                       </div>
 
                       {rewards.bonusXP > 0 && (
-                        <Badge 
-                          variant="secondary" 
+                        <Badge
+                          variant="secondary"
                           className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-400/30 text-green-400"
                         >
                           +{rewards.bonusXP} Bonus
@@ -256,12 +261,18 @@ export const RewardCelebrationModal: React.FC<RewardCelebrationModalProps> = ({
                           <span>Base XP</span>
                           <span>+{rewards.xp}</span>
                         </div>
-                        {rewards.specialRewards && rewards.specialRewards.map((reward, i) => (
-                          <div key={i} className="flex justify-between text-white/60">
-                            <span>{reward.description}</span>
-                            <span className="text-green-400">+{reward.value}</span>
-                          </div>
-                        ))}
+                        {rewards.specialRewards &&
+                          rewards.specialRewards.map((reward, i) => (
+                            <div
+                              key={i}
+                              className="flex justify-between text-white/60"
+                            >
+                              <span>{reward.description}</span>
+                              <span className="text-green-400">
+                                +{reward.value}
+                              </span>
+                            </div>
+                          ))}
                       </motion.div>
                     )}
                   </motion.div>
@@ -279,8 +290,12 @@ export const RewardCelebrationModal: React.FC<RewardCelebrationModalProps> = ({
                           <TrendingUp className="h-5 w-5 text-blue-400" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-white">New Tier Unlocked</p>
-                          <p className="text-xs text-white/60">{rewards.tierProgress.tierUnlocked}</p>
+                          <p className="text-sm font-medium text-white">
+                            New Tier Unlocked
+                          </p>
+                          <p className="text-xs text-white/60">
+                            {rewards.tierProgress.tierUnlocked}
+                          </p>
                         </div>
                       </div>
                     </motion.div>
@@ -336,4 +351,3 @@ export const RewardCelebrationModal: React.FC<RewardCelebrationModalProps> = ({
     </AnimatePresence>
   );
 };
-
