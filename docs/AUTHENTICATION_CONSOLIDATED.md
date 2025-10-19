@@ -1,6 +1,6 @@
 # Authentication System Documentation
 
-**Last Updated**: December 15, 2024  
+**Last Updated**: October 19, 2025  
 **Status**: Fully Implemented and Tested
 
 This document provides comprehensive information about the authentication system in the TradeYa application, including technical implementation details and usage guidelines.
@@ -92,7 +92,7 @@ The `AuthContext` provides authentication state and methods throughout the appli
 - **`error`**: Error state for authentication operations
 - **`signInWithEmail`**: Sign in with email and password (returns `Promise<void>`)
 - **`signInWithGoogle`**: Sign in with Google (returns `Promise<void>`)
-- **`signUpWithEmail`**: Sign up with email and password
+- **`signUp`**: Sign up with email and password, automatically creates Firestore profile (returns `Promise<void>`)
 - **`logout`**: Sign out the current user
 
 #### Context Integration Notes
@@ -297,16 +297,34 @@ try {
 ### Sign Up with Email/Password
 
 ```jsx
-const { signUpWithEmail } = useAuth();
+const { signUp } = useAuth();
 
 try {
-  await signUpWithEmail(email, password, displayName);
-  // Success - user account created and authenticated
+  await signUp(email, password);
+  // Success - user account created, Firestore profile created, and authenticated
+  // Profile includes: name (email), email, roles: ['user'], createdAt, public: true
+  // Login streak automatically initialized
 } catch (error) {
   // Handle registration error
   console.error('Sign up failed:', error.message);
 }
 ```
+
+#### What Happens During Signup
+
+The `signUp` function automatically handles:
+
+1. **Firebase Authentication**: Creates user account with email/password
+2. **Firestore Profile Creation**: Creates user document with default values:
+   - `name`: Uses email as display name
+   - `email`: User's email address
+   - `roles`: Set to `['user']` by default
+   - `createdAt`: Server timestamp
+   - `public`: Set to `true`
+3. **Login Streak Initialization**: Marks first login day
+4. **Success Notification**: Shows toast with "Account created successfully!"
+
+**Note**: Admin users can set custom roles, but regular signups default to 'user' role as enforced by Firestore security rules.
 
 ### Check Authentication Status
 
