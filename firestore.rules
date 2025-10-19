@@ -34,7 +34,10 @@ service cloud.firestore {
              data.name is string &&
              data.email is string &&
              data.createdAt is timestamp &&
-             (!('roles' in data) || isAdmin());
+             // Allow setting roles array with 'user' role on creation, or require admin for other roles
+             (!('roles' in data) || 
+              (data.roles is list && data.roles.size() == 1 && data.roles[0] == 'user') ||
+              isAdmin());
     }
 
     function validateTradeData(data) {
@@ -142,8 +145,12 @@ service cloud.firestore {
       // Require authentication to read trade records by default. Public trades can set a `visibility` field = 'public'
       allow read: if isAuthenticated() || (resource.data != null && resource.data.visibility == 'public');
       allow create: if isAuthenticated() && request.auth.uid == request.resource.data.creatorId;
-      // Ensure correct operator precedence: either the authenticated creator OR an admin may update/delete
-      allow update, delete: if (isAuthenticated() && request.auth.uid == resource.data.creatorId) || isAdmin();
+      // Allow creator OR admin to update trades
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.creatorId || 
+        isAdmin()
+      );
+      allow delete: if (isAuthenticated() && request.auth.uid == resource.data.creatorId) || isAdmin();
 
       // Proposals subcollection
       match /proposals/{proposalId} {

@@ -10,6 +10,7 @@ import {
   getAuth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
 } from "firebase/auth";
@@ -53,6 +54,7 @@ export interface AuthContextType {
   isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   logout: () => Promise<void>; // Alias for signOut for backward compatibility
@@ -175,6 +177,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const signInWithEmail = signIn; // Alias for backward compatibility
 
+  const signUp = async (email: string, password: string) => {
+    try {
+      console.log("AuthProvider: Attempting email sign up");
+      setLoading(true);
+      setError(null);
+      const result = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      // Don't call setUser here - let the onAuthStateChanged callback handle it
+      setIsAdmin(checkIsAdmin(result.user));
+      await autoCreateUserProfile(); // Ensure Firestore user doc exists
+      const { data: profile } = await getUserProfile(result.user.uid);
+      setUserProfile(profile || null);
+      // Update login streak on successful sign-up
+      try {
+        await markLoginDay(result.user.uid);
+      } catch {
+        /* non-blocking */
+      }
+      console.log("AuthProvider: Email sign up successful");
+    } catch (err) {
+      console.error("AuthProvider: Email sign up error", err);
+      setError(err as Error);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const signInWithGoogle = async () => {
     try {
       console.log(
@@ -251,6 +284,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     isAdmin,
     signIn,
     signInWithEmail,
+    signUp,
     signInWithGoogle,
     signOut,
     logout,
