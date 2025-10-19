@@ -1260,7 +1260,8 @@ export const confirmTradeCompletion = async (
     const { creatorId, participantId, status, completionRequestedBy } =
       tradeData;
 
-    if (status !== "in-progress" && status !== "pending_evidence") {
+    // Trade must be in pending_confirmation status to be confirmed
+    if (status !== "pending_confirmation") {
       return {
         data: null,
         error: {
@@ -2318,12 +2319,19 @@ export const updateTradeProposalStatus = async (
       }
       const proposalData = proposalDoc.data() as TradeProposal;
 
-      batch.update(tradeRef, {
+      // Filter out undefined values - Firestore doesn't accept them
+      const tradeUpdates: any = {
         status: "in-progress",
         participantId: proposalData.proposerId,
-        participantName: proposalData.proposerName,
-        participantPhotoURL: proposalData.proposerPhotoURL,
-      });
+      };
+      if (proposalData.proposerName !== undefined) {
+        tradeUpdates.participantName = proposalData.proposerName;
+      }
+      if (proposalData.proposerPhotoURL !== undefined) {
+        tradeUpdates.participantPhotoURL = proposalData.proposerPhotoURL;
+      }
+
+      batch.update(tradeRef, tradeUpdates);
     }
 
     batch.update(proposalRef, { status });
