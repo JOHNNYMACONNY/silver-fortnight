@@ -161,11 +161,10 @@ export const SignUpPage: React.FC = () => {
       if (!hasProcessedSignupRef.current) {
         hasProcessedSignupRef.current = true;
         setRegistrationSuccess(true);
-        addToast({
-          title: "Account created successfully!",
-          description: "Welcome to TradeYa!",
-          variant: "success",
-        });
+        addToast(
+          "success",
+          "Account created successfully! Welcome to TradeYa!"
+        );
       }
     } catch (err: any) {
       console.error("Signup failed:", err);
