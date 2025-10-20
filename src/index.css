@@ -199,8 +199,6 @@ body {
   min-width: 320px;
   min-height: 100vh;
   transition: background-color 0.3s ease, color 0.3s ease;
-  /* Add padding-top to account for sticky navigation */
-  padding-top: var(--navbar-height);
 }
 
 /* Ensure backdrop-filter can affect underlying content on iOS/Safari by avoiding accidental stacking contexts */
