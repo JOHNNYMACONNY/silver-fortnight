@@ -280,20 +280,22 @@ export const NotificationsPage: React.FC = () => {
         </div>
         
         {/* Filters */}
-        <div className="flex justify-center border-b border-border mb-6">
-          {['all', 'unread', 'trade', 'collaboration', 'challenge', 'message', 'system'].map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-2 text-sm font-medium focus:outline-none ${
-                filter === f
-                  ? 'border-b-2 border-primary text-primary'
-                  : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {f.charAt(0).toUpperCase() + f.slice(1)}
-            </button>
-          ))}
+        <div className="overflow-x-auto border-b border-border mb-6">
+          <div className="flex gap-2 px-2 py-2 min-w-max">
+            {['all', 'unread', 'trade', 'collaboration', 'challenge', 'message', 'system'].map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-2 text-sm font-medium focus:outline-none whitespace-nowrap ${
+                  filter === f
+                    ? 'border-b-2 border-primary text-primary'
+                    : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="text-center py-12">
@@ -321,20 +323,22 @@ export const NotificationsPage: React.FC = () => {
       </div>
       
       {/* Filters */}
-      <div className="glassmorphic rounded-xl px-2 py-2 border-b border-transparent mb-6 flex justify-center">
-        {['all', 'unread', 'trade', 'collaboration', 'challenge', 'message', 'system'].map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-4 py-2 text-sm font-medium focus:outline-none ${
-              filter === f
-                ? 'border-b-2 border-primary text-primary'
-                : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {f.charAt(0).toUpperCase() + f.slice(1)}
-          </button>
-        ))}
+      <div className="glassmorphic rounded-xl mb-6 overflow-x-auto">
+        <div className="flex gap-2 px-2 py-2 min-w-max">
+          {['all', 'unread', 'trade', 'collaboration', 'challenge', 'message', 'system'].map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-4 py-2 text-sm font-medium focus:outline-none whitespace-nowrap ${
+                filter === f
+                  ? 'border-b-2 border-primary text-primary'
+                  : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {f.charAt(0).toUpperCase() + f.slice(1)}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Notifications List */}

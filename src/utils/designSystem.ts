@@ -150,7 +150,7 @@ export const classPatterns = {
   homepageHeroContent: 'p-12 md:p-16',
   homepageSection: 'mb-8',
   homepageGrid: 'mb-8',
-  homepageCard: 'h-[280px] flex flex-col cursor-pointer overflow-hidden',
+  homepageCard: 'min-h-[280px] md:min-h-[320px] flex flex-col cursor-pointer',
   homepageCardHeader: 'pb-2',
   homepageCardContent: 'flex-1 pb-3',
   homepageCardFooter: 'pt-3',
@@ -353,7 +353,7 @@ export const layouts = {
     depth: 'lg',
     glow: 'subtle',
     interactive: true,
-    className: 'h-[280px] flex flex-col cursor-pointer overflow-hidden'
+    className: 'min-h-[280px] md:min-h-[320px] flex flex-col cursor-pointer'
   },
 } as const;
 

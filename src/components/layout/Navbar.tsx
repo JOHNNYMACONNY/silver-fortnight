@@ -114,9 +114,12 @@ const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
           <div
             className={cn(
               "flex justify-between items-center",
-              // Responsive height
+              // Responsive height with safe area support
               isMobile ? "h-14" : "h-16"
             )}
+            style={{
+              paddingTop: isMobile ? 'max(0.5rem, var(--safe-area-inset-top, 0px))' : undefined
+            }}
           >
             {/* Left side: Logo and main navigation */}
             <div className="flex items-center min-w-0 flex-1">
@@ -171,7 +174,21 @@ const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
                   <Button variant="ghost" onClick={() => navigate("/login")}>
                     Log In
                   </Button>
-                  <Button onClick={() => navigate("/signup")}>Sign Up</Button>
+                  <Button 
+                    onClick={() => navigate("/signup")}
+                    className={cn(
+                      "bg-white/10 dark:bg-white/10 backdrop-blur-md",
+                      "border border-white/20 dark:border-white/20",
+                      "text-white dark:text-white",
+                      "hover:bg-white/20 dark:hover:bg-white/15",
+                      "hover:border-orange-500/30 dark:hover:border-orange-400/30",
+                      "hover:shadow-lg hover:shadow-orange-500/20",
+                      "transition-all duration-300",
+                      "font-medium"
+                    )}
+                  >
+                    Sign Up
+                  </Button>
                 </div>
               )}
             </div>

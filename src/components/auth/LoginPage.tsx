@@ -135,6 +135,7 @@ const LoginPage: React.FC = () => {
           <GlassmorphicInput
             id="email"
             type="email"
+            inputMode="email"
             placeholder="Email"
             value={email}
             onChange={handleEmailChange}
