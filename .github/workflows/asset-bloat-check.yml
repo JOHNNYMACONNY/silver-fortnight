@@ -1,0 +1,46 @@
+name: Asset Bloat Check
+
+on:
+  pull_request:
+    paths:
+      - 'public/**'
+      - 'scripts/optimize-assets.cjs'
+      - 'scripts/cleanup-assets.cjs'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'public/**'
+      - 'scripts/optimize-assets.cjs'
+      - 'scripts/cleanup-assets.cjs'
+
+jobs:
+  check-asset-bloat:
+    name: Check for Asset Bloat
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Run asset bloat check
+        run: npm run assets:check-bloat
+        
+      - name: Comment on PR if issues found
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ **Asset Bloat Detected!**\n\nThe asset bloat check failed. Please review the logs and fix any nested optimized directories or excessive duplicates.\n\nRun `npm run assets:check-bloat` locally to see details.'
+            })
+
