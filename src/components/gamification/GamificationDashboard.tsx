@@ -99,8 +99,8 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
   if (loading) {
     return (
       <div className={`animate-pulse space-y-4 ${className}`}>
-        <div className="h-32 bg-muted rounded-lg" />
-        <div className="h-48 bg-muted rounded-lg" />
+        <div className="h-32 bg-white/10 rounded-xl glassmorphic border-glass backdrop-blur-xl" />
+        <div className="h-48 bg-white/10 rounded-xl glassmorphic border-glass backdrop-blur-xl" />
       </div>
     );
   }
@@ -131,13 +131,13 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
             {showBreakdown ? (
               <XPBreakdown userId={targetUserId} />
             ) : (
-              <div className="bg-card text-card-foreground rounded-lg border border-border p-4 flex items-center justify-between">
+              <div className="glassmorphic border-glass backdrop-blur-xl bg-white/5 rounded-xl p-4 flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
                   See where your XP came from
                 </div>
                 <button
                   type="button"
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-orange-500 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 transition-colors duration-200"
                   onClick={() => {
                     setShowBreakdown(true);
                     try {
@@ -178,7 +178,7 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex space-x-1 bg-muted rounded-lg p-1">
+      <div className="flex space-x-1 glassmorphic border-glass backdrop-blur-xl bg-white/5 rounded-xl p-1">
         {[
           { id: "overview", label: "Overview" },
           { id: "achievements", label: "Achievements" },

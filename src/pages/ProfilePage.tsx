@@ -599,11 +599,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   }, [
     activeTab,
     targetUserId,
-    collaborations,
-    trades,
     collaborationsLoading,
     tradesLoading,
-    showToast,
   ]);
 
   // Enrich collaborations with specific user role title from roles subcollection if available
@@ -702,7 +699,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [activeTab, filteredCollaborations.length]);
+  }, [activeTab]);
 
   // Infinite scroll for trades
   useEffect(() => {
@@ -724,7 +721,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [activeTab, filteredTrades.length]);
+  }, [activeTab]);
 
   // Scrollspy: update active tab while scrolling
   useEffect(() => {
@@ -967,13 +964,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
       <Box className={classPatterns.homepageContainer}>
         <PerformanceMonitor pageName="ProfilePage" />
         <div className="animate-pulse">
-          <div className="bg-muted h-48 rounded mb-6" />
-          <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+          <div className="glassmorphic border-glass backdrop-blur-xl bg-white/10 h-48 rounded-xl mb-6" />
+          <div className="glassmorphic border-glass backdrop-blur-xl bg-white/10 rounded-xl shadow-sm p-6">
             <div className="flex items-center gap-4">
-              <div className="w-24 h-24 rounded-full bg-muted" />
+              <div className="w-24 h-24 rounded-full glassmorphic border-glass backdrop-blur-xl bg-white/10" />
               <div className="flex-1">
-                <div className="h-6 w-56 bg-muted rounded mb-2" />
-                <div className="h-4 w-72 bg-muted rounded" />
+                <div className="h-6 w-56 glassmorphic border-glass backdrop-blur-xl bg-white/10 rounded mb-2" />
+                <div className="h-4 w-72 glassmorphic border-glass backdrop-blur-xl bg-white/10 rounded" />
               </div>
             </div>
           </div>
@@ -1058,7 +1055,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                         : display;
                     })()}
                   </p>
-                  <div className="mt-2 h-2 w-full rounded bg-muted">
+                  <div className="mt-2 h-2 w-full rounded glassmorphic border-glass backdrop-blur-xl bg-white/10">
                     <div
                       className="h-2 rounded bg-primary"
                       style={{ width: `${completenessPercent}%` }}
@@ -1095,8 +1092,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                     className="h-24 w-24"
                   />
                 ) : (
-                  <Box className="w-24 h-24 rounded-full bg-muted flex items-center justify-center">
-                    <User className="w-10 h-10 text-muted-foreground" />
+                  <Box className="w-24 h-24 rounded-full glassmorphic border-glass backdrop-blur-xl bg-white/10 flex items-center justify-center">
+                    <User className="w-10 h-10 text-gray-400 dark:text-gray-300" />
                   </Box>
                 )}
               </Box>
@@ -1120,7 +1117,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                         )}
                         <button
                           type="button"
-                          className="inline-flex items-center justify-center rounded p-2 hover:bg-muted/50 min-h-[44px] min-w-[44px]"
+                          className="inline-flex items-center justify-center rounded-xl p-2 hover:bg-white/10 dark:hover:bg-white/10 backdrop-blur-xl transition-all duration-200 min-h-[44px] min-w-[44px]"
                           aria-label="Copy profile link"
                           title="Copy profile link"
                           onClick={async () => {
@@ -1455,21 +1452,19 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
 
         {/* Tab Navigation */}
         <Card
-          variant="glass"
-          className="rounded-lg shadow-sm border border-border"
+          className="glassmorphic bg-white/5 backdrop-blur-sm rounded-lg !border-0 !shadow-none"
         >
-          <Box className="border-b border-border">
-            <div className="-mb-px sticky top-16 z-sticky bg-card/95 backdrop-blur-sm">
+          <div className="-mb-px sticky top-16 z-sticky glassmorphic backdrop-blur-xl bg-white/10">
               <div className="relative">
                 <div
-                  className={`pointer-events-none absolute left-0 top-0 h-full w-6 bg-gradient-to-r from-card to-transparent transition-opacity duration-200 ${
+                  className={`pointer-events-none absolute left-0 top-0 h-full w-6 bg-gradient-to-r from-white/10 to-transparent transition-opacity duration-200 ${
                     tabHasOverflow && tabCanScrollLeft
                       ? "opacity-100"
                       : "opacity-0"
                   }`}
                 />
                 <div
-                  className={`pointer-events-none absolute right-0 top-0 h-full w-6 bg-gradient-to-l from-card to-transparent transition-opacity duration-200 ${
+                  className={`pointer-events-none absolute right-0 top-0 h-full w-6 bg-gradient-to-l from-white/10 to-transparent transition-opacity duration-200 ${
                     tabHasOverflow && tabCanScrollRight
                       ? "opacity-100"
                       : "opacity-0"
@@ -1496,8 +1491,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                     className={`hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 items-center justify-center rounded-full border shadow-sm transition-opacity duration-200 ${
                       tabHasOverflow
                         ? tabCanScrollLeft
-                          ? "opacity-100 bg-background/80 hover:bg-background border-border"
-                          : "opacity-50 bg-muted border-transparent cursor-not-allowed"
+                          ? "opacity-100 glassmorphic border-glass backdrop-blur-xl bg-white/10 hover:bg-white/15"
+                          : "opacity-50 glassmorphic border-glass backdrop-blur-xl bg-white/5 cursor-not-allowed"
                         : "opacity-0 pointer-events-none"
                     }`}
                     onClick={() => {
@@ -1517,8 +1512,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                     className={`hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 items-center justify-center rounded-full border shadow-sm transition-opacity duration-200 ${
                       tabHasOverflow
                         ? tabCanScrollRight
-                          ? "opacity-100 bg-background/80 hover:bg-background border-border"
-                          : "opacity-50 bg-muted border-transparent cursor-not-allowed"
+                          ? "opacity-100 glassmorphic border-glass backdrop-blur-xl bg-white/10 hover:bg-white/15"
+                          : "opacity-50 glassmorphic border-glass backdrop-blur-xl bg-white/5 cursor-not-allowed"
                         : "opacity-0 pointer-events-none"
                     }`}
                     onClick={() => {
@@ -1577,7 +1572,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                         <span className="flex items-center gap-1">
                           {tab.label}
                           {typeof getTabCount(tab.id) === "number" && (
-                            <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-muted px-1 text-xs text-muted-foreground">
+                            <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full glassmorphic border-glass backdrop-blur-xl bg-white/10 px-1 text-xs text-foreground">
                               {getTabCount(tab.id)}
                             </span>
                           )}
@@ -1597,7 +1592,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 </div>
               </div>
             </div>
-          </Box>
         </Card>
 
         {/* Tab Content */}
@@ -1615,9 +1609,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                         Email
                       </label>
                       {userProfile.email ? (
-                        <div className="px-3 py-2 bg-muted rounded text-foreground flex items-center gap-2 justify-between">
+                        <div className="px-4 py-3 rounded-xl glassmorphic border-glass backdrop-blur-xl bg-white/5 text-foreground flex items-center gap-2 justify-between">
                           <span className="flex items-center gap-2 min-w-0">
-                            <Mail className="w-4 h-4" />
+                            <Mail className="w-4 h-4 text-orange-500 dark:text-orange-400" />
                             <span className="truncate">
                               {userProfile.email}
                             </span>
@@ -1643,9 +1637,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                         User ID
                       </label>
                       {userProfile.uid ? (
-                        <div className="px-3 py-2 bg-muted rounded text-foreground font-mono text-sm flex items-center gap-2 justify-between">
+                        <div className="px-4 py-3 rounded-xl glassmorphic border-glass backdrop-blur-xl bg-white/5 text-foreground font-mono text-sm flex items-center gap-2 justify-between">
                           <span className="flex items-center gap-2 min-w-0">
-                            <Hash className="w-4 h-4" />
+                            <Hash className="w-4 h-4 text-purple-500 dark:text-purple-400" />
                             <span className="truncate">{userProfile.uid}</span>
                           </span>
                           <Button
@@ -1669,8 +1663,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                         <label className="block text-sm font-medium text-muted-foreground mb-2">
                           Joined
                         </label>
-                        <p className="px-3 py-2 bg-muted rounded text-foreground flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
+                        <p className="px-4 py-3 rounded-xl glassmorphic border-glass backdrop-blur-xl bg-white/5 text-foreground flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                           <span>
                             {new Date(
                               userProfile.metadata.creationTime
@@ -1684,8 +1678,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                         <label className="block text-sm font-medium text-muted-foreground mb-2">
                           Last sign-in
                         </label>
-                        <p className="px-3 py-2 bg-muted rounded text-foreground flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
+                        <p className="px-4 py-3 rounded-xl glassmorphic border-glass backdrop-blur-xl bg-white/5 text-foreground flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-green-500 dark:text-green-400" />
                           <span>
                             {new Date(
                               userProfile.metadata.lastSignInTime
@@ -1832,9 +1826,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                         of {filteredCollaborations.length}
                       </div>
                       <div className="flex items-center gap-2">
-                        <label className="text-sm">Filter</label>
+                        <label className="text-sm text-muted-foreground">Filter</label>
                         <select
-                          className="border border-border rounded-md bg-background text-sm px-2 py-1"
+                          className="rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 text-foreground text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
                           value={collabFilter}
                           onChange={(e) => {
                             setCollabFilter(e.target.value as any);
@@ -1957,9 +1951,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                         {filteredTrades.length}
                       </div>
                       <div className="flex items-center gap-2">
-                        <label className="text-sm">Filter</label>
+                        <label className="text-sm text-muted-foreground">Filter</label>
                         <select
-                          className="border border-border rounded-md bg-background text-sm px-2 py-1"
+                          className="rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 text-foreground text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
                           value={tradeFilter}
                           onChange={(e) => {
                             setTradeFilter(e.target.value as any);
@@ -2096,7 +2090,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 Display Name
               </label>
               <input
@@ -2105,12 +2099,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 onChange={(e) =>
                   setEditForm({ ...editForm, displayName: e.target.value })
                 }
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
+                className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
                 maxLength={80}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 Tagline
               </label>
               <input
@@ -2119,13 +2113,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 onChange={(e) =>
                   setEditForm({ ...editForm, tagline: e.target.value })
                 }
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
+                className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
                 maxLength={120}
                 placeholder="One sentence that captures what you do"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 Handle
               </label>
               <input
@@ -2143,8 +2137,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                   else setHandleError(null);
                 }}
                 placeholder="your_handle"
-                className={`w-full rounded-md border bg-background px-3 py-2 text-foreground ${
-                  handleError ? "border-destructive" : "border-border"
+                className={`w-full rounded-xl glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 transition-all duration-200 ${
+                  handleError ? "border-red-500 dark:border-red-500 focus:ring-red-500" : "border-glass focus:ring-orange-500 dark:focus:ring-orange-400"
                 }`}
                 maxLength={20}
               />
@@ -2200,7 +2194,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 Bio
               </label>
               <textarea
@@ -2208,7 +2202,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 onChange={(e) =>
                   setEditForm({ ...editForm, bio: e.target.value })
                 }
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
+                className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
                 rows={4}
                 maxLength={500}
               />
@@ -2238,7 +2232,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                     }
                   }}
                   placeholder="Add a skill and press Enter"
-                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
+                  className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
                 />
                 <Button
                   type="button"
@@ -2289,7 +2283,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Website
                 </label>
                 <input
@@ -2299,11 +2293,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                     setEditForm({ ...editForm, website: e.target.value })
                   }
                   placeholder="https://example.com"
-                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
+                  className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Location
                 </label>
                 <input
@@ -2312,7 +2306,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                   onChange={(e) =>
                     setEditForm({ ...editForm, location: e.target.value })
                   }
-                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
+                  className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
                   maxLength={120}
                 />
               </div>
