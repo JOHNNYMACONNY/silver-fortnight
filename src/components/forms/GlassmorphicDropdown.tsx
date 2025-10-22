@@ -212,7 +212,11 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
         type="button"
         role="combobox"
         id={id}
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!disabled) setIsOpen(!isOpen);
+        }}
         onFocus={() => setIsFocused(true)}
         onBlur={() => !isOpen && setIsFocused(false)}
         disabled={disabled}
@@ -265,7 +269,8 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             className={cn(
-              'absolute z-popover w-full mt-2 py-2 overflow-hidden',
+              'absolute w-full mt-2 py-2 overflow-hidden',
+              'z-[9999]', // Ensure dropdown is always on top
               dropdownVariants[variant]
             )}
             style={{ maxHeight }}

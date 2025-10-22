@@ -15,6 +15,7 @@ import {
 } from '../services/notifications/notificationService';
 import { useAuth } from '../AuthContext';
 import { Button } from '../components/ui/Button';
+import { cn } from '../utils/cn';
 
 
 // Icons
@@ -85,15 +86,30 @@ export const NotificationsPage: React.FC = () => {
   const getFilterMatch = (notificationType: string, filterType: string): boolean => {
     switch (filterType) {
       case 'trade':
-        return ['trade', 'trade_interest', 'trade_completed'].includes(notificationType);
+        return ['trade', 'trade_interest', 'trade_completed', 'trade_reminder'].includes(notificationType);
       case 'collaboration':
-        return notificationType === 'collaboration';
+        return [
+          'collaboration',
+          'role_application',
+          'application_accepted',
+          'application_rejected',
+          'role_completion_requested',
+          'role_completion_confirmed',
+          'role_completion_rejected'
+        ].includes(notificationType);
       case 'challenge':
-        return notificationType === 'challenge';
+        return ['challenge', 'challenge_completed', 'tier_unlocked'].includes(notificationType);
       case 'message':
         return notificationType === 'message';
       case 'system':
-        return ['system', 'review'].includes(notificationType);
+        return [
+          'system',
+          'review',
+          'new_follower',
+          'level_up',
+          'achievement_unlocked',
+          'streak_milestone'
+        ].includes(notificationType);
       default:
         return notificationType === filterType;
     }
@@ -131,15 +147,28 @@ export const NotificationsPage: React.FC = () => {
       case 'trade':
       case 'trade_interest':
       case 'trade_completed':
+      case 'trade_reminder':
         return <TradeIcon />;
       case 'collaboration':
+      case 'role_application':
+      case 'application_accepted':
+      case 'application_rejected':
+      case 'role_completion_requested':
+      case 'role_completion_confirmed':
+      case 'role_completion_rejected':
         return <CollaborationIcon />;
       case 'challenge':
+      case 'challenge_completed':
+      case 'tier_unlocked':
         return <ChallengeIcon />;
       case 'message':
         return <MessageIcon />;
       case 'system':
       case 'review':
+      case 'new_follower':
+      case 'level_up':
+      case 'achievement_unlocked':
+      case 'streak_milestone':
         return <SystemIcon />;
       default:
         return <SystemIcon />;
@@ -162,15 +191,40 @@ export const NotificationsPage: React.FC = () => {
     
     // Navigate based on notification type
     if (notification.data) {
-      if (['trade', 'trade_interest', 'trade_completed'].includes(notification.type) && notification.data.tradeId) {
+      // Trade notifications
+      if (['trade', 'trade_interest', 'trade_completed', 'trade_reminder'].includes(notification.type) && notification.data.tradeId) {
         navigate(`/trades/${notification.data.tradeId}`);
-      } else if (notification.type === 'collaboration' && notification.data.collaborationId) {
+      } 
+      // Collaboration notifications
+      else if ([
+        'collaboration',
+        'role_application',
+        'application_accepted',
+        'application_rejected',
+        'role_completion_requested',
+        'role_completion_confirmed',
+        'role_completion_rejected'
+      ].includes(notification.type) && notification.data.collaborationId) {
         navigate(`/collaborations/${notification.data.collaborationId}`);
-      } else if (notification.type === 'challenge' && notification.data.challengeId) {
+      } 
+      // Challenge notifications
+      else if (['challenge', 'challenge_completed', 'tier_unlocked'].includes(notification.type) && notification.data.challengeId) {
         navigate(`/challenges/${notification.data.challengeId}`);
-      } else if (notification.type === 'message' && notification.data.conversationId) {
+      } 
+      // Message notifications
+      else if (notification.type === 'message' && notification.data.conversationId) {
         navigate(`/messages?conversation=${notification.data.conversationId}`);
-      } else if (notification.data.url) {
+      } 
+      // Gamification notifications (navigate to profile/leaderboard)
+      else if (['level_up', 'achievement_unlocked', 'streak_milestone'].includes(notification.type)) {
+        navigate('/profile');
+      }
+      // Follower notifications
+      else if (notification.type === 'new_follower' && notification.data.followerId) {
+        navigate(`/profile/${notification.data.followerId}`);
+      }
+      // URL-based navigation
+      else if (notification.data.url) {
         window.open(notification.data.url, '_blank');
       }
     }
@@ -269,9 +323,10 @@ export const NotificationsPage: React.FC = () => {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Page Header */}
-        <div className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 flex items-center justify-between mb-6">
+        <div className="glassmorphic backdrop-blur-lg rounded-xl px-6 py-5 border-glass shadow-glass flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold text-foreground">Notifications</h1>
           <Button
+            variant="glassmorphic"
             onClick={handleMarkAllAsRead}
             disabled={notifications.every(n => n.read)}
           >
@@ -280,20 +335,23 @@ export const NotificationsPage: React.FC = () => {
         </div>
         
         {/* Filters */}
-        <div className="flex justify-center border-b border-border mb-6">
-          {['all', 'unread', 'trade', 'collaboration', 'challenge', 'message', 'system'].map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-2 text-sm font-medium focus:outline-none ${
-                filter === f
-                  ? 'border-b-2 border-primary text-primary'
-                  : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {f.charAt(0).toUpperCase() + f.slice(1)}
-            </button>
-          ))}
+        <div className="glassmorphic backdrop-blur-md rounded-xl mb-6 overflow-x-auto border-glass">
+          <div className="flex gap-2 px-2 py-2 min-w-max">
+            {['all', 'unread', 'trade', 'collaboration', 'challenge', 'message', 'system'].map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={cn(
+                  "px-4 py-2 text-sm font-medium focus:outline-none whitespace-nowrap rounded-lg transition-all duration-200",
+                  filter === f
+                    ? "bg-primary/20 text-primary border border-primary/30"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                )}
+              >
+                {f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="text-center py-12">
@@ -310,9 +368,10 @@ export const NotificationsPage: React.FC = () => {
   return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Page Header */}
-      <div className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 flex items-center justify-between mb-6">
+      <div className="glassmorphic backdrop-blur-lg rounded-xl px-6 py-5 border-glass shadow-glass flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-foreground">Notifications</h1>
         <Button
+          variant="glassmorphic"
           onClick={handleMarkAllAsRead}
           disabled={notifications.every(n => n.read)}
         >
@@ -321,32 +380,38 @@ export const NotificationsPage: React.FC = () => {
       </div>
       
       {/* Filters */}
-      <div className="glassmorphic rounded-xl px-2 py-2 border-b border-transparent mb-6 flex justify-center">
-        {['all', 'unread', 'trade', 'collaboration', 'challenge', 'message', 'system'].map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-4 py-2 text-sm font-medium focus:outline-none ${
-              filter === f
-                ? 'border-b-2 border-primary text-primary'
-                : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {f.charAt(0).toUpperCase() + f.slice(1)}
-          </button>
-        ))}
+      <div className="glassmorphic backdrop-blur-md rounded-xl mb-6 overflow-x-auto border-glass">
+        <div className="flex gap-2 px-2 py-2 min-w-max">
+          {['all', 'unread', 'trade', 'collaboration', 'challenge', 'message', 'system'].map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={cn(
+                "px-4 py-2 text-sm font-medium focus:outline-none whitespace-nowrap rounded-lg transition-all duration-200",
+                filter === f
+                  ? "bg-primary/20 text-primary border border-primary/30"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+              )}
+            >
+              {f.charAt(0).toUpperCase() + f.slice(1)}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Notifications List */}
-      <div className="bg-card text-card-foreground rounded-lg shadow-sm border border-border overflow-hidden">
-        <ul>
+      <div className="glassmorphic backdrop-blur-md rounded-xl overflow-hidden shadow-glass border-glass">
+        <ul className="divide-y divide-border/30">
           {filteredNotifications.map((notification, index) => (
             <li
               key={notification.id}
               onClick={() => handleNotificationClick(notification)}
-              className={`p-4 flex items-start space-x-4 cursor-pointer hover:bg-muted/50 ${
-                index > 0 ? 'border-t border-border' : ''
-              }`}
+              className={cn(
+                "p-4 flex items-start space-x-4 cursor-pointer transition-all duration-200",
+                "hover:bg-accent/30",
+                !notification.read && "bg-primary/5",
+                index > 0 && "border-t border-border/30"
+              )}
             >
               {/* Icon */}
               <div className={`mt-1 text-muted-foreground ${!notification.read ? 'text-primary' : ''}`}>
@@ -355,10 +420,13 @@ export const NotificationsPage: React.FC = () => {
               
               {/* Content */}
               <div className="flex-1">
-                <p className={`text-sm ${!notification.read ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
-                  {notification.message}
+                <p className={`text-sm font-semibold ${!notification.read ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  {notification.title}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className={`text-sm mt-1 ${!notification.read ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  {notification.content || notification.message}
+                </p>
+                <p className="text-xs text-muted-foreground/70 mt-1">
                   {formatTimestamp(notification.createdAt)}
                 </p>
               </div>

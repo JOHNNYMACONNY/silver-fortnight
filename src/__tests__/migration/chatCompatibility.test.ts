@@ -5,7 +5,7 @@
  * - When new migration features or edge cases are added to ChatCompatibilityService, add or update tests here.
  * - Always cover: legacy/modern format compatibility, malformed data, participant structure edge cases, message normalization failures, and error handling.
  * - This test suite is run on every migration-related pull request via CI/CD (see .github/workflows/ci-cd.yml and npm run test:migration:ci).
- * - Related scripts: package-migration-scripts.json, jest.config.migration.ts
+ * - Related scripts: package.json (migration test scripts), jest.config.migration.ts
  *
  * Covers:
  * - Legacy and modern chat data format compatibility

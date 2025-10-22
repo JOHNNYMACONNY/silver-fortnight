@@ -22,7 +22,7 @@ import {
   awardXPWithLeaderboardUpdate,
   emitGamificationNotification,
 } from "./gamification";
-import { createNotification } from "./notifications";
+import { createNotification, NotificationType } from "./notifications/unifiedNotificationService";
 import { removeUndefinedDeep } from "../utils/firestore";
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -142,13 +142,14 @@ export const updateUserStreak = async (
         // Notify user of milestone
         await createNotification({
           recipientId: userId,
-          type: "streak_milestone",
+          type: NotificationType.STREAK_MILESTONE,
           title: "🔥 Streak Milestone Reached!",
           message: `You hit a ${milestoneHit}-day ${type.replace(
             "_",
             " "
           )} streak! +${XP_VALUES.CHALLENGE_STREAK_BONUS} XP`,
           data: { type, milestone: milestoneHit },
+          priority: 'medium',
           createdAt: Timestamp.now(),
         });
         // Emit realtime notification to in-app queue

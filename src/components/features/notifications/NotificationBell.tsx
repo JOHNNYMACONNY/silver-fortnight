@@ -123,9 +123,9 @@ export const NotificationBell: React.FC = () => {
                       <p className="text-sm font-medium leading-6 text-foreground whitespace-normal break-words">
                         {notification.title}
                       </p>
-                      {Boolean(notification.message || notification.content) && (
+                      {Boolean(notification.content || notification.message) && (
                         <p className="text-sm leading-6 text-muted-foreground whitespace-normal break-words">
-                          {notification.message || notification.content}
+                          {notification.content || notification.message}
                         </p>
                       )}
                     </div>

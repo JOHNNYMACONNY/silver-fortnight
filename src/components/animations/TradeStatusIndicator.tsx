@@ -48,11 +48,12 @@ export const TradeStatusIndicator: React.FC<TradeStatusIndicatorProps> = ({
   });
 
   // Trigger animation when status changes
-  useEffect(() => {
-    if (showAnimation) {
-      triggerAnimation();
-    }
-  }, [status, showAnimation, triggerAnimation]);
+  // Temporarily disabled to fix infinite loop
+  // useEffect(() => {
+  //   if (showAnimation) {
+  //     triggerAnimation();
+  //   }
+  // }, [status, showAnimation]);
 
   // Status icon component
   const StatusIcon = () => {

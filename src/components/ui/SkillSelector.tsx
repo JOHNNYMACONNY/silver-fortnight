@@ -153,7 +153,8 @@ export const SkillSelector: React.FC<SkillSelectorProps> = ({
             placeholder={selectedSkills.length >= maxSkills ? "Max skills reached" : "Add a skill..."}
             disabled={selectedSkills.length >= maxSkills}
             className={cn(
-              "flex-1 px-3 py-2 rounded-l-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              "flex-1 px-4 py-3 rounded-l-xl glassmorphic border-glass backdrop-blur-xl bg-white/5 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200",
+              selectedSkills.length >= maxSkills && "opacity-50 cursor-not-allowed"
             )}
           />
 
@@ -161,9 +162,8 @@ export const SkillSelector: React.FC<SkillSelectorProps> = ({
             value={selectedLevel}
             onChange={(e) => setSelectedLevel(e.target.value as SkillLevel)}
             className={cn(
-              "px-3 py-2 border border-l-0 rounded-r-md border border-border",
-              "bg-neutral-50 dark:bg-neutral-700",
-              "text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              "px-4 py-3 border-l-0 rounded-r-xl glassmorphic border-glass backdrop-blur-xl bg-white/5",
+              "text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
             )}
           >
             <option value="beginner">Beginner</option>
@@ -176,8 +176,8 @@ export const SkillSelector: React.FC<SkillSelectorProps> = ({
           <div
             ref={suggestionsRef}
             className={cn(
-              "absolute z-10 w-full mt-1 rounded-md shadow-lg max-h-60 overflow-auto",
-              "bg-card text-card-foreground border border-border"
+              "absolute z-10 w-full mt-1 rounded-xl shadow-lg max-h-60 overflow-auto",
+              "glassmorphic border-glass backdrop-blur-xl bg-white/10 text-foreground"
             )}
           >
             {suggestions.map((suggestion, index) => (

@@ -20,7 +20,7 @@ import {
   XPSource
 } from '../types/gamification';
 import { ServiceResponse } from '../types/services';
-import { createNotification } from './notifications';
+import { createNotification, NotificationType } from './notifications/unifiedNotificationService';
 import { awardXP } from './gamification';
 import { getUserStats as getAggregatedUserStats } from './userStats';
 
@@ -273,7 +273,7 @@ export const unlockAchievement = async (
     // Send notification
     await createNotification({
       recipientId: userId,
-      type: 'achievement_unlocked',
+      type: NotificationType.ACHIEVEMENT_UNLOCKED,
       title: 'Achievement Unlocked! 🏆',
       message: `You've earned the "${achievement.title}" achievement! (+${achievement.xpReward} XP)`,
       data: {
@@ -281,6 +281,7 @@ export const unlockAchievement = async (
         achievementTitle: achievement.title,
         xpReward: achievement.xpReward
       },
+      priority: 'high',
       createdAt: Timestamp.now()
     });
 

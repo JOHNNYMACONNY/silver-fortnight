@@ -3,6 +3,7 @@ import { CollaborationRoleData, Skill } from '../../types/collaboration';
 import { SkillSelector } from '../ui/SkillSelector';
 import { cn } from '../../utils/cn';
 import { Button } from '../ui/Button';
+import { GlassmorphicInput } from '../ui/GlassmorphicInput';
 
 interface RoleDefinitionFormProps {
   initialRole?: Partial<CollaborationRoleData>;
@@ -80,26 +81,24 @@ export const RoleDefinitionForm: React.FC<RoleDefinitionFormProps> = ({
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className={cn("block text-sm font-medium", "text-foreground")}>
-            Role Title
-          </label>
-          <input
+          <GlassmorphicInput
             type="text"
+            id="roleTitle"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className={cn(
-              "mt-1 block w-full rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring",
-              errors.title && "border-red-500 dark:border-red-500"
-            )}
             placeholder="e.g., UI Designer, Video Editor"
+            label="Role Title"
+            variant="glass"
+            size="lg"
+            animatedLabel
+            realTimeValidation
+            error={errors.title}
+            required
           />
-          {errors.title && (
-            <p className={cn("mt-1 text-sm", "text-red-600 dark:text-red-400")}>{errors.title}</p>
-          )}
         </div>
         
         <div>
-          <label className={cn("block text-sm font-medium", "text-foreground")}>
+          <label className={cn("block text-sm font-medium mb-2", "text-foreground")}>
             Role Description
           </label>
           <textarea
@@ -107,7 +106,7 @@ export const RoleDefinitionForm: React.FC<RoleDefinitionFormProps> = ({
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
             className={cn(
-              "mt-1 block w-full rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring",
+              "block w-full rounded-xl px-4 py-3 glassmorphic border-glass backdrop-blur-xl bg-white/5 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200",
               errors.description && "border-red-500 dark:border-red-500"
             )}
             placeholder="Describe the responsibilities and expectations for this role..."

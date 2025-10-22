@@ -1,6 +1,21 @@
 # Testing Documentation
 
+**Last Updated**: October 21, 2025
+
 This document provides comprehensive information about the testing approach, coverage, and current status of the TradeYa application.
+
+## Recent Test Cleanup (October 2025)
+
+**Major Test Suite Cleanup Completed**:
+- ✅ Removed TODO system tests (13 files) - unrelated to TradeYa
+- ✅ Removed manual debug scripts (11 files) - one-off debugging tools
+- ✅ Removed theme test components (8 files) - dev-only test components
+- ✅ Archived migration tests (7 files) - moved to `tests/archived/migration/`
+- ✅ Removed quarantined tests directory - broken/outdated tests
+- ✅ Consolidated Jest configs - reduced from 11 to 7 configurations
+- ✅ Cleaned up package.json scripts - removed 13+ broken migration test scripts
+
+**Total Reduction**: ~53 test files removed/archived, ~28,000+ lines of test code cleaned up
 
 ## Testing Strategy
 
@@ -9,7 +24,8 @@ TradeYa uses a comprehensive testing strategy that includes:
 1. **Unit Testing**: Testing individual components and functions in isolation
 2. **Integration Testing**: Testing component interactions and data flow
 3. **Authentication Testing**: Comprehensive testing of authentication flows
-4. **Mock Testing**: Proper mocking of external services and dependencies
+4. **Migration Compatibility Testing**: Testing dual-schema support during transitions
+5. **Mock Testing**: Proper mocking of external services and dependencies
 
 ## Testing Framework
 

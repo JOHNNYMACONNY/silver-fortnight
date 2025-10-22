@@ -8,6 +8,12 @@
 /coverage-security
 /junit.xml
 /.nyc_output
+/test-results
+/test-screenshots
+/test-videos
+/playwright-report
+jest_html_reporters.html
+/jest-html-reporters-attach
 
 # production
 /build
@@ -118,6 +124,12 @@ report.*.json
 *.tmp
 *.bak
 *.backup
+temp_*.json
+undefined
+fix_*.txt
+package-dev-scripts.json
+package-migration-scripts.json
+package-production-scripts.json
 
 # OS generated
 Thumbs.db

@@ -78,10 +78,14 @@ class AssetOptimizer {
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
       
-      if (entry.isDirectory() && !entry.name.startsWith('.')) {
+      // Skip hidden directories, optimized directories, and node_modules to prevent nesting
+      if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'optimized' && entry.name !== 'node_modules') {
         images.push(...await this.findImages(fullPath));
       } else if (entry.isFile() && this.isImageFile(entry.name)) {
-        images.push(fullPath);
+        // Skip images that are already in an optimized directory
+        if (!fullPath.includes('/optimized/') && !fullPath.includes('\\optimized\\')) {
+          images.push(fullPath);
+        }
       }
     }
     

@@ -39,8 +39,8 @@ This document summarizes the comprehensive testing and validation suite implemen
 
 ### Supporting Infrastructure
 
-4. **`package-migration-scripts.json`** (22 lines)
-   - Complete npm scripts for migration testing
+4. **`package.json`** (Migration Test Scripts)
+   - Complete npm scripts for migration testing (see `test:migration:*` scripts)
    - Individual test suite execution commands
    - CI/CD integration scripts
    - Pre-flight validation commands

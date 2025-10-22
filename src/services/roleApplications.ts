@@ -15,7 +15,7 @@ import {
 import { CollaborationRoleData, RoleApplication, RoleState, ApplicationStatus } from '../types/collaboration';
 import { EmbeddedEvidence } from '../types/evidence';
 import { ServiceResponse } from '../types/services';
-import { createNotification } from './notifications';
+import { createNotification, NotificationType } from './notifications/unifiedNotificationService';
 import { updateCollaborationRoleCounts } from './collaborationRoles';
 
 /**
@@ -124,7 +124,7 @@ export const submitRoleApplication = async (
     // Create notification for collaboration creator
     await createNotification({
       recipientId: collaboration?.creatorId,
-      type: 'role_application',
+      type: NotificationType.ROLE_APPLICATION,
       title: 'New Role Application',
       message: `${userData?.displayName || 'Someone'} applied for the "${role.title}" role in your collaboration.`,
       data: {
@@ -132,6 +132,7 @@ export const submitRoleApplication = async (
         roleId,
         applicationId: applicationRef.id
       },
+      priority: 'medium',
       createdAt: Timestamp.now()
     });
 
@@ -281,13 +282,14 @@ export const updateApplicationStatus = async (
           const appData = appDoc.data() as RoleApplication;
           createNotification({
             recipientId: appData.applicantId,
-            type: 'application_rejected',
+            type: NotificationType.APPLICATION_REJECTED,
             title: 'Application Rejected',
             message: `Your application for the "${role.title}" role was not selected.`,
             data: {
               collaborationId,
               roleId
             },
+            priority: 'low',
             createdAt: Timestamp.now()
           });
         });
@@ -324,26 +326,28 @@ export const updateApplicationStatus = async (
       // Create acceptance notification
       await createNotification({
         recipientId: application.applicantId,
-        type: 'application_accepted',
+        type: NotificationType.APPLICATION_ACCEPTED,
         title: 'Application Accepted',
         message: `Your application for the "${role.title}" role was accepted!`,
         data: {
           collaborationId,
           roleId
         },
+        priority: 'high',
         createdAt: Timestamp.now()
       });
     } else {
       // Create rejection notification
       await createNotification({
         recipientId: application.applicantId,
-        type: 'application_rejected',
+        type: NotificationType.APPLICATION_REJECTED,
         title: 'Application Rejected',
         message: `Your application for the "${role.title}" role was not selected.`,
         data: {
           collaborationId,
           roleId
         },
+        priority: 'low',
         createdAt: Timestamp.now()
       });
     }

@@ -150,15 +150,40 @@ export const NotificationDropdown: React.FC = () => {
     
     // Navigate based on notification type
     if (notification.data) {
-      if (notification.type === 'trade' && notification.data.tradeId) {
+      // Trade notifications
+      if (['trade', 'trade_interest', 'trade_completed', 'trade_reminder'].includes(notification.type) && notification.data.tradeId) {
         navigate(`/trades/${notification.data.tradeId}`);
-      } else if (notification.type === 'collaboration' && notification.data.collaborationId) {
+      } 
+      // Collaboration notifications
+      else if ([
+        'collaboration',
+        'role_application',
+        'application_accepted',
+        'application_rejected',
+        'role_completion_requested',
+        'role_completion_confirmed',
+        'role_completion_rejected'
+      ].includes(notification.type) && notification.data.collaborationId) {
         navigate(`/collaborations/${notification.data.collaborationId}`);
-      } else if (notification.type === 'challenge' && notification.data.challengeId) {
+      }
+      // Challenge notifications
+      else if (['challenge', 'challenge_completed', 'tier_unlocked'].includes(notification.type) && notification.data.challengeId) {
         navigate(`/challenges/${notification.data.challengeId}`);
-      } else if (notification.type === 'message' && notification.data.conversationId) {
+      }
+      // Message notifications
+      else if (notification.type === 'message' && notification.data.conversationId) {
         navigate(`/messages?conversation=${notification.data.conversationId}`);
-      } else if (notification.data.url) {
+      }
+      // Gamification notifications
+      else if (['level_up', 'achievement_unlocked', 'streak_milestone'].includes(notification.type)) {
+        navigate('/profile');
+      }
+      // Follower notifications
+      else if (notification.type === 'new_follower' && notification.data.followerId) {
+        navigate(`/profile/${notification.data.followerId}`);
+      }
+      // URL-based navigation
+      else if (notification.data.url) {
         window.open(notification.data.url, '_blank');
       }
     }
@@ -261,8 +286,8 @@ export const NotificationDropdown: React.FC = () => {
                           <div className="text-muted-foreground mt-1">{getNotificationIcon(notification.type)}</div>
                           <div className="min-w-0">
                             <p className="text-sm font-medium leading-6 text-foreground whitespace-normal break-words">{notification.title ?? 'Notification'}</p>
-                            {Boolean(notification.message) && (
-                              <p className="text-sm leading-6 text-muted-foreground whitespace-normal break-words">{notification.message}</p>
+                            {Boolean(notification.content || notification.message) && (
+                              <p className="text-sm leading-6 text-muted-foreground whitespace-normal break-words">{notification.content || notification.message}</p>
                             )}
                           </div>
                           <div className="text-xs text-muted-foreground text-right">{formatTimestamp(notification.createdAt)}</div>

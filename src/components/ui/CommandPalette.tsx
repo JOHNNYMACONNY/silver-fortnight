@@ -198,7 +198,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-overlay">
+    <div className="fixed inset-0 z-[60]">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -214,8 +214,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
           "animate-command-palette-in"
         )}>
           {/* Search Input */}
-          <div className="flex items-center gap-3 p-4 border-b border-divider">
-            <Command className="h-5 w-5 text-gray-400" />
+          <div className="flex items-center gap-3 p-4 border-b border-glass">
+            <Command className="h-5 w-5 text-orange-500 dark:text-orange-400" />
             <input
               ref={inputRef}
               type="text"
@@ -225,10 +225,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
               className={cn(
                 "flex-1 bg-transparent text-gray-900 dark:text-gray-100",
                 "placeholder-gray-500 dark:placeholder-gray-400",
-                "border-none outline-none text-lg"
+                "border-none outline-none text-lg",
+                "focus:placeholder-orange-400/60"
               )}
             />
-            <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-mono bg-gray-100 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
+            <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-mono bg-white/30 dark:bg-white/10 rounded border border-white/20 dark:border-white/10 backdrop-blur-sm text-gray-700 dark:text-gray-300">
               ESC
             </kbd>
           </div>
@@ -236,7 +237,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
           {/* Commands List */}
           <div 
             ref={listRef}
-            className="max-h-96 overflow-y-auto py-2"
+            className="max-h-96 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30"
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent'
+            }}
           >
             {filteredCommands.length === 0 ? (
               <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
@@ -256,29 +261,35 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                       onClose();
                     }}
                     className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 text-left",
-                      "transition-colors duration-150",
-                      isSelected ? (
-                        "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
-                      ) : (
-                        "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                      )
+                      "w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg",
+                      "transition-all duration-300 transform",
+                      isSelected 
+                        ? "bg-white/20 dark:bg-white/10 shadow-lg shadow-orange-500/10 scale-[1.02]"
+                        : "hover:bg-white/15 dark:hover:bg-white/8 hover:shadow-md hover:shadow-orange-500/5 hover:scale-[1.01]"
                     )}
                   >
                     <Icon className={cn(
-                      "h-5 w-5 flex-shrink-0",
-                      isSelected ? "text-primary-500" : "text-gray-400"
+                      "h-5 w-5 flex-shrink-0 transition-all duration-300",
+                      isSelected ? "text-orange-500 scale-110" : "text-gray-400 group-hover:text-orange-400"
                     )} />
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{command.title}</div>
+                      <div className={cn(
+                        "font-semibold truncate transition-colors duration-300",
+                        isSelected ? "text-orange-500 dark:text-orange-400" : "text-gray-100 dark:text-gray-50"
+                      )}>
+                        {command.title}
+                      </div>
                       {command.description && (
-                        <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                        <div className={cn(
+                          "text-sm truncate transition-colors duration-300",
+                          isSelected ? "text-orange-400/90 dark:text-orange-300/90" : "text-gray-300 dark:text-gray-300"
+                        )}>
                           {command.description}
                         </div>
                       )}
                     </div>
                     {isSelected && (
-                      <ArrowRight className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                      <ArrowRight className="h-4 w-4 text-orange-500 flex-shrink-0 animate-pulse" />
                     )}
                   </button>
                 );
@@ -287,19 +298,19 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
           </div>
 
           {/* Footer */}
-          <div className="px-4 py-3 border-t border-divider bg-gray-50/50 dark:bg-gray-800/50 rounded-b-xl">
-            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+          <div className="px-4 py-3 border-t border-glass bg-white/5 dark:bg-white/5 backdrop-blur-sm rounded-b-xl">
+            <div className="flex items-center justify-between text-xs text-gray-300 dark:text-gray-300">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 rounded border">↑↓</kbd>
-                  Navigate
+                  <kbd className="px-1.5 py-0.5 bg-white/30 dark:bg-white/10 rounded border border-white/20 dark:border-white/10 backdrop-blur-sm font-mono text-gray-100 dark:text-gray-100">↑↓</kbd>
+                  <span className="font-medium">Navigate</span>
                 </span>
                 <span className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 rounded border">↵</kbd>
-                  Select
+                  <kbd className="px-1.5 py-0.5 bg-white/30 dark:bg-white/10 rounded border border-white/20 dark:border-white/10 backdrop-blur-sm font-mono text-gray-100 dark:text-gray-100">↵</kbd>
+                  <span className="font-medium">Select</span>
                 </span>
               </div>
-              <span>
+              <span className="font-medium text-gray-300 dark:text-gray-300">
                 {filteredCommands.length} command{filteredCommands.length !== 1 ? 's' : ''}
               </span>
             </div>

@@ -153,13 +153,26 @@ export interface UserFilters {
 export interface NotificationFilters {
   type?:
     | "message"
+    | "trade"
     | "trade_interest"
     | "trade_completed"
-    | "review"
+    | "trade_reminder"
     | "collaboration"
+    | "role_application"
+    | "application_accepted"
+    | "application_rejected"
+    | "role_completion_requested"
+    | "role_completion_confirmed"
+    | "role_completion_rejected"
     | "challenge"
-    | "system"
-    | "trade";
+    | "challenge_completed"
+    | "tier_unlocked"
+    | "streak_milestone"
+    | "new_follower"
+    | "level_up"
+    | "achievement_unlocked"
+    | "review"
+    | "system";
   read?: boolean;
   relatedId?: string;
 }
@@ -430,24 +443,40 @@ export interface Notification {
   userId: string;
   type:
     | "message"
+    | "trade"
     | "trade_interest"
     | "trade_completed"
-    | "review"
+    | "trade_reminder"
     | "collaboration"
+    | "role_application"
+    | "application_accepted"
+    | "application_rejected"
+    | "role_completion_requested"
+    | "role_completion_confirmed"
+    | "role_completion_rejected"
     | "challenge"
-    | "system"
-    | "trade";
+    | "challenge_completed"
+    | "tier_unlocked"
+    | "streak_milestone"
+    | "new_follower"
+    | "level_up"
+    | "achievement_unlocked"
+    | "review"
+    | "system";
   title: string;
   content: string;
   read: boolean;
   createdAt: Timestamp;
   relatedId?: string;
-  message?: string;
+  message?: string; // Keep for backward compatibility
+  priority?: 'low' | 'medium' | 'high';
+  deduplicationKey?: string;
   data?: {
     tradeId?: string;
     collaborationId?: string;
     challengeId?: string;
     conversationId?: string;
+    followerId?: string;
     url?: string;
   };
 }
@@ -562,14 +591,27 @@ export const createNotification = async (
   data: NotificationData
 ): Promise<ServiceResult<string>> => {
   try {
-    const db = getSyncFirebaseDb();
-    const docRef = await addDoc(
-      collection(db, COLLECTIONS.NOTIFICATIONS).withConverter(
-        notificationConverter
-      ),
-      { ...data, read: false, createdAt: Timestamp.now() }
-    );
-    return { data: docRef.id, error: null };
+    // Proxy to unified notification service for consistency
+    const { createNotification: unifiedCreate } = await import('./notifications/unifiedNotificationService');
+    
+    const result = await unifiedCreate({
+      userId: data.userId,
+      type: data.type,
+      title: data.title,
+      content: data.content,
+      relatedId: data.relatedId,
+      data: data.data,
+      priority: data.priority
+    });
+    
+    if (result.error) {
+      return {
+        data: null,
+        error: result.error
+      };
+    }
+    
+    return { data: result.data, error: null };
   } catch (error: any) {
     console.error("Error creating notification:", error);
     return {
@@ -1225,6 +1267,22 @@ export const requestTradeCompletion = async (
     }
 
     await updateDoc(doc(db, COLLECTIONS.TRADES, tradeId), updateData);
+    
+    // Send notification to the other party
+    const { createTradeNotification } = await import('./notifications/unifiedNotificationService');
+    const recipientId = userId === tradeData.creatorId 
+      ? tradeData.participantId 
+      : tradeData.creatorId;
+
+    if (recipientId) {
+      await createTradeNotification({
+        recipientId,
+        tradeId,
+        tradeTitle: tradeData.title,
+        type: 'request'
+      });
+    }
+    
     return { data: null, error: null };
   } catch (error) {
     console.error(`Error requesting completion for trade ${tradeId}:`, error);
@@ -1295,6 +1353,25 @@ export const confirmTradeCompletion = async (
       status: "completed",
       completionConfirmedAt: Timestamp.now(),
     });
+    
+    // Notify both parties
+    const { createTradeNotification } = await import('./notifications/unifiedNotificationService');
+    const notifications = [
+      { userId: tradeData.creatorId },
+      { userId: tradeData.participantId }
+    ].filter(n => n.userId);
+
+    for (const notif of notifications) {
+      if (notif.userId) {
+        await createTradeNotification({
+          recipientId: notif.userId,
+          tradeId,
+          tradeTitle: tradeData.title,
+          type: 'confirm'
+        });
+      }
+    }
+    
     return { data: null, error: null };
   } catch (error) {
     console.error("Error confirming trade completion:", error);

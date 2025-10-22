@@ -178,6 +178,12 @@
 :root {
   /* Keep in sync with `Navbar` heights: h-16 (4rem) desktop, h-14 (3.5rem) mobile */
   --navbar-height: 4rem;
+  
+  /* Safe area insets for notched devices (iPhone X+) */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
 }
 
 @media (max-width: 767px) {
@@ -186,7 +192,7 @@
 
 /* Ensure in-page anchor navigation and programmatic scrolls account for sticky navbar */
 html {
-  scroll-padding-top: calc(var(--navbar-height) + env(safe-area-inset-top, 0px));
+  scroll-padding-top: calc(var(--navbar-height) + var(--safe-area-inset-top));
 }
 
 /* Provide an offset for any element that might be scrolled into view via hash links or scrollIntoView */
@@ -367,6 +373,25 @@ select.glassmorphic {
 .dark textarea.glassmorphic,
 .dark select.glassmorphic {
   background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Glassmorphic scrollbar styling for command palette and modals */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  backdrop-filter: blur(4px);
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* Phase 3.1: Container Query Support */

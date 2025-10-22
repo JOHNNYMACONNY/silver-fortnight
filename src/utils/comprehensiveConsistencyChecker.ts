@@ -61,9 +61,10 @@ const MODERN_DESIGN_STANDARDS = {
   cardHeights: {
     main: 'h-[380px]',
     user: 'h-[320px]',
-    compact: 'h-[280px]'
+    compact: 'min-h-[280px]', // Content-aware: uses min-height for responsive layouts
+    homepageResponsive: 'min-h-[280px] md:min-h-[320px]' // Homepage cards with desktop balance
   },
-  cardLayout: 'flex flex-col cursor-pointer overflow-hidden',
+  cardLayout: 'flex flex-col cursor-pointer', // Removed overflow-hidden for content-aware layouts
   
   // 3D Effects Standards
   tiltEffects: {
@@ -618,15 +619,24 @@ export function quickComponentCheck(componentName: string, className?: string, p
       });
     }
     
-    // Check for consistent height
-    if (className && !className.includes('h-[380px]') && !className.includes('h-[320px]') && !className.includes('h-[280px]')) {
+    // Check for consistent height (supports both fixed and content-aware heights)
+    const hasValidHeight = className && (
+      className.includes('h-[380px]') || 
+      className.includes('h-[320px]') || 
+      className.includes('h-[280px]') ||
+      className.includes('min-h-[280px]') ||
+      className.includes('min-h-[320px]') ||
+      className.includes('min-h-[200px]')
+    );
+    
+    if (className && !hasValidHeight) {
       issues.push({
         type: 'layout',
         severity: 'high',
         category: 'component',
         component: componentName,
         description: 'Card components should have consistent height',
-        suggestion: 'Add h-[380px], h-[320px], or h-[280px] class for consistent card height'
+        suggestion: 'Add h-[380px], h-[320px], h-[280px] for fixed height, or min-h-[280px] md:min-h-[320px] for responsive content-aware height'
       });
     }
     

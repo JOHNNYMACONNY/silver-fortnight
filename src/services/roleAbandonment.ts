@@ -2,7 +2,7 @@ import { getSyncFirebaseDb } from '../firebase-config';
 import { doc, updateDoc, getDoc, Timestamp, collection, query, where, getDocs } from 'firebase/firestore';
 import { CollaborationRoleData, RoleState, Collaboration } from '../types/collaboration'; // Added RoleState and Collaboration
 import { getAuth } from 'firebase/auth';
-import { createNotification } from './notifications';
+import { createNotification, NotificationType } from './notifications/unifiedNotificationService';
 
 /**
  * Service for handling role abandonment in collaborations.
@@ -67,9 +67,10 @@ export const abandonRole = async (roleId: string, reason: string): Promise<void>
     if (previousParticipantId) {
       await createNotification({
         recipientId: previousParticipantId,
-        type: 'system',
+        type: NotificationType.SYSTEM,
         title: 'Role Abandoned',
         message: `Your role "${roleData.title}" in collaboration "${collaborationData.name}" has been marked as abandoned.`,
+        priority: 'medium',
         createdAt: Timestamp.now(),
         data: {
           url: `/collaborations/${roleData.collaborationId}`
@@ -133,9 +134,10 @@ export const reopenRole = async (roleId: string, _reason: string): Promise<void>
     if (roleData.previousParticipantId) {
       await createNotification({
         recipientId: roleData.previousParticipantId,
-        type: 'system',
+        type: NotificationType.SYSTEM,
         title: 'Role Reopened',
         message: `A role you previously held, "${roleData.title}" in collaboration "${collaborationData.name}", has been reopened.`,
+        priority: 'low',
         createdAt: Timestamp.now(),
         data: {
           url: `/collaborations/${roleData.collaborationId}`
@@ -199,9 +201,10 @@ export const markRoleAsUnneeded = async (roleId: string, _reason: string): Promi
     if (roleData.previousParticipantId) {
       await createNotification({
         recipientId: roleData.previousParticipantId,
-        type: 'system',
+        type: NotificationType.SYSTEM,
         title: 'Role No Longer Needed',
         message: `A role you previously held, "${roleData.title}" in collaboration "${collaborationData.name}", has been marked as no longer needed.`,
+        priority: 'low',
         createdAt: Timestamp.now(),
         data: {
           url: `/collaborations/${roleData.collaborationId}`

@@ -61,7 +61,7 @@ const HomePage: React.FC = () => {
               glow="subtle"
               glowColor="orange"
               interactive={true}
-              className="h-[280px] flex flex-col cursor-pointer overflow-hidden"
+              className="min-h-[280px] md:min-h-[320px] flex flex-col cursor-pointer"
             >
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -99,7 +99,7 @@ const HomePage: React.FC = () => {
               glow="subtle"
               glowColor="orange"
               interactive={true}
-              className="h-[280px] flex flex-col cursor-pointer overflow-hidden"
+              className="min-h-[280px] md:min-h-[320px] flex flex-col cursor-pointer"
             >
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -143,7 +143,7 @@ const HomePage: React.FC = () => {
               glow="subtle"
               glowColor="purple"
               interactive={true}
-              className="h-[280px] flex flex-col cursor-pointer overflow-hidden"
+              className="min-h-[280px] md:min-h-[320px] flex flex-col cursor-pointer"
             >
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -190,7 +190,7 @@ const HomePage: React.FC = () => {
               glow="subtle"
               glowColor="purple"
               interactive={true}
-              className="h-[280px] flex flex-col cursor-pointer overflow-hidden"
+              className="min-h-[280px] md:min-h-[320px] flex flex-col cursor-pointer"
             >
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -230,7 +230,7 @@ const HomePage: React.FC = () => {
               glow="subtle"
               glowColor="blue"
               interactive={true}
-              className="h-[280px] flex flex-col cursor-pointer overflow-hidden"
+              className="min-h-[280px] md:min-h-[300px] flex flex-col cursor-pointer"
             >
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -265,7 +265,7 @@ const HomePage: React.FC = () => {
               glow="subtle"
               glowColor="blue"
               interactive={true}
-              className="h-[280px] flex flex-col cursor-pointer overflow-hidden"
+              className="min-h-[280px] md:min-h-[300px] flex flex-col cursor-pointer"
             >
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -335,7 +335,7 @@ const HomePage: React.FC = () => {
               glow="subtle"
               glowColor="blue"
               interactive={true}
-              className="h-[200px] flex flex-col cursor-pointer overflow-hidden"
+              className="min-h-[200px] flex flex-col cursor-pointer"
             >
               <CardHeader className="pb-2">
                 <CardTitle className="text-body-large font-semibold">User Directory</CardTitle>
@@ -359,7 +359,7 @@ const HomePage: React.FC = () => {
               glow="subtle"
               glowColor="purple"
               interactive={true}
-              className="h-[200px] flex flex-col cursor-pointer overflow-hidden"
+              className="min-h-[200px] flex flex-col cursor-pointer"
             >
               <CardHeader className="pb-2">
                 <CardTitle className="text-body-large font-semibold">Messages</CardTitle>
@@ -383,7 +383,7 @@ const HomePage: React.FC = () => {
               glow="subtle"
               glowColor="purple"
               interactive={true}
-              className="h-[200px] flex flex-col cursor-pointer overflow-hidden"
+              className="min-h-[200px] flex flex-col cursor-pointer"
             >
               <CardHeader className="pb-2">
                 <CardTitle className="text-body-large font-semibold">Leaderboard</CardTitle>

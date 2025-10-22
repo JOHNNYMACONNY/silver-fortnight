@@ -198,6 +198,8 @@ const CreateTradePage: React.FC = () => {
               <GlassmorphicInput
                 type="text"
                 id="title"
+                inputMode="text"
+                autoComplete="off"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Logo Design for Website Development"
@@ -237,6 +239,7 @@ const CreateTradePage: React.FC = () => {
                  rows={4}
                  placeholder="Describe what you're offering and what you're looking for in detail..."
                  required
+                 autoComplete="off"
                  className="glassmorphic border-glass backdrop-blur-xl bg-white/5"
                />
             </div>
@@ -252,6 +255,8 @@ const CreateTradePage: React.FC = () => {
             <div className="flex gap-2 mb-3">
               <GlassmorphicInput
                 type="text"
+                inputMode="text"
+                autoComplete="off"
                 value={newOfferedSkill}
                 onChange={(e) => setNewOfferedSkill(e.target.value)}
                 placeholder="Enter a skill you can offer"
@@ -302,6 +307,8 @@ const CreateTradePage: React.FC = () => {
             <div className="flex gap-2 mb-3">
               <GlassmorphicInput
                 type="text"
+                inputMode="text"
+                autoComplete="off"
                 value={newRequestedSkill}
                 onChange={(e) => setNewRequestedSkill(e.target.value)}
                 placeholder="Enter a skill you are looking for"

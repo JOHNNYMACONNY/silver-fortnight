@@ -232,6 +232,8 @@ export const SignUpPage: React.FC = () => {
           <GlassmorphicInput
             id="email"
             type="email"
+            inputMode="email"
+            autoComplete="email"
             value={email}
             onChange={handleEmailChange}
             required
@@ -255,6 +257,7 @@ export const SignUpPage: React.FC = () => {
           <GlassmorphicInput
             id="password"
             type="password"
+            autoComplete="new-password"
             value={password}
             onChange={handlePasswordChange}
             required
@@ -279,6 +282,7 @@ export const SignUpPage: React.FC = () => {
           <GlassmorphicInput
             id="confirmPassword"
             type="password"
+            autoComplete="new-password"
             value={confirmPassword}
             onChange={handleConfirmPasswordChange}
             required

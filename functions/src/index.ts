@@ -11,6 +11,10 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
+// Notification type constants (must match NotificationType enum in src/)
+// Cloud Functions cannot import TypeScript enums from src/, so we use constants
+const NOTIFICATION_TYPE_TRADE_REMINDER = 'trade_reminder';
+
 // Interface for Trade document
 interface Trade {
   id?: string;
@@ -101,7 +105,7 @@ export const checkPendingConfirmations = scheduler.onSchedule(
           // Send final reminder
           await createNotification({
             userId: recipientId,
-            type: "trade_confirmation",
+            type: NOTIFICATION_TYPE_TRADE_REMINDER,
             title: "Final Reminder: Trade Completion",
             content: `This is your final reminder to confirm completion of trade: ${trade.title}. The trade will be auto-completed in 4 days if no action is taken.`,
             relatedId: tradeDoc.id,
@@ -119,7 +123,7 @@ export const checkPendingConfirmations = scheduler.onSchedule(
           // Send second reminder
           await createNotification({
             userId: recipientId,
-            type: "trade_confirmation",
+            type: NOTIFICATION_TYPE_TRADE_REMINDER,
             title: "Reminder: Trade Completion",
             content: `Please confirm completion of trade: ${trade.title}. This trade has been pending for 7 days.`,
             relatedId: tradeDoc.id,
@@ -137,7 +141,7 @@ export const checkPendingConfirmations = scheduler.onSchedule(
           // Send first reminder
           await createNotification({
             userId: recipientId,
-            type: "trade_confirmation",
+            type: NOTIFICATION_TYPE_TRADE_REMINDER,
             title: "Reminder: Trade Completion",
             content: `Please confirm completion of trade: ${trade.title}. Your partner is waiting for your confirmation.`,
             relatedId: tradeDoc.id,

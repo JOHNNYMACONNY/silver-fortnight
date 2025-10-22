@@ -95,7 +95,7 @@ import {
 import { CollaborationRoleData, CompletionRequest, CompletionRequestStatus, RoleState } from '../types/collaboration';
 import { EmbeddedEvidence } from '../types/evidence';
 import { ServiceResponse } from '../types/services';
-import { createNotification } from './notifications';
+import { createNotification, NotificationType } from './notifications/unifiedNotificationService';
 import { updateCollaborationRoleCounts } from './collaborationRoles';
 import { generateCollaborationPortfolioItem } from './portfolio';
 
@@ -192,7 +192,7 @@ export const requestRoleCompletion = async (
     // Create notification for collaboration creator
     await createNotification({
       recipientId: collaboration.creatorId,
-      type: 'role_completion_requested',
+      type: NotificationType.ROLE_COMPLETION_REQUESTED,
       title: 'Role Completion Requested',
       message: `${(userData as any)?.displayName || 'Someone'} has requested to mark the "${role.title}" role as completed.`,
       data: {
@@ -200,6 +200,7 @@ export const requestRoleCompletion = async (
         roleId,
         requestId: requestRef.id
       },
+      priority: 'high',
       createdAt: Timestamp.now()
     });
 
@@ -284,13 +285,14 @@ export const confirmRoleCompletion = async (
     // Create notification for requester
     await createNotification({
       recipientId: request.requesterId,
-      type: 'role_completion_confirmed',
+      type: NotificationType.ROLE_COMPLETION_CONFIRMED,
       title: 'Role Completion Confirmed',
       message: `Your completion request for the "${role.title}" role has been approved!`,
       data: {
         collaborationId,
         roleId
       },
+      priority: 'medium',
       createdAt: Timestamp.now()
     });
 
@@ -425,7 +427,7 @@ export const rejectRoleCompletion = async (
     // Create notification for requester
     await createNotification({
       recipientId: request.requesterId,
-      type: 'role_completion_rejected',
+      type: NotificationType.ROLE_COMPLETION_REJECTED,
       title: 'Role Completion Rejected',
       message: `Your completion request for the "${role.title}" role was rejected. Reason: ${reason}`,
       data: {
@@ -433,6 +435,7 @@ export const rejectRoleCompletion = async (
         roleId,
         reason
       },
+      priority: 'medium',
       createdAt: Timestamp.now()
     });
 

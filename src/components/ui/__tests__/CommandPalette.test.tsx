@@ -11,6 +11,9 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
 }));
 
+// Mock scrollIntoView for JSDOM
+Element.prototype.scrollIntoView = jest.fn();
+
 // Test wrapper with router
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <MemoryRouter>

@@ -1,534 +1,286 @@
-# Gitleaks
+# TradeYa
 
-```
-┌─○───┐
-│ │╲  │
-│ │ ○ │
-│ ○ ░ │
-└─░───┘
-```
+> **A platform for creative professionals to trade skills, collaborate on projects, and build their portfolios through gamified challenges.**
 
-[license]: ./LICENSE
-[badge-license]: https://img.shields.io/github/license/gitleaks/gitleaks.svg
-[go-docs-badge]: https://pkg.go.dev/badge/github.com/gitleaks/gitleaks/v8?status
-[go-docs]: https://pkg.go.dev/github.com/zricethezav/gitleaks/v8
-[badge-build]: https://github.com/gitleaks/gitleaks/actions/workflows/test.yml/badge.svg
-[build]: https://github.com/gitleaks/gitleaks/actions/workflows/test.yml
-[go-report-card-badge]: https://goreportcard.com/badge/github.com/gitleaks/gitleaks/v8
-[go-report-card]: https://goreportcard.com/report/github.com/gitleaks/gitleaks/v8
-[dockerhub]: https://hub.docker.com/r/zricethezav/gitleaks
-[dockerhub-badge]: https://img.shields.io/docker/pulls/zricethezav/gitleaks.svg
-[gitleaks-action]: https://github.com/gitleaks/gitleaks-action
-[gitleaks-badge]: https://img.shields.io/badge/protected%20by-gitleaks-blue
-[gitleaks-playground-badge]: https://img.shields.io/badge/gitleaks%20-playground-blue
-[gitleaks-playground]: https://gitleaks.io/playground
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![React](https://img.shields.io/badge/React-18.3.1-61DAFB?logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6.3-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-6.0.5-646CFF?logo=vite)](https://vitejs.dev/)
 
+---
 
-[![Github Action Test][badge-build]][build]
-[![Docker Hub][dockerhub-badge]][dockerhub]
-[![Gitleaks Playground][gitleaks-playground-badge]][gitleaks-playground]
-[![Gitleaks Action][gitleaks-badge]][gitleaks-action]
-[![GoDoc][go-docs-badge]][go-docs]
-[![GoReportCard][go-report-card-badge]][go-report-card]
-[![License][badge-license]][license]
+## 🚀 Overview
 
+**TradeYa** is a comprehensive platform designed for creative professionals to:
 
-### Join our Discord! [![Discord](https://img.shields.io/discord/1102689410522284044.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/8Hzbrnkr7E)
+- 🤝 **Trade Skills**: Exchange services and collaborate without monetary transactions
+- 🎯 **Complete Challenges**: Participate in gamified skill-building challenges (Solo → Trade → Collaboration)
+- 🏆 **Earn Recognition**: Build XP, unlock achievements, and climb leaderboards
+- 💼 **Build Portfolios**: Showcase completed work and collaborate on real projects
+- 💬 **Connect & Communicate**: Real-time messaging and collaboration tools
 
-Gitleaks is a tool for **detecting** secrets like passwords, API keys, and tokens in git repos, files, and whatever else you wanna throw at it via `stdin`.
+---
 
-```
-➜  ~/code(master) gitleaks git -v
+## ✨ Key Features
 
-    ○
-    │╲
-    │ ○
-    ○ ░
-    ░    gitleaks
+### **Trade System**
+- Create and manage skill-based trades
+- Propose and accept trade offers
+- Track trade lifecycle from proposal to completion
+- Evidence submission and verification
 
+### **Challenge System**
+- **Three-tier progression**: Solo → Trade → Collaboration challenges
+- Skill-based challenges across creative disciplines
+- XP rewards and achievement tracking
+- Celebration modals with confetti animations
 
-Finding:     "export BUNDLE_ENTERPRISE__CONTRIBSYS__COM=cafebabe:deadbeef",
-Secret:      cafebabe:deadbeef
-RuleID:      sidekiq-secret
-Entropy:     2.609850
-File:        cmd/generate/config/rules/sidekiq.go
-Line:        23
-Commit:      cd5226711335c68be1e720b318b7bc3135a30eb2
-Author:      John
-Email:       john@users.noreply.github.com
-Date:        2022-08-03T12:31:40Z
-Fingerprint: cd5226711335c68be1e720b318b7bc3135a30eb2:cmd/generate/config/rules/sidekiq.go:sidekiq-secret:23
-```
+### **Gamification**
+- XP and leveling system
+- Global and category-based leaderboards
+- Achievement badges and milestones
+- Streak tracking and daily login rewards
 
-## Getting Started
+### **Collaboration**
+- Multi-user project management
+- Role-based access control (Creator, Lead, Contributor, Viewer)
+- Progress tracking and milestone management
+- Real-time communication
 
-Gitleaks can be installed using Homebrew, Docker, or Go. Gitleaks is also available in binary form for many popular platforms and OS types on the [releases page](https://github.com/gitleaks/gitleaks/releases). In addition, Gitleaks can be implemented as a pre-commit hook directly in your repo or as a GitHub action using [Gitleaks-Action](https://github.com/gitleaks/gitleaks-action).
+### **Messaging**
+- Real-time chat system
+- Conversation management
+- Read receipts and typing indicators
+- Message threading
 
-### Installing
+---
+
+## 🛠️ Tech Stack
+
+### **Frontend**
+- **React 18.3.1** with TypeScript
+- **Vite 6.0.5** for build tooling
+- **TailwindCSS** for styling
+- **Framer Motion** for animations
+- **Lucide React** for icons
+
+### **Backend & Database**
+- **Firebase Authentication** for user management
+- **Firestore** for real-time database
+- **Firebase Storage** for file uploads
+- **Firebase Cloud Functions** for serverless operations
+
+### **Testing**
+- **Jest** for unit and integration tests
+- **Playwright** for end-to-end testing
+- **React Testing Library** for component tests
+
+### **Development**
+- **ESLint** & **Prettier** for code quality
+- **TypeScript** for type safety
+- **Vite** for fast development and optimized builds
+
+---
+
+## 📦 Installation
+
+### **Prerequisites**
+- Node.js 18+ and npm
+- Firebase CLI (`npm install -g firebase-tools`)
+- Git
+
+### **Setup**
 
 ```bash
-# MacOS
-brew install gitleaks
+# Clone the repository
+git clone https://github.com/yourusername/silver-fortnight.git
+cd silver-fortnight
 
-# Docker (DockerHub)
-docker pull zricethezav/gitleaks:latest
-docker run -v ${path_to_host_folder_to_scan}:/path zricethezav/gitleaks:latest [COMMAND] [OPTIONS] [SOURCE_PATH]
+# Install dependencies
+npm install
 
-# Docker (ghcr.io)
-docker pull ghcr.io/gitleaks/gitleaks:latest
-docker run -v ${path_to_host_folder_to_scan}:/path ghcr.io/gitleaks/gitleaks:latest [COMMAND] [OPTIONS] [SOURCE_PATH]
+# Install Firebase Functions dependencies
+cd functions && npm install && cd ..
 
-# From Source (make sure `go` is installed)
-git clone https://github.com/gitleaks/gitleaks.git
-cd gitleaks
-make build
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your Firebase configuration
+
+# Start development server
+npm run dev
 ```
 
-### GitHub Action
+The app will be available at `http://localhost:5173`
 
-Check out the official [Gitleaks GitHub Action](https://github.com/gitleaks/gitleaks-action)
+---
 
-```
-name: gitleaks
-on: [pull_request, push, workflow_dispatch]
-jobs:
-  scan:
-    name: gitleaks
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE}} # Only required for Organizations, not personal accounts.
-```
+## 🔧 Development
 
-### Pre-Commit
+### **Available Scripts**
 
-1. Install pre-commit from https://pre-commit.com/#install
-2. Create a `.pre-commit-config.yaml` file at the root of your repository with the following content:
+```bash
+# Development
+npm run dev                    # Start development server
+npm run build                  # Production build (optimized)
+npm run preview               # Preview production build
 
-   ```
-   repos:
-     - repo: https://github.com/gitleaks/gitleaks
-       rev: v8.24.2
-       hooks:
-         - id: gitleaks
-   ```
+# Testing
+npm test                       # Run unit tests with coverage
+npm run test:watch            # Run tests in watch mode
+npm run test:ci               # CI test suite (fast)
+npm run test:ci:full          # Full test suite
+npm run test:e2e              # Run Playwright E2E tests
+npm run test:e2e:ui           # Open Playwright UI
 
-   for a [native execution of GitLeaks](https://github.com/gitleaks/gitleaks/releases) or use the [`gitleaks-docker` pre-commit ID](https://github.com/gitleaks/gitleaks/blob/master/.pre-commit-hooks.yaml) for executing GitLeaks using the [official Docker images](#docker)
+# Code Quality
+npm run lint                   # Lint code
+npm run lint:fix              # Fix linting issues
+npm run format                # Format with Prettier
+npm run type-check            # TypeScript type checking
 
-3. Auto-update the config to the latest repos' versions by executing `pre-commit autoupdate`
-4. Install with `pre-commit install`
-5. Now you're all set!
-
-```
-➜ git commit -m "this commit contains a secret"
-Detect hardcoded secrets.................................................Failed
+# Firebase
+npm run deploy:production:full # Deploy to production
+npm run functions:build        # Build Cloud Functions
 ```
 
-Note: to disable the gitleaks pre-commit hook you can prepend `SKIP=gitleaks` to the commit command
-and it will skip running gitleaks
+### **Project Structure**
 
 ```
-➜ SKIP=gitleaks git commit -m "skip gitleaks check"
-Detect hardcoded secrets................................................Skipped
-```
-
-## Usage
-
-```
-Usage:
-  gitleaks [command]
-
-Available Commands:
-  completion  generate the autocompletion script for the specified shell
-  dir         scan directories or files for secrets
-  git         scan git repositories for secrets
-  help        Help about any command
-  stdin       detect secrets from stdin
-  version     display gitleaks version
-
-Flags:
-  -b, --baseline-path string          path to baseline with issues that can be ignored
-  -c, --config string                 config file path
-                                      order of precedence:
-                                      1. --config/-c
-                                      2. env var GITLEAKS_CONFIG
-                                      3. env var GITLEAKS_CONFIG_TOML with the file content
-                                      4. (target path)/.gitleaks.toml
-                                      If none of the four options are used, then gitleaks will use the default config
-      --enable-rule strings           only enable specific rules by id
-      --exit-code int                 exit code when leaks have been encountered (default 1)
-  -i, --gitleaks-ignore-path string   path to .gitleaksignore file or folder containing one (default ".")
-  -h, --help                          help for gitleaks
-      --ignore-gitleaks-allow         ignore gitleaks:allow comments
-  -l, --log-level string              log level (trace, debug, info, warn, error, fatal) (default "info")
-      --max-decode-depth int          allow recursive decoding up to this depth (default "0", no decoding is done)
-      --max-target-megabytes int      files larger than this will be skipped
-      --no-banner                     suppress banner
-      --no-color                      turn off color for verbose output
-      --redact uint[=100]             redact secrets from logs and stdout. To redact only parts of the secret just apply a percent value from 0..100. For example --redact=20 (default 100%)
-  -f, --report-format string          output format (json, csv, junit, sarif) (default "json")
-  -r, --report-path string            report file
-      --report-template string        template file used to generate the report (implies --report-format=template)
-  -v, --verbose                       show verbose output from scan
-      --version                       version for gitleaks
-
-Use "gitleaks [command] --help" for more information about a command.
-```
-
-### Commands
-
-⚠️ v8.19.0 introduced a change that deprecated `detect` and `protect`. Those commands are still available but
-are hidden in the `--help` menu. Take a look at this [gist](https://gist.github.com/zricethezav/b325bb93ebf41b9c0b0507acf12810d2) for easy command translations.
-If you find v8.19.0 broke an existing command (`detect`/`protect`), please open an issue.
-
-There are three scanning modes: `git`, `dir`, and `stdin`.
-
-#### Git
-The `git` command lets you scan local git repos. Under the hood, gitleaks uses the `git log -p` command to scan patches.
-You can configure the behavior of `git log -p` with the `log-opts` option.
-For example, if you wanted to run gitleaks on a range of commits you could use the following
-command: `gitleaks git -v --log-opts="--all commitA..commitB" path_to_repo`. See the [git log](https://git-scm.com/docs/git-log) documentation for more information.
-If there is no target specified as a positional argument, then gitleaks will attempt to scan the current working directory as a git repo.
-
-#### Dir
-The `dir` (aliases include `files`, `directory`) command lets you scan directories and files. Example: `gitleaks dir -v path_to_directory_or_file`.
-If there is no target specified as a positional argument, then gitleaks will scan the current working directory.
-
-#### Stdin
-You can also stream data to gitleaks with the `stdin` command. Example: `cat some_file | gitleaks -v stdin`
-
-### Creating a baseline
-
-When scanning large repositories or repositories with a long history, it can be convenient to use a baseline. When using a baseline,
-gitleaks will ignore any old findings that are present in the baseline. A baseline can be any gitleaks report. To create a gitleaks report, run gitleaks with the `--report-path` parameter.
-
-```
-gitleaks git --report-path gitleaks-report.json # This will save the report in a file called gitleaks-report.json
-```
-
-Once as baseline is created it can be applied when running the detect command again:
-
-```
-gitleaks git --baseline-path gitleaks-report.json --report-path findings.json
-```
-
-After running the detect command with the --baseline-path parameter, report output (findings.json) will only contain new issues.
-
-## Pre-Commit hook
-
-You can run Gitleaks as a pre-commit hook by copying the example `pre-commit.py` script into
-your `.git/hooks/` directory.
-
-## Load Configuration
-
-The order of precedence is:
-
-1. `--config/-c` option:
-      ```bash
-      gitleaks git --config /home/dev/customgitleaks.toml .
-      ```
-2. Environment variable `GITLEAKS_CONFIG` with the file path:
-      ```bash
-      export GITLEAKS_CONFIG="/home/dev/customgitleaks.toml"
-      gitleaks git .
-      ```
-3. Environment variable `GITLEAKS_CONFIG_TOML` with the file content:
-      ```bash
-      export GITLEAKS_CONFIG_TOML=`cat customgitleaks.toml`
-      gitleaks git .
-      ```
-4. A `.gitleaks.toml` file within the target path:
-      ```bash
-      gitleaks git .
-      ```
-
-If none of the four options are used, then gitleaks will use the default config.
-
-## Configuration
-
-Gitleaks offers a configuration format you can follow to write your own secret detection rules:
-
-```toml
-# Title for the gitleaks configuration file.
-title = "Custom Gitleaks configuration"
-
-# You have basically two options for your custom configuration:
-#
-# 1. define your own configuration, default rules do not apply
-#
-#    use e.g., the default configuration as starting point:
-#    https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
-#
-# 2. extend a configuration, the rules are overwritten or extended
-#
-#    When you extend a configuration the extended rules take precedence over the
-#    default rules. I.e., if there are duplicate rules in both the extended
-#    configuration and the default configuration the extended rules or
-#    attributes of them will override the default rules.
-#    Another thing to know with extending configurations is you can chain
-#    together multiple configuration files to a depth of 2. Allowlist arrays are
-#    appended and can contain duplicates.
-
-# useDefault and path can NOT be used at the same time. Choose one.
-[extend]
-# useDefault will extend the default gitleaks config built in to the binary
-# the latest version is located at:
-# https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
-useDefault = true
-# or you can provide a path to a configuration to extend from.
-# The path is relative to where gitleaks was invoked,
-# not the location of the base config.
-# path = "common_config.toml"
-# If there are any rules you don't want to inherit, they can be specified here.
-disabledRules = [ "generic-api-key"]
-
-# An array of tables that contain information that define instructions
-# on how to detect secrets
-[[rules]]
-
-# Unique identifier for this rule
-id = "awesome-rule-1"
-
-# Short human readable description of the rule.
-description = "awesome rule 1"
-
-# Golang regular expression used to detect secrets. Note Golang's regex engine
-# does not support lookaheads.
-regex = '''one-go-style-regex-for-this-rule'''
-
-# Int used to extract secret from regex match and used as the group that will have
-# its entropy checked if `entropy` is set.
-secretGroup = 3
-
-# Float representing the minimum shannon entropy a regex group must have to be considered a secret.
-entropy = 3.5
-
-# Golang regular expression used to match paths. This can be used as a standalone rule or it can be used
-# in conjunction with a valid `regex` entry.
-path = '''a-file-path-regex'''
-
-# Keywords are used for pre-regex check filtering. Rules that contain
-# keywords will perform a quick string compare check to make sure the
-# keyword(s) are in the content being scanned. Ideally these values should
-# either be part of the identiifer or unique strings specific to the rule's regex
-# (introduced in v8.6.0)
-keywords = [
-  "auth",
-  "password",
-  "token",
-]
-
-# Array of strings used for metadata and reporting purposes.
-tags = ["tag","another tag"]
-
-    # ⚠️ In v8.21.0 `[rules.allowlist]` was replaced with `[[rules.allowlists]]`.
-    # This change was backwards-compatible: instances of `[rules.allowlist]` still  work.
-    #
-    # You can define multiple allowlists for a rule to reduce false positives.
-    # A finding will be ignored if _ANY_ `[[rules.allowlists]]` matches.
-    [[rules.allowlists]]
-    description = "ignore commit A"
-    # When multiple criteria are defined the default condition is "OR".
-    # e.g., this can match on |commits| OR |paths| OR |stopwords|.
-    condition = "OR"
-    commits = [ "commit-A", "commit-B"]
-    paths = [
-      '''go\.mod''',
-      '''go\.sum'''
-    ]
-    # note: stopwords targets the extracted secret, not the entire regex match
-    # like 'regexes' does. (stopwords introduced in 8.8.0)
-    stopwords = [
-      '''client''',
-      '''endpoint''',
-    ]
-
-    [[rules.allowlists]]
-    # The "AND" condition can be used to make sure all criteria match.
-    # e.g., this matches if |regexes| AND |paths| are satisfied.
-    condition = "AND"
-    # note: |regexes| defaults to check the _Secret_ in the finding.
-    # Acceptable values for |regexTarget| are "secret" (default), "match", and "line".
-    regexTarget = "match"
-    regexes = [ '''(?i)parseur[il]''' ]
-    paths = [ '''package-lock\.json''' ]
-
-# You can extend a particular rule from the default config. e.g., gitlab-pat
-# if you have defined a custom token prefix on your GitLab instance
-[[rules]]
-id = "gitlab-pat"
-# all the other attributes from the default rule are inherited
-
-    [[rules.allowlists]]
-    regexTarget = "line"
-    regexes = [ '''MY-glpat-''' ]
-
-# This is a global allowlist which has a higher order of precedence than rule-specific allowlists.
-# If a commit listed in the `commits` field below is encountered then that commit will be skipped and no
-# secrets will be detected for said commit. The same logic applies for regexes and paths.
-[allowlist]
-description = "global allow list"
-commits = [ "commit-A", "commit-B", "commit-C"]
-paths = [
-  '''gitleaks\.toml''',
-  '''(.*?)(jpg|gif|doc)'''
-]
-
-# note: (global) regexTarget defaults to check the _Secret_ in the finding.
-# if regexTarget is not specified then _Secret_ will be used.
-# Acceptable values for regexTarget are "match" and "line"
-regexTarget = "match"
-regexes = [
-  '''219-09-9999''',
-  '''078-05-1120''',
-  '''(9[0-9]{2}|666)-\d{2}-\d{4}''',
-]
-# note: stopwords targets the extracted secret, not the entire regex match
-# like 'regexes' does. (stopwords introduced in 8.8.0)
-stopwords = [
-  '''client''',
-  '''endpoint''',
-]
-```
-
-Refer to the default [gitleaks config](https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml) for examples or follow the [contributing guidelines](https://github.com/gitleaks/gitleaks/blob/master/CONTRIBUTING.md) if you would like to contribute to the default configuration. Additionally, you can check out [this gitleaks blog post](https://blog.gitleaks.io/stop-leaking-secrets-configuration-2-3-aeed293b1fbf) which covers advanced configuration setups.
-
-### Additional Configuration
-
-#### gitleaks:allow
-
-If you are knowingly committing a test secret that gitleaks will catch you can add a `gitleaks:allow` comment to that line which will instruct gitleaks
-to ignore that secret. Ex:
-
-```
-class CustomClass:
-    discord_client_secret = '8dyfuiRyq=vVc3RRr_edRk-fK__JItpZ'  #gitleaks:allow
-
-```
-
-#### .gitleaksignore
-
-You can ignore specific findings by creating a `.gitleaksignore` file at the root of your repo. In release v8.10.0 Gitleaks added a `Fingerprint` value to the Gitleaks report. Each leak, or finding, has a Fingerprint that uniquely identifies a secret. Add this fingerprint to the `.gitleaksignore` file to ignore that specific secret. See Gitleaks' [.gitleaksignore](https://github.com/gitleaks/gitleaks/blob/master/.gitleaksignore) for an example. Note: this feature is experimental and is subject to change in the future.
-
-#### Decoding
-
-Sometimes secrets are encoded in a way that can make them difficult to find
-with just regex. Now you can tell gitleaks to automatically find and decode
-encoded text. The flag `--max-decode-depth` enables this feature (the default
-value "0" means the feature is disabled by default).
-
-Recursive decoding is supported since decoded text can also contain encoded
-text.  The flag `--max-decode-depth` sets the recursion limit. Recursion stops
-when there are no new segments of encoded text to decode, so setting a really
-high max depth doesn't mean it will make that many passes. It will only make as
-many as it needs to decode the text. Overall, decoding only minimally increases
-scan times.
-
-The findings for encoded text differ from normal findings in the following
-ways:
-
-- The location points the bounds of the encoded text
-  - If the rule matches outside the encoded text, the bounds are adjusted to
-    include that as well
-- The match and secret contain the decoded value
-- Two tags are added `decoded:<encoding>` and `decode-depth:<depth>`
-
-Currently supported encodings:
-
-- `base64` (both standard and base64url)
-
-#### Reporting
-
-Gitleaks has built-in support for several report formats: [`json`](https://github.com/gitleaks/gitleaks/blob/master/testdata/expected/report/json_simple.json), [`csv`](https://github.com/gitleaks/gitleaks/blob/master/testdata/expected/report/csv_simple.csv?plain=1), [`junit`](https://github.com/gitleaks/gitleaks/blob/master/testdata/expected/report/junit_simple.xml), and [`sarif`](https://github.com/gitleaks/gitleaks/blob/master/testdata/expected/report/sarif_simple.sarif).
-
-If none of these formats fit your need, you can create your own report format with a [Go `text/template` .tmpl file](https://www.digitalocean.com/community/tutorials/how-to-use-templates-in-go#step-4-writing-a-template) and the `--report-template` flag. The template can use [extended functionality from the `Masterminds/sprig` template library](https://masterminds.github.io/sprig/).
-
-For example, the following template provides a custom JSON output:
-```gotemplate
-# jsonextra.tmpl
-[{{ $lastFinding := (sub (len . ) 1) }}
-{{- range $i, $finding := . }}{{with $finding}}
-    {
-        "Description": {{ quote .Description }},
-        "StartLine": {{ .StartLine }},
-        "EndLine": {{ .EndLine }},
-        "StartColumn": {{ .StartColumn }},
-        "EndColumn": {{ .EndColumn }},
-        "Line": {{ quote .Line }},
-        "Match": {{ quote .Match }},
-        "Secret": {{ quote .Secret }},
-        "File": "{{ .File }}",
-        "SymlinkFile": {{ quote .SymlinkFile }},
-        "Commit": {{ quote .Commit }},
-        "Entropy": {{ .Entropy }},
-        "Author": {{ quote .Author }},
-        "Email": {{ quote .Email }},
-        "Date": {{ quote .Date }},
-        "Message": {{ quote .Message }},
-        "Tags": [{{ $lastTag := (sub (len .Tags ) 1) }}{{ range $j, $tag := .Tags }}{{ quote . }}{{ if ne $j $lastTag }},{{ end }}{{ end }}],
-        "RuleID": {{ quote .RuleID }},
-        "Fingerprint": {{ quote .Fingerprint }}
-    }{{ if ne $i $lastFinding }},{{ end }}
-{{- end}}{{ end }}
-]
-```
-
-Usage:
-```sh
-$ gitleaks dir ~/leaky-repo/ --report-path "report.json" --report-format template --report-template testdata/report/jsonextra.tmpl
-```
-
-## Sponsorships
-
-<p align="left">
-	<h3><a href="https://coderabbit.ai/?utm_source=oss&utm_medium=sponsorship&utm_campaign=gitleaks">coderabbit.ai</h3>
-	  <a href="https://coderabbit.ai/?utm_source=oss&utm_medium=sponsorship&utm_campaign=gitleaks">
-		  <img alt="CodeRabbit.ai Sponsorship" src="https://github.com/gitleaks/gitleaks/assets/15034943/76c30a85-887b-47ca-9956-17a8e55c6c41" width=200>
-	  </a>
-</p>
-
-
-## Exit Codes
-
-You can always set the exit code when leaks are encountered with the --exit-code flag. Default exit codes below:
-
-```
-0 - no leaks present
-1 - leaks or error encountered
-126 - unknown flag
+silver-fortnight/
+├── src/
+│   ├── components/          # React components
+│   │   ├── features/       # Feature-specific components
+│   │   ├── ui/            # Reusable UI components
+│   │   └── animations/    # Animation components
+│   ├── pages/             # Page components
+│   ├── services/          # Business logic and Firebase services
+│   ├── contexts/          # React contexts
+│   ├── hooks/             # Custom React hooks
+│   ├── types/             # TypeScript type definitions
+│   └── utils/             # Utility functions
+├── functions/             # Firebase Cloud Functions
+├── public/               # Static assets
+├── docs/                 # Documentation
+├── scripts/              # Build and utility scripts
+├── tests/                # Test files
+└── e2e/                  # End-to-end tests
 ```
 
 ---
 
-## Project Testing and CI (Repository-Specific)
+## 🚀 Deployment
 
-This repository uses Jest with TypeScript in an ESM setup and a two-tier CI strategy for tests.
+### **Production Deployment**
 
-- Fast CI (default for PRs)
-  - `npm run test:ci`
-  - Runs unit, migration, and security suites; skips heavy integration/UI tests for speed
-  - Uses `babel.config.cjs` to support TS/JS/JSX transforms alongside ts-jest
+      ```bash
+# Full production deployment (hosting + functions + rules)
+npm run deploy:production:full
 
-- Full Test Suite (manual/nightly)
-  - `npm run test:ci:full`
-  - Runs all tests, including integration/UI
+# Deploy specific components
+npm run deploy:application:production    # Hosting only
+npm run deploy:functions:production     # Functions only
+npm run deploy:rules:production         # Security rules only
+```
 
-Notes
-- The repo is ESM (`"type": "module"`), and Babel config is in CommonJS format: `babel.config.cjs`.
-- Security checks are executed via `scripts/security-checks.sh` in CI.
-  - Untracked local secrets (e.g., `.env`) are reported as warnings.
-  - CI fails only if sensitive files are tracked in git.
+### **Environment Configuration**
 
+The project supports multiple environments:
+- **Development**: `localhost:5173`
+- **Staging**: `tradeya-staging.web.app`
+- **Production**: `tradeya.io` and `tradeya-45ede.web.app`
 
-## Admin & Gamification Stability Updates
+Configure environment variables in `.env` files:
+- `.env` - Development
+- `.env.production` - Production
 
-- Collaboration services have been standardized to return a uniform ServiceResult shape for safer error handling.
-  - Pattern: `{ success: boolean, data?: T, error?: { code: string; message: string } | string | null }`
-  - Example (collaborations): `getAllCollaborations()` resolves to `{ success: true, data: { items: [...], hasMore, totalCount, lastDoc, queryMetadata }, error: null }`.
-- The useCollaborationSearch hook was updated to consume the ServiceResult format while maintaining the same external interface for consuming components.
-- Admin analytics and tab navigation are protected by smoke tests to guard against regressions.
+---
+
+## 📊 Testing
+
+### **Test Strategy**
+
+- **Unit Tests**: Component and service logic (Jest)
+- **Integration Tests**: Feature workflows and data flow (Jest)
+- **E2E Tests**: Complete user journeys (Playwright)
+
+### **Running Tests**
+
+```bash
+# Run all tests
+npm test
+
+# Run specific test suites
+npm run test:integration
+npm run test:e2e
+
+# Run E2E tests for specific features
+npm run test:e2e:trade-lifecycle
+npm run test:e2e:collaboration
+npm run test:e2e:challenges
+
+# Test with coverage
+npm run test:ci:full
+```
+
+---
+
+## 🔐 Security
+
+- Firebase Security Rules for Firestore and Storage
+- Role-based access control (RBAC)
+- User authentication via Firebase Auth
+- Secure API endpoints via Cloud Functions
+- Input validation and sanitization
+
+See [SECURITY.md](./SECURITY.md) for more details.
+
+---
+
+## 📚 Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- **[User Guide](./docs/USER_GUIDE.md)** - End-user documentation
+- **[Testing Guide](./docs/TESTING.md)** - Testing strategies and procedures
+- **[Deployment Guide](./docs/DEPLOYMENT.md)** - Deployment procedures
+- **[Documentation Index](./docs/COMPREHENSIVE_DOCUMENTATION_INDEX.md)** - Complete documentation index
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our contributing guidelines:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- Firebase for backend infrastructure
+- React community for excellent libraries
+- All contributors and testers
+
+---
+
+## 📞 Support
+
+For questions, issues, or feature requests:
+- Open an issue on GitHub
+- Check the [documentation](./docs/)
+- Review the [FAQ](./docs/USER_GUIDE.md#faq)
+
+---
+
+**Built with ❤️ for creative professionals**

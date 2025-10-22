@@ -22,7 +22,7 @@ import {
   SocialStats
 } from '../types/gamification';
 import { ServiceResponse } from '../types/services';
-import { createNotification } from './notifications';
+import { createNotification, NotificationType } from './notifications/unifiedNotificationService';
 import { 
   calculatePeriodRange, 
   buildLeaderboardQuery, 
@@ -472,10 +472,11 @@ export const followUser = async (
     // Create notification for followed user
     await createNotification({
       recipientId: followingId,
-      type: 'new_follower',
+      type: NotificationType.NEW_FOLLOWER,
       title: 'New Follower! 👥',
       message: `${followingUserData?.displayName || 'A user'} started following you`,
       data: { followerId },
+      priority: 'low',
       createdAt: Timestamp.now()
     });
 

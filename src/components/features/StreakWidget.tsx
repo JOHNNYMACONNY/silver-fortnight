@@ -60,14 +60,14 @@ export const StreakWidget: React.FC<StreakWidgetProps> = ({ userId, type = 'logi
 
   if (loading) {
     return (
-      <div className={"bg-card text-card-foreground rounded-lg border border-border p-4 " + (className || '')}>
-        <div className="animate-pulse h-6 bg-muted rounded w-32" />
+      <div className={"glassmorphic border-glass backdrop-blur-xl bg-white/5 rounded-xl p-4 " + (className || '')}>
+        <div className="animate-pulse h-6 bg-white/10 rounded w-32" />
       </div>
     );
   }
 
   return (
-    <div className={"bg-card text-card-foreground rounded-lg border border-border p-4 " + (className || '')}>
+    <div className={"glassmorphic border-glass backdrop-blur-xl bg-white/5 rounded-xl p-4 " + (className || '')}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Flame className="w-5 h-5 text-primary" />
@@ -99,19 +99,19 @@ export const StreakWidget: React.FC<StreakWidgetProps> = ({ userId, type = 'logi
 
       <div className="mt-3 grid grid-cols-3 gap-3 text-center">
         <Tooltip content={`Each consecutive day increases your ${typeLabel.toLowerCase()} streak. A single missed day is auto-frozen if available; otherwise, it resets to 1.`}>
-          <div className="p-3 rounded-lg bg-muted/50">
+          <div className="p-3 rounded-xl glassmorphic border-glass backdrop-blur-xl bg-white/5">
             <div className="text-2xl font-bold text-foreground">{streak?.currentStreak ?? 0}</div>
             <div className="text-xs text-muted-foreground">Current</div>
           </div>
         </Tooltip>
         <Tooltip content={`Your best ${typeLabel.toLowerCase()} streak so far.`}>
-          <div className="p-3 rounded-lg bg-muted/50">
+          <div className="p-3 rounded-xl glassmorphic border-glass backdrop-blur-xl bg-white/5">
             <div className="text-2xl font-bold text-foreground">{streak?.longestStreak ?? 0}</div>
             <div className="text-xs text-muted-foreground">Longest</div>
           </div>
         </Tooltip>
         <Tooltip content={`Reach ${nextMilestone} days to earn +${xpBonus} XP bonus. Thresholds: ${thresholds.join(', ')}.`}>
-          <div className="p-3 rounded-lg bg-muted/50">
+          <div className="p-3 rounded-xl glassmorphic border-glass backdrop-blur-xl bg-white/5">
             <div className="text-2xl font-bold text-foreground">{nextMilestone}</div>
             <div className="text-xs text-muted-foreground">Next Milestone</div>
           </div>

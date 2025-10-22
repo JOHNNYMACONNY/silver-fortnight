@@ -290,6 +290,7 @@ export const ChallengeCreationForm: React.FC<ChallengeCreationFormProps> = ({
               error={errors.category}
               searchable
               required
+              id="challenge-category-dropdown"
             />
 
             <GlassmorphicDropdown

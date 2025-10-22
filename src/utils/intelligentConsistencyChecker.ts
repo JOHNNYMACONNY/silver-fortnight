@@ -57,9 +57,10 @@ const MODERN_DESIGN_STANDARDS = {
   cardHeights: {
     main: 'h-[380px]',
     user: 'h-[320px]',
-    compact: 'h-[280px]'
+    compact: 'min-h-[280px]', // Content-aware: uses min-height for responsive layouts
+    homepageResponsive: 'min-h-[280px] md:min-h-[320px]' // Homepage cards with desktop balance
   },
-  cardLayout: 'flex flex-col cursor-pointer overflow-hidden',
+  cardLayout: 'flex flex-col cursor-pointer', // Removed overflow-hidden for content-aware layouts
   
   // 3D Effects Standards
   tiltEffects: {

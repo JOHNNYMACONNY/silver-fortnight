@@ -112,18 +112,57 @@ if (['trade', 'trade_interest', 'trade_completed'].includes(notification.type) &
 
 - `/src/pages/NotificationsPage.tsx` - Updated filtering, icon, and navigation logic
 
-### **Type Mapping Reference**
+### **Type Mapping Reference - UPDATED**
+
+## Complete Notification Type System
+
+All 21 notification types now standardized in unified service:
+
+| Notification Type | Category | Priority | Description |
+|-------------------|----------|----------|-------------|
+| trade | Trades | Medium | General trade notification |
+| trade_interest | Trades | Medium | User interested in trade |
+| trade_completed | Trades | Medium | Trade completed |
+| trade_reminder | Trades | High | Reminder to confirm trade |
+| collaboration | Collaborations | Medium | General collaboration |
+| role_application | Collaborations | Medium | Role application submitted |
+| application_accepted | Collaborations | High | Application accepted |
+| application_rejected | Collaborations | Low | Application rejected |
+| role_completion_requested | Collaborations | High | Role completion requested |
+| role_completion_confirmed | Collaborations | Medium | Role completion confirmed |
+| role_completion_rejected | Collaborations | Medium | Role completion rejected |
+| challenge | Challenges | Medium | General challenge |
+| challenge_completed | Challenges | Medium | Challenge completed |
+| tier_unlocked | Challenges | High | New tier unlocked |
+| streak_milestone | System | Medium | Streak milestone reached |
+| new_follower | System | Low | New follower gained |
+| level_up | System | High | User leveled up |
+| achievement_unlocked | System | High | Achievement unlocked |
+| message | Messages | Medium | Direct message |
+| review | System | Medium | Review notification |
+| system | System | Medium | System notification |
+
+### **Filter Category Mapping**
 
 | Filter Button | Notification Types Included |
 |---------------|----------------------------|
 | All           | All notifications          |
 | Unread        | All unread notifications   |
-| Trades        | 'trade', 'trade_interest', 'trade_completed' |
-| Projects      | 'project'                  |
-| Challenges    | 'challenge'                |
-| Messages      | 'message'                  |
-| System        | 'system', 'review'         |
+| Trades        | trade, trade_interest, trade_completed, trade_reminder |
+| Collaborations | collaboration, role_application, application_accepted, application_rejected, role_completion_requested, role_completion_confirmed, role_completion_rejected |
+| Challenges    | challenge, challenge_completed, tier_unlocked |
+| Messages      | message |
+| System        | system, review, new_follower, level_up, achievement_unlocked, streak_milestone |
 
-## Status: ✅ **CATEGORIZATION LOGIC FIXED**
+## Status: ✅ **NOTIFICATION SYSTEM CONSOLIDATED**
 
-The notification categorization functionality was **partially implemented** with a mapping issue. The core filtering logic is now corrected to properly group related notification types under the appropriate filter categories.
+The notification system has been completely consolidated:
+- ✅ Unified service created with all 21 notification types
+- ✅ Duplicate trade reminders removed (Cloud Functions only)
+- ✅ Missing trade completion notifications added
+- ✅ Challenge notifications using proper types
+- ✅ All 11 service files migrated to unified service
+- ✅ Glassmorphic UI styling applied
+- ✅ Complete documentation created
+
+**See:** `docs/NOTIFICATION_SYSTEM.md` for complete architecture documentation.
