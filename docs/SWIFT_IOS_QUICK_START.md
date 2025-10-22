@@ -62,7 +62,7 @@ open -a Xcode
 
 1. **File → Add Package Dependencies...**
 2. Paste URL: `https://github.com/firebase/firebase-ios-sdk`
-3. **Dependency Rule:** Up to Next Major Version: `10.0.0`
+3. **Dependency Rule:** Up to Next Major Version: `11.0.0`
 4. **Add Package**
 5. **Select products** (check these):
    - ✅ FirebaseAuth

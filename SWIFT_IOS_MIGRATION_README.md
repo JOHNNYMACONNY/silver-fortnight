@@ -166,9 +166,11 @@ SwiftUI views for every feature:
 ## 💰 Investment
 
 ### Budget Range
-- **Conservative:** $250,000 - $300,000
-- **Realistic:** $300,000 - $400,000
-- **With Contingency:** $400,000 - $500,000
+- **Conservative:** $275,000 - $325,000
+- **Realistic:** $325,000 - $425,000
+- **With Contingency:** $425,000 - $525,000
+
+*Updated for 2025 market rates including team salaries, tools, and contingency buffer*
 
 ### Team Composition
 - 1 Senior iOS Developer (Lead)
@@ -267,6 +269,7 @@ All TradeYa features are covered:
 - **Minimum iOS:** 17.0
 - **Architecture:** MVVM
 - **Concurrency:** async/await + Combine
+- **Firebase SDK:** 11.0+
 
 ### Firebase (Shared)
 - **Auth:** Firebase Authentication
@@ -274,6 +277,7 @@ All TradeYa features are covered:
 - **Storage:** Firebase Storage
 - **Functions:** Cloud Functions
 - **Messaging:** FCM + APNs
+- **SDK Version:** iOS SDK 11.0 or later
 
 ---
 

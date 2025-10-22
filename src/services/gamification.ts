@@ -25,7 +25,7 @@ import {
   Achievement
 } from '../types/gamification';
 import { ServiceResponse } from '../types/services';
-import { createNotification } from './notifications';
+import { createNotification, NotificationType } from './notifications/unifiedNotificationService';
 import { triggerLeaderboardUpdate, recomputeUserReputation } from './leaderboards';
 
 import { ServiceResult } from '../types/ServiceError';
@@ -316,7 +316,7 @@ const createLevelUpNotification = async (userId: string, newLevel: number): Prom
 
   await createNotification({
     recipientId: userId,
-    type: 'level_up',
+    type: NotificationType.LEVEL_UP,
     title: 'Level Up! 🎉',
     message: `Congratulations! You've reached level ${newLevel} - ${levelTier?.title || 'Unknown'}!`,
     data: {
@@ -324,6 +324,7 @@ const createLevelUpNotification = async (userId: string, newLevel: number): Prom
       levelTitle: levelTier?.title,
       benefits: levelTier?.benefits
     },
+    priority: 'high',
     createdAt: Timestamp.now()
   });
 };
@@ -331,7 +332,7 @@ const createLevelUpNotification = async (userId: string, newLevel: number): Prom
 const createAchievementNotification = async (userId: string, achievement: Achievement): Promise<void> => {
   await createNotification({
     recipientId: userId,
-    type: 'achievement_unlocked',
+    type: NotificationType.ACHIEVEMENT_UNLOCKED,
     title: 'Achievement Unlocked! 🏆',
     message: `You've earned the "${achievement.title}" achievement!`,
     data: {
@@ -339,6 +340,7 @@ const createAchievementNotification = async (userId: string, achievement: Achiev
       achievementTitle: achievement.title,
       xpReward: achievement.xpReward
     },
+    priority: 'high',
     createdAt: Timestamp.now()
   });
 };

@@ -339,7 +339,7 @@ TradeYa-iOS/
 // In Xcode:
 // File > Add Package Dependencies
 // Enter URL: https://github.com/firebase/firebase-ios-sdk
-// Version: 10.0.0 or later
+// Version: 11.0.0 or later
 
 // Add these products:
 - FirebaseAuth
@@ -368,7 +368,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/firebase/firebase-ios-sdk",
-            from: "10.0.0"
+            from: "11.0.0"
         )
     ],
     targets: [
@@ -2389,9 +2389,289 @@ enum StorageError: LocalizedError {
 - Polish & Launch: 26 weeks
 
 ### Budget Range
-- **Conservative:** $250,000 - $300,000
-- **Realistic:** $300,000 - $400,000
-- **With Contingency:** $400,000 - $500,000
+- **Conservative:** $275,000 - $325,000
+- **Realistic:** $325,000 - $425,000
+- **With Contingency:** $425,000 - $525,000
+
+**Note:** Budget estimates updated for 2025 market rates and inflation. Costs include team salaries, tools, services, and 20% contingency buffer.
+
+---
+
+## App Store Submission Requirements
+
+### Privacy Policy & Compliance
+
+#### Privacy Policy (Required for iOS 17+)
+Your app **must** include a privacy policy URL in App Store Connect:
+
+1. **Create Privacy Policy Document**
+   - Describe data collection practices
+   - Explain how user data is used
+   - List third-party services (Firebase, Analytics)
+   - Include data retention policies
+
+2. **Host on Accessible URL**
+   - Must be publicly accessible
+   - Should load quickly
+   - No login required to view
+
+3. **Add to App Store Connect**
+   - Project Settings → App Privacy
+   - Enter Privacy Policy URL
+   - Complete Privacy Nutrition Labels
+
+**Example Privacy Policy Sections:**
+```markdown
+# TradeYa Privacy Policy
+
+## Data We Collect
+- Account information (email, name)
+- Profile data and skills
+- Trade and collaboration history
+- Messages and communications
+
+## How We Use Data
+- Facilitate skill trades
+- Enable messaging features
+- Display user profiles
+- Improve app experience
+
+## Third-Party Services
+- Firebase (Google) for authentication and database
+- Analytics for app improvement
+```
+
+#### App Tracking Transparency (ATT)
+
+If using analytics or advertising, implement ATT framework:
+
+```swift
+// AppDelegate.swift or early in app lifecycle
+import AppTrackingTransparency
+import AdSupport
+
+func requestTrackingAuthorization() {
+    // Wait for app to be in foreground
+    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        ATTrackingManager.requestTrackingAuthorization { status in
+            switch status {
+            case .authorized:
+                // Tracking authorized - enable analytics
+                print("Tracking authorized")
+                // Initialize full analytics
+                
+            case .denied, .restricted:
+                // Tracking denied - use limited analytics
+                print("Tracking denied")
+                // Use privacy-preserving analytics only
+                
+            case .notDetermined:
+                // User hasn't decided yet
+                print("Tracking not determined")
+                
+            @unknown default:
+                break
+            }
+        }
+    }
+}
+```
+
+**Info.plist Entry Required:**
+```xml
+<key>NSUserTrackingUsageDescription</key>
+<string>We use tracking to improve your experience and provide personalized trade recommendations.</string>
+```
+
+### App Store Screenshots & Metadata
+
+#### Required Screenshots
+
+You must provide screenshots for these sizes:
+
+1. **6.7" iPhone Pro Max** (Required)
+   - Size: 1290 x 2796 pixels
+   - Minimum: 3 screenshots
+   - Maximum: 10 screenshots
+
+2. **6.5" iPhone Plus** (Required)
+   - Size: 1242 x 2688 pixels
+   - Minimum: 3 screenshots
+   - Maximum: 10 screenshots
+
+3. **5.5" iPhone** (Required)
+   - Size: 1242 x 2208 pixels
+   - Minimum: 3 screenshots
+   - Maximum: 10 screenshots
+
+4. **12.9" iPad Pro** (Optional but recommended)
+   - Size: 2048 x 2732 pixels
+   - Shows iPad optimization
+
+**Screenshot Best Practices:**
+- Show key features: Browse Trades, Chat, Profile, Challenges
+- Include descriptive text overlays
+- Use actual app UI (no mockups)
+- Show value proposition clearly
+- Maintain consistent branding
+
+#### App Icon Requirements
+
+- **Size:** 1024 x 1024 pixels
+- **Format:** PNG (no alpha channel)
+- **Color Space:** RGB
+- **Shape:** Square (iOS adds rounded corners)
+
+**Design Guidelines:**
+- Clear and recognizable at small sizes
+- Avoid text that becomes unreadable when small
+- Use vibrant colors
+- Consistent with app branding
+
+#### App Description
+
+**App Name:**
+- Maximum 30 characters
+- Example: "TradeYa - Skill Exchange"
+
+**Subtitle:**
+- Maximum 30 characters
+- Example: "Trade Skills & Collaborate"
+
+**Description:**
+- Maximum 4000 characters
+- First 2-3 sentences are crucial (visible without expanding)
+- Include keywords for App Store search
+- Highlight key features
+
+**Example Description Structure:**
+```
+TradeYa connects creative professionals to trade skills and collaborate on projects. Exchange your expertise for new skills without monetary transactions.
+
+KEY FEATURES:
+• Browse & create skill trades
+• Real-time messaging
+• Gamification with XP and achievements
+• Challenge system to build portfolio
+• Collaboration tools for team projects
+• Evidence gallery to showcase work
+
+PERFECT FOR:
+• Designers seeking development skills
+• Developers wanting design help
+• Content creators building portfolios
+• Freelancers expanding their skillset
+
+[Continue with more details...]
+```
+
+### App Store Review Guidelines Compliance
+
+#### Key Guidelines to Follow:
+
+1. **Design**
+   - App must use native iOS UI patterns
+   - SwiftUI is native ✅
+   - No misleading metadata
+
+2. **Business**
+   - If implementing in-app purchases later, follow Apple's rules
+   - Subscription model requires specific implementation
+   - Cannot circumvent Apple's payment system
+
+3. **Legal**
+   - Comply with all applicable laws
+   - Proper licensing for any third-party content
+   - Age rating must be accurate
+
+4. **Safety**
+   - User-generated content must be moderated
+   - Report abuse features required
+   - Protect minors (if age 17+)
+
+**Implementation for TradeYa:**
+
+```swift
+// Content Reporting Feature
+struct ReportContentView: View {
+    let contentId: String
+    let contentType: String // "trade", "message", "user"
+    
+    @State private var reason = ""
+    @State private var details = ""
+    
+    var body: some View {
+        Form {
+            Section("Report Reason") {
+                Picker("Reason", selection: $reason) {
+                    Text("Inappropriate Content").tag("inappropriate")
+                    Text("Spam").tag("spam")
+                    Text("Harassment").tag("harassment")
+                    Text("Other").tag("other")
+                }
+            }
+            
+            Section("Details") {
+                TextEditor(text: $details)
+                    .frame(height: 100)
+            }
+            
+            Button("Submit Report") {
+                submitReport()
+            }
+            .disabled(reason.isEmpty)
+        }
+        .navigationTitle("Report Content")
+    }
+    
+    private func submitReport() {
+        // Send to Firebase or Cloud Function for review
+        // Implement moderation queue
+    }
+}
+```
+
+### TestFlight Beta Testing
+
+Before App Store submission, test with real users:
+
+1. **Setup TestFlight**
+   - Upload build to App Store Connect
+   - Add internal testers (up to 100)
+   - Add external testers (up to 10,000)
+
+2. **Beta Testing Period**
+   - Recommended: 2-4 weeks
+   - Gather feedback
+   - Fix critical bugs
+   - Test on various devices
+
+3. **Prepare for Launch**
+   - Address all beta feedback
+   - Ensure no crashes
+   - Verify all features work
+   - Check performance on older devices
+
+### Submission Checklist
+
+Before submitting to App Store:
+
+- [ ] Privacy Policy URL ready and hosted
+- [ ] ATT implementation (if using tracking)
+- [ ] All screenshots prepared (3+ sizes)
+- [ ] App icon (1024x1024) ready
+- [ ] App description written
+- [ ] Keywords selected for App Store search
+- [ ] Age rating determined
+- [ ] Contact information for app support
+- [ ] Copyright text
+- [ ] Category selected (Productivity? Social Networking?)
+- [ ] Content rights verified
+- [ ] App tested on iOS 17, 18
+- [ ] TestFlight beta completed
+- [ ] No crashes or critical bugs
+- [ ] All features functional
+- [ ] Performance optimized
 
 ---
 
@@ -2399,16 +2679,20 @@ enum StorageError: LocalizedError {
 
 1. **Review this guide** with your team
 2. **Hire iOS developers** if needed
-3. **Set up Apple Developer account**
-4. **Create Xcode project** following Phase 1
-5. **Start with authentication** and basic CRUD operations
-6. **Iterate and test** frequently
+3. **Set up Apple Developer account** ($99/year)
+4. **Prepare privacy policy** and legal documents
+5. **Create Xcode project** following Phase 1
+6. **Start with authentication** and basic CRUD operations
+7. **Plan TestFlight beta** testing strategy
+8. **Prepare App Store assets** (screenshots, icon, description)
+9. **Iterate and test** frequently
 
 ---
 
-**Document Version:** 1.0  
+**Document Version:** 1.1  
 **Last Updated:** October 21, 2025  
-**Maintained By:** TradeYa Development Team
+**Maintained By:** TradeYa Development Team  
+**Changes:** Updated Firebase SDK to 11.0, adjusted 2025 budget, added App Store requirements
 
 ---
 

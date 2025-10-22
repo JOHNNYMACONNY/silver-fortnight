@@ -21,7 +21,7 @@ import {
 import { awardXP, XPSource, XP_VALUES } from "./gamification";
 import { updateProgressionOnChallengeCompletion } from "./threeTierProgression";
 import { checkAndUnlockAchievements } from "./achievements";
-import { createNotification } from "./notifications";
+import { createNotification, NotificationType } from "./notifications/unifiedNotificationService";
 import { removeUndefinedDeep } from "../utils/firestore";
 
 const getDb = () => getSyncFirebaseDb();
@@ -430,7 +430,7 @@ export const handlePostCompletionActions = async (
     // Send completion notification
     await createNotification({
       recipientId: userId,
-      type: "challenge_completed",
+      type: NotificationType.CHALLENGE_COMPLETED,
       title: "Challenge Completed! 🎉",
       message: `You've completed "${challenge.title}" and earned ${
         rewards.xp + rewards.bonusXP
@@ -441,6 +441,7 @@ export const handlePostCompletionActions = async (
         xpEarned: rewards.xp + rewards.bonusXP,
         specialRewards: rewards.specialRewards,
       },
+      priority: 'medium',
       createdAt: Timestamp.now(),
     });
 
@@ -454,12 +455,13 @@ export const handlePostCompletionActions = async (
     if (rewards.tierProgress?.tierUnlocked) {
       await createNotification({
         recipientId: userId,
-        type: "tier_unlocked",
+        type: NotificationType.TIER_UNLOCKED,
         title: "New Tier Unlocked! 🚀",
         message: `You've unlocked ${rewards.tierProgress.tierUnlocked} challenges!`,
         data: {
           tierUnlocked: rewards.tierProgress.tierUnlocked,
         },
+        priority: 'high',
         createdAt: Timestamp.now(),
       });
     }

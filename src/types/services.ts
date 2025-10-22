@@ -30,5 +30,7 @@ export interface CreateNotificationParams {
   title: string;
   message: string;
   data?: Record<string, any>;
+  priority?: 'low' | 'medium' | 'high';
+  deduplicationKey?: string;
   createdAt: any; // Timestamp
 }

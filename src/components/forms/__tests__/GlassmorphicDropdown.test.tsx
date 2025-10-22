@@ -487,7 +487,7 @@ describe('GlassmorphicDropdown', () => {
       render(<GlassmorphicDropdown {...defaultProps} error="Error message" />);
       
       const trigger = screen.getByRole('combobox');
-      expect(trigger).toHaveClass('ring-red-500/30');
+      expect(trigger).toHaveClass('ring-error-500/30');
     });
 
     it('displays hint when no error', () => {
@@ -541,7 +541,7 @@ describe('GlassmorphicDropdown', () => {
       const trigger = screen.getByRole('combobox');
       await userEvent.click(trigger);
       
-      expect(trigger).toHaveClass('focus:from-orange-500/30');
+      expect(trigger).toHaveClass('focus:from-primary-500/30');
     });
 
     it('applies orange brand accent', async () => {

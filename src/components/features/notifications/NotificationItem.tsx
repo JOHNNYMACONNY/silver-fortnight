@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Notification as ServiceNotification } from '../../../services/notifications/notificationService';
 import { Notification as FirestoreNotification } from '../../../services/firestore-exports';
+import { cn } from '../../../utils/cn';
 
 // Create a union type that can handle both notification formats
 type NotificationType = (ServiceNotification | FirestoreNotification) & {
@@ -147,14 +148,32 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({ notification
         if (normalizedType === 'message' && notification.data.conversationId) {
           return notification.data.conversationId;
         }
-        if ((normalizedType === 'trade_interest' || normalizedType === 'trade_completed') && notification.data.tradeId) {
+        // All trade types
+        if (['trade_interest', 'trade_completed', 'trade', 'trade_reminder'].includes(normalizedType) && notification.data.tradeId) {
           return notification.data.tradeId;
         }
         if (normalizedType === 'review' && notification.data.userId) {
           return notification.data.userId;
         }
-        if (normalizedType === 'collaboration' && notification.data.collaborationId) {
+        // All collaboration types
+        if ([
+          'collaboration',
+          'role_application',
+          'application_accepted',
+          'application_rejected',
+          'role_completion_requested',
+          'role_completion_confirmed',
+          'role_completion_rejected'
+        ].includes(normalizedType) && notification.data.collaborationId) {
           return notification.data.collaborationId;
+        }
+        // All challenge types
+        if (['challenge', 'challenge_completed', 'tier_unlocked'].includes(normalizedType) && notification.data.challengeId) {
+          return notification.data.challengeId;
+        }
+        // Follower notifications
+        if (normalizedType === 'new_follower' && notification.data.followerId) {
+          return notification.data.followerId;
         }
       }
 
@@ -166,35 +185,67 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({ notification
     switch (normalizedType) {
       case 'message':
         return relatedId ? `/messages/${relatedId}` : '/messages';
+      // Trade types
+      case 'trade':
       case 'trade_interest':
       case 'trade_completed':
+      case 'trade_reminder':
         return relatedId ? `/trades/${relatedId}` : '/trades';
       case 'review':
         return '/profile';
+      // Collaboration types
       case 'collaboration':
+      case 'role_application':
+      case 'application_accepted':
+      case 'application_rejected':
+      case 'role_completion_requested':
+      case 'role_completion_confirmed':
+      case 'role_completion_rejected':
         return relatedId ? `/collaborations/${relatedId}` : '/collaborations';
+      // Challenge types
+      case 'challenge':
+      case 'challenge_completed':
+      case 'tier_unlocked':
+        return relatedId ? `/challenges/${relatedId}` : '/challenges';
+      // Gamification types
+      case 'level_up':
+      case 'achievement_unlocked':
+      case 'streak_milestone':
+        return '/profile';
+      // Follower
+      case 'new_follower':
+        return relatedId ? `/profile/${relatedId}` : '/profile';
       default:
         return '/notifications';
     }
   };
 
   return (
-  <li className={`px-4 py-3 hover:bg-gray-50 ${!notification.read ? 'bg-primary/10' : ''}`}>
-      <Link to={getNotificationLink()} className="flex items-start" onClick={onClick}>
+    <li className={cn(
+      "glassmorphic backdrop-blur-md border-glass rounded-lg mb-2 overflow-hidden",
+      "transition-all duration-200 hover:shadow-glass",
+      !notification.read && "bg-primary/10 border-primary/20"
+    )}>
+      <Link to={getNotificationLink()} className="flex items-start px-4 py-3" onClick={onClick}>
         {getNotificationIcon()}
 
         <div className="ml-3 flex-1">
-          <p className={`text-sm font-medium ${!notification.read ? 'text-gray-900' : 'text-gray-600'}`}>
+          <p className={cn(
+            "text-sm font-medium",
+            !notification.read ? "text-foreground" : "text-muted-foreground"
+          )}>
             {notification.title}
           </p>
-          <p className="text-sm text-gray-500 mt-1">{notification.message || notification.content}</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
+            {notification.content || notification.message}
+          </p>
+          <p className="text-xs text-muted-foreground/70 mt-1">
             {notification.createdAt && formatDate(notification.createdAt.toDate())}
           </p>
         </div>
 
         {!notification.read && (
-  <span className="ml-2 flex-shrink-0 h-2 w-2 rounded-full bg-primary"></span>
+          <span className="ml-2 flex-shrink-0 h-2 w-2 rounded-full bg-primary shadow-glass"></span>
         )}
       </Link>
     </li>
