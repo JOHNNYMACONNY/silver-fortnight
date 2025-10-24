@@ -4,7 +4,7 @@ import React from 'react';
 interface GridProps {
   children: React.ReactNode;
   columns?: number | { [key: string]: number };
-  gap?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  gap?: 'xs' | 'sm' | 'sm+' | 'md' | 'md+' | 'lg' | 'xl' | '2xl' | { [key: string]: 'xs' | 'sm' | 'sm+' | 'md' | 'md+' | 'lg' | 'xl' | '2xl' };
   className?: string;
   style?: React.CSSProperties;
   as?: React.ElementType;
@@ -13,10 +13,16 @@ interface GridProps {
 const gapMap = {
   xs: 'gap-1',
   sm: 'gap-2',
+  'sm+': 'gap-3', // 12px
   md: 'gap-4',
+  'md+': 'gap-5', // 20px
   lg: 'gap-6',
   xl: 'gap-8',
   '2xl': 'gap-12',
+};
+
+const gapClass = (size: 'xs' | 'sm' | 'sm+' | 'md' | 'md+' | 'lg' | 'xl' | '2xl', prefix = '') => {
+  return `${prefix}${gapMap[size]}`;
 };
 
 const colClass = (col: number, prefix = '') => {
@@ -50,11 +56,24 @@ const Grid: React.FC<GridProps> = ({
       .join(' ');
   }
 
+  let gapClasses = '';
+  if (typeof gap === 'string') {
+    gapClasses = gapMap[gap];
+  } else if (typeof gap === 'object') {
+    // e.g., { base: 'md', sm: 'lg', md: 'xl' }
+    gapClasses = Object.entries(gap)
+      .map(([breakpoint, gapSize]) => {
+        if (breakpoint === 'base') return gapClass(gapSize);
+        return gapClass(gapSize, `${breakpoint}:`);
+      })
+      .join(' ');
+  }
+
   const classes = [
     'grid',
     'items-stretch', // Ensure all grid items stretch to same height
     colClasses,
-    gapMap[gap],
+    gapClasses,
     className,
   ]
     .filter(Boolean)
