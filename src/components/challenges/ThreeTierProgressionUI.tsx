@@ -125,17 +125,18 @@ export const ThreeTierProgressionUI: React.FC<ThreeTierProgressionUIProps> = ({
               whileHover={unlocked ? { scale: 1.02 } : {}}
               whileTap={unlocked ? { scale: 0.98 } : {}}
               className={cn(
-                "relative overflow-hidden rounded-xl transition-all duration-300 cursor-pointer",
+                "relative overflow-hidden rounded-xl transition-all duration-300",
+                "glassmorphic", // All cards use glassmorphic styling
                 unlocked 
-                  ? "glassmorphic hover:bg-white/15" 
-                  : "border-gray-600 bg-gray-800/50 cursor-not-allowed",
-                isSelected && unlocked && "ring-2 ring-white/50"
+                  ? "hover:bg-white/15 cursor-pointer" 
+                  : "opacity-60 cursor-not-allowed"
               )}
               onClick={() => handleTierClick(tier)}
             >
-              {/* Background Gradient */}
+              {/* Background Gradient - Keep color backgrounds */}
               <div className={cn(
-                "absolute inset-0 bg-gradient-to-br opacity-20",
+                "absolute inset-0 bg-gradient-to-br",
+                unlocked ? "opacity-20" : "opacity-15", // Slightly dimmer when locked
                 getTierColor(tier)
               )} />
 

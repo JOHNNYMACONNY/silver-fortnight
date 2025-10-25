@@ -27,6 +27,12 @@ const DashboardPage: React.FC = () => {
     return 'Good evening';
   };
 
+  const getFirstName = () => {
+    if (!user?.displayName) return user?.email?.split('@')[0] || 'Trader';
+    // Extract first name from display name
+    return user.displayName.split(' ')[0];
+  };
+
   const formatTimeAgo = (date: Date) => {
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
@@ -39,26 +45,26 @@ const DashboardPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Box className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <Box className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
         <Box className="animate-pulse">
-          <Cluster justify="between" align="center" className="mb-8">
+          <Cluster justify="between" align="center" className="glassmorphic p-3 sm:p-4 md:p-6 mb-6 sm:mb-8 flex-wrap">
             <Stack gap="xs">
-              <Box className="h-8 bg-muted rounded w-64 mb-2"> </Box>
-              <Box className="h-4 bg-muted rounded w-48"> </Box>
+              <Box className="h-6 sm:h-8 glassmorphic rounded w-48 sm:w-64 mb-2"> </Box>
+              <Box className="h-3 sm:h-4 glassmorphic rounded w-32 sm:w-48"> </Box>
             </Stack>
-            <Cluster gap="sm">
-              <Box className="h-10 bg-muted rounded w-20"> </Box>
-              <Box className="h-10 bg-muted rounded w-24"> </Box>
-              <Box className="h-10 bg-muted rounded w-28"> </Box>
+            <Cluster gap="sm" className="sm:gap-3">
+              <Box className="h-10 sm:h-11 glassmorphic rounded w-12 sm:w-20"> </Box>
+              <Box className="h-10 sm:h-11 glassmorphic rounded w-12 sm:w-24"> </Box>
+              <Box className="h-10 sm:h-11 glassmorphic rounded w-12 sm:w-28"> </Box>
             </Cluster>
           </Cluster>
-          <Grid columns={{ base: 1, lg: 3 }} gap="lg">
-            <Box className="lg:col-span-2 bg-muted rounded-lg h-64"> </Box>
-            <Box className="bg-muted rounded-lg h-64"> </Box>
+          <Grid columns={{ base: 1, lg: 3 }} gap={{ base: 'md', lg: 'lg' }}>
+            <Box className="lg:col-span-2 glassmorphic rounded-lg h-48 sm:h-56 md:h-64"> </Box>
+            <Box className="glassmorphic rounded-lg h-48 sm:h-56 md:h-64"> </Box>
           </Grid>
-          <Grid columns={{ base: 1, lg: 2 }} gap="lg" className="mt-8">
-            <Box className="bg-muted rounded-lg h-64"> </Box>
-            <Box className="bg-muted rounded-lg h-64"> </Box>
+          <Grid columns={{ base: 1, lg: 2 }} gap={{ base: 'md', lg: 'lg' }} className="mt-6 sm:mt-8">
+            <Box className="glassmorphic rounded-lg h-48 sm:h-56 md:h-64"> </Box>
+            <Box className="glassmorphic rounded-lg h-48 sm:h-56 md:h-64"> </Box>
           </Grid>
         </Box>
       </Box>
@@ -66,28 +72,44 @@ const DashboardPage: React.FC = () => {
   }
 
   return (
-    <Box className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <Stack gap="lg">
+    <Box className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
+      <Stack gap="md" className="sm:gap-6 lg:gap-8">
         <header>
-          <Cluster className="glassmorphic rounded-xl px-4 py-4 md:px-6 md:py-5 flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8" wrap>
+          <Cluster className="glassmorphic rounded-xl px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-5 flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8" wrap>
             <Stack gap="xs">
-              <h1 className="text-3xl font-bold text-foreground">
-                {getGreeting()}, {user?.displayName || user?.email?.split('@')[0] || 'Trader'}!
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
+                {getGreeting()}, {getFirstName()}!
               </h1>
-              <p className="text-muted-foreground mt-1">Welcome back to your trading dashboard</p>
+              <p className="text-sm sm:text-base text-muted-foreground">Welcome back to your trading dashboard</p>
             </Stack>
-            <Cluster gap="sm">
-              <Button variant="secondary" size="md" onClick={refreshData} title="Refresh data">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
+            <Cluster gap="sm" className="w-full md:w-auto sm:gap-3 md:gap-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex-1 md:flex-none min-h-[44px] glassmorphic bg-cyan-500/20 hover:bg-cyan-500/30 active:bg-cyan-500/40 border-cyan-500/30 text-cyan-100 shadow-lg hover:shadow-xl hover:shadow-cyan-500/25 transition-all duration-300" 
+                onClick={refreshData} 
+                title="Refresh data"
+              >
+                <RefreshCw className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
-              <Button variant="primary" size="md" topic="trades" onClick={() => navigate('/trades?action=create')}>
-                <Plus className="w-4 h-4 mr-2" />
-                New Trade
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex-1 md:flex-none min-h-[44px] glassmorphic bg-orange-500/20 hover:bg-orange-500/30 active:bg-orange-500/40 border-orange-500/30 text-orange-100 shadow-lg hover:shadow-xl hover:shadow-orange-500/25 transition-all duration-300" 
+                onClick={() => navigate('/trades?action=create')}
+              >
+                <Plus className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">New Trade</span>
               </Button>
-              <Button variant="secondary" size="md" onClick={() => navigate('/connections')}>
-                <Users className="w-4 h-4 mr-2" />
-                Invite Friend
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex-1 md:flex-none min-h-[44px] glassmorphic bg-purple-500/20 hover:bg-purple-500/30 active:bg-purple-500/40 border-purple-500/30 text-purple-100 shadow-lg hover:shadow-xl hover:shadow-purple-500/25 transition-all duration-300" 
+                onClick={() => navigate('/connections')}
+              >
+                <Users className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Invite</span>
               </Button>
             </Cluster>
           </Cluster>
@@ -99,175 +121,171 @@ const DashboardPage: React.FC = () => {
           </Box>
         )}
 
-        <Grid columns={{ base: 1, lg: 3 }} gap="lg">
-          {/* Analytics Widget - Enhanced */}
-          <Box className="lg:col-span-2 bg-card text-card-foreground rounded-lg shadow border border-border p-6">
-            <Cluster justify="between" align="center" className="mb-4">
-              <h2 className="text-xl font-semibold text-card-foreground flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-primary" />
+        <Grid columns={{ base: 1, lg: 3 }} gap={{ base: 'md', lg: 'lg' }}>
+          {/* Analytics Widget - Premium Glassmorphic - Mobile Optimized */}
+          <Box className="lg:col-span-2 glassmorphic p-4 sm:p-5 md:p-6">
+            <Cluster justify="between" align="center" className="mb-4 sm:mb-5 md:mb-6 flex-wrap gap-2">
+              <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 Your Analytics
               </h2>
-              <span className="text-sm text-muted-foreground">This Week</span>
+              <span className="text-xs sm:text-sm text-muted-foreground px-2 py-1 sm:px-3 glassmorphic rounded-lg">This Week</span>
             </Cluster>
-            <Grid columns={{ base: 2, md: 4 }} gap="md">
-              <Box className="bg-primary/10 rounded-lg p-4 text-center">
-                <Box className="flex items-center justify-center w-10 h-10 bg-primary/20 rounded-lg mx-auto mb-2">
-                  <Calendar className="w-5 h-5 text-primary" />
+            <Grid columns={{ base: 2, md: 4 }} gap={{ base: 'sm+', sm: 'md', md: 'md+' }}>
+              <Box className="glassmorphic p-3 sm:p-4 text-center hover:bg-white/10 active:bg-white/15 transition-all duration-300 group touch-manipulation min-h-[100px] sm:min-h-[120px]">
+                <Box className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 glassmorphic rounded-lg mx-auto mb-2 group-hover:shadow-orange-500/25">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 </Box>
-                <div className="text-2xl font-bold text-primary">{stats?.tradesThisWeek ?? 0}</div>
-                <div className="text-sm text-muted-foreground">Trades This Week</div>
+                <div className="text-xl sm:text-2xl font-bold text-primary">{stats?.tradesThisWeek ?? 0}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground mt-1">Trades This Week</div>
               </Box>
-              <Box className="bg-success/10 rounded-lg p-4 text-center">
-                <Box className="flex items-center justify-center w-10 h-10 bg-success/20 rounded-lg mx-auto mb-2">
-                  <TrendingUp className="w-5 h-5 text-success" />
+              <Box className="glassmorphic p-3 sm:p-4 text-center hover:bg-white/10 active:bg-white/15 transition-all duration-300 group touch-manipulation min-h-[100px] sm:min-h-[120px]">
+                <Box className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 glassmorphic rounded-lg mx-auto mb-2 group-hover:shadow-green-500/25">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
                 </Box>
-                <div className="text-2xl font-bold text-success">{stats?.currentXP ?? 0}</div>
-                <div className="text-sm text-muted-foreground">Total XP</div>
+                <div className="text-xl sm:text-2xl font-bold text-success">{stats?.currentXP ?? 0}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground mt-1">Total XP</div>
               </Box>
-              <Box className="bg-info/10 rounded-lg p-4 text-center">
-                <Box className="flex items-center justify-center w-10 h-10 bg-info/20 rounded-lg mx-auto mb-2">
-                  <Trophy className="w-5 h-5 text-info" />
+              <Box className="glassmorphic p-3 sm:p-4 text-center hover:bg-white/10 active:bg-white/15 transition-all duration-300 group touch-manipulation min-h-[100px] sm:min-h-[120px]">
+                <Box className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 glassmorphic rounded-lg mx-auto mb-2 group-hover:shadow-blue-500/25">
+                  <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-info" />
                 </Box>
-                <div className="text-2xl font-bold text-info">+{stats?.xpEarnedThisWeek ?? 0}</div>
-                <div className="text-sm text-muted-foreground">XP This Week</div>
+                <div className="text-xl sm:text-2xl font-bold text-info">+{stats?.xpEarnedThisWeek ?? 0}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground mt-1">XP This Week</div>
               </Box>
-              <Box className="bg-secondary/10 rounded-lg p-4 text-center">
-                <Box className="flex items-center justify-center w-10 h-10 bg-secondary/20 rounded-lg mx-auto mb-2">
-                  <Users className="w-5 h-5 text-secondary" />
+              <Box className="glassmorphic p-3 sm:p-4 text-center hover:bg-white/10 active:bg-white/15 transition-all duration-300 group touch-manipulation min-h-[100px] sm:min-h-[120px]">
+                <Box className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 glassmorphic rounded-lg mx-auto mb-2 group-hover:shadow-sky-500/25">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </Box>
-                <div className="text-2xl font-bold text-secondary">{stats?.activeConnections ?? 0}</div>
-                <div className="text-sm text-muted-foreground">Connections</div>
+                <div className="text-xl sm:text-2xl font-bold text-white">{stats?.activeConnections ?? 0}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground mt-1">Connections</div>
               </Box>
             </Grid>
           </Box>
-          {/* Leaderboard Widget */}
-          <Box className="bg-card text-card-foreground rounded-lg shadow border border-border p-6">
-            <h2 className="text-xl font-semibold mb-4 text-card-foreground flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-yellow-500" />
-              Top Traders
-            </h2>
-            <Box className="min-h-[200px]">
-              <LeaderboardWidget 
-                category={LeaderboardCategory.TOTAL_XP} 
-                period={LeaderboardPeriod.WEEKLY} 
-                limit={5} 
-                showViewAll={false}
-              />
+          {/* Right Column - Premium Glassmorphic - Mobile Optimized */}
+          <Stack gap="md" className="sm:gap-6 lg:gap-8">
+            {/* Leaderboard Widget */}
+            <Box className="glassmorphic p-4 sm:p-5 md:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-foreground flex items-center gap-2">
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+                Top Traders
+              </h2>
+              <Box className="min-h-[180px] sm:min-h-[200px]">
+                <LeaderboardWidget 
+                  category={LeaderboardCategory.TOTAL_XP} 
+                  period={LeaderboardPeriod.WEEKLY} 
+                  limit={5} 
+                  showViewAll={false}
+                />
+              </Box>
             </Box>
-            {/* Minimal Streak UI */}
+
+            {/* Compact Streaks Widget */}
             {user && (
-              <>
-                <Box className="mt-6">
+              <Box className="glassmorphic p-4 sm:p-5 md:p-6">
+                <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-foreground flex items-center gap-2">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                  Your Streaks
+                </h2>
+                <Stack gap="sm+" className="sm:gap-4">
                   <StreakWidget userId={user.uid} type="login" />
-                </Box>
-                <Box className="mt-4">
                   <StreakWidget userId={user.uid} type="challenge" />
-                </Box>
-                <Box className="mt-4">
                   <StreakWidget userId={user.uid} type="skill_practice" />
-                </Box>
-              </>
+                </Stack>
+              </Box>
             )}
-          </Box>
+          </Stack>
         </Grid>
 
-        {/* Secondary Section */}
-        <Grid columns={{ base: 1, lg: 2 }} gap="lg" className="mt-8">
-          {/* Recent Activity Widget */}
-          <Box className="bg-card text-card-foreground rounded-lg shadow border border-border p-6">
-            <h2 className="text-xl font-semibold mb-4 text-card-foreground">Recent Activity</h2>
+        {/* Secondary Section - Premium Glassmorphic - Mobile Optimized */}
+        <Grid columns={{ base: 1, lg: 2 }} gap={{ base: 'md', lg: 'lg' }} className="mt-6 sm:mt-8">
+          {/* Recent Activity Widget - Mobile Optimized */}
+          <Box className="glassmorphic p-4 sm:p-5 md:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-foreground">Recent Activity</h2>
             {recentActivity.length > 0 ? (
-              <Stack gap="sm">
+              <Stack gap="sm+" className="sm:gap-3.5">
                 {recentActivity.map((activity) => (
-                  <Cluster key={activity.id} align="start" gap="xs" className="p-3 bg-muted/50 rounded-lg">
-                    <Box className={`w-2 h-2 rounded-full mt-2 ${
-                      activity.type === 'xp' ? 'bg-success' : 
-                      activity.type === 'trade' ? 'bg-primary' : 'bg-info'
+                  <Cluster key={activity.id} align="start" gap="xs" className="p-2.5 sm:p-3 glassmorphic hover:bg-white/10 active:bg-white/15 transition-all duration-300 cursor-pointer touch-manipulation min-h-[60px]">
+                    <Box className={`w-2 h-2 rounded-full mt-2 shrink-0 ${
+                      activity.type === 'xp' ? 'bg-success shadow-green-500/50' : 
+                      activity.type === 'trade' ? 'bg-primary shadow-orange-500/50' : 
+                      activity.type === 'connection' ? 'bg-info shadow-blue-500/50' :
+                      'bg-secondary shadow-sky-500/50'
                     }`} />
                     <Box className="flex-1 min-w-0">
-                      <Cluster justify="between" align="center">
+                      <Cluster justify="between" align="center" className="mb-1 gap-2">
                         {activity.type === 'xp' && activity.amount && (
-                          <span className={`font-medium text-sm ${activity.isPositive ? 'text-success' : 'text-destructive'}`}>
-                            +{activity.amount} XP Earned
+                          <span className={`font-medium text-xs sm:text-sm ${activity.isPositive ? 'text-success' : 'text-destructive'}`}>
+                            {activity.isPositive ? '+' : ''}{activity.amount} XP
                           </span>
                         )}
                         {activity.type === 'trade' && (
-                          <span className="font-medium text-sm text-primary">Trade Completed</span>
+                          <span className="font-medium text-xs sm:text-sm text-primary">Trade Activity</span>
                         )}
-                        <span className="text-xs text-muted-foreground ml-2">
+                        {activity.type === 'connection' && (
+                          <span className="font-medium text-xs sm:text-sm text-info">New Connection</span>
+                        )}
+                        {activity.type === 'achievement' && (
+                          <span className="font-medium text-xs sm:text-sm text-secondary">Achievement</span>
+                        )}
+                        <span className="text-xs text-muted-foreground shrink-0">
                           {formatTimeAgo(activity.timestamp)}
                         </span>
                       </Cluster>
-                      <p className="text-sm text-muted-foreground mt-1">{activity.description}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{activity.description}</p>
                     </Box>
                   </Cluster>
                 ))}
               </Stack>
             ) : (
-              <Box className="text-center py-8">
-                <Box className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Calendar className="w-8 h-8 text-muted-foreground" />
+              <Box className="text-center py-6 sm:py-8">
+                <Box className="w-12 h-12 sm:w-16 sm:h-16 glassmorphic rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
                 </Box>
-                <p className="text-muted-foreground">No recent activity</p>
-                <p className="text-sm text-muted-foreground">Start trading to see your activity here!</p>
+                <p className="text-sm sm:text-base text-muted-foreground">No recent activity</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Start trading to see your activity here!</p>
               </Box>
             )}
           </Box>
 
-          {/* Quick Actions */}
-          <Box className="bg-card text-card-foreground rounded-lg shadow border border-border p-6">
-            <h2 className="text-xl font-semibold mb-4 text-card-foreground">Quick Actions</h2>
-            <Grid columns={2} gap="sm">
+          {/* Quick Actions - Premium Glassmorphic - Mobile Optimized */}
+          <Box className="glassmorphic p-4 sm:p-5 md:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-foreground">Quick Actions</h2>
+            <Grid columns={2} gap={{ base: 'sm+', sm: 'md' }}>
               <button 
                 onClick={() => navigate('/trades')}
-                className={`px-4 py-3 rounded-lg transition flex flex-col items-center gap-2 text-center ${semanticClasses('trades').bgSolid} text-white hover:bg-primary/90`}
+                className="glassmorphic px-3 py-3 sm:px-4 sm:py-3.5 flex flex-col items-center gap-1.5 sm:gap-2 text-center hover:bg-white/10 active:bg-white/15 hover:shadow-orange-500/25 transition-all duration-300 group touch-manipulation min-h-[76px] sm:min-h-[auto]"
               >
-                <Search className="w-6 h-6" />
-                <span className="text-sm font-medium">Browse Trades</span>
+                <Search className="w-5 h-5 sm:w-6 sm:h-6 text-primary group-hover:scale-110 transition-transform" />
+                <span className="text-xs sm:text-sm font-medium text-foreground">Browse Trades</span>
               </button>
               <button 
                 onClick={() => navigate('/challenges')}
-                className="bg-success text-success-foreground px-4 py-3 rounded-lg hover:bg-success/90 transition flex flex-col items-center gap-2 text-center"
+                className="glassmorphic px-3 py-3 sm:px-4 sm:py-3.5 flex flex-col items-center gap-1.5 sm:gap-2 text-center hover:bg-white/10 active:bg-white/15 hover:shadow-green-500/25 transition-all duration-300 group touch-manipulation min-h-[76px] sm:min-h-[auto]"
               >
-                <Trophy className="w-6 h-6" />
-                <span className="text-sm font-medium">Challenges</span>
+                <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-success group-hover:scale-110 transition-transform" />
+                <span className="text-xs sm:text-sm font-medium text-foreground">Challenges</span>
               </button>
               <button 
                 onClick={() => navigate('/leaderboard')}
-                className="bg-secondary text-secondary-foreground px-4 py-3 rounded-lg hover:bg-secondary/90 transition flex flex-col items-center gap-2 text-center"
+                className="glassmorphic px-3 py-3 sm:px-4 sm:py-3.5 flex flex-col items-center gap-1.5 sm:gap-2 text-center hover:bg-white/10 active:bg-white/15 hover:shadow-sky-500/25 transition-all duration-300 group touch-manipulation min-h-[76px] sm:min-h-[auto]"
               >
-                <Trophy className="w-6 h-6" />
-                <span className="text-sm font-medium">Leaderboard</span>
+                <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-secondary group-hover:scale-110 transition-transform" />
+                <span className="text-xs sm:text-sm font-medium text-foreground">Leaderboard</span>
               </button>
               <button 
                 onClick={() => navigate('/connections')}
-                className="bg-info text-info-foreground px-4 py-3 rounded-lg hover:bg-info/90 transition flex flex-col items-center gap-2 text-center"
+                className="glassmorphic px-3 py-3 sm:px-4 sm:py-3.5 flex flex-col items-center gap-1.5 sm:gap-2 text-center hover:bg-white/10 active:bg-white/15 hover:shadow-blue-500/25 transition-all duration-300 group touch-manipulation min-h-[76px] sm:min-h-[auto]"
               >
-                <Users className="w-6 h-6" />
-                <span className="text-sm font-medium">Find Friends</span>
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-info group-hover:scale-110 transition-transform" />
+                <span className="text-xs sm:text-sm font-medium text-foreground">Find Friends</span>
               </button>
             </Grid>
-
-            {/* Progress Summary */}
-            <Box className="mt-6 p-4 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg">
-              <h3 className="font-medium text-foreground mb-3">Your Progress Summary</h3>
-              <Grid columns={2} gap="md" className="text-center">
-                <Box>
-                  <div className="text-xl font-bold text-primary">{stats?.totalTrades ?? 0}</div>
-                  <div className="text-xs text-muted-foreground">Total Trades</div>
-                </Box>
-                <Box>
-                  <div className="text-xl font-bold text-success">{stats?.currentXP ?? 0}</div>
-                  <div className="text-xs text-muted-foreground">Total XP</div>
-                </Box>
-              </Grid>
-            </Box>
           </Box>
         </Grid>
 
-        {/* Challenge Progression (Three-Tier) */}
-        <Box className="bg-card text-card-foreground rounded-lg shadow border border-border p-6 mt-8">
-          <h2 className="text-xl font-semibold mb-4 text-card-foreground">Challenge Progression</h2>
+        {/* Challenge Progression (Three-Tier) - Premium Glassmorphic - Mobile Optimized */}
+        <Box className="glassmorphic p-4 sm:p-5 md:p-6 mt-6 sm:mt-8">
           <ThreeTierProgressionUI onTierSelect={(tier) => {
             const type = tier.toLowerCase();
             navigate(`/challenges?type=${type}`);
