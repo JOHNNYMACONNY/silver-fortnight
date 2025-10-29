@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 import { GlassmorphicForm } from '../ui/GlassmorphicForm';
 import { GlassmorphicInput } from '../ui/GlassmorphicInput';
 import { AccessibleFormField } from '../ui/AccessibleFormField';
+import { getFriendlyErrorMessage } from '../../utils/authErrorMessages';
 
 interface LoginFormData {
   email: string;
@@ -128,7 +129,7 @@ const LoginPage: React.FC = () => {
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertTitle>Login Error</AlertTitle>
-            <AlertDescription>{String(error)}</AlertDescription>
+            <AlertDescription>{getFriendlyErrorMessage(error)}</AlertDescription>
           </Alert>
         )}
         <AccessibleFormField id="email" label="Email" error={emailValid === false ? 'Please enter a valid email address' : undefined}>

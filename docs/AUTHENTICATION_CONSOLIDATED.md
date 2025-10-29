@@ -256,6 +256,65 @@ The authentication system includes comprehensive error handling for:
 - **Rate Limiting**: Too many attempts messaging
 - **Account Linking**: Different credential conflicts
 
+### Error Message Mapping System
+
+TradeYa implements user-friendly error messages using `src/utils/authErrorMessages.ts`. Technical Firebase errors are automatically mapped to clear, actionable messages for users while preserving detailed error information in console logs for developers.
+
+**Implementation:**
+
+```typescript
+// src/utils/authErrorMessages.ts
+export function getFriendlyAuthErrorMessage(error: any): string {
+  const code = error?.code || '';
+  
+  const errorMessages: Record<string, string> = {
+    'auth/invalid-credential': 'Invalid email or password. Please try again.',
+    'auth/user-not-found': 'No account found with this email.',
+    'auth/wrong-password': 'Incorrect password. Please try again.',
+    'auth/email-already-in-use': 'This email is already registered. Try logging in instead.',
+    'auth/weak-password': 'Password is too weak. Please use at least 8 characters.',
+    'auth/invalid-email': 'Please enter a valid email address.',
+    'auth/operation-not-allowed': 'This sign-in method is not enabled.',
+    'auth/user-disabled': 'This account has been disabled.',
+    'auth/too-many-requests': 'Too many failed attempts. Please try again later.',
+    'auth/network-request-failed': 'Network error. Please check your connection.',
+    'auth/popup-blocked': 'Sign-in popup was blocked. Please allow popups for this site.',
+    'auth/popup-closed-by-user': 'Sign-in was cancelled.',
+    'auth/cancelled-popup-request': 'Sign-in was cancelled.',
+    'auth/account-exists-with-different-credential': 'An account already exists with this email using a different sign-in method.',
+  };
+
+  return errorMessages[code] || 'An error occurred during authentication. Please try again.';
+}
+```
+
+**Usage in Components:**
+
+```typescript
+// src/components/auth/LoginPage.tsx
+import { getFriendlyAuthErrorMessage } from '../../utils/authErrorMessages';
+
+try {
+  await signInWithEmail(formData.email, formData.password);
+} catch (error) {
+  const friendlyMessage = getFriendlyAuthErrorMessage(error);
+  setError(friendlyMessage);
+  
+  // Technical details still logged for debugging
+  console.error('🔐 Firebase Auth Error:', {
+    code: error?.code,
+    message: error?.message,
+    fullError: error,
+  });
+}
+```
+
+**Benefits:**
+- **User Experience**: Clear, non-technical error messages
+- **Developer Experience**: Full error details preserved in console logs
+- **Maintainability**: Centralized error message management
+- **Consistency**: Uniform error messaging across all auth flows
+
 ### User Feedback Features
 
 - Success notifications for login and registration
