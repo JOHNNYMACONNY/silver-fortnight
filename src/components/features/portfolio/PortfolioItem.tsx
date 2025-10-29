@@ -12,6 +12,7 @@ import { PortfolioItem } from '../../../types/portfolio';
 import { motion } from 'framer-motion';
 import { Star, Pin, Eye, EyeOff, Settings, Trash2, Calendar, Users, Award, ExternalLink } from 'lucide-react';
 import { getProfileImageUrl } from '../../../utils/imageUtils';
+import { EvidenceModal } from './EvidenceModal';
 
 interface PortfolioItemProps {
   item: PortfolioItem;
@@ -40,6 +41,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [showEvidenceModal, setShowEvidenceModal] = useState(false);
+  const [evidenceStartIndex, setEvidenceStartIndex] = useState(0);
   const [editingCategory, setEditingCategory] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
@@ -215,8 +217,9 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
               </h3>
               <div className="flex items-center gap-3 text-sm text-text-muted mb-2">
                 <span className="flex items-center gap-1">
-                  {item.sourceType === 'trade' ? '🤝' : '👥'} 
-                  {item.sourceType === 'trade' ? 'Trade' : 'Collaboration'}
+                  {item.sourceType === 'trade' && '🤝 Trade'}
+                  {item.sourceType === 'collaboration' && '👥 Collaboration'}
+                  {item.sourceType === 'challenge' && '🏆 Challenge'}
                 </span>
                 <span>•</span>
                 <span>📅 {formatDate(item.completedAt)}</span>
@@ -282,7 +285,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
             <div className="flex flex-wrap gap-2">
               {item.skills.map((skill, index) => (
                 <span
-                  key={index}
+                  key={`${skill}-${index}`}
                   className="bg-accent/10 text-accent-foreground px-3 py-1 rounded-full text-sm font-medium"
                 >
                   {skill}
@@ -299,7 +302,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
             <div className="flex flex-wrap gap-2">
               {item.collaborators.map((collaborator, index) => (
                 <div
-                  key={index}
+                  key={collaborator.id || index}
                   className="flex items-center gap-2 bg-background-secondary px-3 py-2 rounded-lg"
                 >
                   {collaborator.photoURL && (
@@ -327,36 +330,65 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-sm font-medium text-text-primary">Evidence</h4>
               <button
-                className="text-accent hover:text-accent-foreground text-sm"
-                onClick={() => setShowEvidenceModal(true)}
+                className="text-accent hover:text-accent-foreground text-sm transition-colors"
+                onClick={() => {
+                  setEvidenceStartIndex(0);
+                  setShowEvidenceModal(true);
+                }}
               >
                 View all ({item.evidence.length})
               </button>
             </div>
             <div className="flex gap-2 overflow-x-auto">
               {item.evidence.slice(0, 3).map((evidence, index) => (
-                <div
-                  key={index}
-                  className="flex-shrink-0 w-20 h-20 bg-background-secondary rounded-lg flex items-center justify-center"
+                <button
+                  key={evidence.id || index}
+                  type="button"
+                  onClick={() => {
+                    setEvidenceStartIndex(index);
+                    setShowEvidenceModal(true);
+                  }}
+                  className="flex-shrink-0 w-20 h-20 bg-background-secondary rounded-lg flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-primary transition-all duration-200 cursor-pointer group"
+                  title="Click to view"
                 >
-                  {evidence.type === 'image' ? (
+                  {evidence.type === 'image' || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(evidence.url) ? (
                     <img
-                      src={evidence.url}
-                      alt="Evidence image"
+                      src={evidence.thumbnailUrl || evidence.url}
+                      alt={evidence.title || "Evidence image"}
                       loading="lazy"
                       decoding="async"
-                      className="w-full h-full object-cover rounded-lg"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
                     />
                   ) : (
                     <div className="text-center">
-                      <div className="text-lg">📄</div>
+                      <div className="text-lg">
+                        {evidence.type === 'video' ? '🎥' : evidence.type === 'pdf' ? '📄' : '🔗'}
+                      </div>
                       <div className="text-xs text-text-muted">
                         {evidence.type}
                       </div>
                     </div>
                   )}
-                </div>
+                </button>
               ))}
+              {item.evidence.length > 3 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEvidenceStartIndex(3);
+                    setShowEvidenceModal(true);
+                  }}
+                  className="flex-shrink-0 w-20 h-20 bg-background-secondary rounded-lg flex items-center justify-center hover:bg-background-tertiary transition-colors cursor-pointer"
+                  title="View more"
+                >
+                  <div className="text-center">
+                    <div className="text-sm font-medium text-text-primary">
+                      +{item.evidence.length - 3}
+                    </div>
+                    <div className="text-xs text-text-muted">more</div>
+                  </div>
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -404,16 +436,13 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
       </div>
 
       {/* Evidence Modal */}
-      {showEvidenceModal && (
-        <div className="fixed inset-0 bg-black/50 z-overlay flex items-center justify-center">
-          <div className="bg-card p-6 rounded-lg max-w-lg w-full z-modal">
-            <h3 className="text-xl font-semibold mb-4 text-text-primary">Evidence</h3>
-            <p className="text-text-secondary">Modal content goes here.</p>
-            <button onClick={() => setShowEvidenceModal(false)} className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded">
-              Close
-            </button>
-          </div>
-        </div>
+      {item.evidence && item.evidence.length > 0 && (
+        <EvidenceModal
+          evidence={item.evidence}
+          isOpen={showEvidenceModal}
+          onClose={() => setShowEvidenceModal(false)}
+          initialIndex={evidenceStartIndex}
+        />
       )}
     </motion.div>
   );

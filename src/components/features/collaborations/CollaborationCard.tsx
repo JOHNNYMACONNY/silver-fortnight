@@ -104,63 +104,68 @@ export const CollaborationCard: React.FC<CollaborationCardProps> = ({
       </CardHeader>
 
       {/* Description Section */}
-      <CardContent className="flex-1 overflow-hidden">
+      <CardContent className="flex-1 overflow-hidden !flex !flex-col">
+        {/* Description - Takes available space */}
         {collaboration.description && (
-          <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
-            {collaboration.description}
-          </p>
+          <div className="flex-1 min-h-0 mb-3">
+            <p className="text-sm text-muted-foreground line-clamp-4">
+              {collaboration.description}
+            </p>
+          </div>
         )}
         
-        {/* Info Grid */}
-        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mb-4">
-          <div className="flex items-center">
-            <Calendar className="mr-1 h-3.5 w-3.5" />
-            <span>Posted {formattedDate}</span>
+        {/* Skills Section - Compact */}
+        {collaboration.skillsNeeded && collaboration.skillsNeeded.length > 0 && (
+          <div className="flex-shrink-0 mb-3">
+            <div className="flex flex-wrap gap-1.5">
+              {collaboration.skillsNeeded.slice(0, compact ? 3 : 5).map((skill, index) => {
+                const { topic, Icon } = getSkillBadgeProps(skill);
+                return (
+                  <Badge key={index} variant="default" topic={topic} className="flex items-center gap-1">
+                    <Icon className="h-3 w-3" />
+                    {skill}
+                  </Badge>
+                );
+              })}
+
+              {collaboration.skillsNeeded.length > (compact ? 3 : 5) && (
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Plus className="h-3 w-3" />
+                  +{collaboration.skillsNeeded.length - (compact ? 3 : 5)} more
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Info Grid - Pinned to bottom */}
+        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mt-auto flex-shrink-0">
+          <div className="flex items-center min-w-0">
+            <Calendar className="mr-1 h-3.5 w-3.5 flex-shrink-0" />
+            <span className="truncate">Posted {formattedDate}</span>
           </div>
 
           {collaboration.location && (
-            <div className="flex items-center">
-              <MapPin className="mr-1 h-3.5 w-3.5" />
-              <span>{collaboration.isRemote ? 'Remote' : collaboration.location}</span>
+            <div className="flex items-center min-w-0">
+              <MapPin className="mr-1 h-3.5 w-3.5 flex-shrink-0" />
+              <span className="truncate">{collaboration.isRemote ? 'Remote' : collaboration.location}</span>
             </div>
           )}
 
           {collaboration.timeline && (
-            <div className="flex items-center">
-              <Clock className="mr-1 h-3.5 w-3.5" />
-              <span>{collaboration.timeline}</span>
+            <div className="flex items-center min-w-0">
+              <Clock className="mr-1 h-3.5 w-3.5 flex-shrink-0" />
+              <span className="truncate">{collaboration.timeline}</span>
             </div>
           )}
 
           {collaboration.compensation && (
-            <div className="flex items-center">
-              <DollarSign className="mr-1 h-3.5 w-3.5" />
-              <span>{collaboration.compensation}</span>
+            <div className="flex items-center min-w-0">
+              <DollarSign className="mr-1 h-3.5 w-3.5 flex-shrink-0" />
+              <span className="truncate">{collaboration.compensation}</span>
             </div>
           )}
         </div>
-
-        {/* Skills Section */}
-        {collaboration.skillsNeeded && collaboration.skillsNeeded.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {collaboration.skillsNeeded.slice(0, compact ? 3 : 5).map((skill, index) => {
-              const { topic, Icon } = getSkillBadgeProps(skill);
-              return (
-                <Badge key={index} variant="default" topic={topic} className="flex items-center gap-1">
-                  <Icon className="h-3 w-3" />
-                  {skill}
-                </Badge>
-              );
-            })}
-
-            {collaboration.skillsNeeded.length > (compact ? 3 : 5) && (
-              <Badge variant="outline" className="flex items-center gap-1">
-                <Plus className="h-3 w-3" />
-                +{collaboration.skillsNeeded.length - (compact ? 3 : 5)} more
-              </Badge>
-            )}
-          </div>
-        )}
       </CardContent>
     </Card>
     </div>

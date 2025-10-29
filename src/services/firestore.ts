@@ -1139,7 +1139,6 @@ export const getRelatedUserIds = async (
     const q = query(followsCol, ...constraints);
     const snap = await getDocs(q);
     const ids = snap.docs
-      .filter((d) => !(d.data() as any)?.deletedAt)
       .map((d) =>
         relation === "followers"
           ? (d.data() as any).followerId

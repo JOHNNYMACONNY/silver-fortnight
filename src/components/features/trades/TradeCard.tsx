@@ -225,57 +225,54 @@ const TradeCard: React.FC<TradeCardProps> = React.memo(({
             </div>
           </CardHeader>
           {/* Content Section */}
-          <CardContent className="flex-1 overflow-hidden">
-            {/* Skills Offered */}
-            <div className="mb-4">
-              <h4 className={cn(themeClasses.overline, 'mb-2')}>
-                Offering
-              </h4>
-              <div className="flex gap-1.5 flex-nowrap overflow-x-auto items-center">
-                {skillsOffered.length > 0 ? skillsOffered.slice(0, 3).map((skill, index) => (
-                  <Badge key={index} variant="default" className="flex-shrink-0 whitespace-nowrap">{skill.name}</Badge>
-                )) : <span className={themeClasses.caption}>No skills offered</span>}
-                {skillsOffered.length > 3 && (
-                  <Badge variant="outline" className="flex-shrink-0 whitespace-nowrap">+{skillsOffered.length - 3} more</Badge>
-                )}
-              </div>
-            </div>
-            {/* Skills Wanted */}
-            <div className="mb-4">
-              <h4 className={cn(themeClasses.overline, 'mb-2')}>
-                Requesting
-              </h4>
-              <div className="flex gap-1.5 flex-nowrap overflow-x-auto items-center">
-                {skillsWanted.length > 0 ? skillsWanted.slice(0, 3).map((skill, index) => (
-                  <Badge key={index} variant="secondary" className="flex-shrink-0 whitespace-nowrap">{skill.name}</Badge>
-                )) : <span className={themeClasses.caption}>No skills requested</span>}
-                {skillsWanted.length > 3 && (
-                  <Badge variant="outline" className="flex-shrink-0 whitespace-nowrap">+{skillsWanted.length - 3} more</Badge>
-                )}
-              </div>
-            </div>
-            {/* Description Preview */}
-            {trade.description && (
-              <p className={cn('mt-2 mb-4', themeClasses.bodySmall, 'line-clamp-2 text-muted-foreground')}>{trade.description}</p>
-            )}
-            {/* Info Section */}
-            <div className={cn('flex items-center gap-4', themeClasses.caption)}>
-              <div className="flex items-center">
-                <Calendar className="mr-1 h-3.5 w-3.5" />
-                <span>{formatDate(trade.createdAt)}</span>
-              </div>
-              {showStatus && trade.status && (
-                <div className="flex items-center">
-                  <TradeStatusIndicator
-                    status={mapTradeStatusToIndicatorStatus(trade.status)}
-                    size="sm"
-                    showLabel={true}
-                    showAnimation={false}
-                  />
+          <CardContent className="flex-1 overflow-hidden !flex !flex-col">
+            {/* Skills Section - Compact */}
+            <div className="flex-shrink-0 space-y-3 mb-3">
+              {/* Skills Offered */}
+              <div>
+                <h4 className={cn(themeClasses.overline, 'mb-1.5')}>
+                  Offering
+                </h4>
+                <div className="flex gap-1.5 flex-nowrap overflow-x-auto items-center">
+                  {skillsOffered.length > 0 ? skillsOffered.slice(0, 3).map((skill, index) => (
+                    <Badge key={index} variant="default" className="flex-shrink-0 whitespace-nowrap">{skill.name}</Badge>
+                  )) : <span className={themeClasses.caption}>No skills offered</span>}
+                  {skillsOffered.length > 3 && (
+                    <Badge variant="outline" className="flex-shrink-0 whitespace-nowrap">+{skillsOffered.length - 3} more</Badge>
+                  )}
                 </div>
-              )}
+              </div>
+              {/* Skills Wanted */}
+              <div>
+                <h4 className={cn(themeClasses.overline, 'mb-1.5')}>
+                  Requesting
+                </h4>
+                <div className="flex gap-1.5 flex-nowrap overflow-x-auto items-center">
+                  {skillsWanted.length > 0 ? skillsWanted.slice(0, 3).map((skill, index) => (
+                    <Badge key={index} variant="secondary" className="flex-shrink-0 whitespace-nowrap">{skill.name}</Badge>
+                  )) : <span className={themeClasses.caption}>No skills requested</span>}
+                  {skillsWanted.length > 3 && (
+                    <Badge variant="outline" className="flex-shrink-0 whitespace-nowrap">+{skillsWanted.length - 3} more</Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Description Preview - Takes remaining space */}
+            {trade.description && (
+              <div className="flex-1 min-h-0 mb-3">
+                <p className={cn(themeClasses.bodySmall, 'text-muted-foreground line-clamp-4')}>{trade.description}</p>
+              </div>
+            )}
+            
+            {/* Info Section - Pinned to bottom */}
+            <div className={cn('flex items-center gap-2 sm:gap-3 mt-auto flex-shrink-0', themeClasses.caption)}>
+              <div className="flex items-center min-w-0 flex-shrink-0">
+                <Calendar className="mr-1 h-3.5 w-3.5 flex-shrink-0" />
+                <span className="truncate text-xs">{formatDate(trade.createdAt)}</span>
+              </div>
               {/* Chevron icon for interactivity */}
-              <span className="ml-auto flex items-center opacity-60 group-hover:opacity-100 group-focus:opacity-100 transition-opacity">
+              <span className="ml-auto flex items-center opacity-60 group-hover:opacity-100 group-focus:opacity-100 transition-opacity flex-shrink-0">
                 <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
               </span>
             </div>

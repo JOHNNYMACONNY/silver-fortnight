@@ -115,10 +115,55 @@ export const LEVEL_TIERS: LevelTier[] = [
     level: 7,
     title: 'Legend',
     minXP: 5001,
-    maxXP: Infinity,
+    maxXP: 10000,
     color: '#ef4444',
     icon: '🔥',
     benefits: ['Legendary status', 'All features unlocked', 'Platform influence']
+  },
+  {
+    level: 8,
+    title: 'Champion',
+    minXP: 10001,
+    maxXP: 20000,
+    color: '#ec4899',
+    icon: '💪',
+    benefits: ['Champion status', 'Exclusive events', 'Priority matching']
+  },
+  {
+    level: 9,
+    title: 'Virtuoso',
+    minXP: 20001,
+    maxXP: 35000,
+    color: '#06b6d4',
+    icon: '🎯',
+    benefits: ['Virtuoso recognition', 'Premium networking', 'Special badges']
+  },
+  {
+    level: 10,
+    title: 'Elite',
+    minXP: 35001,
+    maxXP: 50000,
+    color: '#10b981',
+    icon: '💎',
+    benefits: ['Elite tier access', 'VIP support', 'Revenue share opportunities']
+  },
+  {
+    level: 11,
+    title: 'Mythic',
+    minXP: 50001,
+    maxXP: 75000,
+    color: '#a855f7',
+    icon: '🌟',
+    benefits: ['Mythic status', 'Platform governance', 'Special projects access']
+  },
+  {
+    level: 12,
+    title: 'Immortal',
+    minXP: 75001,
+    maxXP: Infinity,
+    color: '#f59e0b',
+    icon: '👑',
+    benefits: ['Immortal legacy', 'Hall of fame', 'Lifetime benefits', 'Platform partnership']
   }
 ];
 

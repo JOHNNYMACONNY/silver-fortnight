@@ -264,3 +264,109 @@ export async function generateCollaborationPortfolioItem(
     return { success: false, error: err?.message || 'Unknown error' };
   }
 }
+
+/**
+ * Generate a portfolio item from a completed challenge.
+ * Call this when a challenge is confirmed as completed.
+ * @param challenge - The completed challenge object
+ * @param userChallenge - The user's challenge record
+ * @param userId - The user for whom to create the portfolio item
+ * @param completionData - The submission/completion data with evidence
+ * @param defaultVisibility - Default visibility for the new item
+ * @returns Promise with success and error fields
+ */
+export async function generateChallengePortfolioItem(
+  challenge: {
+    id: string;
+    title: string;
+    description: string;
+    category?: string;
+    difficulty?: string;
+    skillTags?: string[];
+  },
+  userChallenge: {
+    completedAt?: any;
+  },
+  userId: string,
+  completionData?: {
+    submissionData?: {
+      description?: string;
+      embeddedEvidence?: any[];
+      screenshots?: string[];
+      links?: string[];
+      files?: string[];
+    };
+  },
+  defaultVisibility: boolean = true
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    // Build evidence array from submission data
+    const evidence: any[] = [];
+    
+    if (completionData?.submissionData?.embeddedEvidence) {
+      evidence.push(...completionData.submissionData.embeddedEvidence);
+    }
+    
+    // Convert old-format evidence to embedded format if needed
+    // Use unique prefixes and timestamp to avoid ID collisions
+    const timestamp = Date.now();
+    
+    if (completionData?.submissionData?.screenshots) {
+      completionData.submissionData.screenshots.forEach((url, index) => {
+        evidence.push({
+          id: `screenshot-${timestamp}-${index}`,
+          url,
+          type: 'image',
+          thumbnailUrl: url,
+          title: `Screenshot ${index + 1}`
+        });
+      });
+    }
+    
+    if (completionData?.submissionData?.links) {
+      completionData.submissionData.links.forEach((url, index) => {
+        evidence.push({
+          id: `link-${timestamp}-${index}`,
+          url,
+          type: 'link',
+          title: `Link ${index + 1}`
+        });
+      });
+    }
+    
+    if (completionData?.submissionData?.files) {
+      completionData.submissionData.files.forEach((url, index) => {
+        evidence.push({
+          id: `file-${timestamp}-${index}`,
+          url,
+          type: 'file',
+          title: `File ${index + 1}`
+        });
+      });
+    }
+
+    const portfolioItem: PortfolioItem = {
+      id: '', // Firestore will generate the ID
+      userId,
+      sourceId: challenge.id,
+      sourceType: 'challenge',
+      title: challenge.title,
+      description: completionData?.submissionData?.description || challenge.description,
+      skills: challenge.skillTags || [],
+      completedAt: userChallenge.completedAt,
+      visible: defaultVisibility,
+      featured: false,
+      pinned: false,
+      category: challenge.category,
+      evidence: evidence.length > 0 ? evidence : undefined,
+      collaborators: [] // Challenges are solo by default
+    };
+    
+    const db = getSyncFirebaseDb();
+    const portfolioRef = collection(db, 'users', userId, 'portfolio');
+    await addDoc(portfolioRef, portfolioItem);
+    return { success: true, error: null };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Unknown error' };
+  }
+}

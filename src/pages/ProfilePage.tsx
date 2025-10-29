@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "../AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
 import { getUserProfile } from "../services/firestore-exports";
@@ -25,6 +26,12 @@ import {
   Star,
   ChevronLeft,
   ChevronRight,
+  TrendingUp,
+  Activity,
+  Link2,
+  Twitter,
+  Facebook,
+  Linkedin,
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
@@ -173,6 +180,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   const [skillsInput, setSkillsInput] = useState("");
   const [skillsDraft, setSkillsDraft] = useState<string[]>([]);
   const [isBioExpanded, setIsBioExpanded] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
   const [collaborations, setCollaborations] = useState<any[] | null>(null);
   const [collaborationsLoading, setCollaborationsLoading] = useState(false);
   const [trades, setTrades] = useState<any[] | null>(null);
@@ -190,6 +198,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   const tradesSentinelRef = React.useRef<HTMLDivElement | null>(null);
   const collabScrollBusyRef = React.useRef<boolean>(false);
   const tradesScrollBusyRef = React.useRef<boolean>(false);
+  const shareButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [shareDropdownPosition, setShareDropdownPosition] = useState<{ top: number; left: number } | null>(null);
 
   // Feature flag to control role enrichment reads
   const viteEnv: any =
@@ -298,80 +308,92 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     } catch {}
   }, [userProfile]);
 
-  // Defer stats until header enters viewport
+  // Fetch stats when component mounts or targetUserId changes
   useEffect(() => {
     if (!targetUserId) return;
-    const headerEl = document.getElementById("profile-header");
-    if (!headerEl || (stats && repScore !== null)) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting) {
-          (async () => {
-            try {
-              setReviewsLoading(true);
-              const [statsResult, socialResult, reviewsResult] =
-                await Promise.all([
-                  getDashboardStats(targetUserId),
-                  getUserSocialStats(targetUserId),
-                  getUserReviews(targetUserId),
-                ]);
-              if ((statsResult as any)?.data) {
-                const data = (statsResult as any).data;
-                setStats({
-                  totalTrades: data.totalTrades,
-                  tradesThisWeek: data.tradesThisWeek,
-                  currentXP: data.currentXP,
-                });
-                // Composite reputation: XP (50%), trades (30%), followers (20%)
-                const xpNorm = Math.min(1, Number(data.currentXP || 0) / 5000);
-                const tradesNorm = Math.min(
-                  1,
-                  Number(data.totalTrades || 0) / 100
-                );
-                const followersNorm = Math.min(
-                  1,
-                  Number((socialResult as any)?.data?.followersCount || 0) /
-                    1000
-                );
-                const composite = Math.round(
-                  100 * (0.5 * xpNorm + 0.3 * tradesNorm + 0.2 * followersNorm)
-                );
-                setRepScore(composite);
-              }
-              if (
-                (reviewsResult as any)?.data &&
-                Array.isArray((reviewsResult as any).data)
-              ) {
-                const all = (reviewsResult as any).data as Array<any>;
-                const count = all.length;
-                const avg =
-                  count > 0
-                    ? all.reduce((sum, r) => sum + Number(r.rating || 0), 0) /
-                      count
-                    : 0;
-                setReviewsMeta({ avg, count });
-                const list = all.slice(0, 2).map((r) => ({
-                  rating: Number(r.rating || 0),
-                  comment: String(r.comment || ""),
-                }));
-                setReviewsPreview(list);
-              }
-            } catch {
-              // ignore
-            } finally {
-              setReviewsLoading(false);
-              observer.disconnect();
-            }
-          })();
+    if (stats && repScore !== null) return; // Don't refetch if we already have data
+    
+    (async () => {
+      try {
+        setReviewsLoading(true);
+        // Fetch stats and social stats (skip reviews if permissions error)
+        const [statsResult, socialResult] = await Promise.all([
+          getDashboardStats(targetUserId),
+          getUserSocialStats(targetUserId),
+        ]);
+        
+        // Try to get reviews, but don't fail if there's a permissions error
+        let reviewsResult: any = null;
+        try {
+          reviewsResult = await getUserReviews(targetUserId);
+        } catch (error) {
+          console.warn('Could not fetch reviews (permissions):', error);
         }
-      },
-      { rootMargin: "0px", threshold: 0.2 }
-    );
-
-    observer.observe(headerEl);
-    return () => observer.disconnect();
+        
+        if ((statsResult as any)?.data) {
+          const data = (statsResult as any).data;
+          setStats({
+            totalTrades: data.totalTrades,
+            tradesThisWeek: data.tradesThisWeek,
+            currentXP: data.currentXP,
+          });
+          
+          // Get actual follower count from userFollows collection for accurate reputation
+          let actualFollowersCount = 0;
+          try {
+            const db = (await import('../firebase-config')).db;
+            const { collection, query, where, getDocs } = await import('firebase/firestore');
+            const followsQuery = query(
+              collection(db, 'userFollows'),
+              where('followingId', '==', targetUserId)
+            );
+            const followsSnapshot = await getDocs(followsQuery);
+            actualFollowersCount = followsSnapshot.size;
+          } catch (error) {
+            console.warn('Could not fetch actual follower count, using socialStats:', error);
+            actualFollowersCount = (socialResult as any)?.data?.followersCount || 0;
+          }
+          
+          // Composite reputation: XP (50%), trades (30%), followers (20%)
+          const xpNorm = Math.min(1, Number(data.currentXP || 0) / 5000);
+          const tradesNorm = Math.min(
+            1,
+            Number(data.totalTrades || 0) / 100
+          );
+          const followersNorm = Math.min(
+            1,
+            actualFollowersCount / 1000
+          );
+          const composite = Math.round(
+            100 * (0.5 * xpNorm + 0.3 * tradesNorm + 0.2 * followersNorm)
+          );
+          setRepScore(composite);
+        }
+        if (
+          reviewsResult &&
+          (reviewsResult as any)?.data &&
+          Array.isArray((reviewsResult as any).data)
+        ) {
+          const all = (reviewsResult as any).data as Array<any>;
+          const count = all.length;
+          const avg =
+            count > 0
+              ? all.reduce((sum, r) => sum + Number(r.rating || 0), 0) /
+                count
+              : 0;
+          setReviewsMeta({ avg, count });
+          const list = all.slice(0, 2).map((r) => ({
+            rating: Number(r.rating || 0),
+            comment: String(r.comment || ""),
+          }));
+          setReviewsPreview(list);
+        }
+      } catch (error) {
+        console.error('Error fetching profile stats:', error);
+      } finally {
+        setReviewsLoading(false);
+      }
+    })();
   }, [targetUserId, stats, repScore]);
 
   const completenessPercent = React.useMemo(() => {
@@ -402,30 +424,110 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     return fields;
   }, [userProfile]);
 
-  const handleShareProfile = async () => {
-    if (!targetUserId) return;
+  const getProfileUrl = () => {
+    if (!targetUserId) return "";
     const path = userProfile?.handle
       ? `/u/${userProfile.handle}`
       : `/profile/${targetUserId}`;
-    const url = `${window.location.origin}${path}`;
+    return `${window.location.origin}${path}`;
+  };
+
+  const handleShareProfile = async () => {
+    if (!showShareMenu && shareButtonRef.current) {
+      const rect = shareButtonRef.current.getBoundingClientRect();
+      const dropdownWidth = 224; // w-56 = 14rem * 16px
+      const dropdownHeight = 235; // Approximate height with 5 items
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      
+      // Smart positioning: flip upward if not enough space below
+      const shouldFlipUp = spaceBelow < dropdownHeight + 16 && spaceAbove > spaceBelow;
+      
+      setShareDropdownPosition({
+        top: shouldFlipUp ? rect.top - dropdownHeight - 8 : rect.bottom + 8,
+        left: Math.max(16, Math.min(rect.right - dropdownWidth, window.innerWidth - dropdownWidth - 16))
+      });
+    }
+    setShowShareMenu(!showShareMenu);
+  };
+
+  const handleCopyLink = async () => {
+    const url = getProfileUrl();
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast("Profile link copied!", "success");
+      setShowShareMenu(false);
+      await logEvent("profile_share", {
+        userId: targetUserId,
+        method: "clipboard",
+      });
+    } catch (error) {
+      console.error("Failed to copy link:", error);
+      showToast("Failed to copy link", "error");
+    }
+  };
+
+  const handleShareNative = async () => {
+    const url = getProfileUrl();
     try {
       if (navigator.share) {
         await navigator.share({
-          title: userProfile?.displayName || "Profile",
+          title: `${userProfile?.displayName || "User"}'s Profile on TradeYa`,
+          text: `Check out ${userProfile?.displayName || "this user"}'s profile on TradeYa!`,
           url,
         });
-      } else {
-        await navigator.clipboard.writeText(url);
-        showToast("Profile link copied", "success");
+        setShowShareMenu(false);
+        await logEvent("profile_share", {
+          userId: targetUserId,
+          method: "native",
+        });
       }
-      await logEvent("profile_share", {
-        userId: targetUserId,
-        hasHandle: !!userProfile?.handle,
-        method: (navigator as any).share ? "web-share" : "clipboard",
-      });
-    } catch {
-      // ignore cancellation
+    } catch (error: any) {
+      if (error.name !== "AbortError") {
+        console.error("Failed to share:", error);
+      }
     }
+  };
+
+  const handleShareTwitter = () => {
+    const url = getProfileUrl();
+    const text = `Check out ${userProfile?.displayName || "this user"}'s profile on TradeYa!`;
+    window.open(
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+      "_blank"
+    );
+    setShowShareMenu(false);
+    logEvent("profile_share", {
+      userId: targetUserId,
+      method: "twitter",
+    });
+  };
+
+  const handleShareLinkedIn = () => {
+    const url = getProfileUrl();
+    window.open(
+      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+      "_blank"
+    );
+    setShowShareMenu(false);
+    logEvent("profile_share", {
+      userId: targetUserId,
+      method: "linkedin",
+    });
+  };
+
+  const handleShareFacebook = () => {
+    const url = getProfileUrl();
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      "_blank"
+    );
+    setShowShareMenu(false);
+    logEvent("profile_share", {
+      userId: targetUserId,
+      method: "facebook",
+    });
   };
 
   // Inline banner edit handlers
@@ -1077,113 +1179,129 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
 
         {/* Profile Header */}
         <Card
+          id="profile-header"
           variant="glass"
-          className="relative -mt-6 sm:-mt-8 md:-mt-10 mb-6 bg-gradient-to-r from-primary-500/5 via-accent-500/5 to-secondary-500/5"
+          className="relative -mt-4 sm:-mt-6 md:-mt-8 mb-6 bg-gradient-to-r from-primary-500/5 via-accent-500/5 to-secondary-500/5"
         >
-          <CardContent className="p-6">
-            <Cluster gap="md" align="center">
-              <Box className="relative -mt-12 w-24 h-24 rounded-full ring-4 ring-background shadow-md overflow-hidden bg-background shrink-0">
-                {userProfile.photoURL || userProfile.profilePicture ? (
-                  <ProfileImage
-                    photoURL={userProfile.photoURL}
-                    profilePicture={userProfile.profilePicture}
-                    displayName={userProfile.displayName}
-                    size="xl"
-                    className="h-24 w-24"
-                  />
-                ) : (
-                  <Box className="w-24 h-24 rounded-full glassmorphic border-glass backdrop-blur-xl bg-white/10 flex items-center justify-center">
-                    <User className="w-10 h-10 text-gray-400 dark:text-gray-300" />
-                  </Box>
-                )}
-              </Box>
-              <Stack gap="xs" className="min-w-0">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-3xl sm:text-4xl font-bold text-card-foreground truncate">
-                    {userProfile.displayName || "Anonymous User"}
-                  </h1>
-                  {userProfile.handle &&
-                    (!userProfile.handlePrivate || isOwnProfile) && (
-                      <span className="inline-flex items-center gap-2 text-base text-muted-foreground truncate">
-                        @{userProfile.handle}
-                        {userProfile.verified && (
-                          <span
-                            className="inline-flex items-center gap-1 text-success-600 dark:text-success-400"
-                            aria-label="Verified account"
-                            title="Verified account"
-                          >
-                            <Check className="w-4 h-4" />
-                          </span>
-                        )}
-                        <button
-                          type="button"
-                          className="inline-flex items-center justify-center rounded-xl p-2 hover:bg-white/10 dark:hover:bg-white/10 backdrop-blur-xl transition-all duration-200 min-h-[44px] min-w-[44px]"
-                          aria-label="Copy profile link"
-                          title="Copy profile link"
-                          onClick={async () => {
-                            const path =
-                              userProfile.handle && !userProfile.handlePrivate
-                                ? `/u/${userProfile.handle}`
-                                : `/profile/${targetUserId}`;
-                            const url = `${window.location.origin}${path}`;
-                            await navigator.clipboard.writeText(url);
-                            showToast("Profile link copied", "success");
-                            await logEvent("profile_share", {
-                              userId: targetUserId,
-                              hasHandle: true,
-                              method: "clipboard",
-                              context: "header",
-                            });
-                          }}
-                        >
-                          <CopyIcon className="w-4 h-4" />
-                        </button>
-                        {userProfile.handlePrivate && isOwnProfile && (
-                          <span
-                            className="text-xs text-muted-foreground"
-                            aria-label="Handle is private"
-                          >
-                            (private)
-                          </span>
-                        )}
-                      </span>
-                    )}
-                  <Tooltip
-                    content={
-                      <span>
-                        Reputation is based on your XP (50%), completed trades
-                        (30%), and followers (20%).
-                        <a
-                          className="ml-2 underline text-primary"
-                          href="/docs/profile-reputation"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          What's reputation?
-                        </a>
-                      </span>
-                    }
-                    position="top"
-                  >
-                    <span>
-                      <ReputationBadge
-                        score={repScore ?? 0}
-                        size="sm"
-                        showLabel={false}
-                        className="bg-transparent border-border text-muted-foreground cursor-help"
-                      />
-                    </span>
-                  </Tooltip>
+          <CardContent className="p-4 sm:p-6">
+            {/* Main Profile Grid Layout - Two Column System */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+              {/* Left Column: Avatar + Basic Info (2/5 on desktop) */}
+              <div className="lg:col-span-2 flex flex-col items-center gap-4">
+                {/* Premium Avatar with Glassmorphic Border */}
+                <div className="relative shrink-0">
+                  {/* Outer glow effect */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/30 via-accent/20 to-primary/30 blur-2xl opacity-50 animate-pulse" />
+                  
+                  {/* Circular ring with glassmorphic border */}
+                  <div className="relative p-1 rounded-full bg-border/50 shadow-xl">
+                    {/* Avatar container */}
+                    <div className="w-24 h-24 rounded-full overflow-hidden bg-background shadow-inner">
+                      {userProfile.photoURL || userProfile.profilePicture ? (
+                        <ProfileImage
+                          photoURL={userProfile.photoURL}
+                          profilePicture={userProfile.profilePicture}
+                          displayName={userProfile.displayName}
+                          size="xl"
+                          className="h-24 w-24"
+                        />
+                      ) : (
+                        <div className="w-24 h-24 rounded-full glassmorphic border-glass backdrop-blur-xl bg-white/10 flex items-center justify-center">
+                          <User className="w-10 h-10 text-gray-400 dark:text-gray-300" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
+                <Stack gap="2" className="min-w-0 w-full text-center lg:text-left">
+                  <div className="flex items-baseline gap-3 flex-wrap justify-center lg:justify-start">
+                    <h1 className="group text-3xl sm:text-4xl font-semibold tracking-tight leading-none cursor-default relative inline-block">
+                      <span className="text-foreground group-hover:opacity-0 transition-opacity duration-[600ms]">
+                        {userProfile.displayName || "Anonymous User"}
+                      </span>
+                      <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[600ms] bg-gradient-to-r from-primary-500 via-accent-500 to-secondary-500 bg-clip-text text-transparent animate-gradient-hover bg-[length:200%_200%]">
+                        {userProfile.displayName || "Anonymous User"}
+                      </span>
+                    </h1>
+                    {userProfile.handle &&
+                      (!userProfile.handlePrivate || isOwnProfile) && (
+                        <span className="inline-flex items-center gap-2 text-base text-muted-foreground/80 truncate">
+                          @{userProfile.handle}
+                          {userProfile.verified && (
+                            <span
+                              className="inline-flex items-center gap-1 text-success-500"
+                              aria-label="Verified account"
+                              title="Verified account"
+                            >
+                              <Check className="w-4 h-4" />
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center rounded-xl p-2 hover:bg-white/10 dark:hover:bg-white/10 backdrop-blur-xl transition-all duration-200 min-h-[44px] min-w-[44px]"
+                            aria-label="Copy profile link"
+                            title="Copy profile link"
+                            onClick={async () => {
+                              const path =
+                                userProfile.handle && !userProfile.handlePrivate
+                                  ? `/u/${userProfile.handle}`
+                                  : `/profile/${targetUserId}`;
+                              const url = `${window.location.origin}${path}`;
+                              await navigator.clipboard.writeText(url);
+                              showToast("Profile link copied", "success");
+                              await logEvent("profile_share", {
+                                userId: targetUserId,
+                                hasHandle: true,
+                                method: "clipboard",
+                                context: "header",
+                              });
+                            }}
+                          >
+                            <CopyIcon className="w-4 h-4" />
+                          </button>
+                          {userProfile.handlePrivate && isOwnProfile && (
+                            <span
+                              className="text-xs text-muted-foreground"
+                              aria-label="Handle is private"
+                            >
+                              (private)
+                            </span>
+                          )}
+                        </span>
+                      )}
+                  </div>
+                  <div className="flex items-center gap-3 flex-wrap justify-center lg:justify-start">
+                    <Tooltip
+                      content={
+                        <span>
+                          Reputation is based on your XP (50%), completed trades
+                          (30%), and followers (20%).
+                          <a
+                            className="ml-2 underline text-primary"
+                            href="/docs/profile-reputation"
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            What's reputation?
+                          </a>
+                        </span>
+                      }
+                      position="top"
+                    >
+                      <span>
+                        <ReputationBadge
+                          score={repScore ?? 0}
+                          size="sm"
+                          showLabel={true}
+                          className="bg-muted/50 border-border/50 text-foreground cursor-help"
+                        />
+                      </span>
+                    </Tooltip>
+                  </div>
                 {isOwnProfile && (
-                  <p className="text-sm text-muted-foreground truncate flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground truncate flex items-center gap-2 justify-center lg:justify-start">
                     <Mail className="w-4 h-4" />
                     <span>{userProfile.email}</span>
-                  </p>
-                )}
-                {userProfile.tagline && (
-                  <p className="text-text-secondary mt-1 truncate">
-                    {userProfile.tagline}
                   </p>
                 )}
 
@@ -1198,106 +1316,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                       : ""}
                   </p>
                 )}
-                {userProfile.bio && (
-                  <>
-                    <p
-                      className={`text-muted-foreground mt-2 ${
-                        isBioExpanded ? "" : "line-clamp-3"
-                      }`}
-                    >
-                      {userProfile.bio}
-                    </p>
-                    {userProfile.bio.length > 140 && (
-                      <button
-                        type="button"
-                        className="text-sm text-primary hover:underline mt-1"
-                        onClick={() => setIsBioExpanded((v) => !v)}
-                        aria-expanded={isBioExpanded}
-                      >
-                        {isBioExpanded ? "Show less" : "Read more"}
-                      </button>
-                    )}
-                  </>
-                )}
 
-                {/* Meta row: website, location, member since */}
-                <Cluster gap="sm" className="mt-3 flex-wrap">
-                  {userProfile.website && (
-                    <a
-                      href={userProfile.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm text-foreground/80 hover:text-primary transition-colors rounded -m-1 p-2 min-h-[44px]"
-                      aria-label={`Visit ${formatWebsiteLabel(
-                        userProfile.website
-                      )}`}
-                    >
-                      <Globe className="w-4 h-4" />
-                      <span className="truncate max-w-[200px] sm:max-w-[280px]">
-                        {formatWebsiteLabel(userProfile.website)}
-                      </span>
-                    </a>
-                  )}
-                  {userProfile.location && (
-                    <span className="inline-flex items-center gap-2 text-sm text-muted-foreground rounded -m-1 p-2 min-h-[44px]">
-                      <MapPin className="w-4 h-4" />
-                      {userProfile.location}
-                    </span>
-                  )}
-                  {userProfile.metadata?.creationTime && (
-                    <Badge
-                      variant="outline"
-                      className="inline-flex items-center gap-1"
-                    >
-                      <Calendar className="w-3.5 h-3.5" />
-                      {`Joined ${new Date(
-                        userProfile.metadata.creationTime
-                      ).toLocaleDateString(undefined, {
-                        month: "short",
-                        year: "numeric",
-                      })}`}
-                    </Badge>
-                  )}
-                </Cluster>
-
-                {/* Skills */}
-                {Array.isArray(userProfile.skills) &&
-                  userProfile.skills.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {userProfile.skills.slice(0, 6).map((skill, idx) => (
-                        <button
-                          key={`${skill}-${idx}`}
-                          type="button"
-                          onClick={() => {
-                            setActiveTab("portfolio");
-                            try {
-                              window.history.replaceState({}, "", `#portfolio`);
-                            } catch {}
-                            const panel =
-                              document.getElementById("panel-portfolio");
-                            const behavior = prefersReducedMotion
-                              ? "auto"
-                              : "smooth";
-                            panel?.scrollIntoView({ behavior, block: "start" });
-                            window.dispatchEvent(
-                              new CustomEvent("portfolio:filter-skill", {
-                                detail: { skill },
-                              })
-                            );
-                            try {
-                              logEvent("profile_skill_chip_click", {
-                                skill,
-                              }).catch(() => {});
-                            } catch {}
-                          }}
-                          className="inline-flex items-center rounded-full border px-3 py-1 text-xs hover:bg-muted"
-                          aria-label={`Filter portfolio by ${skill}`}
-                        >
-                          {skill}
-                        </button>
-                      ))}
-                    </div>
-                  )}
 
                 {/* Rating summary chip */}
                 {reviewsMeta && reviewsMeta.count > 0 && (
@@ -1356,103 +1375,219 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                   </div>
                 )}
               </Stack>
-              <Cluster gap="sm" align="center" className="ml-auto">
-                {targetUserId && (
-                  <Cluster gap="xs" className="hidden md:flex text-xs">
-                    <StreakWidgetCompact userId={targetUserId} type="login" />
-                    <span className="text-muted-foreground">•</span>
-                    <StreakWidgetCompact
-                      userId={targetUserId}
-                      type="challenge"
-                    />
-                  </Cluster>
-                )}
-              </Cluster>
-            </Cluster>
+            </div>
 
-            {/* Actions */}
-            <Cluster gap="sm" className="mt-5 flex-wrap">
-              {isOwnProfile ? (
-                <>
-                  <Button
-                    variant="outline"
-                    className="gap-2"
-                    onClick={() => setIsEditOpen(true)}
-                  >
-                    <Edit3 className="w-4 h-4" />
-                    Edit Profile
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="gap-2"
-                    onClick={handleShareProfile}
-                  >
-                    <Share2 className="w-4 h-4" />
-                    Share profile
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    className="gap-2"
-                    onClick={() => navigate(`/messages/new?to=${targetUserId}`)}
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    Message
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="gap-2"
-                    onClick={handleShareProfile}
-                  >
-                    <Share2 className="w-4 h-4" />
-                    Share profile
-                  </Button>
-                  <SocialFeatures
-                    userId={targetUserId!}
-                    userName={userProfile.displayName || "User"}
-                    userAvatar={
-                      userProfile.profilePicture || userProfile.photoURL
-                    }
-                    compact
-                    showStats={false}
-                    showFollowButton
-                  />
-                </>
-              )}
-            </Cluster>
-
-            {/* Compact Stats Strip using unified StatChip */}
-            <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-              {stats && (
-                <>
-                  <StatChip label="Trades" value={stats.totalTrades} />
-                  <StatChip label="This week" value={stats.tradesThisWeek} />
-                </>
-              )}
-              {targetUserId && (
-                <div className="hidden sm:block">
-                  <button
-                    type="button"
-                    className="w-full"
-                    onClick={() => {
-                      window.location.href = `/directory?relation=followers&user=${targetUserId}`;
-                    }}
-                    aria-label="View followers"
-                  >
-                    <div className="w-full">
-                      <UserSocialStats userId={targetUserId} compact />
+            {/* Right Column: Bio, Contact Info, Skills, Actions, Stats (3/5 on desktop) */}
+            <div className="lg:col-span-3">
+                <Stack gap="md">
+                  {/* Tagline */}
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {userProfile.tagline || "No tagline provided"}
+                  </p>
+                  
+                  {/* Bio - Enhanced formatting */}
+                  {userProfile.bio && (
+                    <div className="text-sm text-muted-foreground leading-relaxed">
+                      {isBioExpanded ? (
+                        <p className="whitespace-pre-wrap break-words">{userProfile.bio}</p>
+                      ) : (
+                        <p className="whitespace-pre-wrap break-words">
+                          {userProfile.bio.length > 300
+                            ? `${userProfile.bio.substring(0, 300)}...`
+                            : userProfile.bio}
+                        </p>
+                      )}
+                      {userProfile.bio.length > 300 && (
+                        <button
+                          type="button"
+                          className="mt-2 text-primary hover:text-primary/80 font-medium transition-colors inline-flex items-center gap-1"
+                          onClick={() => setIsBioExpanded(!isBioExpanded)}
+                        >
+                          {isBioExpanded ? (
+                            <>
+                              Read less
+                              <ChevronLeft className="w-3 h-3" />
+                            </>
+                          ) : (
+                            <>
+                              Read more
+                              <ChevronRight className="w-3 h-3" />
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
-                  </button>
-                </div>
-              )}
+                  )}
+                  
+                  {/* Contact Info - Cleaner layout */}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                    {userProfile.website && (
+                      <a
+                        href={userProfile.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 hover:text-primary transition-colors group"
+                      >
+                        <Globe className="w-4 h-4 transition-transform group-hover:scale-110" />
+                        <span className="truncate max-w-[200px]">
+                          {userProfile.website.replace(/^https?:\/\//, "")}
+                        </span>
+                      </a>
+                    )}
+                    {userProfile.location && (
+                      <div className="inline-flex items-center gap-1.5">
+                        <MapPin className="w-4 h-4" />
+                        <span className="truncate">{userProfile.location}</span>
+                      </div>
+                    )}
+                    {userProfile.metadata?.creationTime && (
+                      <div className="inline-flex items-center gap-1.5">
+                        <Calendar className="w-4 h-4" />
+                        <span>
+                          Joined{" "}
+                          {new Date(userProfile.metadata.creationTime).toLocaleDateString(undefined, {
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Skills - Premium design */}
+                  {userProfile.skills && userProfile.skills.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {userProfile.skills.slice(0, 8).map((skill, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-primary/10 to-accent/10 text-primary border border-primary/20 hover:border-primary/40 hover:shadow-md hover:shadow-primary/20 transition-all duration-200 backdrop-blur-sm"
+                          onClick={() => {
+                            // Dispatch custom event for PortfolioTab to filter by skill
+                            window.dispatchEvent(new CustomEvent('portfolio:filter-skill', { 
+                              detail: { skill } 
+                            }));
+                            setActiveTab("portfolio");
+                          }}
+                          aria-label={`Filter portfolio by ${skill}`}
+                        >
+                          {skill}
+                        </button>
+                      ))}
+                      {userProfile.skills.length > 8 && (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-muted/50 text-muted-foreground backdrop-blur-sm">
+                          +{userProfile.skills.length - 8} more
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Social Stats - Moved higher for prominence */}
+                  {targetUserId && (
+                    <div className="w-full">
+                      <UserSocialStats 
+                        userId={targetUserId} 
+                        compact 
+                        onFollowersClick={() => navigate(`/directory?relation=followers&user=${targetUserId}`)}
+                        onLeaderboardClick={() => navigate('/leaderboard')}
+                      />
+                    </div>
+                  )}
+
+                  {/* Streak Widgets - Premium design */}
+                  {targetUserId && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-gradient-to-r from-muted/20 to-muted/30 rounded-lg px-3 py-2 border border-border/30 backdrop-blur-sm">
+                      <StreakWidgetCompact userId={targetUserId} type="login" />
+                      <span className="text-border">•</span>
+                      <StreakWidgetCompact
+                        userId={targetUserId}
+                        type="challenge"
+                      />
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex flex-col sm:flex-row gap-2 relative">
+                    {isOwnProfile ? (
+                      <>
+                        <Button
+                          variant="glassmorphic"
+                          className="gap-2 shrink-0 border-primary/20 hover:border-primary/40 bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 shadow-lg hover:shadow-xl hover:shadow-primary/20"
+                          onClick={() => setIsEditOpen(true)}
+                        >
+                          <Edit3 className="w-4 h-4" />
+                          Edit Profile
+                        </Button>
+                        <Button
+                          ref={shareButtonRef}
+                          variant="ghost"
+                          className="gap-2 shrink-0"
+                          onClick={handleShareProfile}
+                        >
+                          <Share2 className="w-4 h-4" />
+                          Share profile
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          className="gap-2 shrink-0"
+                          onClick={() => navigate(`/messages/new?to=${targetUserId}`)}
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                          Message
+                        </Button>
+                        <Button
+                          ref={shareButtonRef}
+                          variant="ghost"
+                          className="gap-2 shrink-0"
+                          onClick={handleShareProfile}
+                        >
+                          <Share2 className="w-4 h-4" />
+                          Share profile
+                        </Button>
+                        <SocialFeatures
+                          userId={targetUserId!}
+                          userName={userProfile.displayName || "User"}
+                          userAvatar={
+                            userProfile.profilePicture || userProfile.photoURL
+                          }
+                          compact
+                          showStats={false}
+                          showFollowButton
+                        />
+                      </>
+                    )}
+                  </div>
+
+                  {/* Divider */}
+                  <div className="w-full h-px bg-gradient-to-r from-transparent via-border/50 to-transparent"></div>
+
+                  {/* Trade Stats with Icons */}
+                  {stats && (
+                    <div className="grid grid-cols-2 gap-3 text-sm w-full">
+                      <StatChip 
+                        label="Trades" 
+                        value={stats.totalTrades} 
+                        icon={<TrendingUp className="w-4 h-4" />}
+                      />
+                      <StatChip 
+                        label="This week" 
+                        value={stats.tradesThisWeek}
+                        icon={<Activity className="w-4 h-4" />}
+                      />
+                    </div>
+                  )}
+                </Stack>
+            </div>
+
             </div>
           </CardContent>
         </Card>
 
         {/* Tab Navigation */}
         <Card
-          className="glassmorphic bg-white/5 backdrop-blur-sm rounded-lg !border-0 !shadow-none"
+          className="glassmorphic bg-white/5 backdrop-blur-sm rounded-lg border border-border/30 shadow-sm overflow-hidden"
         >
           <div className="-mb-px sticky top-16 z-sticky glassmorphic backdrop-blur-xl bg-white/10">
               <div className="relative">
@@ -1472,7 +1607,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 />
                 <div
                   ref={tabScrollRef}
-                  className="overflow-x-auto scroll-smooth px-6"
+                  className="overflow-x-auto scroll-smooth px-6 scrollbar-hide"
                   role="tablist"
                   aria-label="Profile sections"
                   onScroll={() => {
@@ -1599,11 +1734,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           variant="glass"
           className="rounded-lg shadow-sm border border-border"
         >
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             {activeTab === "about" && (
               <Box id="panel-about" role="tabpanel" aria-labelledby="about">
-                <Stack gap="lg">
-                  <Grid columns={{ base: 1, md: 2 }} gap="lg">
+                <Stack gap="md">
+                  <Grid columns={{ base: 1, md: 2 }} gap={{ base: 'md', md: 'lg' }}>
                     <Box>
                       <label className="block text-sm font-medium text-muted-foreground mb-2">
                         Email
@@ -1624,32 +1759,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                               navigator.clipboard.writeText(userProfile.email)
                             }
                             aria-label="Copy email"
-                          >
-                            <CopyIcon className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="h-10 bg-muted rounded animate-pulse" />
-                      )}
-                    </Box>
-                    <Box>
-                      <label className="block text-sm font-medium text-muted-foreground mb-2">
-                        User ID
-                      </label>
-                      {userProfile.uid ? (
-                        <div className="px-4 py-3 rounded-xl glassmorphic border-glass backdrop-blur-xl bg-white/5 text-foreground font-mono text-sm flex items-center gap-2 justify-between">
-                          <span className="flex items-center gap-2 min-w-0">
-                            <Hash className="w-4 h-4 text-purple-500 dark:text-purple-400" />
-                            <span className="truncate">{userProfile.uid}</span>
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="shrink-0 inline-flex items-center justify-center min-h-[44px] min-w-[44px]"
-                            onClick={() =>
-                              navigator.clipboard.writeText(userProfile.uid)
-                            }
-                            aria-label="Copy user id"
                           >
                             <CopyIcon className="w-4 h-4" />
                           </Button>
@@ -1699,23 +1808,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 role="tabpanel"
                 aria-labelledby="portfolio"
               >
-                {isOwnProfile && (
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-base font-semibold">Your Portfolio</h3>
-                    <Button
-                      variant="outline"
-                      onClick={() => navigate("/portfolio")}
-                    >
-                      Add project
-                    </Button>
-                  </div>
-                )}
                 <React.Suspense
                   fallback={
                     <>
                       <div
-                        id="profile-collaborations-list"
-                        className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                        id="profile-portfolio-list"
+                        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4"
                       >
                         {Array.from({ length: 6 }).map((_, i) => (
                           <div
@@ -1745,35 +1843,36 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
             )}
 
             {activeTab === "gamification" && targetUserId && (
-              <Box
+              <div
                 id="panel-gamification"
                 role="tabpanel"
                 aria-labelledby="gamification"
+                className="w-full"
               >
                 <React.Suspense
                   fallback={
-                    <div className="animate-pulse">
-                      <div className="h-6 w-40 bg-muted rounded mb-4" />
+                    <div className="animate-pulse space-y-4">
+                      <div className="h-6 w-40 bg-muted rounded" />
                       <div className="h-32 bg-muted rounded" />
                     </div>
                   }
                 >
-                  <Stack gap="xl">
+                  <div className="w-full space-y-6">
                     <GamificationDashboardLazy userId={targetUserId} />
                     {isOwnProfile && (
-                      <Box className="border-t border-border pt-8">
-                        <Cluster gap="sm" align="center" className="mb-6">
+                      <div className="border-t border-border pt-6">
+                        <div className="flex items-center gap-2 mb-6">
                           <Settings className="w-5 h-5 text-muted-foreground" />
                           <h3 className="text-lg font-semibold text-foreground">
                             Notification Settings
                           </h3>
-                        </Cluster>
+                        </div>
                         <NotificationPreferencesLazy />
-                      </Box>
+                      </div>
                     )}
-                  </Stack>
+                  </div>
                 </React.Suspense>
-              </Box>
+              </div>
             )}
 
             {activeTab === "collaborations" && (
@@ -1784,11 +1883,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 className="py-6"
               >
                 {collaborationsLoading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {Array.from({ length: 4 }).map((_, i) => (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {Array.from({ length: 6 }).map((_, i) => (
                       <div
                         key={i}
-                        className="h-40 bg-muted rounded animate-pulse"
+                        className="h-40 bg-muted rounded-lg animate-pulse"
                       />
                     ))}
                   </div>
@@ -1816,33 +1915,34 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                       <div className="text-sm text-muted-foreground">
-                        Showing{" "}
+                        <span className="hidden sm:inline">Showing </span>
                         {Math.min(
                           collabVisibleCount,
                           filteredCollaborations.length
                         )}{" "}
                         of {filteredCollaborations.length}
+                        <span className="sm:hidden"> collaborations</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <label className="text-sm text-muted-foreground">Filter</label>
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <label className="text-sm text-muted-foreground hidden sm:inline">Show:</label>
                         <select
-                          className="rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 text-foreground text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
+                          className="w-full sm:w-auto rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 text-foreground text-sm px-3 py-2 outline-hidden focus:ring-2 focus:ring-primary/50 transition-all duration-200"
                           value={collabFilter}
                           onChange={(e) => {
                             setCollabFilter(e.target.value as any);
                             setCollabVisibleCount(6);
                           }}
                         >
-                          <option value="all">All</option>
-                          <option value="yours">Yours</option>
+                          <option value="all">All collaborations</option>
+                          <option value="yours">Created by me</option>
                         </select>
                       </div>
                     </div>
                     <div
                       id="profile-trades-list"
-                      className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                      className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4"
                     >
                       {filteredCollaborations
                         .slice(0, collabVisibleCount)
@@ -1872,11 +1972,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                           </div>
                         ))}
                     </div>
-                    <div className="flex justify-end gap-2 mt-4">
+                    <div className="flex flex-col sm:flex-row justify-center sm:justify-end gap-2 mt-4">
                       {filteredCollaborations &&
                         collabVisibleCount < filteredCollaborations.length && (
                           <Button
                             variant="outline"
+                            className="w-full sm:w-auto"
                             onClick={() => {
                               setIsLoadingMoreCollabs(true);
                               // small delay to allow smooth UI feedback
@@ -1899,9 +2000,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                       </span>
                       <Button
                         variant="outline"
+                        className="w-full sm:w-auto"
                         onClick={() => navigate("/collaborations")}
                       >
-                        View all
+                        View all collaborations
                       </Button>
                     </div>
                     <div
@@ -1922,11 +2024,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 className="py-6"
               >
                 {tradesLoading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {Array.from({ length: 4 }).map((_, i) => (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {Array.from({ length: 6 }).map((_, i) => (
                       <div
                         key={i}
-                        className="h-24 bg-muted rounded animate-pulse"
+                        className="h-32 bg-muted rounded-lg animate-pulse"
                       />
                     ))}
                   </div>
@@ -1944,28 +2046,29 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                       <div className="text-sm text-muted-foreground">
-                        Showing{" "}
+                        <span className="hidden sm:inline">Showing </span>
                         {Math.min(tradesVisibleCount, filteredTrades.length)} of{" "}
                         {filteredTrades.length}
+                        <span className="sm:hidden"> trades</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <label className="text-sm text-muted-foreground">Filter</label>
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <label className="text-sm text-muted-foreground hidden sm:inline">Show:</label>
                         <select
-                          className="rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 text-foreground text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
+                          className="w-full sm:w-auto rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 text-foreground text-sm px-3 py-2 outline-hidden focus:ring-2 focus:ring-primary/50 transition-all duration-200"
                           value={tradeFilter}
                           onChange={(e) => {
                             setTradeFilter(e.target.value as any);
                             setTradesVisibleCount(6);
                           }}
                         >
-                          <option value="all">All</option>
-                          <option value="yours">Yours</option>
+                          <option value="all">All trades</option>
+                          <option value="yours">Created by me</option>
                         </select>
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                       {filteredTrades.slice(0, tradesVisibleCount).map((t) => (
                         <TradeCard
                           key={t.id}
@@ -1974,11 +2077,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                         />
                       ))}
                     </div>
-                    <div className="flex justify-end gap-2 mt-4">
+                    <div className="flex flex-col sm:flex-row justify-center sm:justify-end gap-2 mt-4">
                       {filteredTrades &&
                         tradesVisibleCount < filteredTrades.length && (
                           <Button
                             variant="outline"
+                            className="w-full sm:w-auto"
                             onClick={() => {
                               setIsLoadingMoreTrades(true);
                               setTimeout(() => {
@@ -1998,9 +2102,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                       </span>
                       <Button
                         variant="outline"
+                        className="w-full sm:w-auto"
                         onClick={() => navigate("/trades")}
                       >
-                        View all
+                        View all trades
                       </Button>
                     </div>
                     <div
@@ -2326,6 +2431,68 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
             </div>
           </form>
         </SimpleModal>
+
+      {/* Share Profile Dropdown - Rendered via Portal */}
+      {showShareMenu && shareDropdownPosition && createPortal(
+        <>
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setShowShareMenu(false)}
+          />
+          <div 
+            className="fixed z-50 w-56 glassmorphic bg-background/95 backdrop-blur-xl border border-border/50 rounded-lg shadow-xl py-2"
+            style={{
+              top: `${shareDropdownPosition.top}px`,
+              left: `${shareDropdownPosition.left}px`
+            }}
+          >
+            <button
+              type="button"
+              className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
+              onClick={handleCopyLink}
+            >
+              <Link2 className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm">Copy link</span>
+            </button>
+            {navigator.share && (
+              <button
+                type="button"
+                className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
+                onClick={handleShareNative}
+              >
+                <Share2 className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm">Share...</span>
+              </button>
+            )}
+            <div className="h-px bg-border/50 my-2" />
+            <button
+              type="button"
+              className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
+              onClick={handleShareTwitter}
+            >
+              <Twitter className="w-4 h-4 text-[#1DA1F2]" />
+              <span className="text-sm">Share on Twitter</span>
+            </button>
+            <button
+              type="button"
+              className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
+              onClick={handleShareLinkedIn}
+            >
+              <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+              <span className="text-sm">Share on LinkedIn</span>
+            </button>
+            <button
+              type="button"
+              className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
+              onClick={handleShareFacebook}
+            >
+              <Facebook className="w-4 h-4 text-[#1877F2]" />
+              <span className="text-sm">Share on Facebook</span>
+            </button>
+          </div>
+        </>,
+        document.body
+      )}
       </Stack>
     </Box>
   );

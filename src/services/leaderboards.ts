@@ -11,7 +11,8 @@ import {
   limit,
   Timestamp,
   runTransaction,
-  updateDoc
+  updateDoc,
+  deleteDoc
 } from 'firebase/firestore';
 import {
   LeaderboardEntry,
@@ -508,7 +509,7 @@ export const unfollowUser = async (
 
     // Delete follow relationship
     const followDoc = snapshot.docs[0];
-    await updateDoc(followDoc.ref, { deletedAt: Timestamp.now() });
+    await deleteDoc(followDoc.ref);
 
     // Update social stats
     await updateSocialStats(followerId, 'following', -1);

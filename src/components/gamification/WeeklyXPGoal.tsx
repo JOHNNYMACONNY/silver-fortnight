@@ -5,6 +5,7 @@ import { useBusinessMetrics } from "../../contexts/PerformanceContext";
 import { useToast } from "../../contexts/ToastContext";
 import { useGamificationNotifications } from "../../contexts/GamificationNotificationContext";
 import { normalizeTransactionDate } from "./utils/transactionDates";
+import { Target, Edit3, Check, X, ChevronDown, ChevronUp } from "lucide-react";
 
 interface WeeklyXPGoalProps {
   userId: string;
@@ -163,7 +164,7 @@ export const WeeklyXPGoal: React.FC<WeeklyXPGoalProps> = ({
     return (
       <div
         className={
-          "bg-card text-card-foreground rounded-lg border border-border p-4 " +
+          "glassmorphic rounded-xl border border-border/50 bg-gradient-to-br from-card/50 to-card/30 backdrop-blur-md p-6 " +
           (className || "")
         }
       >
@@ -176,32 +177,38 @@ export const WeeklyXPGoal: React.FC<WeeklyXPGoalProps> = ({
   return (
     <div
       className={
-        "bg-card text-card-foreground rounded-lg border border-border p-4 " +
+        "glassmorphic rounded-xl border border-border/50 bg-gradient-to-br from-card/50 to-card/30 backdrop-blur-md p-6 " +
         (className || "")
       }
     >
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-sm font-medium flex items-center gap-2">
-          <span>Weekly XP Goal</span>
-          {(goalMet || goalMetPersisted) && (
-            <span className="inline-flex items-center rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 text-[10px] border border-emerald-500/30">
-              Goal met
-            </span>
-          )}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20">
+            <Target className="w-5 h-5 text-green-500" />
+          </div>
+          <div className="text-sm font-medium flex items-center gap-2">
+            <span className="text-foreground">Weekly XP Goal</span>
+            {(goalMet || goalMetPersisted) && (
+              <span className="inline-flex items-center rounded-full bg-emerald-500/20 text-emerald-500 px-2 py-0.5 text-[10px] font-semibold border border-emerald-500/30">
+                Goal met
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>Target: {Math.max(100, Math.min(5000, targetValue))}</span>
           {!editingTarget ? (
             <button
               type="button"
-              className="text-primary hover:underline"
+              className="flex items-center gap-1 text-primary hover:text-primary/80 font-medium transition-colors"
               onClick={() => setEditingTarget(true)}
               aria-label="Edit weekly XP target"
             >
-              Edit
+              <Edit3 className="w-3 h-3" />
+              <span>Edit</span>
             </button>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <input
                 type="number"
                 min={100}
@@ -209,12 +216,12 @@ export const WeeklyXPGoal: React.FC<WeeklyXPGoalProps> = ({
                 step={50}
                 value={targetValue}
                 onChange={(e) => setTargetValue(Number(e.target.value))}
-                className="h-7 w-20 rounded border border-border bg-background px-2 text-foreground"
+                className="h-7 w-20 rounded-lg border border-border/50 bg-muted/30 px-2 text-foreground text-xs focus:ring-2 focus:ring-primary/50 outline-hidden"
                 aria-label="Weekly XP target"
               />
               <button
                 type="button"
-                className="text-primary hover:underline"
+                className="p-1 text-green-500 hover:text-green-400 transition-colors"
                 onClick={() => {
                   const clamped = Math.max(
                     100,
@@ -230,12 +237,13 @@ export const WeeklyXPGoal: React.FC<WeeklyXPGoalProps> = ({
                   } catch {}
                   setEditingTarget(false);
                 }}
+                aria-label="Save target"
               >
-                Save
+                <Check className="w-4 h-4" />
               </button>
               <button
                 type="button"
-                className="text-muted-foreground hover:underline"
+                className="p-1 text-muted-foreground hover:text-foreground transition-colors"
                 onClick={() => {
                   setEditingTarget(false);
                   // revert to persisted or prop
@@ -252,29 +260,30 @@ export const WeeklyXPGoal: React.FC<WeeklyXPGoalProps> = ({
                     setTargetValue(target);
                   }
                 }}
+                aria-label="Cancel editing"
               >
-                Cancel
+                <X className="w-4 h-4" />
               </button>
             </div>
           )}
         </div>
       </div>
-      <div className="text-2xl font-bold">{weekXP} XP</div>
-      <div className="mt-2 h-2 w-full bg-muted rounded">
+      <div className="text-3xl font-bold text-foreground">{weekXP} XP</div>
+      <div className="mt-3 h-2.5 w-full bg-muted/50 rounded-full overflow-hidden">
         <div
-          className="h-2 bg-primary rounded"
+          className="h-2.5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500"
           style={{ width: `${percent}%` }}
         />
       </div>
-      <div className="mt-1 text-xs text-muted-foreground">
+      <div className="mt-2 text-sm text-muted-foreground font-medium">
         {percent}% of weekly goal
       </div>
       {!(goalMet || goalMetPersisted) && (
-        <div className="mt-2">
+        <div className="mt-4 pt-3 border-t border-border/50">
           {!tipsEnabled ? (
             <button
               type="button"
-              className="text-[11px] text-primary hover:underline"
+              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 font-medium transition-colors"
               onClick={() => {
                 setTipsEnabled(true);
                 try {
@@ -286,33 +295,42 @@ export const WeeklyXPGoal: React.FC<WeeklyXPGoalProps> = ({
                 } catch {}
               }}
             >
-              Show tips
+              <ChevronDown className="w-3 h-3" />
+              <span>Show tips to reach your goal</span>
             </button>
           ) : (
             <div>
-              <ul className="text-[11px] text-muted-foreground list-disc pl-4 space-y-1">
-                <li>Complete a challenge for base + bonus XP</li>
-                <li>Log a quick practice to grow your skill streak</li>
-                <li>Finish a trade to earn a larger XP boost</li>
+              <ul className="text-xs text-muted-foreground space-y-2 mb-2">
+                <li className="flex items-start gap-2">
+                  <Check className="w-3 h-3 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span>Complete a challenge for base + bonus XP</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-3 h-3 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span>Log a quick practice to grow your skill streak</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-3 h-3 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span>Finish a trade to earn a larger XP boost</span>
+                </li>
               </ul>
-              <div className="mt-1">
-                <button
-                  type="button"
-                  className="text-[11px] text-muted-foreground hover:text-foreground hover:underline"
-                  onClick={() => {
-                    setTipsEnabled(false);
-                    try {
-                      if (typeof window !== "undefined")
-                        window.localStorage.setItem(
-                          `weekly-xp-goal-tips-${userId}`,
-                          "0"
-                        );
-                    } catch {}
-                  }}
-                >
-                  Hide tips
-                </button>
-              </div>
+              <button
+                type="button"
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors"
+                onClick={() => {
+                  setTipsEnabled(false);
+                  try {
+                    if (typeof window !== "undefined")
+                      window.localStorage.setItem(
+                        `weekly-xp-goal-tips-${userId}`,
+                        "0"
+                      );
+                  } catch {}
+                }}
+              >
+                <ChevronUp className="w-3 h-3" />
+                <span>Hide tips</span>
+              </button>
             </div>
           )}
         </div>

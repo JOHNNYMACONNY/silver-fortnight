@@ -82,18 +82,28 @@ function normalizeNotificationParams(params: UnifiedNotificationParams) {
     throw new Error('Notification must have content or message');
   }
   
-  return {
+  // Build notification object, filtering out undefined values
+  const notification: any = {
     userId,
     type: params.type,
     title: params.title,
     content,
-    relatedId: params.relatedId,
     data: params.data || {},
     priority: params.priority || 'medium',
-    deduplicationKey: params.deduplicationKey,
     read: false,
     createdAt: Timestamp.now()
   };
+  
+  // Only add optional fields if they're defined (Firestore rejects undefined)
+  if (params.relatedId !== undefined) {
+    notification.relatedId = params.relatedId;
+  }
+  
+  if (params.deduplicationKey !== undefined) {
+    notification.deduplicationKey = params.deduplicationKey;
+  }
+  
+  return notification;
 }
 
 /**
