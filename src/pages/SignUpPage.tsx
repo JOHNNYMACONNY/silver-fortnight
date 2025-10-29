@@ -165,6 +165,8 @@ export const SignUpPage: React.FC = () => {
           "success",
           "Account created successfully! Welcome to TradeYa!"
         );
+        // Redirect to dashboard after successful signup
+        navigate("/dashboard");
       }
     } catch (err: any) {
       console.error("Signup failed:", err);
