@@ -43,10 +43,9 @@ export const recomputeUserReputation = async (userId: string): Promise<void> => 
   try {
     const db = getSyncFirebaseDb();
 
-    // Fetch current followers count from socialStats
-    const socialStatsRef = doc(db, 'socialStats', userId);
-    const socialSnap = await getDoc(socialStatsRef);
-    const followersCount = socialSnap.exists() ? ((socialSnap.data() as SocialStats)?.followersCount || 0) : 0;
+    // Calculate current followers count from userFollows collection (secure, cannot be forged)
+    // Don't read from socialStats as it may be out of date or forged
+    const followersCount = await calculateFollowerCount(userId);
 
     // Fetch total XP directly from userXP collection (avoid circular imports)
     const userXPRef = doc(db, 'userXP', userId);
@@ -465,14 +464,13 @@ export const followUser = async (
     // collection or updated via Cloud Function for security (see firestore.rules)
     await updateSocialStats(followerId, 'following', 1);
     
-    // TODO: Move follower count updates to Cloud Functions for production security
-    // For now, followerCount should be calculated from userFollows collection when displaying
-
-    // Recompute reputation for both users (followers count changed)
-    await Promise.all([
-      recomputeUserReputation(followerId),
-      recomputeUserReputation(followingId)
-    ]);
+    // SECURITY: Only recompute reputation for the current user (follower)
+    // Cannot update other user's socialStats due to security rules (userId must match auth.uid)
+    // The followed user's reputation should be updated via Cloud Functions or when they next login
+    await recomputeUserReputation(followerId);
+    
+    // TODO: Implement Cloud Function to recompute reputation for followed user
+    // This requires Admin SDK to bypass security rules
 
     // Create notification for followed user
     await createNotification({
@@ -520,14 +518,13 @@ export const unfollowUser = async (
     // collection or updated via Cloud Function for security (see firestore.rules)
     await updateSocialStats(followerId, 'following', -1);
     
-    // TODO: Move follower count updates to Cloud Functions for production security
-    // For now, followerCount should be calculated from userFollows collection when displaying
-
-    // Recompute reputation for both users
-    await Promise.all([
-      recomputeUserReputation(followerId),
-      recomputeUserReputation(followingId)
-    ]);
+    // SECURITY: Only recompute reputation for the current user (unfollower)
+    // Cannot update other user's socialStats due to security rules (userId must match auth.uid)
+    // The unfollowed user's reputation should be updated via Cloud Functions or when they next login
+    await recomputeUserReputation(followerId);
+    
+    // TODO: Implement Cloud Function to recompute reputation for unfollowed user
+    // This requires Admin SDK to bypass security rules
 
     return { success: true };
   } catch (error: any) {

@@ -52,6 +52,8 @@ allow update: if isAuthenticated() && (
 
 **File:** `src/services/leaderboards.ts`
 - Removed client-side updates to other users' `followersCount` (lines 465, 520)
+- Removed calls to `recomputeUserReputation` for other users (was calling for both users, now only current user)
+- Updated `recomputeUserReputation` to use `calculateFollowerCount()` instead of reading from socialStats
 - Added helper functions: `calculateFollowerCount()` and `calculateFollowingCount()`
 - Added TODO comments for Cloud Functions migration
 - Maintained updates to user's own `followingCount` (secure)
