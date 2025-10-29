@@ -43,10 +43,11 @@ export const recomputeUserReputation = async (userId: string): Promise<void> => 
   try {
     const db = getSyncFirebaseDb();
 
-    // Fetch current followers count from socialStats
+    // Calculate current followers count from userFollows collection (secure, cannot be forged)
+    // Don't read from socialStats as it may be out of date or forged
+    const followersCount = await calculateFollowerCount(userId);
+    
     const socialStatsRef = doc(db, 'socialStats', userId);
-    const socialSnap = await getDoc(socialStatsRef);
-    const followersCount = socialSnap.exists() ? ((socialSnap.data() as SocialStats)?.followersCount || 0) : 0;
 
     // Fetch total XP directly from userXP collection (avoid circular imports)
     const userXPRef = doc(db, 'userXP', userId);
@@ -460,15 +461,15 @@ export const followUser = async (
 
     await setDoc(followRef, followData);
 
-    // Update social stats
+    // SECURITY: Update social stats - only update follower's own followingCount
+    // Cannot update followed user's followersCount due to security rules (userId must match auth.uid)
+    // The followed user's followerCount should be calculated from userFollows collection
     await updateSocialStats(followerId, 'following', 1);
-    await updateSocialStats(followingId, 'followers', 1);
-
-    // Recompute reputation for both users (followers count changed)
-    await Promise.all([
-      recomputeUserReputation(followerId),
-      recomputeUserReputation(followingId)
-    ]);
+    
+    // SECURITY: Only recompute reputation for the current user (follower)
+    // Cannot update other user's socialStats due to security rules
+    // The followed user's reputation should be updated via Cloud Functions or when they next login
+    await recomputeUserReputation(followerId);
 
     // Create notification for followed user
     await createNotification({
@@ -507,24 +508,67 @@ export const unfollowUser = async (
       return { success: false, error: 'Not following this user' };
     }
 
-    // Delete follow relationship
+    // SECURITY FIX: Use hard delete instead of soft delete
+    // Soft delete causes "Already following" errors on re-follow
     const followDoc = snapshot.docs[0];
     await deleteDoc(followDoc.ref);
 
-    // Update social stats
+    // SECURITY: Update social stats - only update unfollower's own followingCount
+    // Cannot update unfollowed user's followersCount due to security rules (userId must match auth.uid)
+    // The unfollowed user's followerCount should be calculated from userFollows collection
     await updateSocialStats(followerId, 'following', -1);
-    await updateSocialStats(followingId, 'followers', -1);
-
-    // Recompute reputation for both users
-    await Promise.all([
-      recomputeUserReputation(followerId),
-      recomputeUserReputation(followingId)
-    ]);
+    
+    // SECURITY: Only recompute reputation for the current user (unfollower)
+    // Cannot update other user's socialStats due to security rules
+    // The unfollowed user's reputation should be updated via Cloud Functions or when they next login
+    await recomputeUserReputation(followerId);
 
     return { success: true };
   } catch (error: any) {
     console.error('Error unfollowing user:', error);
     return { success: false, error: error.message || 'Failed to unfollow user' };
+  }
+};
+
+/**
+ * Calculate follower count for a user from the userFollows collection
+ * This is a secure alternative to storing followerCount in socialStats
+ * which can be forged client-side.
+ * 
+ * @param userId - The user ID to count followers for
+ * @returns The number of followers
+ */
+export const calculateFollowerCount = async (userId: string): Promise<number> => {
+  try {
+    const followersQuery = query(
+      collection(getSyncFirebaseDb(), 'userFollows'),
+      where('followingId', '==', userId)
+    );
+    const snapshot = await getDocs(followersQuery);
+    return snapshot.size;
+  } catch (error) {
+    console.error('Error calculating follower count:', error);
+    return 0;
+  }
+};
+
+/**
+ * Calculate following count for a user from the userFollows collection
+ * 
+ * @param userId - The user ID to count following for
+ * @returns The number of users being followed
+ */
+export const calculateFollowingCount = async (userId: string): Promise<number> => {
+  try {
+    const followingQuery = query(
+      collection(getSyncFirebaseDb(), 'userFollows'),
+      where('followerId', '==', userId)
+    );
+    const snapshot = await getDocs(followingQuery);
+    return snapshot.size;
+  } catch (error) {
+    console.error('Error calculating following count:', error);
+    return 0;
   }
 };
 
