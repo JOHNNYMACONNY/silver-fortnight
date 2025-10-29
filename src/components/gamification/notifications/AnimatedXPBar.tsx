@@ -50,9 +50,10 @@ export const AnimatedXPBar: React.FC<AnimatedXPBarProps> = ({
   const config = sizeConfig[size];
 
   // Calculate progress percentage
+  // For infinite levels (max level), show a visual progression based on milestones
   const effectiveMax = Number.isFinite(maxXP) && maxXP > 0
     ? maxXP
-    : Math.max(currentXP, previousXP ?? currentXP, 1);
+    : Math.max(currentXP + 1000, (previousXP ?? currentXP) + 1000, 1000);
   const progressPercentage = Math.min((displayXP / effectiveMax) * 100, 100);
   const targetPercentage = Math.min((currentXP / effectiveMax) * 100, 100);
   const formattedMax = Number.isFinite(maxXP)
@@ -108,7 +109,7 @@ export const AnimatedXPBar: React.FC<AnimatedXPBarProps> = ({
           <span className={cn('font-medium', 'text-primary')}>
             Level {level}
           </span>
-          <span className={cn('text-muted')}>
+          <span className={cn('text-muted-foreground')}>
             {Math.round(displayXP).toLocaleString()} / {formattedMax} XP
           </span>
         </div>

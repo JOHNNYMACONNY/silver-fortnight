@@ -505,6 +505,15 @@ select.glassmorphic {
 
 /* Mobile-specific utility classes */
 @layer utilities {
+  /* Scrollbar utilities */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+  }
+
   /* Border utilities */
   .border-standard {
     border-width: 1px;
@@ -857,5 +866,30 @@ select.glassmorphic {
   
   .container-element {
     @apply py-3 px-3;
+  }
+  
+  /* Animated gradient for name hover */
+  @keyframes gradient {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+  
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+  }
+  
+  /* Gradient animation for name hover - only plays on hover */
+  .animate-gradient-hover {
+    animation: gradient 3s ease infinite;
+    animation-play-state: paused;
+  }
+  
+  .group:hover .animate-gradient-hover {
+    animation-play-state: running;
   }
 }

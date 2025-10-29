@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../AuthContext';
-import { getAllUsers, getRelatedUserIds, getUsersByIds, User } from '../services/firestore-exports';
+import { getAllUsers, getRelatedUserIds, getUsersByIds, getUserProfile, User } from '../services/firestore-exports';
 import { useToast } from '../contexts/ToastContext';
 import { Search, Filter, AlertCircle } from '../utils/icons';
 import { ErrorBoundary } from '../components/ui/ErrorBoundary';
@@ -63,6 +63,7 @@ export const UserDirectoryPage: React.FC = () => {
   // Relation filter via query params (?relation=followers|following&user=ID)
   const [relationFilter, setRelationFilter] = useState<'followers' | 'following' | null>(null);
   const [relationUserId, setRelationUserId] = useState<string | null>(null);
+  const [relationUserName, setRelationUserName] = useState<string | null>(null);
 
   // Unique skills and locations for filters
   const [availableSkills, setAvailableSkills] = useState<string[]>([]);
@@ -142,6 +143,12 @@ export const UserDirectoryPage: React.FC = () => {
       try {
         // If relation filter present, fetch via follows relations first
         if (relationFilter && relationUserId) {
+          // Fetch the relation user's display name
+          const { data: relationUser } = await getUserProfile(relationUserId);
+          if (relationUser) {
+            setRelationUserName(relationUser.displayName || relationUser.email || 'Unknown User');
+          }
+          
           const rel = await getRelatedUserIds(relationUserId, relationFilter, { limit: 100 });
           if (rel.error) {
             setError(rel.error.message);
@@ -232,7 +239,7 @@ export const UserDirectoryPage: React.FC = () => {
     };
 
     fetchUsers();
-  }, [currentUser, parseSkills]);
+  }, [currentUser, parseSkills, relationFilter, relationUserId]);
 
   const applyFilters = useCallback(() => {
     let result = [...users];
@@ -336,8 +343,8 @@ export const UserDirectoryPage: React.FC = () => {
             <p className="text-xl text-muted-foreground max-w-2xl animate-fadeIn mb-6">
               {relationFilter && relationUserId
                 ? relationFilter === 'followers'
-                  ? `Followers of ${relationUserId}`
-                  : `Following of ${relationUserId}`
+                  ? `Followers of ${relationUserName || relationUserId}`
+                  : `Following of ${relationUserName || relationUserId}`
                 : 'Find and connect with talented users, discover new skills, and build meaningful connections.'}
             </p>
             <Cluster gap="sm" align="center">
