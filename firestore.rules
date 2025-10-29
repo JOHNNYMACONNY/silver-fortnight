@@ -632,13 +632,12 @@ service cloud.firestore {
       allow create: if isAuthenticated() && (
         userId == request.auth.uid || isAdmin()
       );
-      // Allow users to update their own social stats, OR
-      // Allow authenticated users to update ONLY followersCount/followingCount fields (for follow/unfollow operations)
+      // SECURITY: Only allow users to update their OWN social stats or admins to update any
+      // Note: Follower counts should be updated server-side (Cloud Functions) or calculated
+      // from the userFollows collection to prevent forgery
       allow update: if isAuthenticated() && (
         userId == request.auth.uid ||
-        isAdmin() ||
-        // Allow updating only followers/following count fields for follow/unfollow operations
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['followersCount', 'followingCount', 'lastUpdated']))
+        isAdmin()
       );
       allow delete: if isAdmin();
     }

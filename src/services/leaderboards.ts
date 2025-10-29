@@ -460,9 +460,13 @@ export const followUser = async (
 
     await setDoc(followRef, followData);
 
-    // Update social stats
+    // Update social stats - only update follower's own followingCount
+    // Note: followerCount for the followed user should be calculated from userFollows
+    // collection or updated via Cloud Function for security (see firestore.rules)
     await updateSocialStats(followerId, 'following', 1);
-    await updateSocialStats(followingId, 'followers', 1);
+    
+    // TODO: Move follower count updates to Cloud Functions for production security
+    // For now, followerCount should be calculated from userFollows collection when displaying
 
     // Recompute reputation for both users (followers count changed)
     await Promise.all([
@@ -507,13 +511,17 @@ export const unfollowUser = async (
       return { success: false, error: 'Not following this user' };
     }
 
-    // Delete follow relationship
+    // Delete follow relationship (hard delete)
     const followDoc = snapshot.docs[0];
     await deleteDoc(followDoc.ref);
 
-    // Update social stats
+    // Update social stats - only update unfollower's own followingCount
+    // Note: followerCount for the unfollowed user should be calculated from userFollows
+    // collection or updated via Cloud Function for security (see firestore.rules)
     await updateSocialStats(followerId, 'following', -1);
-    await updateSocialStats(followingId, 'followers', -1);
+    
+    // TODO: Move follower count updates to Cloud Functions for production security
+    // For now, followerCount should be calculated from userFollows collection when displaying
 
     // Recompute reputation for both users
     await Promise.all([
@@ -525,6 +533,48 @@ export const unfollowUser = async (
   } catch (error: any) {
     console.error('Error unfollowing user:', error);
     return { success: false, error: error.message || 'Failed to unfollow user' };
+  }
+};
+
+/**
+ * Calculate follower count for a user from the userFollows collection
+ * This is a secure alternative to storing followerCount in socialStats
+ * which can be forged client-side.
+ * 
+ * @param userId - The user ID to count followers for
+ * @returns The number of followers
+ */
+export const calculateFollowerCount = async (userId: string): Promise<number> => {
+  try {
+    const followersQuery = query(
+      collection(getSyncFirebaseDb(), 'userFollows'),
+      where('followingId', '==', userId)
+    );
+    const snapshot = await getDocs(followersQuery);
+    return snapshot.size;
+  } catch (error) {
+    console.error('Error calculating follower count:', error);
+    return 0;
+  }
+};
+
+/**
+ * Calculate following count for a user from the userFollows collection
+ * 
+ * @param userId - The user ID to count following for
+ * @returns The number of users being followed
+ */
+export const calculateFollowingCount = async (userId: string): Promise<number> => {
+  try {
+    const followingQuery = query(
+      collection(getSyncFirebaseDb(), 'userFollows'),
+      where('followerId', '==', userId)
+    );
+    const snapshot = await getDocs(followingQuery);
+    return snapshot.size;
+  } catch (error) {
+    console.error('Error calculating following count:', error);
+    return 0;
   }
 };
 
