@@ -83,10 +83,11 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
       
       if (result.success) {
         setIsFollowing(true);
-        setSocialStats(prev => prev ? {
-          ...prev,
-          followersCount: prev.followersCount + 1
-        } : null);
+        // ON-DEMAND CALCULATION: Refresh stats to get accurate follower count
+        const updatedStats = await getUserSocialStats(userId);
+        if (updatedStats.success && updatedStats.data) {
+          setSocialStats(updatedStats.data);
+        }
         addToast('success', `You're now following ${userName}!`);
       } else {
         addToast('error', result.error || 'Failed to follow user');
@@ -108,10 +109,11 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
       
       if (result.success) {
         setIsFollowing(false);
-        setSocialStats(prev => prev ? {
-          ...prev,
-          followersCount: Math.max(0, prev.followersCount - 1)
-        } : null);
+        // ON-DEMAND CALCULATION: Refresh stats to get accurate follower count
+        const updatedStats = await getUserSocialStats(userId);
+        if (updatedStats.success && updatedStats.data) {
+          setSocialStats(updatedStats.data);
+        }
         addToast('success', `Unfollowed ${userName}`);
       } else {
         addToast('error', result.error || 'Failed to unfollow user');

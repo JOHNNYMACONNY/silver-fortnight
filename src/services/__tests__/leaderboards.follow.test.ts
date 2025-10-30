@@ -129,16 +129,18 @@ describe('Follow System Requirements', () => {
     /**
      * Expected side effects of followUser:
      * 1. Creates document in userFollows collection
-     * 2. Updates socialStats for follower (followingCount +1)
-     * 3. Updates socialStats for following (followersCount +1)
-     * 4. Triggers reputation recomputation for both users
-     * 5. Creates notification for followed user
+     * 2. Triggers reputation recomputation for follower
+     * 3. Creates notification for followed user
      * 
      * Expected side effects of unfollowUser:
      * 1. HARD DELETES document from userFollows collection
-     * 2. Updates socialStats for follower (followingCount -1)
-     * 3. Updates socialStats for following (followersCount -1)
-     * 4. Triggers reputation recomputation for both users
+     * 2. Triggers reputation recomputation for follower
+     * 
+     * NOTE (ON-DEMAND CALCULATION):
+     * Follower/following counts are NOT stored in socialStats anymore.
+     * Instead, they are calculated in real-time from the userFollows collection
+     * whenever getUserSocialStats() is called. This eliminates the need for
+     * Cloud Functions and prevents count forgery.
      */
     
     // This test serves as documentation

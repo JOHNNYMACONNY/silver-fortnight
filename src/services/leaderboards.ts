@@ -34,6 +34,49 @@ import {
 import { globalCache } from '../utils/cache';
 
 /**
+ * Refresh user's own social stats from userFollows collection
+ * This ensures their cached follower/following counts are up-to-date
+ * SECURITY: Can only update own stats due to Firestore rules
+ */
+export const refreshOwnSocialStats = async (userId: string): Promise<void> => {
+  try {
+    const db = getSyncFirebaseDb();
+    
+    // Calculate accurate counts from userFollows collection
+    const [followersCount, followingCount] = await Promise.all([
+      calculateFollowerCount(userId),
+      calculateFollowingCount(userId)
+    ]);
+    
+    const socialStatsRef = doc(db, 'socialStats', userId);
+    const statsSnap = await getDoc(socialStatsRef);
+    
+    if (statsSnap.exists()) {
+      // Update only the cached counts
+      await updateDoc(socialStatsRef, {
+        followersCount,
+        followingCount,
+        lastUpdated: Timestamp.now()
+      });
+    } else {
+      // Initialize if doesn't exist
+      const initial: Partial<SocialStats> = {
+        userId,
+        followersCount,
+        followingCount,
+        leaderboardAppearances: 0,
+        topRanks: {} as any,
+        reputationScore: 0,
+        lastUpdated: Timestamp.now()
+      };
+      await setDoc(socialStatsRef, initial as any);
+    }
+  } catch (err) {
+    console.warn('Failed to refresh social stats for', userId, err);
+  }
+};
+
+/**
  * Compute and persist composite reputation for a user
  * Formula: XP (50%), trades (30%), followers (20%) → 0–100
  * Normalization caps: XP/5000, trades/100, followers/1000
@@ -460,14 +503,9 @@ export const followUser = async (
 
     await setDoc(followRef, followData);
 
-    // SECURITY: Update social stats - only update follower's own followingCount
-    // Cannot update followed user's followersCount due to security rules (userId must match auth.uid)
-    // The followed user's followerCount should be calculated from userFollows collection
-    await updateSocialStats(followerId, 'following', 1);
-    
-    // SECURITY: Only recompute reputation for the current user (follower)
-    // Cannot update other user's socialStats due to security rules
-    // The followed user's reputation should be updated via Cloud Functions or when they next login
+    // ON-DEMAND CALCULATION: Follower/following counts are calculated in real-time
+    // from the userFollows collection when getUserSocialStats() is called.
+    // No need to update socialStats here - just update reputation score.
     await recomputeUserReputation(followerId);
 
     // Create notification for followed user
@@ -512,14 +550,9 @@ export const unfollowUser = async (
     const followDoc = snapshot.docs[0];
     await deleteDoc(followDoc.ref);
 
-    // SECURITY: Update social stats - only update unfollower's own followingCount
-    // Cannot update unfollowed user's followersCount due to security rules (userId must match auth.uid)
-    // The unfollowed user's followerCount should be calculated from userFollows collection
-    await updateSocialStats(followerId, 'following', -1);
-    
-    // SECURITY: Only recompute reputation for the current user (unfollower)
-    // Cannot update other user's socialStats due to security rules
-    // The unfollowed user's reputation should be updated via Cloud Functions or when they next login
+    // ON-DEMAND CALCULATION: Follower/following counts are calculated in real-time
+    // from the userFollows collection when getUserSocialStats() is called.
+    // No need to update socialStats here - just update reputation score.
     await recomputeUserReputation(followerId);
 
     return { success: true };
@@ -576,6 +609,14 @@ export const calculateFollowingCount = async (userId: string): Promise<number> =
  */
 export const getUserSocialStats = async (userId: string): Promise<ServiceResponse<SocialStats>> => {
   try {
+    // SPARK PLAN OPTIMIZATION: Always calculate accurate follower/following counts
+    // from the userFollows collection (source of truth) instead of relying on 
+    // stored counts that require Cloud Functions to stay updated.
+    const [followersCount, followingCount] = await Promise.all([
+      calculateFollowerCount(userId),
+      calculateFollowingCount(userId)
+    ]);
+
     const socialStatsRef = doc(getSyncFirebaseDb(), 'socialStats', userId);
     const snapshot = await getDoc(socialStatsRef);
 
@@ -583,8 +624,8 @@ export const getUserSocialStats = async (userId: string): Promise<ServiceRespons
       // Initialize stats if they don't exist
       const defaultStats: SocialStats = {
         userId,
-        followersCount: 0,
-        followingCount: 0,
+        followersCount, // Use calculated count, not 0
+        followingCount, // Use calculated count, not 0
         leaderboardAppearances: 0,
         topRanks: {} as Record<LeaderboardCategory, number>,
         lastUpdated: Timestamp.now()
@@ -594,7 +635,17 @@ export const getUserSocialStats = async (userId: string): Promise<ServiceRespons
       return { success: true, data: defaultStats };
     }
 
-    return { success: true, data: snapshot.data() as SocialStats };
+    // Return socialStats data but with ACCURATE follower/following counts
+    // This ensures counts are always correct even without Cloud Functions
+    const stats = snapshot.data() as SocialStats;
+    return { 
+      success: true, 
+      data: {
+        ...stats,
+        followersCount, // Override with calculated count
+        followingCount  // Override with calculated count
+      }
+    };
   } catch (error: any) {
     console.error('Error getting social stats:', error);
     return { success: false, error: error.message || 'Failed to get social stats' };
