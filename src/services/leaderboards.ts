@@ -11,7 +11,8 @@ import {
   limit,
   Timestamp,
   runTransaction,
-  updateDoc
+  updateDoc,
+  deleteDoc
 } from 'firebase/firestore';
 import {
   LeaderboardEntry,
@@ -497,7 +498,7 @@ export const followUser = async (
       followerId,
       followingId,
       followingUserName: followingUserData?.displayName || followingUserData?.name || 'Unknown User',
-      followingUserAvatar: followingUserData?.avatar || followingUserData?.profilePicture,
+      followingUserAvatar: followingUserData?.avatar || followingUserData?.profilePicture || '',
       createdAt: Timestamp.now()
     };
 
@@ -563,6 +564,27 @@ export const unfollowUser = async (
 };
 
 /**
+ * Check if a user is following another user
+ * @param followerId - The user who might be following
+ * @param followingId - The user who might be followed
+ * @returns true if followerId is following followingId
+ */
+export const checkIsFollowing = async (followerId: string, followingId: string): Promise<boolean> => {
+  try {
+    const followQuery = query(
+      collection(getSyncFirebaseDb(), 'userFollows'),
+      where('followerId', '==', followerId),
+      where('followingId', '==', followingId)
+    );
+    const snapshot = await getDocs(followQuery);
+    return !snapshot.empty;
+  } catch (error) {
+    console.error('Error checking follow status:', error);
+    return false;
+  }
+};
+
+/**
  * Calculate follower count for a user from the userFollows collection
  * This is a secure alternative to storing followerCount in socialStats
  * which can be forged client-side.
@@ -621,17 +643,17 @@ export const getUserSocialStats = async (userId: string): Promise<ServiceRespons
     const snapshot = await getDoc(socialStatsRef);
 
     if (!snapshot.exists()) {
-      // Initialize stats if they don't exist
+      // Return calculated stats without persisting for other users
+      // (Firestore rules prevent cross-user document creation)
       const defaultStats: SocialStats = {
         userId,
-        followersCount, // Use calculated count, not 0
-        followingCount, // Use calculated count, not 0
+        followersCount, // Use calculated count
+        followingCount, // Use calculated count
         leaderboardAppearances: 0,
         topRanks: {} as Record<LeaderboardCategory, number>,
         lastUpdated: Timestamp.now()
       };
 
-      await setDoc(socialStatsRef, defaultStats);
       return { success: true, data: defaultStats };
     }
 

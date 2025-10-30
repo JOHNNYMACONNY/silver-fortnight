@@ -15,7 +15,8 @@ import {
 import {
   followUser,
   unfollowUser,
-  getUserSocialStats
+  getUserSocialStats,
+  checkIsFollowing
 } from '../../services/leaderboards';
 import { useAuth } from '../../AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -70,6 +71,26 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
 
     fetchSocialStats();
   }, [userId]);
+
+  // Check if current user is following this user
+  useEffect(() => {
+    const checkFollowStatus = async () => {
+      if (!user?.uid || isOwnProfile) {
+        setIsFollowing(false);
+        return;
+      }
+
+      try {
+        const following = await checkIsFollowing(user.uid, userId);
+        setIsFollowing(following);
+      } catch (error) {
+        console.error('Failed to check follow status:', error);
+        setIsFollowing(false);
+      }
+    };
+
+    checkFollowStatus();
+  }, [user?.uid, userId, isOwnProfile]);
 
   const handleFollow = async () => {
     if (!user?.uid) {
