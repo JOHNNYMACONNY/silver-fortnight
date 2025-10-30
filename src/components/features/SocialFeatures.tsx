@@ -34,6 +34,8 @@ interface SocialFeaturesProps {
 interface UserSocialStatsProps {
   userId: string;
   compact?: boolean;
+  onFollowersClick?: () => void;
+  onLeaderboardClick?: () => void;
 }
 
 export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
@@ -58,10 +60,40 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
       try {
         setStatsLoading(true);
         const result = await getUserSocialStats(userId);
+        let stats = result.success && result.data ? result.data : null;
         
-        if (result.success && result.data) {
-          setSocialStats(result.data);
+        // Query actual follower count from userFollows for accuracy
+        if (stats) {
+          try {
+            const { db } = await import('../../firebase-config');
+            const { collection, query, where, getDocs } = await import('firebase/firestore');
+            
+            // Get actual followers count
+            const followersQuery = query(
+              collection(db, 'userFollows'),
+              where('followingId', '==', userId)
+            );
+            const followersSnapshot = await getDocs(followersQuery);
+            
+            // Get actual following count
+            const followingQuery = query(
+              collection(db, 'userFollows'),
+              where('followerId', '==', userId)
+            );
+            const followingSnapshot = await getDocs(followingQuery);
+            
+            // Update stats with actual counts
+            stats = {
+              ...stats,
+              followersCount: followersSnapshot.size,
+              followingCount: followingSnapshot.size
+            };
+          } catch (error) {
+            console.warn('Could not fetch actual follow counts, using socialStats:', error);
+          }
         }
+        
+        setSocialStats(stats);
       } catch (error) {
         console.error('Failed to load social stats:', error);
       } finally {
@@ -358,7 +390,9 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
 
 export const UserSocialStats: React.FC<UserSocialStatsProps> = ({
   userId,
-  compact = false
+  compact = false,
+  onFollowersClick,
+  onLeaderboardClick
 }) => {
   const [socialStats, setSocialStats] = useState<SocialStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -366,10 +400,42 @@ export const UserSocialStats: React.FC<UserSocialStatsProps> = ({
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        // Get socialStats for most data
         const result = await getUserSocialStats(userId);
-        if (result.success && result.data) {
-          setSocialStats(result.data);
+        let stats = result.success && result.data ? result.data : null;
+        
+        // Query actual follower count from userFollows for accuracy
+        if (stats) {
+          try {
+            const { db } = await import('../../firebase-config');
+            const { collection, query, where, getDocs } = await import('firebase/firestore');
+            
+            // Get actual followers count
+            const followersQuery = query(
+              collection(db, 'userFollows'),
+              where('followingId', '==', userId)
+            );
+            const followersSnapshot = await getDocs(followersQuery);
+            
+            // Get actual following count
+            const followingQuery = query(
+              collection(db, 'userFollows'),
+              where('followerId', '==', userId)
+            );
+            const followingSnapshot = await getDocs(followingQuery);
+            
+            // Update stats with actual counts
+            stats = {
+              ...stats,
+              followersCount: followersSnapshot.size,
+              followingCount: followingSnapshot.size
+            };
+          } catch (error) {
+            console.warn('Could not fetch actual follow counts, using socialStats:', error);
+          }
         }
+        
+        setSocialStats(stats);
       } catch (error) {
         console.error('Failed to load social stats:', error);
       } finally {
@@ -396,14 +462,24 @@ export const UserSocialStats: React.FC<UserSocialStatsProps> = ({
   if (compact) {
     return (
       <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-        <div className="flex items-center space-x-1">
+        <button
+          type="button"
+          onClick={onFollowersClick}
+          className="flex items-center space-x-1 hover:text-foreground transition-colors cursor-pointer"
+          aria-label={`${socialStats.followersCount} followers`}
+        >
           <Users className="w-4 h-4" />
           <span>{socialStats.followersCount}</span>
-        </div>
-        <div className="flex items-center space-x-1">
+        </button>
+        <button
+          type="button"
+          onClick={onLeaderboardClick}
+          className="flex items-center space-x-1 hover:text-foreground transition-colors cursor-pointer"
+          aria-label={`${socialStats.leaderboardAppearances} leaderboard appearances`}
+        >
           <TrendingUp className="w-4 h-4" />
           <span>{socialStats.leaderboardAppearances}</span>
-        </div>
+        </button>
       </div>
     );
   }

@@ -495,6 +495,19 @@
       "fields": [
         {"fieldPath": "followerId", "order": "ASCENDING"},
         {"fieldPath": "followingId", "order": "ASCENDING"}
+      "collectionGroup": "collaborations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "creatorId", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "collaborations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "participants", "arrayConfig": "CONTAINS"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
       ]
     },
     {

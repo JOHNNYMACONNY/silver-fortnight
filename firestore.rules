@@ -138,6 +138,29 @@ service cloud.firestore {
           isAdmin()
         );
       }
+
+      // Portfolio subcollection - showcase completed trades, collaborations, and challenges
+      match /portfolio/{itemId} {
+        // Anyone can read visible portfolio items (public showcase)
+        allow read: if (resource != null && resource.data.visible == true) ||
+                       // Users can read all their own portfolio items (including hidden)
+                       isOwner(userId) ||
+                       isAdmin();
+        
+        // Only the user can create items in their own portfolio
+        allow create: if isOwner(userId) && 
+                         request.resource.data.userId == userId;
+        
+        // Only the user can update their own portfolio items
+        // Prevent changing the source (trade/collaboration/challenge) after creation
+        allow update: if isOwner(userId) && 
+                         request.resource.data.sourceId == resource.data.sourceId &&
+                         request.resource.data.sourceType == resource.data.sourceType &&
+                         request.resource.data.userId == userId;
+        
+        // Only the user can delete their own portfolio items
+        allow delete: if isOwner(userId) || isAdmin();
+      }
     }
 
     // Trade records
@@ -605,8 +628,17 @@ service cloud.firestore {
     // Social Stats Collection - for social features and leaderboard appearances
     match /socialStats/{userId} {
       allow read: if isAuthenticated(); // Allow reading for social features
-      allow create, update: if isAuthenticated() && (
+      // Allow users to create their own social stats or admins to create any
+      allow create: if isAuthenticated() && (
         userId == request.auth.uid || isAdmin()
+      );
+      // Allow users to update their own social stats, OR
+      // Allow authenticated users to update ONLY followersCount/followingCount fields (for follow/unfollow operations)
+      allow update: if isAuthenticated() && (
+        userId == request.auth.uid ||
+        isAdmin() ||
+        // Allow updating only followers/following count fields for follow/unfollow operations
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['followersCount', 'followingCount', 'lastUpdated']))
       );
       allow delete: if isAdmin();
     }

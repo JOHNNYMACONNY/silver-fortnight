@@ -23,10 +23,12 @@ export interface RecentActivity {
 
 export const getDashboardStats = async (userId: string): Promise<ServiceResponse<DashboardStats>> => {
   try {
-    // Fetch all data in parallel, but handle errors gracefully
-    const [tradesResult, xpResult, connectionsResult] = await Promise.allSettled([
+    // Fetch XP separately to ensure it doesn't fail silently
+    const xpData = await getUserXP(userId);
+    
+    // Fetch other data in parallel
+    const [tradesResult, connectionsResult] = await Promise.allSettled([
       getUserTrades(userId, { includeNonPublic: true }),
-      getUserXP(userId),
       getConnections(userId)
     ]);
 
@@ -45,10 +47,12 @@ export const getDashboardStats = async (userId: string): Promise<ServiceResponse
       ).length;
     }
 
-    // Handle XP data with fallbacks
+    // Handle XP data
     let currentXP = 0;
-    if (xpResult.status === 'fulfilled' && xpResult.value.success && xpResult.value.data) {
-      currentXP = xpResult.value.data.totalXP;
+    if (xpData.success && xpData.data) {
+      currentXP = xpData.data.totalXP;
+    } else {
+      console.warn('⚠️ Failed to fetch XP data:', xpData.error);
     }
     
     // Calculate XP gained this week (with error handling)

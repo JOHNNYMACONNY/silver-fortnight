@@ -4,6 +4,7 @@ import { getUserXP, calculateLevel } from '../../services/gamification';
 import { UserXP, LevelCalculationResult } from '../../types/gamification';
 import { useAuth } from '../../AuthContext';
 import AnimatedXPBar from './notifications/AnimatedXPBar';
+import { Flame, Check } from 'lucide-react';
 
 interface XPDisplayProps {
   userId?: string;
@@ -74,10 +75,12 @@ export const XPDisplay: React.FC<XPDisplayProps> = ({
 
   if (compact) {
     return (
-      <div className={`flex items-center space-x-2 ${className}`}>
+      <div className={`flex items-center gap-2 ${className}`}>
         {showLevel && (
-          <div className="flex items-center space-x-1">
-            <span className="text-lg">{levelInfo.currentLevelTier.icon}</span>
+          <div className="flex items-center gap-1.5">
+            <div className="p-1 rounded bg-gradient-to-br from-orange-500/20 to-red-500/20">
+              <Flame className="w-4 h-4 text-orange-500" />
+            </div>
             <span className="text-sm font-medium text-foreground">
               Lv.{levelInfo.currentLevel}
             </span>
@@ -92,17 +95,19 @@ export const XPDisplay: React.FC<XPDisplayProps> = ({
 
   return (
     <motion.div
-      className={`bg-card text-card-foreground rounded-lg p-4 shadow-sm border border-border ${className}`}
+      className={`glassmorphic rounded-xl p-6 border border-border/50 bg-gradient-to-br from-card/50 to-card/30 backdrop-blur-md ${className}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
       {showLevel && (
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <span className="text-2xl">{levelInfo.currentLevelTier.icon}</span>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-lg bg-gradient-to-br from-orange-500/20 to-red-500/20 shadow-lg">
+              <Flame className="w-6 h-6 text-orange-500" />
+            </div>
             <div>
-              <h3 className="text-lg font-semibold text-foreground">
+              <h3 className="text-xl font-semibold text-foreground">
                 Level {levelInfo.currentLevel}
               </h3>
               <p className="text-sm text-muted-foreground">
@@ -111,7 +116,7 @@ export const XPDisplay: React.FC<XPDisplayProps> = ({
             </div>
           </div>
           <div className="text-right">
-            <div className="text-lg font-bold text-foreground">
+            <div className="text-2xl font-bold text-foreground">
               {userXP.totalXP.toLocaleString()}
             </div>
             <div className="text-sm text-muted-foreground">
@@ -135,14 +140,14 @@ export const XPDisplay: React.FC<XPDisplayProps> = ({
 
       {/* Level Benefits */}
       {showLevel && levelInfo.currentLevelTier.benefits.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-border">
-          <h4 className="text-sm font-medium text-foreground mb-2">
+        <div className="mt-4 pt-4 border-t border-border/50">
+          <h4 className="text-sm font-medium text-foreground mb-3">
             Level Benefits:
           </h4>
-          <ul className="text-xs text-muted-foreground space-y-1">
+          <ul className="text-sm text-muted-foreground space-y-2">
             {levelInfo.currentLevelTier.benefits.map((benefit, index) => (
-              <li key={index} className="flex items-center space-x-1">
-                <span className="text-green-500">✓</span>
+              <li key={index} className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                 <span>{benefit}</span>
               </li>
             ))}

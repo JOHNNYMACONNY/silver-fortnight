@@ -251,6 +251,31 @@ export const completeChallenge = async (
       }
     }
 
+    // Generate portfolio item for the completed challenge
+    // Note: We continue even if portfolio generation fails to avoid blocking challenge completion
+    try {
+      const { generateChallengePortfolioItem } = await import('./portfolio');
+      await generateChallengePortfolioItem(
+        {
+          id: challenge.id,
+          title: challenge.title,
+          description: challenge.description,
+          category: challenge.category,
+          difficulty: challenge.difficulty,
+          skillTags: challenge.skillTags
+        },
+        {
+          completedAt: updatedUserChallenge.completedAt
+        },
+        userId,
+        completionData,
+        true // defaultVisibility
+      );
+    } catch (portfolioError: any) {
+      // Log portfolio generation error but don't fail the challenge completion
+      console.warn('Portfolio generation failed for challenge:', portfolioError?.message);
+    }
+
     return {
       success: true,
       userChallenge: updatedUserChallenge,

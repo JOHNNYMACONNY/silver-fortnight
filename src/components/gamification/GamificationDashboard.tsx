@@ -19,6 +19,7 @@ import { StreakUpcomingMilestones } from "../features/StreakUpcomingMilestones";
 import { markSkillPracticeDay } from "../../services/streaks";
 import { useToast } from "../../contexts/ToastContext";
 import { formatTransactionDate } from "./utils/transactionDates";
+import { Flame, Target, Zap, Trophy, TrendingUp, ChevronRight, Activity } from "lucide-react";
 
 interface GamificationDashboardProps {
   userId?: string;
@@ -121,23 +122,24 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
   const recentXP = xpHistory.slice(0, 5);
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`w-full space-y-6 ${className}`}>
       {/* XP Overview */}
       <XPDisplay userId={targetUserId} showProgress={true} showLevel={true} />
       {targetUserId && (
-        <div className="space-y-2 mt-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="w-full space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <WeeklyXPGoal userId={targetUserId} />
             {showBreakdown ? (
               <XPBreakdown userId={targetUserId} />
             ) : (
-              <div className="glassmorphic border-glass backdrop-blur-xl bg-white/5 rounded-xl p-4 flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                  See where your XP came from
+              <div className="glassmorphic rounded-xl p-4 flex items-center justify-between border border-border/50 bg-gradient-to-br from-card/50 to-card/30 backdrop-blur-md hover:border-primary/30 transition-all duration-300">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Activity className="w-4 h-4" />
+                  <span>See where your XP came from</span>
                 </div>
                 <button
                   type="button"
-                  className="text-sm text-orange-500 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 transition-colors duration-200"
+                  className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium transition-colors duration-200"
                   onClick={() => {
                     setShowBreakdown(true);
                     try {
@@ -149,7 +151,8 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
                     } catch {}
                   }}
                 >
-                  See breakdown
+                  <span>See breakdown</span>
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             )}
@@ -158,7 +161,7 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
             <div className="flex justify-end">
               <button
                 type="button"
-                className="text-xs text-muted-foreground hover:text-foreground"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                 onClick={() => {
                   setShowBreakdown(false);
                   try {
@@ -178,7 +181,7 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex space-x-1 glassmorphic border-glass backdrop-blur-xl bg-white/5 rounded-xl p-1">
+      <div className="flex gap-1 glassmorphic rounded-xl p-1 border border-border/50 backdrop-blur-md">
         {[
           { id: "overview", label: "Overview" },
           { id: "achievements", label: "Achievements" },
@@ -187,10 +190,10 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
               activeTab === tab.id
-                ? "bg-card text-card-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
             }`}
           >
             {tab.label}
@@ -206,25 +209,31 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
         transition={{ duration: 0.3 }}
       >
         {activeTab === "overview" && (
-          <div className="space-y-6">
+          <div className="w-full space-y-6">
             {/* Streaks Summary */}
-            <div className="bg-card text-card-foreground rounded-lg p-6 border border-border">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-card-foreground">
-                  Streaks
-                </h3>
+            <div className="glassmorphic rounded-xl p-6 border border-border/50 bg-gradient-to-br from-card/50 to-card/30 backdrop-blur-md">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500/20 to-red-500/20">
+                    <Flame className="w-5 h-5 text-orange-500" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    Streaks
+                  </h3>
+                </div>
                 {targetUserId && (
                   <button
                     type="button"
                     onClick={() => setActiveTab("history")}
-                    className="text-sm font-medium text-primary hover:underline"
+                    className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
                     aria-label="View streak details"
                   >
-                    View streak details
+                    <span>View details</span>
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 )}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                 {targetUserId && (
                   <>
                     <StreakWidget userId={targetUserId} type="login" />
@@ -236,12 +245,17 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
             </div>
 
             {/* Recent Achievements */}
-            <div className="bg-card text-card-foreground rounded-lg p-6 border border-border">
-              <h3 className="text-lg font-semibold text-card-foreground mb-4">
-                Recent Achievements
-              </h3>
+            <div className="glassmorphic rounded-xl p-6 border border-border/50 bg-gradient-to-br from-card/50 to-card/30 backdrop-blur-md">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-yellow-500/20">
+                  <Trophy className="w-5 h-5 text-amber-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground">
+                  Recent Achievements
+                </h3>
+              </div>
               {userAchievements.length > 0 ? (
-                <div className="flex flex-wrap gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {userAchievements.slice(0, 6).map((userAchievement) => {
                     const achievement = ACHIEVEMENTS.find(
                       (a) => a.id === userAchievement.achievementId
@@ -260,7 +274,7 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
                   })}
                 </div>
               ) : (
-                <p className="text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   No achievements unlocked yet. Complete trades and
                   collaborations to earn your first achievements!
                 </p>
@@ -268,27 +282,32 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
             </div>
 
             {/* Recent XP Activity */}
-            <div className="bg-card text-card-foreground rounded-lg p-6 border border-border">
-              <h3 className="text-lg font-semibold text-card-foreground mb-4">
-                Recent Activity
-              </h3>
+            <div className="glassmorphic rounded-xl p-6 border border-border/50 bg-gradient-to-br from-card/50 to-card/30 backdrop-blur-md">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20">
+                  <TrendingUp className="w-5 h-5 text-blue-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground">
+                  Recent Activity
+                </h3>
+              </div>
               {recentXP.length > 0 ? (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {recentXP.map((transaction) => (
                     <div
                       key={transaction.id}
-                      className="flex items-center justify-between py-2 border-b border-border last:border-b-0"
+                      className="flex items-center justify-between py-3 px-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
                     >
-                      <div>
-                        <p className="text-sm font-medium text-card-foreground">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">
                           {transaction.description}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {formatTransactionDate(transaction.createdAt)}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                      <div className="flex-shrink-0 ml-3">
+                        <span className="text-sm font-semibold text-green-500">
                           +{transaction.amount} XP
                         </span>
                       </div>
@@ -296,7 +315,7 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   No recent activity. Start trading or collaborating to earn XP!
                 </p>
               )}
@@ -305,11 +324,16 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
         )}
 
         {activeTab === "achievements" && (
-          <div className="bg-card text-card-foreground rounded-lg p-6 border border-border">
-            <h3 className="text-lg font-semibold text-card-foreground mb-4">
-              All Achievements ({userAchievements.length}/{ACHIEVEMENTS.length})
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="glassmorphic rounded-xl p-6 border border-border/50 bg-gradient-to-br from-card/50 to-card/30 backdrop-blur-md">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-yellow-500/20">
+                <Trophy className="w-5 h-5 text-amber-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">
+                All Achievements ({userAchievements.length}/{ACHIEVEMENTS.length})
+              </h3>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {ACHIEVEMENTS.map((achievement) => {
                 const isUnlocked = unlockedAchievementIds.has(achievement.id);
 
@@ -328,21 +352,19 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
         )}
 
         {activeTab === "history" && (
-          <div className="bg-card text-card-foreground rounded-lg p-6 border border-border">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-card-foreground">
-                XP History
-              </h3>
-            </div>
-            {/* Optional: Streaks Panel */}
+          <div className="w-full space-y-6">
+            {/* Streak Details */}
             {targetUserId && (
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-md font-semibold text-card-foreground">
+              <div className="glassmorphic rounded-xl p-6 border border-border/50 bg-gradient-to-br from-card/50 to-card/30 backdrop-blur-md">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500/20 to-red-500/20">
+                    <Flame className="w-5 h-5 text-orange-500" />
+                  </div>
+                  <h4 className="text-lg font-semibold text-foreground">
                     Streak Details
                   </h4>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                   <div className="space-y-3">
                     <StreakWidget userId={targetUserId} type="login" />
                     <StreakUpcomingMilestones
@@ -366,7 +388,7 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
                     <div className="flex justify-end">
                       <button
                         type="button"
-                        className="text-xs text-primary hover:underline"
+                        className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
                         onClick={async () => {
                           try {
                             await markSkillPracticeDay(targetUserId);
@@ -383,38 +405,50 @@ export const GamificationDashboard: React.FC<GamificationDashboardProps> = ({
                 </div>
               </div>
             )}
-            {xpHistory.length > 0 ? (
-              <div className="space-y-3">
-                {xpHistory.map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className="flex items-center justify-between py-3 border-b border-border last:border-b-0"
-                  >
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-card-foreground">
-                        {transaction.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatTransactionDate(transaction.createdAt, {
-                          includeTime: true,
-                        })}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Source: {transaction.source.replace(/_/g, " ")}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-lg font-bold text-green-600 dark:text-green-400">
-                        +{transaction.amount}
-                      </span>
-                      <p className="text-xs text-muted-foreground">XP</p>
-                    </div>
-                  </div>
-                ))}
+            
+            {/* XP History */}
+            <div className="glassmorphic rounded-xl p-6 border border-border/50 bg-gradient-to-br from-card/50 to-card/30 backdrop-blur-md">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20">
+                  <Activity className="w-5 h-5 text-blue-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground">
+                  XP History
+                </h3>
               </div>
-            ) : (
-              <p className="text-muted-foreground">No XP history available.</p>
-            )}
+              {xpHistory.length > 0 ? (
+                <div className="space-y-2">
+                  {xpHistory.map((transaction) => (
+                    <div
+                      key={transaction.id}
+                      className="flex items-center justify-between py-3 px-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {transaction.description}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatTransactionDate(transaction.createdAt, {
+                            includeTime: true,
+                          })}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Source: {transaction.source.replace(/_/g, " ")}
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0 ml-3 text-right">
+                        <span className="text-lg font-semibold text-green-500">
+                          +{transaction.amount}
+                        </span>
+                        <p className="text-xs text-muted-foreground">XP</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-6">No XP history available.</p>
+              )}
+            </div>
           </div>
         )}
       </motion.div>

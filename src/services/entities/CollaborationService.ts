@@ -163,10 +163,11 @@ export class CollaborationService extends BaseService<Collaboration> {
    */
   async getCollaborationsByCreator(creatorId: string, limit: number = 20): Promise<ServiceResult<Collaboration[]>> {
     try {
+      // Query without orderBy to avoid requiring composite index
+      // Sort in-memory instead
       const constraints: QueryConstraint[] = [
         where('creatorId', '==', creatorId),
-        orderBy('createdAt', 'desc'),
-        limitQuery(limit)
+        limitQuery(limit * 2) // Fetch more to ensure we have enough after sorting
       ];
 
       const result = await this.list(constraints);
@@ -174,7 +175,12 @@ export class CollaborationService extends BaseService<Collaboration> {
         return { data: null, error: result.error };
       }
 
-      return { data: result.data?.items || [], error: null };
+      // Sort by createdAt descending in-memory
+      const sorted = (result.data?.items || [])
+        .sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis())
+        .slice(0, limit);
+
+      return { data: sorted, error: null };
     } catch (error) {
       const appError = new AppError(
         'Failed to get collaborations by creator',
