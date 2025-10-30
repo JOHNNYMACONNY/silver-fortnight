@@ -87,6 +87,10 @@ tradeya-45ede-5c7a82833054.json
 *.tsbuildinfo
 tsconfig.tsbuildinfo
 
+# Firebase Functions compiled output
+functions/lib/
+functions/.tsbuildinfo
+
 # Runtime data
 pids/
 *.pid

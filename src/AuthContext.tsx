@@ -25,6 +25,7 @@ import {
   handleGoogleRedirectResult,
   isReturningFromRedirect,
 } from "./utils/firebaseGoogleAuth";
+import { refreshOwnSocialStats } from "./services/leaderboards";
 
 // Admin configuration - can be moved to environment variables later
 const ADMIN_UIDS: string[] = [
@@ -97,6 +98,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             } catch {
               /* non-blocking */
             }
+            // Refresh user's own social stats on OAuth sign-in
+            try {
+              await refreshOwnSocialStats(result.user.uid);
+            } catch {
+              /* non-blocking */
+            }
           }
         } catch (error) {
           console.error("AuthProvider: Error handling redirect result", error);
@@ -122,6 +129,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           // Update login streak on session restore
           try {
             await markLoginDay(user.uid);
+          } catch {
+            /* non-blocking */
+          }
+          // Refresh user's own social stats (follower/following counts) from userFollows collection
+          try {
+            await refreshOwnSocialStats(user.uid);
           } catch {
             /* non-blocking */
           }
@@ -165,6 +178,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       } catch {
         /* non-blocking */
       }
+      // Refresh user's own social stats on email sign-in
+      try {
+        await refreshOwnSocialStats(result.user.uid);
+      } catch {
+        /* non-blocking */
+      }
       console.log("AuthProvider: Email sign in successful");
     } catch (err) {
       console.error("AuthProvider: Email sign in error", err);
@@ -195,6 +214,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       // Update login streak on successful sign-up
       try {
         await markLoginDay(result.user.uid);
+      } catch {
+        /* non-blocking */
+      }
+      // Refresh user's own social stats on sign-up
+      try {
+        await refreshOwnSocialStats(result.user.uid);
       } catch {
         /* non-blocking */
       }
@@ -229,6 +254,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         // Update login streak on successful Google sign-in
         try {
           await markLoginDay(result.user.uid);
+        } catch {
+          /* non-blocking */
+        }
+        // Refresh user's own social stats on Google sign-in
+        try {
+          await refreshOwnSocialStats(result.user.uid);
         } catch {
           /* non-blocking */
         }

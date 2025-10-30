@@ -90,23 +90,37 @@ These functions:
 
 ---
 
-## 📋 Migration Path
+## 📋 Final Solution
 
-### Short-Term (Current Implementation)
-**Status:** ✅ Implemented
+### Production Implementation (Current)
+**Status:** ✅ Implemented & Deployed
 
-- Follower counts calculated on-demand from `userFollows` collection
+- **On-demand calculation** from `userFollows` collection
 - Use `calculateFollowerCount()` and `calculateFollowingCount()` helper functions
-- Performance impact: Minor (additional Firestore read per user displayed)
-- Security: Fully secure
+- `getUserSocialStats()` always returns accurate counts from source of truth
+- Performance impact: Minor (additional Firestore query per user displayed)
+- Security: Fully secure - counts cannot be forged
+- **Stays on Firebase Spark (free) plan** - no Cloud Functions needed
 
-### Medium-Term (Recommended for Production)
-**Status:** 🔶 TODO
+**Benefits:**
+- ✅ **Always accurate** - self-healing, no sync issues
+- ✅ **Cannot be forged** - computed from authenticated writes to `userFollows`
+- ✅ **Free tier compatible** - no Blaze plan required
+- ✅ **Simpler architecture** - less code to maintain
+- ✅ **Defense in depth** - even if rules are bypassed, counts are recalculated
 
-Implement Cloud Functions to maintain follower counts:
+**Implementation Details:**
+- `getUserSocialStats()` calls `calculateFollowerCount()` and `calculateFollowingCount()` every time (lines 615-618 in leaderboards.ts)
+- Returns calculated counts, overriding any stored values (lines 644-647 in leaderboards.ts)
+- SocialFeatures component refreshes after follow/unfollow for immediate UI updates
+
+### Alternative Approach (Not Implemented)
+**Cloud Functions with Cached Counts**
+
+We considered using Cloud Functions to maintain cached follower counts:
 
 ```javascript
-// Cloud Function (Server-side with Admin SDK)
+// NOT IMPLEMENTED - Requires Blaze plan
 exports.updateFollowerCount = functions.firestore
   .document('userFollows/{followId}')
   .onWrite(async (change, context) => {
@@ -115,18 +129,23 @@ exports.updateFollowerCount = functions.firestore
   });
 ```
 
-**Benefits:**
-- Maintains cached counts in `socialStats` for fast reads
-- Secure (server-side only, uses Admin SDK)
-- Automatic updates via triggers
-- Better performance for leaderboards
+**Why we didn't implement this:**
+- ❌ Requires Firebase Blaze (pay-as-you-go) plan
+- ❌ More complex (introduces Cloud Functions dependency)
+- ❌ Additional failure points (trigger might fail)
+- ❌ Doesn't add significant value for our scale
+- ✅ On-demand calculation is fast enough and more reliable
 
-### Long-Term (Enterprise Scale)
-**Status:** 💭 Future Consideration
+### Future Optimization (If Needed)
+**Status:** 💭 Only if scale demands it
 
-- Implement distributed counter shards for high-scale applications
-- Use batched updates to minimize writes
-- Consider caching strategies (Redis, etc.)
+If follower queries become a performance bottleneck:
+- Add client-side caching (cache counts for 5 minutes in UI)
+- Use `socialStats` as a cache, refresh periodically with on-demand calculation
+- Implement pagination for users with thousands of followers
+- Consider Redis cache for high-traffic pages
+
+**Current scale:** On-demand calculation is acceptable and preferred for simplicity and reliability.
 
 ---
 
@@ -169,8 +188,9 @@ const count = await calculateFollowerCount('someUser');
 
 ### Performance Notes
 - Follower count calculation requires a Firestore query instead of a simple document read
-- For most use cases, this is acceptable
-- For high-traffic leaderboards, consider implementing Cloud Functions (medium-term solution)
+- For most use cases, this is acceptable and preferred for security and reliability
+- Query cost scales with follower count, but Firebase free tier is generous (50K reads/day)
+- If needed, client-side caching can reduce query frequency
 
 ---
 
@@ -179,10 +199,12 @@ const count = await calculateFollowerCount('someUser');
 - [x] Update `firestore.rules` with secure rules
 - [x] Remove client-side updates to other users' `followersCount`
 - [x] Add `calculateFollowerCount()` and `calculateFollowingCount()` helper functions
+- [x] Implement on-demand calculation in `getUserSocialStats()`
+- [x] Update `SocialFeatures` component to refresh counts after follow/unfollow
+- [x] Add comprehensive tests for on-demand calculation
 - [x] Update documentation
-- [ ] Deploy new `firestore.rules` to Firebase
-- [ ] (Optional) Implement Cloud Functions for follower count updates
-- [ ] (Optional) Migrate existing components to use calculated counts
+- [x] Deploy new `firestore.rules` to Firebase
+- [x] Deploy updated code to production
 
 ---
 
@@ -198,18 +220,20 @@ const count = await calculateFollowerCount('someUser');
 
 1. **Never trust client-side updates** for user-owned data that affects other users
 2. **Security rules must enforce ownership** - don't rely on field-level restrictions alone
-3. **Calculated counts are more secure** than cached counts (at a performance cost)
-4. **Cloud Functions with Admin SDK** are the best solution for cross-user updates
-5. **Always review security rules** for privilege escalation vulnerabilities
+3. **Calculated counts are more secure** than cached counts - the slight performance cost is worth it for data integrity
+4. **On-demand calculation** from source of truth eliminates sync issues and stays on free tier
+5. **Cloud Functions add complexity** - only use when absolutely necessary for scale
+6. **Always review security rules** for privilege escalation vulnerabilities
 
 ---
 
 ## 📞 Questions & Support
 
 For questions about this security fix or implementation details, see:
-- `FOLLOW_SYSTEM_COMPLETE_DOCUMENTATION.md` - Complete follow system guide
+- `SECURITY_FIX_VERIFICATION.md` - Security fix verification report
+- `SPARK_PLAN_SOLUTION.md` - On-demand calculation architecture
+- `src/services/__tests__/leaderboards.ondemand.test.ts` - Implementation tests
 - Firebase Security Rules documentation
-- Cloud Functions documentation
 
 ---
 
