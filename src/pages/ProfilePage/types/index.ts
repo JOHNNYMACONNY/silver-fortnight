@@ -5,6 +5,8 @@
  * and its sub-components.
  */
 
+import type { UserProfile as UserProfileType } from "../../../types/user";
+
 // Re-export the consolidated UserProfile type from the global types
 export type { UserProfile, UserRole, BannerFx } from "../../../types/user";
 export {
@@ -39,7 +41,7 @@ export interface ProfilePageProps {
  * Props for ProfileHeader component
  */
 export interface ProfileHeaderProps {
-  profile: UserProfile;
+  profile: UserProfileType;
   isOwnProfile: boolean;
   isFollowing: boolean;
   followersCount: number;
@@ -55,9 +57,9 @@ export interface ProfileHeaderProps {
  */
 export interface ProfileEditModalProps {
   isOpen: boolean;
-  profile: UserProfile;
+  profile: UserProfileType;
   onClose: () => void;
-  onSave: (updates: Partial<UserProfile>) => Promise<void>;
+  onSave: (updates: Partial<UserProfileType>) => Promise<void>;
 }
 
 /**
@@ -81,7 +83,7 @@ export interface ProfileTabsProps {
  * Props for ProfileAboutTab component
  */
 export interface ProfileAboutTabProps {
-  profile: UserProfile;
+  profile: UserProfileType;
   isOwnProfile: boolean;
 }
 

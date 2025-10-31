@@ -82,6 +82,7 @@ import {
 import { classPatterns, animations } from "../utils/designSystem";
 import { semanticClasses } from "../utils/semanticColors";
 import { motion } from "framer-motion";
+import { ProfileHeader } from "./ProfilePage/components/ProfileHeader";
 
 type TabType =
   | "about"
@@ -199,7 +200,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   const collabScrollBusyRef = React.useRef<boolean>(false);
   const tradesScrollBusyRef = React.useRef<boolean>(false);
   const shareButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [shareDropdownPosition, setShareDropdownPosition] = useState<{ top: number; left: number } | null>(null);
+  const [shareDropdownPosition, setShareDropdownPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
 
   // Feature flag to control role enrichment reads
   const viteEnv: any =
@@ -312,7 +316,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   useEffect(() => {
     if (!targetUserId) return;
     if (stats && repScore !== null) return; // Don't refetch if we already have data
-    
+
     (async () => {
       try {
         setReviewsLoading(true);
@@ -321,15 +325,15 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           getDashboardStats(targetUserId),
           getUserSocialStats(targetUserId),
         ]);
-        
+
         // Try to get reviews, but don't fail if there's a permissions error
         let reviewsResult: any = null;
         try {
           reviewsResult = await getUserReviews(targetUserId);
         } catch (error) {
-          console.warn('Could not fetch reviews (permissions):', error);
+          console.warn("Could not fetch reviews (permissions):", error);
         }
-        
+
         if ((statsResult as any)?.data) {
           const data = (statsResult as any).data;
           setStats({
@@ -337,33 +341,33 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
             tradesThisWeek: data.tradesThisWeek,
             currentXP: data.currentXP,
           });
-          
+
           // Get actual follower count from userFollows collection for accurate reputation
           let actualFollowersCount = 0;
           try {
-            const db = (await import('../firebase-config')).db;
-            const { collection, query, where, getDocs } = await import('firebase/firestore');
+            const db = (await import("../firebase-config")).db;
+            const { collection, query, where, getDocs } = await import(
+              "firebase/firestore"
+            );
             const followsQuery = query(
-              collection(db, 'userFollows'),
-              where('followingId', '==', targetUserId)
+              collection(db, "userFollows"),
+              where("followingId", "==", targetUserId)
             );
             const followsSnapshot = await getDocs(followsQuery);
             actualFollowersCount = followsSnapshot.size;
           } catch (error) {
-            console.warn('Could not fetch actual follower count, using socialStats:', error);
-            actualFollowersCount = (socialResult as any)?.data?.followersCount || 0;
+            console.warn(
+              "Could not fetch actual follower count, using socialStats:",
+              error
+            );
+            actualFollowersCount =
+              (socialResult as any)?.data?.followersCount || 0;
           }
-          
+
           // Composite reputation: XP (50%), trades (30%), followers (20%)
           const xpNorm = Math.min(1, Number(data.currentXP || 0) / 5000);
-          const tradesNorm = Math.min(
-            1,
-            Number(data.totalTrades || 0) / 100
-          );
-          const followersNorm = Math.min(
-            1,
-            actualFollowersCount / 1000
-          );
+          const tradesNorm = Math.min(1, Number(data.totalTrades || 0) / 100);
+          const followersNorm = Math.min(1, actualFollowersCount / 1000);
           const composite = Math.round(
             100 * (0.5 * xpNorm + 0.3 * tradesNorm + 0.2 * followersNorm)
           );
@@ -378,8 +382,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           const count = all.length;
           const avg =
             count > 0
-              ? all.reduce((sum, r) => sum + Number(r.rating || 0), 0) /
-                count
+              ? all.reduce((sum, r) => sum + Number(r.rating || 0), 0) / count
               : 0;
           setReviewsMeta({ avg, count });
           const list = all.slice(0, 2).map((r) => ({
@@ -389,7 +392,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           setReviewsPreview(list);
         }
       } catch (error) {
-        console.error('Error fetching profile stats:', error);
+        console.error("Error fetching profile stats:", error);
       } finally {
         setReviewsLoading(false);
       }
@@ -440,13 +443,20 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
       const viewportHeight = window.innerHeight;
       const spaceBelow = viewportHeight - rect.bottom;
       const spaceAbove = rect.top;
-      
+
       // Smart positioning: flip upward if not enough space below
-      const shouldFlipUp = spaceBelow < dropdownHeight + 16 && spaceAbove > spaceBelow;
-      
+      const shouldFlipUp =
+        spaceBelow < dropdownHeight + 16 && spaceAbove > spaceBelow;
+
       setShareDropdownPosition({
         top: shouldFlipUp ? rect.top - dropdownHeight - 8 : rect.bottom + 8,
-        left: Math.max(16, Math.min(rect.right - dropdownWidth, window.innerWidth - dropdownWidth - 16))
+        left: Math.max(
+          16,
+          Math.min(
+            rect.right - dropdownWidth,
+            window.innerWidth - dropdownWidth - 16
+          )
+        ),
       });
     }
     setShowShareMenu(!showShareMenu);
@@ -468,13 +478,33 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     }
   };
 
+  // Handler for copying link from ProfileHeader component
+  const handleCopyProfileLink = async () => {
+    if (!targetUserId || !userProfile) return;
+    const path =
+      userProfile.handle && !userProfile.handlePrivate
+        ? `/u/${userProfile.handle}`
+        : `/profile/${targetUserId}`;
+    const url = `${window.location.origin}${path}`;
+    await navigator.clipboard.writeText(url);
+    showToast("Profile link copied", "success");
+    await logEvent("profile_share", {
+      userId: targetUserId,
+      hasHandle: true,
+      method: "clipboard",
+      context: "header",
+    });
+  };
+
   const handleShareNative = async () => {
     const url = getProfileUrl();
     try {
       if (navigator.share) {
         await navigator.share({
           title: `${userProfile?.displayName || "User"}'s Profile on TradeYa`,
-          text: `Check out ${userProfile?.displayName || "this user"}'s profile on TradeYa!`,
+          text: `Check out ${
+            userProfile?.displayName || "this user"
+          }'s profile on TradeYa!`,
           url,
         });
         setShowShareMenu(false);
@@ -492,9 +522,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
 
   const handleShareTwitter = () => {
     const url = getProfileUrl();
-    const text = `Check out ${userProfile?.displayName || "this user"}'s profile on TradeYa!`;
+    const text = `Check out ${
+      userProfile?.displayName || "this user"
+    }'s profile on TradeYa!`;
     window.open(
-      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        text
+      )}&url=${encodeURIComponent(url)}`,
       "_blank"
     );
     setShowShareMenu(false);
@@ -507,7 +541,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   const handleShareLinkedIn = () => {
     const url = getProfileUrl();
     window.open(
-      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+        url
+      )}`,
       "_blank"
     );
     setShowShareMenu(false);
@@ -698,12 +734,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         .catch(() => setTrades([]))
         .finally(() => setTradesLoading(false));
     }
-  }, [
-    activeTab,
-    targetUserId,
-    collaborationsLoading,
-    tradesLoading,
-  ]);
+  }, [activeTab, targetUserId, collaborationsLoading, tradesLoading]);
 
   // Enrich collaborations with specific user role title from roles subcollection if available
   useEffect(() => {
@@ -1178,555 +1209,163 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         )}
 
         {/* Profile Header */}
-        <Card
-          id="profile-header"
-          variant="glass"
-          className="relative -mt-4 sm:-mt-6 md:-mt-8 mb-6 bg-gradient-to-r from-primary-500/5 via-accent-500/5 to-secondary-500/5"
-        >
-          <CardContent className="p-4 sm:p-6">
-            {/* Main Profile Grid Layout - Two Column System */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
-              {/* Left Column: Avatar + Basic Info (2/5 on desktop) */}
-              <div className="lg:col-span-2 flex flex-col items-center gap-4">
-                {/* Premium Avatar with Glassmorphic Border */}
-                <div className="relative shrink-0">
-                  {/* Outer glow effect */}
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/30 via-accent/20 to-primary/30 blur-2xl opacity-50 animate-pulse" />
-                  
-                  {/* Circular ring with glassmorphic border */}
-                  <div className="relative p-1 rounded-full bg-border/50 shadow-xl">
-                    {/* Avatar container */}
-                    <div className="w-24 h-24 rounded-full overflow-hidden bg-background shadow-inner">
-                      {userProfile.photoURL || userProfile.profilePicture ? (
-                        <ProfileImage
-                          photoURL={userProfile.photoURL}
-                          profilePicture={userProfile.profilePicture}
-                          displayName={userProfile.displayName}
-                          size="xl"
-                          className="h-24 w-24"
-                        />
-                      ) : (
-                        <div className="w-24 h-24 rounded-full glassmorphic border-glass backdrop-blur-xl bg-white/10 flex items-center justify-center">
-                          <User className="w-10 h-10 text-gray-400 dark:text-gray-300" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <Stack gap="2" className="min-w-0 w-full text-center lg:text-left">
-                  <div className="flex items-baseline gap-3 flex-wrap justify-center lg:justify-start">
-                    <h1 className="group text-3xl sm:text-4xl font-semibold tracking-tight leading-none cursor-default relative inline-block">
-                      <span className="text-foreground group-hover:opacity-0 transition-opacity duration-[600ms]">
-                        {userProfile.displayName || "Anonymous User"}
-                      </span>
-                      <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[600ms] bg-gradient-to-r from-primary-500 via-accent-500 to-secondary-500 bg-clip-text text-transparent animate-gradient-hover bg-[length:200%_200%]">
-                        {userProfile.displayName || "Anonymous User"}
-                      </span>
-                    </h1>
-                    {userProfile.handle &&
-                      (!userProfile.handlePrivate || isOwnProfile) && (
-                        <span className="inline-flex items-center gap-2 text-base text-muted-foreground/80 truncate">
-                          @{userProfile.handle}
-                          {userProfile.verified && (
-                            <span
-                              className="inline-flex items-center gap-1 text-success-500"
-                              aria-label="Verified account"
-                              title="Verified account"
-                            >
-                              <Check className="w-4 h-4" />
-                            </span>
-                          )}
-                          <button
-                            type="button"
-                            className="inline-flex items-center justify-center rounded-xl p-2 hover:bg-white/10 dark:hover:bg-white/10 backdrop-blur-xl transition-all duration-200 min-h-[44px] min-w-[44px]"
-                            aria-label="Copy profile link"
-                            title="Copy profile link"
-                            onClick={async () => {
-                              const path =
-                                userProfile.handle && !userProfile.handlePrivate
-                                  ? `/u/${userProfile.handle}`
-                                  : `/profile/${targetUserId}`;
-                              const url = `${window.location.origin}${path}`;
-                              await navigator.clipboard.writeText(url);
-                              showToast("Profile link copied", "success");
-                              await logEvent("profile_share", {
-                                userId: targetUserId,
-                                hasHandle: true,
-                                method: "clipboard",
-                                context: "header",
-                              });
-                            }}
-                          >
-                            <CopyIcon className="w-4 h-4" />
-                          </button>
-                          {userProfile.handlePrivate && isOwnProfile && (
-                            <span
-                              className="text-xs text-muted-foreground"
-                              aria-label="Handle is private"
-                            >
-                              (private)
-                            </span>
-                          )}
-                        </span>
-                      )}
-                  </div>
-                  <div className="flex items-center gap-3 flex-wrap justify-center lg:justify-start">
-                    <Tooltip
-                      content={
-                        <span>
-                          Reputation is based on your XP (50%), completed trades
-                          (30%), and followers (20%).
-                          <a
-                            className="ml-2 underline text-primary"
-                            href="/docs/profile-reputation"
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            What's reputation?
-                          </a>
-                        </span>
-                      }
-                      position="top"
-                    >
-                      <span>
-                        <ReputationBadge
-                          score={repScore ?? 0}
-                          size="sm"
-                          showLabel={true}
-                          className="bg-muted/50 border-border/50 text-foreground cursor-help"
-                        />
-                      </span>
-                    </Tooltip>
-                  </div>
-                {isOwnProfile && (
-                  <p className="text-sm text-muted-foreground truncate flex items-center gap-2 justify-center lg:justify-start">
-                    <Mail className="w-4 h-4" />
-                    <span>{userProfile.email}</span>
-                  </p>
-                )}
-
-                {/* Mutual followers snippet (viewer != owner) */}
-                {!isOwnProfile && mutualFollows.count > 0 && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Followed by {mutualFollows.names.join(", ")}
-                    {mutualFollows.count > mutualFollows.names.length
-                      ? ` and ${
-                          mutualFollows.count - mutualFollows.names.length
-                        } more`
-                      : ""}
-                  </p>
-                )}
-
-
-                {/* Rating summary chip */}
-                {reviewsMeta && reviewsMeta.count > 0 && (
-                  <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-border/60 bg-muted/40 px-3 py-1 text-sm">
-                    <span className="inline-flex items-center gap-1">
-                      <Star className="w-4 h-4 text-warning-500" />
-                      <span className="text-foreground font-medium">
-                        {reviewsMeta.avg.toFixed(1)}
-                      </span>
-                    </span>
-                    <span className="text-muted-foreground">
-                      · {reviewsMeta.count}
-                    </span>
-                  </div>
-                )}
-
-                {/* Reviews preview */}
-                {(reviewsLoading || reviewsPreview.length > 0) && (
-                  <div className="mt-4 space-y-2">
-                    {reviewsLoading && reviewsPreview.length === 0 && (
-                      <>
-                        <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
-                        <div className="h-4 w-2/3 bg-muted rounded animate-pulse" />
-                      </>
-                    )}
-                    {reviewsPreview.map((rev, idx) => (
-                      <div
-                        key={`rev-${idx}`}
-                        className="text-sm text-muted-foreground flex items-start gap-2"
-                      >
-                        <span className="inline-flex items-center gap-0.5 text-warning-500">
-                          {Array.from({
-                            length: Math.min(5, Math.max(0, rev.rating)),
-                          }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className="w-3.5 h-3.5 fill-current"
-                            />
-                          ))}
-                        </span>
-                        <span className="truncate">{rev.comment}</span>
-                      </div>
-                    ))}
-                    {reviewsMeta && reviewsMeta.count > 0 && (
-                      <button
-                        type="button"
-                        className="text-xs text-primary hover:underline"
-                        onClick={() => {
-                          window.location.href = `/reviews?user=${targetUserId}`;
-                        }}
-                        aria-label="See all reviews"
-                      >
-                        See all reviews
-                      </button>
-                    )}
-                  </div>
-                )}
-              </Stack>
-            </div>
-
-            {/* Right Column: Bio, Contact Info, Skills, Actions, Stats (3/5 on desktop) */}
-            <div className="lg:col-span-3">
-                <Stack gap="md">
-                  {/* Tagline */}
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {userProfile.tagline || "No tagline provided"}
-                  </p>
-                  
-                  {/* Bio - Enhanced formatting */}
-                  {userProfile.bio && (
-                    <div className="text-sm text-muted-foreground leading-relaxed">
-                      {isBioExpanded ? (
-                        <p className="whitespace-pre-wrap break-words">{userProfile.bio}</p>
-                      ) : (
-                        <p className="whitespace-pre-wrap break-words">
-                          {userProfile.bio.length > 300
-                            ? `${userProfile.bio.substring(0, 300)}...`
-                            : userProfile.bio}
-                        </p>
-                      )}
-                      {userProfile.bio.length > 300 && (
-                        <button
-                          type="button"
-                          className="mt-2 text-primary hover:text-primary/80 font-medium transition-colors inline-flex items-center gap-1"
-                          onClick={() => setIsBioExpanded(!isBioExpanded)}
-                        >
-                          {isBioExpanded ? (
-                            <>
-                              Read less
-                              <ChevronLeft className="w-3 h-3" />
-                            </>
-                          ) : (
-                            <>
-                              Read more
-                              <ChevronRight className="w-3 h-3" />
-                            </>
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Contact Info - Cleaner layout */}
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                    {userProfile.website && (
-                      <a
-                        href={userProfile.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 hover:text-primary transition-colors group"
-                      >
-                        <Globe className="w-4 h-4 transition-transform group-hover:scale-110" />
-                        <span className="truncate max-w-[200px]">
-                          {userProfile.website.replace(/^https?:\/\//, "")}
-                        </span>
-                      </a>
-                    )}
-                    {userProfile.location && (
-                      <div className="inline-flex items-center gap-1.5">
-                        <MapPin className="w-4 h-4" />
-                        <span className="truncate">{userProfile.location}</span>
-                      </div>
-                    )}
-                    {userProfile.metadata?.creationTime && (
-                      <div className="inline-flex items-center gap-1.5">
-                        <Calendar className="w-4 h-4" />
-                        <span>
-                          Joined{" "}
-                          {new Date(userProfile.metadata.creationTime).toLocaleDateString(undefined, {
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Skills - Premium design */}
-                  {userProfile.skills && userProfile.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {userProfile.skills.slice(0, 8).map((skill, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-primary/10 to-accent/10 text-primary border border-primary/20 hover:border-primary/40 hover:shadow-md hover:shadow-primary/20 transition-all duration-200 backdrop-blur-sm"
-                          onClick={() => {
-                            // Dispatch custom event for PortfolioTab to filter by skill
-                            window.dispatchEvent(new CustomEvent('portfolio:filter-skill', { 
-                              detail: { skill } 
-                            }));
-                            setActiveTab("portfolio");
-                          }}
-                          aria-label={`Filter portfolio by ${skill}`}
-                        >
-                          {skill}
-                        </button>
-                      ))}
-                      {userProfile.skills.length > 8 && (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-muted/50 text-muted-foreground backdrop-blur-sm">
-                          +{userProfile.skills.length - 8} more
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Social Stats - Moved higher for prominence */}
-                  {targetUserId && (
-                    <div className="w-full">
-                      <UserSocialStats 
-                        userId={targetUserId} 
-                        compact 
-                        onFollowersClick={() => navigate(`/directory?relation=followers&user=${targetUserId}`)}
-                        onLeaderboardClick={() => navigate('/leaderboard')}
-                      />
-                    </div>
-                  )}
-
-                  {/* Streak Widgets - Premium design */}
-                  {targetUserId && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-gradient-to-r from-muted/20 to-muted/30 rounded-lg px-3 py-2 border border-border/30 backdrop-blur-sm">
-                      <StreakWidgetCompact userId={targetUserId} type="login" />
-                      <span className="text-border">•</span>
-                      <StreakWidgetCompact
-                        userId={targetUserId}
-                        type="challenge"
-                      />
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  <div className="flex flex-col sm:flex-row gap-2 relative">
-                    {isOwnProfile ? (
-                      <>
-                        <Button
-                          variant="glassmorphic"
-                          className="gap-2 shrink-0 border-primary/20 hover:border-primary/40 bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 shadow-lg hover:shadow-xl hover:shadow-primary/20"
-                          onClick={() => setIsEditOpen(true)}
-                        >
-                          <Edit3 className="w-4 h-4" />
-                          Edit Profile
-                        </Button>
-                        <Button
-                          ref={shareButtonRef}
-                          variant="ghost"
-                          className="gap-2 shrink-0"
-                          onClick={handleShareProfile}
-                        >
-                          <Share2 className="w-4 h-4" />
-                          Share profile
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button
-                          className="gap-2 shrink-0"
-                          onClick={() => navigate(`/messages/new?to=${targetUserId}`)}
-                        >
-                          <MessageSquare className="w-4 h-4" />
-                          Message
-                        </Button>
-                        <Button
-                          ref={shareButtonRef}
-                          variant="ghost"
-                          className="gap-2 shrink-0"
-                          onClick={handleShareProfile}
-                        >
-                          <Share2 className="w-4 h-4" />
-                          Share profile
-                        </Button>
-                        <SocialFeatures
-                          userId={targetUserId!}
-                          userName={userProfile.displayName || "User"}
-                          userAvatar={
-                            userProfile.profilePicture || userProfile.photoURL
-                          }
-                          compact
-                          showStats={false}
-                          showFollowButton
-                        />
-                      </>
-                    )}
-                  </div>
-
-                  {/* Divider */}
-                  <div className="w-full h-px bg-gradient-to-r from-transparent via-border/50 to-transparent"></div>
-
-                  {/* Trade Stats with Icons */}
-                  {stats && (
-                    <div className="grid grid-cols-2 gap-3 text-sm w-full">
-                      <StatChip 
-                        label="Trades" 
-                        value={stats.totalTrades} 
-                        icon={<TrendingUp className="w-4 h-4" />}
-                      />
-                      <StatChip 
-                        label="This week" 
-                        value={stats.tradesThisWeek}
-                        icon={<Activity className="w-4 h-4" />}
-                      />
-                    </div>
-                  )}
-                </Stack>
-            </div>
-
-            </div>
-          </CardContent>
-        </Card>
+        <ProfileHeader
+          profile={userProfile}
+          isOwnProfile={isOwnProfile}
+          targetUserId={targetUserId!}
+          stats={stats}
+          repScore={repScore}
+          reviewsPreview={reviewsPreview}
+          reviewsLoading={reviewsLoading}
+          reviewsMeta={reviewsMeta}
+          mutualFollows={mutualFollows}
+          shareButtonRef={shareButtonRef}
+          onEditClick={() => setIsEditOpen(true)}
+          onShareClick={handleShareProfile}
+          onCopyLink={handleCopyProfileLink}
+          onTabChange={setActiveTab}
+        />
 
         {/* Tab Navigation */}
-        <Card
-          className="glassmorphic bg-white/5 backdrop-blur-sm rounded-lg border border-border/30 shadow-sm overflow-hidden"
-        >
+        <Card className="glassmorphic bg-white/5 backdrop-blur-sm rounded-lg border border-border/30 shadow-sm overflow-hidden">
           <div className="-mb-px sticky top-16 z-sticky glassmorphic backdrop-blur-xl bg-white/10">
-              <div className="relative">
-                <div
-                  className={`pointer-events-none absolute left-0 top-0 h-full w-6 bg-gradient-to-r from-white/10 to-transparent transition-opacity duration-200 ${
-                    tabHasOverflow && tabCanScrollLeft
-                      ? "opacity-100"
-                      : "opacity-0"
+            <div className="relative">
+              <div
+                className={`pointer-events-none absolute left-0 top-0 h-full w-6 bg-gradient-to-r from-white/10 to-transparent transition-opacity duration-200 ${
+                  tabHasOverflow && tabCanScrollLeft
+                    ? "opacity-100"
+                    : "opacity-0"
+                }`}
+              />
+              <div
+                className={`pointer-events-none absolute right-0 top-0 h-full w-6 bg-gradient-to-l from-white/10 to-transparent transition-opacity duration-200 ${
+                  tabHasOverflow && tabCanScrollRight
+                    ? "opacity-100"
+                    : "opacity-0"
+                }`}
+              />
+              <div
+                ref={tabScrollRef}
+                className="overflow-x-auto scroll-smooth px-6 scrollbar-hide"
+                role="tablist"
+                aria-label="Profile sections"
+                onScroll={() => {
+                  try {
+                    if (!tabScrollRef.current) return;
+                    localStorage.setItem(
+                      "tradeya_profile_tab_scroll",
+                      String(tabScrollRef.current.scrollLeft)
+                    );
+                  } catch {}
+                }}
+              >
+                {/* desktop scroll chevrons (fade in/out on overflow) */}
+                <button
+                  type="button"
+                  className={`hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 items-center justify-center rounded-full border shadow-sm transition-opacity duration-200 ${
+                    tabHasOverflow
+                      ? tabCanScrollLeft
+                        ? "opacity-100 glassmorphic border-glass backdrop-blur-xl bg-white/10 hover:bg-white/15"
+                        : "opacity-50 glassmorphic border-glass backdrop-blur-xl bg-white/5 cursor-not-allowed"
+                      : "opacity-0 pointer-events-none"
                   }`}
-                />
-                <div
-                  className={`pointer-events-none absolute right-0 top-0 h-full w-6 bg-gradient-to-l from-white/10 to-transparent transition-opacity duration-200 ${
-                    tabHasOverflow && tabCanScrollRight
-                      ? "opacity-100"
-                      : "opacity-0"
-                  }`}
-                />
-                <div
-                  ref={tabScrollRef}
-                  className="overflow-x-auto scroll-smooth px-6 scrollbar-hide"
-                  role="tablist"
-                  aria-label="Profile sections"
-                  onScroll={() => {
-                    try {
-                      if (!tabScrollRef.current) return;
-                      localStorage.setItem(
-                        "tradeya_profile_tab_scroll",
-                        String(tabScrollRef.current.scrollLeft)
-                      );
-                    } catch {}
+                  onClick={() => {
+                    const scroller = tabScrollRef.current;
+                    const behavior = prefersReducedMotion ? "auto" : "smooth";
+                    scroller?.scrollBy({ left: -160, behavior });
                   }}
+                  aria-label="Scroll tabs left"
+                  aria-hidden={!tabHasOverflow}
+                  tabIndex={tabHasOverflow ? 0 : -1}
+                  disabled={!tabHasOverflow || !tabCanScrollLeft}
                 >
-                  {/* desktop scroll chevrons (fade in/out on overflow) */}
-                  <button
-                    type="button"
-                    className={`hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 items-center justify-center rounded-full border shadow-sm transition-opacity duration-200 ${
-                      tabHasOverflow
-                        ? tabCanScrollLeft
-                          ? "opacity-100 glassmorphic border-glass backdrop-blur-xl bg-white/10 hover:bg-white/15"
-                          : "opacity-50 glassmorphic border-glass backdrop-blur-xl bg-white/5 cursor-not-allowed"
-                        : "opacity-0 pointer-events-none"
-                    }`}
-                    onClick={() => {
-                      const scroller = tabScrollRef.current;
-                      const behavior = prefersReducedMotion ? "auto" : "smooth";
-                      scroller?.scrollBy({ left: -160, behavior });
-                    }}
-                    aria-label="Scroll tabs left"
-                    aria-hidden={!tabHasOverflow}
-                    tabIndex={tabHasOverflow ? 0 : -1}
-                    disabled={!tabHasOverflow || !tabCanScrollLeft}
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    className={`hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 items-center justify-center rounded-full border shadow-sm transition-opacity duration-200 ${
-                      tabHasOverflow
-                        ? tabCanScrollRight
-                          ? "opacity-100 glassmorphic border-glass backdrop-blur-xl bg-white/10 hover:bg-white/15"
-                          : "opacity-50 glassmorphic border-glass backdrop-blur-xl bg-white/5 cursor-not-allowed"
-                        : "opacity-0 pointer-events-none"
-                    }`}
-                    onClick={() => {
-                      const scroller = tabScrollRef.current;
-                      const behavior = prefersReducedMotion ? "auto" : "smooth";
-                      scroller?.scrollBy({ left: 160, behavior });
-                    }}
-                    aria-label="Scroll tabs right"
-                    aria-hidden={!tabHasOverflow}
-                    tabIndex={tabHasOverflow ? 0 : -1}
-                    disabled={!tabHasOverflow || !tabCanScrollRight}
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                  <div className="flex gap-4">
-                    {tabs.map((tab, index) => (
-                      <button
-                        key={tab.id}
-                        role="tab"
-                        id={tab.id}
-                        aria-selected={activeTab === tab.id}
-                        aria-controls={`panel-${tab.id}`}
-                        tabIndex={activeTab === tab.id ? 0 : -1}
-                        onMouseEnter={() => tab.onHover?.()}
-                        onClick={() => {
-                          setActiveTab(tab.id);
-                          // Update hash for deep-linking
-                          try {
-                            window.history.replaceState({}, "", `#${tab.id}`);
-                          } catch {}
-                          try {
-                            localStorage.setItem(
-                              "tradeya_profile_last_tab",
-                              tab.id
-                            );
-                          } catch {}
-                          const panel = document.getElementById(
-                            `panel-${tab.id}`
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  className={`hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 items-center justify-center rounded-full border shadow-sm transition-opacity duration-200 ${
+                    tabHasOverflow
+                      ? tabCanScrollRight
+                        ? "opacity-100 glassmorphic border-glass backdrop-blur-xl bg-white/10 hover:bg-white/15"
+                        : "opacity-50 glassmorphic border-glass backdrop-blur-xl bg-white/5 cursor-not-allowed"
+                      : "opacity-0 pointer-events-none"
+                  }`}
+                  onClick={() => {
+                    const scroller = tabScrollRef.current;
+                    const behavior = prefersReducedMotion ? "auto" : "smooth";
+                    scroller?.scrollBy({ left: 160, behavior });
+                  }}
+                  aria-label="Scroll tabs right"
+                  aria-hidden={!tabHasOverflow}
+                  tabIndex={tabHasOverflow ? 0 : -1}
+                  disabled={!tabHasOverflow || !tabCanScrollRight}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+                <div className="flex gap-4">
+                  {tabs.map((tab, index) => (
+                    <button
+                      key={tab.id}
+                      role="tab"
+                      id={tab.id}
+                      aria-selected={activeTab === tab.id}
+                      aria-controls={`panel-${tab.id}`}
+                      tabIndex={activeTab === tab.id ? 0 : -1}
+                      onMouseEnter={() => tab.onHover?.()}
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        // Update hash for deep-linking
+                        try {
+                          window.history.replaceState({}, "", `#${tab.id}`);
+                        } catch {}
+                        try {
+                          localStorage.setItem(
+                            "tradeya_profile_last_tab",
+                            tab.id
                           );
-                          const behavior = prefersReducedMotion
-                            ? "auto"
-                            : "smooth";
-                          panel?.scrollIntoView({ behavior, block: "start" });
-                        }}
-                        onKeyDown={(e) => handleTabKeyDown(e, index)}
-                        ref={(el) => {
-                          (tabRefs.current as any)[tab.id] = el;
-                        }}
-                        className={`shrink-0 group relative whitespace-nowrap py-4 px-3 min-h-[44px] border-b-2 font-medium text-sm flex items-center gap-2 transition-colors duration-200 ${
+                        } catch {}
+                        const panel = document.getElementById(
+                          `panel-${tab.id}`
+                        );
+                        const behavior = prefersReducedMotion
+                          ? "auto"
+                          : "smooth";
+                        panel?.scrollIntoView({ behavior, block: "start" });
+                      }}
+                      onKeyDown={(e) => handleTabKeyDown(e, index)}
+                      ref={(el) => {
+                        (tabRefs.current as any)[tab.id] = el;
+                      }}
+                      className={`shrink-0 group relative whitespace-nowrap py-4 px-3 min-h-[44px] border-b-2 font-medium text-sm flex items-center gap-2 transition-colors duration-200 ${
+                        activeTab === tab.id
+                          ? "border-primary text-foreground"
+                          : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                      }`}
+                    >
+                      {tab.icon}
+                      <span className="flex items-center gap-1">
+                        {tab.label}
+                        {typeof getTabCount(tab.id) === "number" && (
+                          <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full glassmorphic border-glass backdrop-blur-xl bg-white/10 px-1 text-xs text-foreground">
+                            {getTabCount(tab.id)}
+                          </span>
+                        )}
+                      </span>
+                      {/* underline animation */}
+                      <span
+                        className={`absolute left-0 -bottom-[2px] h-[2px] bg-primary transition-all duration-300 ${
                           activeTab === tab.id
-                            ? "border-primary text-foreground"
-                            : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                            ? "w-full opacity-100"
+                            : "w-0 opacity-0 group-hover:w-full"
                         }`}
-                      >
-                        {tab.icon}
-                        <span className="flex items-center gap-1">
-                          {tab.label}
-                          {typeof getTabCount(tab.id) === "number" && (
-                            <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full glassmorphic border-glass backdrop-blur-xl bg-white/10 px-1 text-xs text-foreground">
-                              {getTabCount(tab.id)}
-                            </span>
-                          )}
-                        </span>
-                        {/* underline animation */}
-                        <span
-                          className={`absolute left-0 -bottom-[2px] h-[2px] bg-primary transition-all duration-300 ${
-                            activeTab === tab.id
-                              ? "w-full opacity-100"
-                              : "w-0 opacity-0 group-hover:w-full"
-                          }`}
-                          aria-hidden="true"
-                        />
-                      </button>
-                    ))}
-                  </div>
+                        aria-hidden="true"
+                      />
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
+          </div>
         </Card>
 
         {/* Tab Content */}
@@ -1738,7 +1377,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
             {activeTab === "about" && (
               <Box id="panel-about" role="tabpanel" aria-labelledby="about">
                 <Stack gap="md">
-                  <Grid columns={{ base: 1, md: 2 }} gap={{ base: 'md', md: 'lg' }}>
+                  <Grid
+                    columns={{ base: 1, md: 2 }}
+                    gap={{ base: "md", md: "lg" }}
+                  >
                     <Box>
                       <label className="block text-sm font-medium text-muted-foreground mb-2">
                         Email
@@ -1926,7 +1568,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                         <span className="sm:hidden"> collaborations</span>
                       </div>
                       <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <label className="text-sm text-muted-foreground hidden sm:inline">Show:</label>
+                        <label className="text-sm text-muted-foreground hidden sm:inline">
+                          Show:
+                        </label>
                         <select
                           className="w-full sm:w-auto rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 text-foreground text-sm px-3 py-2 outline-hidden focus:ring-2 focus:ring-primary/50 transition-all duration-200"
                           value={collabFilter}
@@ -2049,12 +1693,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                       <div className="text-sm text-muted-foreground">
                         <span className="hidden sm:inline">Showing </span>
-                        {Math.min(tradesVisibleCount, filteredTrades.length)} of{" "}
-                        {filteredTrades.length}
+                        {Math.min(
+                          tradesVisibleCount,
+                          filteredTrades.length
+                        )} of {filteredTrades.length}
                         <span className="sm:hidden"> trades</span>
                       </div>
                       <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <label className="text-sm text-muted-foreground hidden sm:inline">Show:</label>
+                        <label className="text-sm text-muted-foreground hidden sm:inline">
+                          Show:
+                        </label>
                         <select
                           className="w-full sm:w-auto rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 text-foreground text-sm px-3 py-2 outline-hidden focus:ring-2 focus:ring-primary/50 transition-all duration-200"
                           value={tradeFilter}
@@ -2243,7 +1891,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 }}
                 placeholder="your_handle"
                 className={`w-full rounded-xl glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 transition-all duration-200 ${
-                  handleError ? "border-red-500 dark:border-red-500 focus:ring-red-500" : "border-glass focus:ring-orange-500 dark:focus:ring-orange-400"
+                  handleError
+                    ? "border-red-500 dark:border-red-500 focus:ring-red-500"
+                    : "border-glass focus:ring-orange-500 dark:focus:ring-orange-400"
                 }`}
                 maxLength={20}
               />
@@ -2432,67 +2082,69 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           </form>
         </SimpleModal>
 
-      {/* Share Profile Dropdown - Rendered via Portal */}
-      {showShareMenu && shareDropdownPosition && createPortal(
-        <>
-          <div 
-            className="fixed inset-0 z-40" 
-            onClick={() => setShowShareMenu(false)}
-          />
-          <div 
-            className="fixed z-50 w-56 glassmorphic bg-background/95 backdrop-blur-xl border border-border/50 rounded-lg shadow-xl py-2"
-            style={{
-              top: `${shareDropdownPosition.top}px`,
-              left: `${shareDropdownPosition.left}px`
-            }}
-          >
-            <button
-              type="button"
-              className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
-              onClick={handleCopyLink}
-            >
-              <Link2 className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm">Copy link</span>
-            </button>
-            {navigator.share && (
-              <button
-                type="button"
-                className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
-                onClick={handleShareNative}
+        {/* Share Profile Dropdown - Rendered via Portal */}
+        {showShareMenu &&
+          shareDropdownPosition &&
+          createPortal(
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowShareMenu(false)}
+              />
+              <div
+                className="fixed z-50 w-56 glassmorphic bg-background/95 backdrop-blur-xl border border-border/50 rounded-lg shadow-xl py-2"
+                style={{
+                  top: `${shareDropdownPosition.top}px`,
+                  left: `${shareDropdownPosition.left}px`,
+                }}
               >
-                <Share2 className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm">Share...</span>
-              </button>
-            )}
-            <div className="h-px bg-border/50 my-2" />
-            <button
-              type="button"
-              className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
-              onClick={handleShareTwitter}
-            >
-              <Twitter className="w-4 h-4 text-[#1DA1F2]" />
-              <span className="text-sm">Share on Twitter</span>
-            </button>
-            <button
-              type="button"
-              className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
-              onClick={handleShareLinkedIn}
-            >
-              <Linkedin className="w-4 h-4 text-[#0A66C2]" />
-              <span className="text-sm">Share on LinkedIn</span>
-            </button>
-            <button
-              type="button"
-              className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
-              onClick={handleShareFacebook}
-            >
-              <Facebook className="w-4 h-4 text-[#1877F2]" />
-              <span className="text-sm">Share on Facebook</span>
-            </button>
-          </div>
-        </>,
-        document.body
-      )}
+                <button
+                  type="button"
+                  className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
+                  onClick={handleCopyLink}
+                >
+                  <Link2 className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">Copy link</span>
+                </button>
+                {navigator.share && (
+                  <button
+                    type="button"
+                    className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
+                    onClick={handleShareNative}
+                  >
+                    <Share2 className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">Share...</span>
+                  </button>
+                )}
+                <div className="h-px bg-border/50 my-2" />
+                <button
+                  type="button"
+                  className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
+                  onClick={handleShareTwitter}
+                >
+                  <Twitter className="w-4 h-4 text-[#1DA1F2]" />
+                  <span className="text-sm">Share on Twitter</span>
+                </button>
+                <button
+                  type="button"
+                  className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
+                  onClick={handleShareLinkedIn}
+                >
+                  <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+                  <span className="text-sm">Share on LinkedIn</span>
+                </button>
+                <button
+                  type="button"
+                  className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
+                  onClick={handleShareFacebook}
+                >
+                  <Facebook className="w-4 h-4 text-[#1877F2]" />
+                  <span className="text-sm">Share on Facebook</span>
+                </button>
+              </div>
+            </>,
+            document.body
+          )}
       </Stack>
     </Box>
   );
