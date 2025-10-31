@@ -9,8 +9,6 @@ import {
   User,
   Trophy,
   Settings,
-  Mail,
-  Calendar,
   Hash,
   Globe,
   MapPin,
@@ -20,14 +18,12 @@ import {
   Share2,
   Save,
   X,
-  Copy as CopyIcon,
   Check,
   Star,
   TrendingUp,
   Activity,
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
-import { Badge } from "../components/ui/Badge";
 import ReputationBadge from "../components/ui/ReputationBadge";
 import { Tooltip } from "../components/ui/Tooltip";
 import { getDashboardStats } from "../services/dashboard";
@@ -53,8 +49,6 @@ import { collaborationService } from "../services/entities/CollaborationService"
 import { tradeService } from "../services/entities/TradeService";
 import { getUserReviews } from "../services/firestore-exports";
 import { logEvent } from "../services/analytics";
-import { CollaborationCard } from "../components/features/collaborations/CollaborationCard";
-import TradeCard from "../components/features/trades/TradeCard";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { getFirebaseInstances, initializeFirebase } from "../firebase-config";
 import Box from "../components/layout/primitives/Box";
@@ -79,6 +73,9 @@ import { ProfileHeader } from "./ProfilePage/components/ProfileHeader";
 import { ProfileEditModal } from "./ProfilePage/components/ProfileEditModal";
 import { ProfileShareMenu } from "./ProfilePage/components/ProfileShareMenu";
 import { ProfileTabs } from "./ProfilePage/components/ProfileTabs";
+import { AboutTab } from "./ProfilePage/components/AboutTab";
+import { CollaborationsTab } from "./ProfilePage/components/CollaborationsTab";
+import { TradesTab } from "./ProfilePage/components/TradesTab";
 
 type TabType =
   | "about"
@@ -707,8 +704,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
       setActiveTab(hash as TabType);
       // Scroll to the panel for a11y
       const panel = document.getElementById(`panel-${hash}`);
-      const behavior = prefersReducedMotion ? "auto" : "smooth";
-      panel?.scrollIntoView({ behavior, block: "start" });
+      panel?.scrollIntoView({ behavior: "smooth", block: "start" });
     } else {
       // Fallback to last tab from localStorage
       try {
@@ -919,73 +915,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           className="rounded-lg shadow-sm border border-border"
         >
           <CardContent className="p-4 sm:p-6">
-            {activeTab === "about" && (
+            {activeTab === "about" && userProfile && (
               <Box id="panel-about" role="tabpanel" aria-labelledby="about">
-                <Stack gap="md">
-                  <Grid
-                    columns={{ base: 1, md: 2 }}
-                    gap={{ base: "md", md: "lg" }}
-                  >
-                    <Box>
-                      <label className="block text-sm font-medium text-muted-foreground mb-2">
-                        Email
-                      </label>
-                      {userProfile.email ? (
-                        <div className="px-4 py-3 rounded-xl glassmorphic border-glass backdrop-blur-xl bg-white/5 text-foreground flex items-center gap-2 justify-between">
-                          <span className="flex items-center gap-2 min-w-0">
-                            <Mail className="w-4 h-4 text-orange-500 dark:text-orange-400" />
-                            <span className="truncate">
-                              {userProfile.email}
-                            </span>
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="shrink-0 inline-flex items-center justify-center min-h-[44px] min-w-[44px]"
-                            onClick={() =>
-                              navigator.clipboard.writeText(userProfile.email)
-                            }
-                            aria-label="Copy email"
-                          >
-                            <CopyIcon className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="h-10 bg-muted rounded animate-pulse" />
-                      )}
-                    </Box>
-                    {userProfile.metadata?.creationTime && (
-                      <Box>
-                        <label className="block text-sm font-medium text-muted-foreground mb-2">
-                          Joined
-                        </label>
-                        <p className="px-4 py-3 rounded-xl glassmorphic border-glass backdrop-blur-xl bg-white/5 text-foreground flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-blue-500 dark:text-blue-400" />
-                          <span>
-                            {new Date(
-                              userProfile.metadata.creationTime
-                            ).toLocaleDateString()}
-                          </span>
-                        </p>
-                      </Box>
-                    )}
-                    {userProfile.metadata?.lastSignInTime && (
-                      <Box>
-                        <label className="block text-sm font-medium text-muted-foreground mb-2">
-                          Last sign-in
-                        </label>
-                        <p className="px-4 py-3 rounded-xl glassmorphic border-glass backdrop-blur-xl bg-white/5 text-foreground flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-green-500 dark:text-green-400" />
-                          <span>
-                            {new Date(
-                              userProfile.metadata.lastSignInTime
-                            ).toLocaleDateString()}
-                          </span>
-                        </p>
-                      </Box>
-                    )}
-                  </Grid>
-                </Stack>
+                <AboutTab
+                  userProfile={{ ...userProfile, id: targetUserId! }}
+                />
               </Box>
             )}
 
@@ -1069,139 +1003,30 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 aria-labelledby="collaborations"
                 className="py-6"
               >
-                {collaborationsLoading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {Array.from({ length: 6 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="h-40 bg-muted rounded-lg animate-pulse"
-                      />
-                    ))}
-                  </div>
-                ) : !collaborations || collaborations.length === 0 ? (
-                  <div className="text-center py-12 space-y-4">
-                    <p className="text-muted-foreground">
-                      No collaborations yet.
-                    </p>
-                    <div className="flex items-center justify-center gap-2">
-                      {isOwnProfile && (
-                        <Button
-                          topic="collaboration"
-                          onClick={() => navigate("/collaborations/new")}
-                        >
-                          Create a collaboration
-                        </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        onClick={() => navigate("/collaborations")}
-                      >
-                        Browse collaborations
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-                      <div className="text-sm text-muted-foreground">
-                        <span className="hidden sm:inline">Showing </span>
-                        {Math.min(
-                          collabVisibleCount,
-                          filteredCollaborations.length
-                        )}{" "}
-                        of {filteredCollaborations.length}
-                        <span className="sm:hidden"> collaborations</span>
-                      </div>
-                      <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <label className="text-sm text-muted-foreground hidden sm:inline">
-                          Show:
-                        </label>
-                        <select
-                          className="w-full sm:w-auto rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 text-foreground text-sm px-3 py-2 outline-hidden focus:ring-2 focus:ring-primary/50 transition-all duration-200"
-                          value={collabFilter}
-                          onChange={(e) => {
-                            setCollabFilter(e.target.value as any);
-                            setCollabVisibleCount(6);
-                          }}
-                        >
-                          <option value="all">All collaborations</option>
-                          <option value="yours">Created by me</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div
-                      id="profile-trades-list"
-                      className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4"
-                    >
-                      {filteredCollaborations
-                        .slice(0, collabVisibleCount)
-                        .map((c) => (
-                          <div key={c.id} className="space-y-2">
-                            <CollaborationCard
-                              collaboration={c as any}
-                              variant="premium"
-                            />
-                            {/* Role hint */}
-                            <div className="text-xs text-muted-foreground">
-                              {c?.creatorId === targetUserId ? (
-                                <Badge variant="outline">
-                                  Your role: Creator
-                                </Badge>
-                              ) : userRoleByCollabId[c.id] ? (
-                                <Badge variant="outline">
-                                  Your role: {userRoleByCollabId[c.id]}
-                                </Badge>
-                              ) : Array.isArray(c?.participants) &&
-                                c.participants.includes(targetUserId) ? (
-                                <Badge variant="outline">
-                                  Your role: Participant
-                                </Badge>
-                              ) : null}
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                    <div className="flex flex-col sm:flex-row justify-center sm:justify-end gap-2 mt-4">
-                      {filteredCollaborations &&
-                        collabVisibleCount < filteredCollaborations.length && (
-                          <Button
-                            variant="outline"
-                            className="w-full sm:w-auto"
-                            onClick={() => {
-                              setIsLoadingMoreCollabs(true);
-                              // small delay to allow smooth UI feedback
-                              setTimeout(() => {
-                                setCollabVisibleCount((n) => n + 6);
-                                setIsLoadingMoreCollabs(false);
-                              }, 150);
-                            }}
-                            disabled={isLoadingMoreCollabs}
-                            aria-busy={isLoadingMoreCollabs}
-                            aria-controls="profile-collaborations-list"
-                          >
-                            {isLoadingMoreCollabs ? "Loading…" : "Load more"}
-                          </Button>
-                        )}
-                      <span className="sr-only" aria-live="polite">
-                        {isLoadingMoreCollabs
-                          ? "Loading more collaborations"
-                          : ""}
-                      </span>
-                      <Button
-                        variant="outline"
-                        className="w-full sm:w-auto"
-                        onClick={() => navigate("/collaborations")}
-                      >
-                        View all collaborations
-                      </Button>
-                    </div>
-                    <div
-                      ref={collabSentinelRef}
-                      className="h-1"
-                      aria-hidden="true"
-                    />
-                  </>
-                )}
+                <CollaborationsTab
+                  collaborations={collaborations}
+                  collaborationsLoading={collaborationsLoading}
+                  filteredCollaborations={filteredCollaborations}
+                  userRoleByCollabId={userRoleByCollabId}
+                  targetUserId={targetUserId!}
+                  collabVisibleCount={collabVisibleCount}
+                  onLoadMore={() => {
+                    setIsLoadingMoreCollabs(true);
+                    setTimeout(() => {
+                      setCollabVisibleCount((n) => n + 6);
+                      setIsLoadingMoreCollabs(false);
+                    }, 150);
+                  }}
+                  isLoadingMore={isLoadingMoreCollabs}
+                  collabFilter={collabFilter}
+                  onFilterChange={(filter) => {
+                    setCollabFilter(filter);
+                    setCollabVisibleCount(6);
+                  }}
+                  isOwnProfile={isOwnProfile}
+                  onNavigate={navigate}
+                  sentinelRef={collabSentinelRef}
+                />
               </Box>
             )}
 
@@ -1212,102 +1037,27 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 aria-labelledby="trades"
                 className="py-6"
               >
-                {tradesLoading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {Array.from({ length: 6 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="h-32 bg-muted rounded-lg animate-pulse"
-                      />
-                    ))}
-                  </div>
-                ) : !trades || trades.length === 0 ? (
-                  <div className="text-center py-12 space-y-4">
-                    <p className="text-muted-foreground">No active trades.</p>
-                    <div className="flex items-center justify-center gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => navigate("/trades")}
-                      >
-                        Browse trades
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-                      <div className="text-sm text-muted-foreground">
-                        <span className="hidden sm:inline">Showing </span>
-                        {Math.min(
-                          tradesVisibleCount,
-                          filteredTrades.length
-                        )} of {filteredTrades.length}
-                        <span className="sm:hidden"> trades</span>
-                      </div>
-                      <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <label className="text-sm text-muted-foreground hidden sm:inline">
-                          Show:
-                        </label>
-                        <select
-                          className="w-full sm:w-auto rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 text-foreground text-sm px-3 py-2 outline-hidden focus:ring-2 focus:ring-primary/50 transition-all duration-200"
-                          value={tradeFilter}
-                          onChange={(e) => {
-                            setTradeFilter(e.target.value as any);
-                            setTradesVisibleCount(6);
-                          }}
-                        >
-                          <option value="all">All trades</option>
-                          <option value="yours">Created by me</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-                      {filteredTrades.slice(0, tradesVisibleCount).map((t) => (
-                        <TradeCard
-                          key={t.id}
-                          trade={t as any}
-                          showStatus={true}
-                        />
-                      ))}
-                    </div>
-                    <div className="flex flex-col sm:flex-row justify-center sm:justify-end gap-2 mt-4">
-                      {filteredTrades &&
-                        tradesVisibleCount < filteredTrades.length && (
-                          <Button
-                            variant="outline"
-                            className="w-full sm:w-auto"
-                            onClick={() => {
-                              setIsLoadingMoreTrades(true);
-                              setTimeout(() => {
-                                setTradesVisibleCount((n) => n + 6);
-                                setIsLoadingMoreTrades(false);
-                              }, 150);
-                            }}
-                            disabled={isLoadingMoreTrades}
-                            aria-busy={isLoadingMoreTrades}
-                            aria-controls="profile-trades-list"
-                          >
-                            {isLoadingMoreTrades ? "Loading…" : "Load more"}
-                          </Button>
-                        )}
-                      <span className="sr-only" aria-live="polite">
-                        {isLoadingMoreTrades ? "Loading more trades" : ""}
-                      </span>
-                      <Button
-                        variant="outline"
-                        className="w-full sm:w-auto"
-                        onClick={() => navigate("/trades")}
-                      >
-                        View all trades
-                      </Button>
-                    </div>
-                    <div
-                      ref={tradesSentinelRef}
-                      className="h-1"
-                      aria-hidden="true"
-                    />
-                  </>
-                )}
+                <TradesTab
+                  trades={trades}
+                  tradesLoading={tradesLoading}
+                  filteredTrades={filteredTrades}
+                  tradesVisibleCount={tradesVisibleCount}
+                  onLoadMore={() => {
+                    setIsLoadingMoreTrades(true);
+                    setTimeout(() => {
+                      setTradesVisibleCount((n) => n + 6);
+                      setIsLoadingMoreTrades(false);
+                    }, 150);
+                  }}
+                  isLoadingMore={isLoadingMoreTrades}
+                  tradeFilter={tradeFilter}
+                  onFilterChange={(filter) => {
+                    setTradeFilter(filter);
+                    setTradesVisibleCount(6);
+                  }}
+                  onNavigate={navigate}
+                  sentinelRef={tradesSentinelRef}
+                />
               </Box>
             )}
           </CardContent>
