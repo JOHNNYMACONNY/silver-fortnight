@@ -78,6 +78,7 @@ import { CollaborationsTab } from "./components/CollaborationsTab";
 import { TradesTab } from "./components/TradesTab";
 import { useProfileData } from "./hooks/useProfileData";
 import { useCollaborationsData } from "./hooks/useCollaborationsData";
+import { useTradesData } from "./hooks/useTradesData";
 
 type TabType =
   | "about"
@@ -129,11 +130,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isBioExpanded, setIsBioExpanded] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
-  const [trades, setTrades] = useState<any[] | null>(null);
-  const [tradesLoading, setTradesLoading] = useState(false);
-  const [tradesVisibleCount, setTradesVisibleCount] = useState(6);
-  const [isLoadingMoreTrades, setIsLoadingMoreTrades] = useState(false);
-  const [tradeFilter, setTradeFilter] = useState<"all" | "yours">("all");
   const collabSentinelRef = React.useRef<HTMLDivElement | null>(null);
   const tradesSentinelRef = React.useRef<HTMLDivElement | null>(null);
   const collabScrollBusyRef = React.useRef<boolean>(false);
@@ -184,6 +180,19 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     setIsLoadingMoreCollabs,
     filteredCollaborations,
   } = useCollaborationsData(targetUserId, activeTab, roleEnrichmentEnabled, showToast);
+
+  // Use custom hook for trades data fetching
+  const {
+    trades,
+    tradesLoading,
+    tradesVisibleCount,
+    setTradesVisibleCount,
+    tradeFilter,
+    setTradeFilter,
+    isLoadingMoreTrades,
+    setIsLoadingMoreTrades,
+    filteredTrades,
+  } = useTradesData(targetUserId, activeTab, showToast);
 
   const completenessPercent = React.useMemo(() => {
     if (!userProfile) return 0;
@@ -278,36 +287,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     }
   };
 
-  // Lazy fetch for trades when tab is activated
-  useEffect(() => {
-    if (!targetUserId) return;
-    if (activeTab === "trades" && trades === null && !tradesLoading) {
-      setTradesLoading(true);
-      tradeService
-        .getActiveTradesForUser(targetUserId)
-        .then((res) => {
-          if (res.error) {
-            showToast(res.error.message || "Failed to load trades", "error");
-            setTrades([]);
-          } else {
-            setTrades(res.data || []);
-          }
-        })
-        .catch(() => setTrades([]))
-        .finally(() => setTradesLoading(false));
-    }
-  }, [activeTab, targetUserId, tradesLoading, showToast]);
-
-  const filteredTrades = React.useMemo(() => {
-    if (!trades) return [] as any[];
-    if (tradeFilter === "yours") {
-      return trades.filter(
-        (t) =>
-          t?.creatorId === targetUserId || t?.participantId === targetUserId
-      );
-    }
-    return trades;
-  }, [trades, tradeFilter, targetUserId]);
+  // Trades data is now fetched via useTradesData hook
 
   // Infinite scroll for collaborations
   useEffect(() => {
@@ -343,7 +323,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         const entry = entries[0];
         if (entry.isIntersecting && !tradesScrollBusyRef.current) {
           tradesScrollBusyRef.current = true;
-          setTradesVisibleCount((n) => Math.min(n + 6, filteredTrades.length));
+          setTradesVisibleCount(Math.min(tradesVisibleCount + 6, filteredTrades.length));
           setTimeout(() => {
             tradesScrollBusyRef.current = false;
           }, 200);
@@ -808,7 +788,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                   onLoadMore={() => {
                     setIsLoadingMoreTrades(true);
                     setTimeout(() => {
-                      setTradesVisibleCount((n) => n + 6);
+                      setTradesVisibleCount(tradesVisibleCount + 6);
                       setIsLoadingMoreTrades(false);
                     }, 150);
                   }}
