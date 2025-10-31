@@ -83,6 +83,7 @@ import { classPatterns, animations } from "../utils/designSystem";
 import { semanticClasses } from "../utils/semanticColors";
 import { motion } from "framer-motion";
 import { ProfileHeader } from "./ProfilePage/components/ProfileHeader";
+import { ProfileEditModal } from "./ProfilePage/components/ProfileEditModal";
 
 type TabType =
   | "about"
@@ -167,19 +168,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   }>({ count: 0, names: [] });
   const suppressSpyRef = React.useRef(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [savingEdit, setSavingEdit] = useState(false);
-  const [editForm, setEditForm] = useState({
-    displayName: "",
-    tagline: "",
-    bio: "",
-    website: "",
-    location: "",
-  });
-  const [handleError, setHandleError] = useState<string | null>(null);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
-  const [skillsInput, setSkillsInput] = useState("");
-  const [skillsDraft, setSkillsDraft] = useState<string[]>([]);
   const [isBioExpanded, setIsBioExpanded] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [collaborations, setCollaborations] = useState<any[] | null>(null);
@@ -284,34 +272,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   }, [userId, currentUser, isOwnProfile, targetUserId]);
 
   // Keep edit form in sync when profile loads
-  useEffect(() => {
-    if (!userProfile) return;
-    setEditForm({
-      displayName: userProfile.displayName || "",
-      tagline: userProfile.tagline || "",
-      // handle added later in form render; keep state in sync via separate input
-      bio: userProfile.bio || "",
-      website: userProfile.website || "",
-      location: userProfile.location || "",
-    });
-    setSkillsDraft(
-      Array.isArray(userProfile.skills) ? [...userProfile.skills] : []
-    );
-    setAvatarFile(null);
-    setAvatarPreviewUrl(null);
-    // Prefill handle from display name if empty and user has no handle yet
-    try {
-      const handleInput = document.getElementById(
-        "edit-handle-input"
-      ) as HTMLInputElement | null;
-      if (handleInput && !userProfile.handle) {
-        const src = (userProfile.displayName || "").toLowerCase();
-        const guess = src.replace(/[^a-z0-9_]/g, "").slice(0, 20);
-        handleInput.value = guess;
-      }
-    } catch {}
-  }, [userProfile]);
-
   // Fetch stats when component mounts or targetUserId changes
   useEffect(() => {
     if (!targetUserId) return;
@@ -346,15 +306,20 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           let actualFollowersCount = 0;
           try {
             const db = (await import("../firebase-config")).db;
-            const { collection, query, where, getDocs } = await import(
-              "firebase/firestore"
-            );
-            const followsQuery = query(
-              collection(db, "userFollows"),
-              where("followingId", "==", targetUserId)
-            );
-            const followsSnapshot = await getDocs(followsQuery);
-            actualFollowersCount = followsSnapshot.size;
+            if (db) {
+              const { collection, query, where, getDocs } = await import(
+                "firebase/firestore"
+              );
+              const followsQuery = query(
+                collection(db, "userFollows"),
+                where("followingId", "==", targetUserId)
+              );
+              const followsSnapshot = await getDocs(followsQuery);
+              actualFollowersCount = followsSnapshot.size;
+            } else {
+              actualFollowersCount =
+                (socialResult as any)?.data?.followersCount || 0;
+            }
           } catch (error) {
             console.warn(
               "Could not fetch actual follower count, using socialStats:",
@@ -606,92 +571,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
       showToast("Banner removed", "success");
     } catch {
       showToast("Failed to remove banner", "error");
-    }
-  };
-
-  const handleEditSave = async () => {
-    if (!targetUserId) return;
-    setSavingEdit(true);
-    try {
-      let uploadedPublicId: string | undefined;
-      if (avatarFile) {
-        // Try dedicated profile preset first
-        const res = await uploadProfileImage(avatarFile);
-        if (res.error) {
-          // Fallback to generic upload preset (portfolio) in the same folder
-          const retry = await uploadImage(avatarFile, "users/profiles");
-          if (retry.error) {
-            throw new Error(retry.error);
-          }
-          uploadedPublicId = retry.publicId;
-        } else {
-          uploadedPublicId = res.publicId;
-        }
-      }
-
-      const updates: any = {
-        displayName: editForm.displayName?.trim() || undefined,
-        tagline: editForm.tagline?.trim() || undefined,
-        bio: editForm.bio?.trim() || undefined,
-        website: editForm.website?.trim() || undefined,
-        location: editForm.location?.trim() || undefined,
-        // Always send an array for skills so clearing skills persists as []
-        skills: Array.isArray(skillsDraft) ? skillsDraft : [],
-        profilePicture: uploadedPublicId || undefined,
-      };
-      // Optional handle validation/update
-      const raw =
-        (
-          document.getElementById(
-            "edit-handle-input"
-          ) as HTMLInputElement | null
-        )?.value || "";
-      const candidate = raw
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9_]/g, "")
-        .slice(0, 20);
-      if (candidate) {
-        if (candidate.length < 3) {
-          setHandleError("Handle must be at least 3 characters");
-          setSavingEdit(false);
-          return;
-        }
-        try {
-          await initializeFirebase();
-          const { db } = await getFirebaseInstances();
-          if (db) {
-            const usersRef = collection(db, "users");
-            const qh = query(usersRef, where("handle", "==", candidate));
-            const snap = await getDocs(qh);
-            const taken = snap.docs.some((d) => d.id !== targetUserId);
-            if (taken) {
-              setHandleError("This handle is already taken");
-              setSavingEdit(false);
-              return;
-            }
-          }
-          updates.handle = candidate;
-          setHandleError(null);
-        } catch (err) {
-          console.warn("Handle availability check failed", err);
-          updates.handle = candidate;
-        }
-      }
-      const res = await userService.updateUser(targetUserId, updates);
-      if (res.error) {
-        showToast(res.error.message || "Failed to update profile", "error");
-        return;
-      }
-      setUserProfile((prev) =>
-        prev ? ({ ...prev, ...updates } as UserProfile) : prev
-      );
-      showToast("Profile updated", "success");
-      setIsEditOpen(false);
-    } catch (e: any) {
-      showToast(e?.message || "Failed to update profile", "error");
-    } finally {
-      setSavingEdit(false);
     }
   };
 
@@ -1210,7 +1089,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
 
         {/* Profile Header */}
         <ProfileHeader
-          profile={userProfile}
+          profile={{ ...userProfile, id: targetUserId! }}
           isOwnProfile={isOwnProfile}
           targetUserId={targetUserId!}
           stats={stats}
@@ -1769,318 +1648,19 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         </Card>
 
         {/* Edit profile modal */}
-        <SimpleModal
+        <ProfileEditModal
           isOpen={isEditOpen}
           onClose={() => setIsEditOpen(false)}
-          title="Edit Profile"
-        >
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleEditSave();
-            }}
-            className="space-y-4"
-          >
-            {/* Avatar uploader */}
-            <div className="flex items-center gap-4">
-              <div className="relative h-16 w-16 rounded-full overflow-hidden ring-2 ring-border">
-                {avatarPreviewUrl ? (
-                  <img
-                    src={
-                      avatarPreviewUrl && avatarPreviewUrl.startsWith("blob:")
-                        ? avatarPreviewUrl
-                        : undefined
-                    }
-                    alt="New avatar preview"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <ProfileImage
-                    photoURL={userProfile?.photoURL}
-                    profilePicture={userProfile?.profilePicture || null}
-                    displayName={userProfile?.displayName}
-                    size="lg"
-                    className="h-16 w-16"
-                  />
-                )}
-                {avatarPreviewUrl && (
-                  <button
-                    type="button"
-                    className="absolute -top-2 -right-2 bg-background border border-border rounded-full p-1 shadow"
-                    onClick={() => {
-                      setAvatarPreviewUrl(null);
-                      setAvatarFile(null);
-                    }}
-                    aria-label="Remove selected avatar"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">
-                  Profile Photo
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    setAvatarFile(file);
-                    if (file) {
-                      const url = URL.createObjectURL(file);
-                      setAvatarPreviewUrl(url);
-                    } else {
-                      setAvatarPreviewUrl(null);
-                    }
-                  }}
-                  className="block text-sm"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  PNG or JPG up to ~5MB
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-2">
-                Display Name
-              </label>
-              <input
-                type="text"
-                value={editForm.displayName}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, displayName: e.target.value })
-                }
-                className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
-                maxLength={80}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-2">
-                Tagline
-              </label>
-              <input
-                type="text"
-                value={editForm.tagline}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, tagline: e.target.value })
-                }
-                className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
-                maxLength={120}
-                placeholder="One sentence that captures what you do"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-2">
-                Handle
-              </label>
-              <input
-                id="edit-handle-input"
-                type="text"
-                defaultValue={userProfile?.handle || ""}
-                onChange={(e) => {
-                  const v = e.target.value
-                    .toLowerCase()
-                    .replace(/[^a-z0-9_]/g, "")
-                    .slice(0, 20);
-                  e.target.value = v;
-                  if (v && v.length < 3)
-                    setHandleError("Handle must be at least 3 characters");
-                  else setHandleError(null);
-                }}
-                placeholder="your_handle"
-                className={`w-full rounded-xl glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 transition-all duration-200 ${
-                  handleError
-                    ? "border-red-500 dark:border-red-500 focus:ring-red-500"
-                    : "border-glass focus:ring-orange-500 dark:focus:ring-orange-400"
-                }`}
-                maxLength={20}
-              />
-              <p
-                className={`mt-1 text-xs ${
-                  handleError ? "text-destructive" : "text-muted-foreground"
-                }`}
-              >
-                Letters, numbers, underscores; 3–20 chars. Used for
-                /u/your_handle.
-              </p>
-              {!handleError &&
-                (
-                  document.getElementById(
-                    "edit-handle-input"
-                  ) as HTMLInputElement | null
-                )?.value?.length! >= 3 && (
-                  <div className="mt-1 inline-flex items-center gap-1 text-xs text-success-600 dark:text-success-400">
-                    <Check className="w-3.5 h-3.5" />
-                    Looks good
-                  </div>
-                )}
-              <div className="mt-2 flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Profile link:</span>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1 text-primary hover:underline"
-                  onClick={async () => {
-                    const input = document.getElementById(
-                      "edit-handle-input"
-                    ) as HTMLInputElement | null;
-                    const h = (
-                      input?.value ||
-                      userProfile?.handle ||
-                      ""
-                    ).trim();
-                    const path = h ? `/u/${h}` : `/profile/${targetUserId}`;
-                    const url = `${window.location.origin}${path}`;
-                    await navigator.clipboard.writeText(url);
-                    showToast("Profile link copied", "success");
-                    await logEvent("profile_share", {
-                      userId: targetUserId,
-                      hasHandle: !!h,
-                      method: "clipboard",
-                      context: "modal",
-                    });
-                  }}
-                  aria-label="Copy profile link"
-                >
-                  <CopyIcon className="w-3.5 h-3.5" />
-                  Copy
-                </button>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-2">
-                Bio
-              </label>
-              <textarea
-                value={editForm.bio}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, bio: e.target.value })
-                }
-                className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
-                rows={4}
-                maxLength={500}
-              />
-            </div>
-            {/* Skills editor */}
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Skills
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={skillsInput}
-                  onChange={(e) => setSkillsInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      const name = skillsInput.trim();
-                      if (!name) return;
-                      const exists = skillsDraft.some(
-                        (s) => s.toLowerCase() === name.toLowerCase()
-                      );
-                      if (!exists && skillsDraft.length < 10) {
-                        setSkillsDraft([...skillsDraft, name]);
-                      }
-                      setSkillsInput("");
-                    }
-                  }}
-                  placeholder="Add a skill and press Enter"
-                  className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
-                />
-                <Button
-                  type="button"
-                  onClick={() => {
-                    const name = skillsInput.trim();
-                    if (!name) return;
-                    const exists = skillsDraft.some(
-                      (s) => s.toLowerCase() === name.toLowerCase()
-                    );
-                    if (!exists && skillsDraft.length < 10) {
-                      setSkillsDraft([...skillsDraft, name]);
-                    }
-                    setSkillsInput("");
-                  }}
-                  className="shrink-0"
-                >
-                  Add
-                </Button>
-              </div>
-              {skillsDraft.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {skillsDraft.map((skill, idx) => (
-                    <span
-                      key={`${skill}-${idx}`}
-                      className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2 py-1 text-sm"
-                    >
-                      {skill}
-                      <button
-                        type="button"
-                        className="ml-1 rounded-full p-0.5 hover:bg-muted"
-                        aria-label={`Remove ${skill}`}
-                        onClick={() =>
-                          setSkillsDraft(
-                            skillsDraft.filter((_, i) => i !== idx)
-                          )
-                        }
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-              <p className="text-xs text-muted-foreground mt-1">
-                Up to 10 skills. Use simple names like “Audio Mixing”, “Video
-                Editing”.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">
-                  Website
-                </label>
-                <input
-                  type="url"
-                  value={editForm.website}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, website: e.target.value })
-                  }
-                  placeholder="https://example.com"
-                  className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">
-                  Location
-                </label>
-                <input
-                  type="text"
-                  value={editForm.location}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, location: e.target.value })
-                  }
-                  className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
-                  maxLength={120}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setIsEditOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" className="gap-2" disabled={savingEdit}>
-                <Save className="w-4 h-4" />
-                {savingEdit ? "Saving…" : "Save Changes"}
-              </Button>
-            </div>
-          </form>
-        </SimpleModal>
+          userProfile={
+            userProfile ? { ...userProfile, id: targetUserId! } : null
+          }
+          targetUserId={targetUserId!}
+          onSaveSuccess={(updates) => {
+            setUserProfile((prev) =>
+              prev ? ({ ...prev, ...updates } as UserProfile) : prev
+            );
+          }}
+        />
 
         {/* Share Profile Dropdown - Rendered via Portal */}
         {showShareMenu &&
@@ -2106,16 +1686,17 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                   <Link2 className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm">Copy link</span>
                 </button>
-                {navigator.share && (
-                  <button
-                    type="button"
-                    className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
-                    onClick={handleShareNative}
-                  >
-                    <Share2 className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">Share...</span>
-                  </button>
-                )}
+                {typeof navigator !== "undefined" &&
+                  typeof navigator.share === "function" && (
+                    <button
+                      type="button"
+                      className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
+                      onClick={handleShareNative}
+                    >
+                      <Share2 className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">Share...</span>
+                    </button>
+                  )}
                 <div className="h-px bg-border/50 my-2" />
                 <button
                   type="button"
