@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import { useAuth } from "../AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
 import { getUserProfile } from "../services/firestore-exports";
@@ -28,10 +27,6 @@ import {
   ChevronRight,
   TrendingUp,
   Activity,
-  Link2,
-  Twitter,
-  Facebook,
-  Linkedin,
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
@@ -84,6 +79,7 @@ import { semanticClasses } from "../utils/semanticColors";
 import { motion } from "framer-motion";
 import { ProfileHeader } from "./ProfilePage/components/ProfileHeader";
 import { ProfileEditModal } from "./ProfilePage/components/ProfileEditModal";
+import { ProfileShareMenu } from "./ProfilePage/components/ProfileShareMenu";
 
 type TabType =
   | "about"
@@ -188,10 +184,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   const collabScrollBusyRef = React.useRef<boolean>(false);
   const tradesScrollBusyRef = React.useRef<boolean>(false);
   const shareButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [shareDropdownPosition, setShareDropdownPosition] = useState<{
-    top: number;
-    left: number;
-  } | null>(null);
 
   // Feature flag to control role enrichment reads
   const viteEnv: any =
@@ -392,56 +384,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     return fields;
   }, [userProfile]);
 
-  const getProfileUrl = () => {
-    if (!targetUserId) return "";
-    const path = userProfile?.handle
-      ? `/u/${userProfile.handle}`
-      : `/profile/${targetUserId}`;
-    return `${window.location.origin}${path}`;
-  };
 
-  const handleShareProfile = async () => {
-    if (!showShareMenu && shareButtonRef.current) {
-      const rect = shareButtonRef.current.getBoundingClientRect();
-      const dropdownWidth = 224; // w-56 = 14rem * 16px
-      const dropdownHeight = 235; // Approximate height with 5 items
-      const viewportHeight = window.innerHeight;
-      const spaceBelow = viewportHeight - rect.bottom;
-      const spaceAbove = rect.top;
-
-      // Smart positioning: flip upward if not enough space below
-      const shouldFlipUp =
-        spaceBelow < dropdownHeight + 16 && spaceAbove > spaceBelow;
-
-      setShareDropdownPosition({
-        top: shouldFlipUp ? rect.top - dropdownHeight - 8 : rect.bottom + 8,
-        left: Math.max(
-          16,
-          Math.min(
-            rect.right - dropdownWidth,
-            window.innerWidth - dropdownWidth - 16
-          )
-        ),
-      });
-    }
-    setShowShareMenu(!showShareMenu);
-  };
-
-  const handleCopyLink = async () => {
-    const url = getProfileUrl();
-    try {
-      await navigator.clipboard.writeText(url);
-      showToast("Profile link copied!", "success");
-      setShowShareMenu(false);
-      await logEvent("profile_share", {
-        userId: targetUserId,
-        method: "clipboard",
-      });
-    } catch (error) {
-      console.error("Failed to copy link:", error);
-      showToast("Failed to copy link", "error");
-    }
-  };
 
   // Handler for copying link from ProfileHeader component
   const handleCopyProfileLink = async () => {
@@ -461,75 +404,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     });
   };
 
-  const handleShareNative = async () => {
-    const url = getProfileUrl();
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `${userProfile?.displayName || "User"}'s Profile on TradeYa`,
-          text: `Check out ${
-            userProfile?.displayName || "this user"
-          }'s profile on TradeYa!`,
-          url,
-        });
-        setShowShareMenu(false);
-        await logEvent("profile_share", {
-          userId: targetUserId,
-          method: "native",
-        });
-      }
-    } catch (error: any) {
-      if (error.name !== "AbortError") {
-        console.error("Failed to share:", error);
-      }
-    }
-  };
 
-  const handleShareTwitter = () => {
-    const url = getProfileUrl();
-    const text = `Check out ${
-      userProfile?.displayName || "this user"
-    }'s profile on TradeYa!`;
-    window.open(
-      `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-        text
-      )}&url=${encodeURIComponent(url)}`,
-      "_blank"
-    );
-    setShowShareMenu(false);
-    logEvent("profile_share", {
-      userId: targetUserId,
-      method: "twitter",
-    });
-  };
-
-  const handleShareLinkedIn = () => {
-    const url = getProfileUrl();
-    window.open(
-      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-        url
-      )}`,
-      "_blank"
-    );
-    setShowShareMenu(false);
-    logEvent("profile_share", {
-      userId: targetUserId,
-      method: "linkedin",
-    });
-  };
-
-  const handleShareFacebook = () => {
-    const url = getProfileUrl();
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      "_blank"
-    );
-    setShowShareMenu(false);
-    logEvent("profile_share", {
-      userId: targetUserId,
-      method: "facebook",
-    });
-  };
 
   // Inline banner edit handlers
   const handleBannerChange = async (data: BannerData) => {
@@ -1100,7 +975,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           mutualFollows={mutualFollows}
           shareButtonRef={shareButtonRef}
           onEditClick={() => setIsEditOpen(true)}
-          onShareClick={handleShareProfile}
+          onShareClick={() => setShowShareMenu(!showShareMenu)}
           onCopyLink={handleCopyProfileLink}
           onTabChange={setActiveTab}
         />
@@ -1662,70 +1537,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           }}
         />
 
-        {/* Share Profile Dropdown - Rendered via Portal */}
-        {showShareMenu &&
-          shareDropdownPosition &&
-          createPortal(
-            <>
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowShareMenu(false)}
-              />
-              <div
-                className="fixed z-50 w-56 glassmorphic bg-background/95 backdrop-blur-xl border border-border/50 rounded-lg shadow-xl py-2"
-                style={{
-                  top: `${shareDropdownPosition.top}px`,
-                  left: `${shareDropdownPosition.left}px`,
-                }}
-              >
-                <button
-                  type="button"
-                  className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
-                  onClick={handleCopyLink}
-                >
-                  <Link2 className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">Copy link</span>
-                </button>
-                {typeof navigator !== "undefined" &&
-                  typeof navigator.share === "function" && (
-                    <button
-                      type="button"
-                      className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
-                      onClick={handleShareNative}
-                    >
-                      <Share2 className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">Share...</span>
-                    </button>
-                  )}
-                <div className="h-px bg-border/50 my-2" />
-                <button
-                  type="button"
-                  className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
-                  onClick={handleShareTwitter}
-                >
-                  <Twitter className="w-4 h-4 text-[#1DA1F2]" />
-                  <span className="text-sm">Share on Twitter</span>
-                </button>
-                <button
-                  type="button"
-                  className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
-                  onClick={handleShareLinkedIn}
-                >
-                  <Linkedin className="w-4 h-4 text-[#0A66C2]" />
-                  <span className="text-sm">Share on LinkedIn</span>
-                </button>
-                <button
-                  type="button"
-                  className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
-                  onClick={handleShareFacebook}
-                >
-                  <Facebook className="w-4 h-4 text-[#1877F2]" />
-                  <span className="text-sm">Share on Facebook</span>
-                </button>
-              </div>
-            </>,
-            document.body
-          )}
+        {/* Share Profile Menu */}
+        <ProfileShareMenu
+          isOpen={showShareMenu}
+          onClose={() => setShowShareMenu(false)}
+          shareButtonRef={shareButtonRef}
+          targetUserId={targetUserId!}
+          userProfile={userProfile}
+        />
       </Stack>
     </Box>
   );
