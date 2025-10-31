@@ -23,8 +23,6 @@ import {
   Copy as CopyIcon,
   Check,
   Star,
-  ChevronLeft,
-  ChevronRight,
   TrendingUp,
   Activity,
 } from "lucide-react";
@@ -80,6 +78,7 @@ import { motion } from "framer-motion";
 import { ProfileHeader } from "./ProfilePage/components/ProfileHeader";
 import { ProfileEditModal } from "./ProfilePage/components/ProfileEditModal";
 import { ProfileShareMenu } from "./ProfilePage/components/ProfileShareMenu";
+import { ProfileTabs } from "./ProfilePage/components/ProfileTabs";
 
 type TabType =
   | "about"
@@ -126,21 +125,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     collaborations: null,
     trades: null,
   });
-  const tabScrollRef = React.useRef<HTMLDivElement | null>(null);
-  const [tabHasOverflow, setTabHasOverflow] = useState(false);
-  const [tabCanScrollLeft, setTabCanScrollLeft] = useState(false);
-  const [tabCanScrollRight, setTabCanScrollRight] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-  const updateTabScrollState = React.useCallback(() => {
-    const el = tabScrollRef.current;
-    if (!el) return;
-    const canLeft = el.scrollLeft > 0;
-    const canRight = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
-    setTabCanScrollLeft(canLeft);
-    setTabCanScrollRight(canRight);
-    setTabHasOverflow(el.scrollWidth > el.clientWidth + 1);
-  }, []);
   // no navigation needed in this component
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -706,29 +691,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     }))
   );
 
-  const handleTabKeyDown = (
-    e: React.KeyboardEvent<HTMLButtonElement>,
-    index: number
-  ) => {
-    const ids = tabs.map((t) => t.id);
-    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
-      e.preventDefault();
-      const dir = e.key === "ArrowRight" ? 1 : -1;
-      const nextIndex = (index + dir + ids.length) % ids.length;
-      const nextId = ids[nextIndex];
-      setActiveTab(nextId);
-      tabRefs.current[nextId]?.focus();
-    } else if (e.key === "Home") {
-      e.preventDefault();
-      setActiveTab(ids[0]);
-      tabRefs.current[ids[0]]?.focus();
-    } else if (e.key === "End") {
-      e.preventDefault();
-      const last = ids[ids.length - 1];
-      setActiveTab(last);
-      tabRefs.current[last]?.focus();
-    }
-  };
+
 
   // Deep-link support for tabs (#about, #portfolio, #progress, #collaborations, #trades)
   useEffect(() => {
@@ -755,13 +718,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         if (last && valid.includes(last)) setActiveTab(last);
       } catch {}
     }
-    // restore tab scroll position
-    try {
-      const savedScroll = localStorage.getItem("tradeya_profile_tab_scroll");
-      if (savedScroll && tabScrollRef.current) {
-        tabScrollRef.current.scrollLeft = Number(savedScroll);
-      }
-    } catch {}
     const onHashChange = () => {
       const h = (window.location.hash || "").replace("#", "");
       if (valid.includes(h as TabType)) setActiveTab(h as TabType);
@@ -770,39 +726,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
-  // Listen to reduced motion preference
-  useEffect(() => {
-    if (
-      typeof window === "undefined" ||
-      typeof window.matchMedia !== "function"
-    )
-      return;
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const applyPref = () => setPrefersReducedMotion(!!mediaQuery.matches);
-    applyPref();
-    if (typeof mediaQuery.addEventListener === "function") {
-      mediaQuery.addEventListener("change", applyPref);
-      return () => mediaQuery.removeEventListener("change", applyPref);
-    } else if (typeof mediaQuery.addListener === "function") {
-      mediaQuery.addListener(applyPref);
-      return () => mediaQuery.removeListener(applyPref);
-    }
-  }, []);
 
-  // Observe tab scroller for overflow and scroll position changes
-  useEffect(() => {
-    const el = tabScrollRef.current;
-    if (!el) return;
-    const onScroll = () => updateTabScrollState();
-    const onResize = () => updateTabScrollState();
-    updateTabScrollState();
-    el.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onResize);
-    return () => {
-      el.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onResize);
-    };
-  }, [updateTabScrollState]);
 
   // Mutual followers snippet for non-owners
   useEffect(() => {
@@ -981,146 +905,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         />
 
         {/* Tab Navigation */}
-        <Card className="glassmorphic bg-white/5 backdrop-blur-sm rounded-lg border border-border/30 shadow-sm overflow-hidden">
-          <div className="-mb-px sticky top-16 z-sticky glassmorphic backdrop-blur-xl bg-white/10">
-            <div className="relative">
-              <div
-                className={`pointer-events-none absolute left-0 top-0 h-full w-6 bg-gradient-to-r from-white/10 to-transparent transition-opacity duration-200 ${
-                  tabHasOverflow && tabCanScrollLeft
-                    ? "opacity-100"
-                    : "opacity-0"
-                }`}
-              />
-              <div
-                className={`pointer-events-none absolute right-0 top-0 h-full w-6 bg-gradient-to-l from-white/10 to-transparent transition-opacity duration-200 ${
-                  tabHasOverflow && tabCanScrollRight
-                    ? "opacity-100"
-                    : "opacity-0"
-                }`}
-              />
-              <div
-                ref={tabScrollRef}
-                className="overflow-x-auto scroll-smooth px-6 scrollbar-hide"
-                role="tablist"
-                aria-label="Profile sections"
-                onScroll={() => {
-                  try {
-                    if (!tabScrollRef.current) return;
-                    localStorage.setItem(
-                      "tradeya_profile_tab_scroll",
-                      String(tabScrollRef.current.scrollLeft)
-                    );
-                  } catch {}
-                }}
-              >
-                {/* desktop scroll chevrons (fade in/out on overflow) */}
-                <button
-                  type="button"
-                  className={`hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 items-center justify-center rounded-full border shadow-sm transition-opacity duration-200 ${
-                    tabHasOverflow
-                      ? tabCanScrollLeft
-                        ? "opacity-100 glassmorphic border-glass backdrop-blur-xl bg-white/10 hover:bg-white/15"
-                        : "opacity-50 glassmorphic border-glass backdrop-blur-xl bg-white/5 cursor-not-allowed"
-                      : "opacity-0 pointer-events-none"
-                  }`}
-                  onClick={() => {
-                    const scroller = tabScrollRef.current;
-                    const behavior = prefersReducedMotion ? "auto" : "smooth";
-                    scroller?.scrollBy({ left: -160, behavior });
-                  }}
-                  aria-label="Scroll tabs left"
-                  aria-hidden={!tabHasOverflow}
-                  tabIndex={tabHasOverflow ? 0 : -1}
-                  disabled={!tabHasOverflow || !tabCanScrollLeft}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  className={`hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 items-center justify-center rounded-full border shadow-sm transition-opacity duration-200 ${
-                    tabHasOverflow
-                      ? tabCanScrollRight
-                        ? "opacity-100 glassmorphic border-glass backdrop-blur-xl bg-white/10 hover:bg-white/15"
-                        : "opacity-50 glassmorphic border-glass backdrop-blur-xl bg-white/5 cursor-not-allowed"
-                      : "opacity-0 pointer-events-none"
-                  }`}
-                  onClick={() => {
-                    const scroller = tabScrollRef.current;
-                    const behavior = prefersReducedMotion ? "auto" : "smooth";
-                    scroller?.scrollBy({ left: 160, behavior });
-                  }}
-                  aria-label="Scroll tabs right"
-                  aria-hidden={!tabHasOverflow}
-                  tabIndex={tabHasOverflow ? 0 : -1}
-                  disabled={!tabHasOverflow || !tabCanScrollRight}
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-                <div className="flex gap-4">
-                  {tabs.map((tab, index) => (
-                    <button
-                      key={tab.id}
-                      role="tab"
-                      id={tab.id}
-                      aria-selected={activeTab === tab.id}
-                      aria-controls={`panel-${tab.id}`}
-                      tabIndex={activeTab === tab.id ? 0 : -1}
-                      onMouseEnter={() => tab.onHover?.()}
-                      onClick={() => {
-                        setActiveTab(tab.id);
-                        // Update hash for deep-linking
-                        try {
-                          window.history.replaceState({}, "", `#${tab.id}`);
-                        } catch {}
-                        try {
-                          localStorage.setItem(
-                            "tradeya_profile_last_tab",
-                            tab.id
-                          );
-                        } catch {}
-                        const panel = document.getElementById(
-                          `panel-${tab.id}`
-                        );
-                        const behavior = prefersReducedMotion
-                          ? "auto"
-                          : "smooth";
-                        panel?.scrollIntoView({ behavior, block: "start" });
-                      }}
-                      onKeyDown={(e) => handleTabKeyDown(e, index)}
-                      ref={(el) => {
-                        (tabRefs.current as any)[tab.id] = el;
-                      }}
-                      className={`shrink-0 group relative whitespace-nowrap py-4 px-3 min-h-[44px] border-b-2 font-medium text-sm flex items-center gap-2 transition-colors duration-200 ${
-                        activeTab === tab.id
-                          ? "border-primary text-foreground"
-                          : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-                      }`}
-                    >
-                      {tab.icon}
-                      <span className="flex items-center gap-1">
-                        {tab.label}
-                        {typeof getTabCount(tab.id) === "number" && (
-                          <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full glassmorphic border-glass backdrop-blur-xl bg-white/10 px-1 text-xs text-foreground">
-                            {getTabCount(tab.id)}
-                          </span>
-                        )}
-                      </span>
-                      {/* underline animation */}
-                      <span
-                        className={`absolute left-0 -bottom-[2px] h-[2px] bg-primary transition-all duration-300 ${
-                          activeTab === tab.id
-                            ? "w-full opacity-100"
-                            : "w-0 opacity-0 group-hover:w-full"
-                        }`}
-                        aria-hidden="true"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
+        <ProfileTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          tabRefs={tabRefs}
+          tabs={tabs}
+          getTabCount={getTabCount}
+        />
 
         {/* Tab Content */}
         <Card
