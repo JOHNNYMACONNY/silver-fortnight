@@ -77,6 +77,7 @@ import { AboutTab } from "./components/AboutTab";
 import { CollaborationsTab } from "./components/CollaborationsTab";
 import { TradesTab } from "./components/TradesTab";
 import { useProfileData } from "./hooks/useProfileData";
+import { useCollaborationsData } from "./hooks/useCollaborationsData";
 
 type TabType =
   | "about"
@@ -128,18 +129,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isBioExpanded, setIsBioExpanded] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
-  const [collaborations, setCollaborations] = useState<any[] | null>(null);
-  const [collaborationsLoading, setCollaborationsLoading] = useState(false);
   const [trades, setTrades] = useState<any[] | null>(null);
   const [tradesLoading, setTradesLoading] = useState(false);
-  const [collabVisibleCount, setCollabVisibleCount] = useState(6);
   const [tradesVisibleCount, setTradesVisibleCount] = useState(6);
-  const [userRoleByCollabId, setUserRoleByCollabId] = useState<
-    Record<string, string>
-  >({});
-  const [isLoadingMoreCollabs, setIsLoadingMoreCollabs] = useState(false);
   const [isLoadingMoreTrades, setIsLoadingMoreTrades] = useState(false);
-  const [collabFilter, setCollabFilter] = useState<"all" | "yours">("all");
   const [tradeFilter, setTradeFilter] = useState<"all" | "yours">("all");
   const collabSentinelRef = React.useRef<HTMLDivElement | null>(null);
   const tradesSentinelRef = React.useRef<HTMLDivElement | null>(null);
@@ -176,6 +169,21 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     setUserProfile,
     setMutualFollows,
   } = useProfileData(targetUserId, currentUser, isOwnProfile);
+
+  // Use custom hook for collaborations data fetching
+  const {
+    collaborations,
+    collaborationsLoading,
+    collabVisibleCount,
+    setCollabVisibleCount,
+    collabFilter,
+    setCollabFilter,
+    userRoleByCollabId,
+    setUserRoleByCollabId,
+    isLoadingMoreCollabs,
+    setIsLoadingMoreCollabs,
+    filteredCollaborations,
+  } = useCollaborationsData(targetUserId, activeTab, roleEnrichmentEnabled, showToast);
 
   const completenessPercent = React.useMemo(() => {
     if (!userProfile) return 0;
@@ -270,31 +278,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     }
   };
 
-  // Lazy fetch for collaborations and trades when tabs are activated
+  // Lazy fetch for trades when tab is activated
   useEffect(() => {
     if (!targetUserId) return;
-    if (
-      activeTab === "collaborations" &&
-      collaborations === null &&
-      !collaborationsLoading
-    ) {
-      setCollaborationsLoading(true);
-      collaborationService
-        .getCollaborationsForUser(targetUserId)
-        .then((res) => {
-          if (res.error) {
-            showToast(
-              res.error.message || "Failed to load collaborations",
-              "error"
-            );
-            setCollaborations([]);
-          } else {
-            setCollaborations(res.data || []);
-          }
-        })
-        .catch(() => setCollaborations([]))
-        .finally(() => setCollaborationsLoading(false));
-    } else if (activeTab === "trades" && trades === null && !tradesLoading) {
+    if (activeTab === "trades" && trades === null && !tradesLoading) {
       setTradesLoading(true);
       tradeService
         .getActiveTradesForUser(targetUserId)
@@ -309,70 +296,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         .catch(() => setTrades([]))
         .finally(() => setTradesLoading(false));
     }
-  }, [activeTab, targetUserId, collaborationsLoading, tradesLoading]);
-
-  // Enrich collaborations with specific user role title from roles subcollection if available
-  useEffect(() => {
-    if (!roleEnrichmentEnabled) return;
-    if (!targetUserId || !collaborations || collaborations.length === 0) return;
-    let isCancelled = false;
-    (async () => {
-      try {
-        await initializeFirebase();
-        const { db } = await getFirebaseInstances();
-        if (!db || isCancelled) return;
-        const roleMap: Record<string, string> = {};
-        // Fetch roles for currently visible set first to avoid excessive reads
-        const slice = collaborations.slice(0, collabVisibleCount);
-        for (const c of slice) {
-          // Skip if we already have a cached role for this collaboration
-          if (userRoleByCollabId[c.id]) continue;
-          try {
-            const rolesRef = collection(db, "collaborations", c.id, "roles");
-            const q = query(
-              rolesRef,
-              where("participantId", "==", targetUserId)
-            );
-            const snap = await getDocs(q);
-            const first = snap.docs[0]?.data() as any | undefined;
-            if (first?.title) {
-              roleMap[c.id] = String(first.title);
-            }
-          } catch {
-            // ignore per-collaboration role fetch errors
-          }
-        }
-        if (!isCancelled && Object.keys(roleMap).length > 0) {
-          setUserRoleByCollabId((prev) => ({ ...prev, ...roleMap }));
-        }
-      } catch {
-        // ignore batch errors
-      }
-    })();
-    return () => {
-      isCancelled = true;
-    };
-  }, [
-    targetUserId,
-    collaborations,
-    collabVisibleCount,
-    roleEnrichmentEnabled,
-    userRoleByCollabId,
-  ]);
-
-  // Filter helpers
-  const filteredCollaborations = React.useMemo(() => {
-    if (!collaborations) return [] as any[];
-    if (collabFilter === "yours") {
-      return collaborations.filter(
-        (c) =>
-          c?.creatorId === targetUserId ||
-          (Array.isArray(c?.participants) &&
-            c.participants.includes(targetUserId))
-      );
-    }
-    return collaborations;
-  }, [collaborations, collabFilter, targetUserId]);
+  }, [activeTab, targetUserId, tradesLoading, showToast]);
 
   const filteredTrades = React.useMemo(() => {
     if (!trades) return [] as any[];
@@ -395,8 +319,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         const entry = entries[0];
         if (entry.isIntersecting && !collabScrollBusyRef.current) {
           collabScrollBusyRef.current = true;
-          setCollabVisibleCount((n) =>
-            Math.min(n + 6, filteredCollaborations.length)
+          setCollabVisibleCount(
+            Math.min(collabVisibleCount + 6, filteredCollaborations.length)
           );
           setTimeout(() => {
             collabScrollBusyRef.current = false;
@@ -852,7 +776,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                   onLoadMore={() => {
                     setIsLoadingMoreCollabs(true);
                     setTimeout(() => {
-                      setCollabVisibleCount((n) => n + 6);
+                      setCollabVisibleCount(collabVisibleCount + 6);
                       setIsLoadingMoreCollabs(false);
                     }, 150);
                   }}
