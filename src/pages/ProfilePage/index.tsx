@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useAuth } from "../AuthContext";
+import { useAuth } from "../../AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
-import { getUserProfile } from "../services/firestore-exports";
+import { getUserProfile } from "../../services/firestore-exports";
 // Portfolio tab will be lazy-loaded for performance
 // Lazy-load heavy components
 const ReactLazy = React.lazy;
@@ -23,59 +23,59 @@ import {
   TrendingUp,
   Activity,
 } from "lucide-react";
-import { Button } from "../components/ui/Button";
-import ReputationBadge from "../components/ui/ReputationBadge";
-import { Tooltip } from "../components/ui/Tooltip";
-import { getDashboardStats } from "../services/dashboard";
-import { getUserSocialStats } from "../services/leaderboards";
-import { getRelatedUserIds, getUsersByIds } from "../services/firestore";
+import { Button } from "../../components/ui/Button";
+import ReputationBadge from "../../components/ui/ReputationBadge";
+import { Tooltip } from "../../components/ui/Tooltip";
+import { getDashboardStats } from "../../services/dashboard";
+import { getUserSocialStats } from "../../services/leaderboards";
+import { getRelatedUserIds, getUsersByIds } from "../../services/firestore";
 import {
   UserSocialStats,
   SocialFeatures,
-} from "../components/features/SocialFeatures";
-import { ProfileImage } from "../components/ui/ProfileImage";
-import { ProfileBanner } from "../components/ui/ProfileBanner";
-import type { BannerData } from "../utils/imageUtils";
-import { StreakWidgetCompact } from "../components/features/StreakWidgetCompact";
-import StatChip from "../components/ui/StatChip";
-import { SimpleModal } from "../components/ui/SimpleModal";
-import { userService } from "../services/entities/UserService";
-import { useToast } from "../contexts/ToastContext";
+} from "../../components/features/SocialFeatures";
+import { ProfileImage } from "../../components/ui/ProfileImage";
+import { ProfileBanner } from "../../components/ui/ProfileBanner";
+import type { BannerData } from "../../utils/imageUtils";
+import { StreakWidgetCompact } from "../../components/features/StreakWidgetCompact";
+import StatChip from "../../components/ui/StatChip";
+import { SimpleModal } from "../../components/ui/SimpleModal";
+import { userService } from "../../services/entities/UserService";
+import { useToast } from "../../contexts/ToastContext";
 import {
   uploadProfileImage,
   uploadImage,
-} from "../services/cloudinary/cloudinaryService";
-import { collaborationService } from "../services/entities/CollaborationService";
-import { tradeService } from "../services/entities/TradeService";
-import { getUserReviews } from "../services/firestore-exports";
-import { logEvent } from "../services/analytics";
+} from "../../services/cloudinary/cloudinaryService";
+import { collaborationService } from "../../services/entities/CollaborationService";
+import { tradeService } from "../../services/entities/TradeService";
+import { getUserReviews } from "../../services/firestore-exports";
+import { logEvent } from "../../services/analytics";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { getFirebaseInstances, initializeFirebase } from "../firebase-config";
-import Box from "../components/layout/primitives/Box";
-import Stack from "../components/layout/primitives/Stack";
-import Cluster from "../components/layout/primitives/Cluster";
-import Grid from "../components/layout/primitives/Grid";
+import { getFirebaseInstances, initializeFirebase } from "../../firebase-config";
+import Box from "../../components/layout/primitives/Box";
+import Stack from "../../components/layout/primitives/Stack";
+import Cluster from "../../components/layout/primitives/Cluster";
+import Grid from "../../components/layout/primitives/Grid";
 // HomePage patterns imports
-import PerformanceMonitor from "../components/ui/PerformanceMonitor";
-import AnimatedHeading from "../components/ui/AnimatedHeading";
-import GradientMeshBackground from "../components/ui/GradientMeshBackground";
+import PerformanceMonitor from "../../components/ui/PerformanceMonitor";
+import AnimatedHeading from "../../components/ui/AnimatedHeading";
+import GradientMeshBackground from "../../components/ui/GradientMeshBackground";
 import {
   Card,
   CardHeader,
   CardContent,
   CardFooter,
   CardTitle,
-} from "../components/ui/Card";
-import { classPatterns, animations } from "../utils/designSystem";
-import { semanticClasses } from "../utils/semanticColors";
+} from "../../components/ui/Card";
+import { classPatterns, animations } from "../../utils/designSystem";
+import { semanticClasses } from "../../utils/semanticColors";
 import { motion } from "framer-motion";
-import { ProfileHeader } from "./ProfilePage/components/ProfileHeader";
-import { ProfileEditModal } from "./ProfilePage/components/ProfileEditModal";
-import { ProfileShareMenu } from "./ProfilePage/components/ProfileShareMenu";
-import { ProfileTabs } from "./ProfilePage/components/ProfileTabs";
-import { AboutTab } from "./ProfilePage/components/AboutTab";
-import { CollaborationsTab } from "./ProfilePage/components/CollaborationsTab";
-import { TradesTab } from "./ProfilePage/components/TradesTab";
+import { ProfileHeader } from "./components/ProfileHeader";
+import { ProfileEditModal } from "./components/ProfileEditModal";
+import { ProfileShareMenu } from "./components/ProfileShareMenu";
+import { ProfileTabs } from "./components/ProfileTabs";
+import { AboutTab } from "./components/AboutTab";
+import { CollaborationsTab } from "./components/CollaborationsTab";
+import { TradesTab } from "./components/TradesTab";
 
 type TabType =
   | "about"
@@ -279,7 +279,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           // Get actual follower count from userFollows collection for accurate reputation
           let actualFollowersCount = 0;
           try {
-            const db = (await import("../firebase-config")).db;
+            const db = (await import("../../firebase-config")).db;
             if (db) {
               const { collection, query, where, getDocs } = await import(
                 "firebase/firestore"
@@ -655,7 +655,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
       id: "portfolio",
       label: "Portfolio",
       onHover: () => {
-        import("../components/features/portfolio/PortfolioTab");
+        import("../../components/features/portfolio/PortfolioTab");
       },
     },
     {
@@ -664,7 +664,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
       icon: <Trophy className="w-4 h-4" />,
       onHover: () => {
         // Prefetch gamification bundle on hover for faster tab switch
-        import("../components/gamification");
+        import("../../components/gamification");
       },
     },
     { id: "collaborations", label: "Collaborations" },
@@ -673,17 +673,17 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
 
   // Define lazy components
   const GamificationDashboardLazy = ReactLazy(() =>
-    import("../components/gamification").then((m) => ({
+    import("../../components/gamification").then((m) => ({
       default: m.GamificationDashboard,
     }))
   );
   const NotificationPreferencesLazy = ReactLazy(() =>
-    import("../components/gamification").then((m) => ({
+    import("../../components/gamification").then((m) => ({
       default: m.NotificationPreferences,
     }))
   );
   const PortfolioTabLazy = ReactLazy(() =>
-    import("../components/features/portfolio/PortfolioTab").then((m) => ({
+    import("../../components/features/portfolio/PortfolioTab").then((m) => ({
       default: m.PortfolioTab,
     }))
   );
