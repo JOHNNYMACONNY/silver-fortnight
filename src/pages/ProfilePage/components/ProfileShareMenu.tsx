@@ -158,7 +158,11 @@ export const ProfileShareMenu: React.FC<ProfileShareMenuProps> = ({
   return createPortal(
     <>
       {/* Backdrop to close menu when clicking outside */}
-      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <div
+        className="fixed inset-0 z-40"
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
       {/* Share menu dropdown */}
       <div
@@ -167,14 +171,18 @@ export const ProfileShareMenu: React.FC<ProfileShareMenuProps> = ({
           top: `${dropdownPosition.top}px`,
           left: `${dropdownPosition.left}px`,
         }}
+        role="menu"
+        aria-label="Share profile options"
       >
         {/* Copy Link */}
         <button
           type="button"
+          role="menuitem"
           className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
           onClick={handleCopyLink}
+          aria-label="Copy profile link to clipboard"
         >
-          <Link2 className="w-4 h-4 text-muted-foreground" />
+          <Link2 className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
           <span className="text-sm">Copy link</span>
         </button>
 
@@ -183,41 +191,49 @@ export const ProfileShareMenu: React.FC<ProfileShareMenuProps> = ({
           typeof navigator.share === "function" && (
             <button
               type="button"
+              role="menuitem"
               className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
               onClick={handleShareNative}
+              aria-label="Share profile using native share dialog"
             >
-              <Share2 className="w-4 h-4 text-muted-foreground" />
+              <Share2 className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
               <span className="text-sm">Share...</span>
             </button>
           )}
 
         {/* Divider */}
-        <div className="h-px bg-border/50 my-2" />
+        <div className="h-px bg-border/50 my-2" role="separator" />
 
         {/* Twitter */}
         <button
           type="button"
+          role="menuitem"
           className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
           onClick={handleShareTwitter}
+          aria-label="Share profile on Twitter"
         >
-          <Twitter className="w-4 h-4 text-[#1DA1F2]" />
+          <Twitter className="w-4 h-4 text-[#1DA1F2]" aria-hidden="true" />
           <span className="text-sm">Share on Twitter</span>
         </button>
 
         {/* LinkedIn */}
         <button
           type="button"
+          role="menuitem"
           className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
           onClick={handleShareLinkedIn}
+          aria-label="Share profile on LinkedIn"
         >
-          <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+          <Linkedin className="w-4 h-4 text-[#0A66C2]" aria-hidden="true" />
           <span className="text-sm">Share on LinkedIn</span>
         </button>
 
         {/* Facebook */}
         <button
           type="button"
+          role="menuitem"
           className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center gap-3 transition-colors rounded-md"
+          aria-label="Share profile on Facebook"
           onClick={handleShareFacebook}
         >
           <Facebook className="w-4 h-4 text-[#1877F2]" />

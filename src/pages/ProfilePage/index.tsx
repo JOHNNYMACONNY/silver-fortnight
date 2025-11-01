@@ -430,6 +430,28 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     { id: "trades", label: "Trades" },
   ];
 
+  // Focus management: Move focus to tab panel when tab changes
+  useEffect(() => {
+    const panelId = `panel-${activeTab}`;
+    const panel = document.getElementById(panelId);
+    if (panel) {
+      // Set tabindex to allow focus
+      if (!panel.hasAttribute("tabindex")) {
+        panel.setAttribute("tabindex", "-1");
+      }
+      // Announce tab change to screen readers
+      const tabLabel = tabs.find((t) => t.id === activeTab)?.label || activeTab;
+      const announcement = document.createElement("div");
+      announcement.setAttribute("role", "status");
+      announcement.setAttribute("aria-live", "polite");
+      announcement.setAttribute("aria-atomic", "true");
+      announcement.className = "sr-only";
+      announcement.textContent = `${tabLabel} tab activated`;
+      document.body.appendChild(announcement);
+      setTimeout(() => announcement.remove(), 1000);
+    }
+  }, [activeTab, tabs]);
+
   // Define lazy components
   const GamificationDashboardLazy = ReactLazy(() =>
     import("../../components/gamification").then((m) => ({

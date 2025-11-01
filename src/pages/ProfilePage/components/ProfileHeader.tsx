@@ -347,7 +347,7 @@ const ProfileHeaderComponent: React.FC<ProfileHeaderProps> = ({
 
               {/* Skills - Premium design */}
               {profile.skills && profile.skills.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1.5" role="group" aria-label="Skills">
                   {profile.skills.slice(0, 8).map((skill, index) => (
                     <button
                       key={index}
@@ -408,8 +408,9 @@ const ProfileHeaderComponent: React.FC<ProfileHeaderProps> = ({
                       variant="glassmorphic"
                       className="gap-2 shrink-0 border-primary/20 hover:border-primary/40 bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 shadow-lg hover:shadow-xl hover:shadow-primary/20"
                       onClick={onEditClick}
+                      aria-label="Edit your profile information"
                     >
-                      <Edit3 className="w-4 h-4" />
+                      <Edit3 className="w-4 h-4" aria-hidden="true" />
                       Edit Profile
                     </Button>
                     <Button
@@ -417,8 +418,10 @@ const ProfileHeaderComponent: React.FC<ProfileHeaderProps> = ({
                       variant="ghost"
                       className="gap-2 shrink-0"
                       onClick={onShareClick}
+                      aria-label="Share your profile on social media"
+                      aria-haspopup="menu"
                     >
-                      <Share2 className="w-4 h-4" />
+                      <Share2 className="w-4 h-4" aria-hidden="true" />
                       Share profile
                     </Button>
                   </>

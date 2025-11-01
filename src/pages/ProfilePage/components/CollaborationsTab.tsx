@@ -134,17 +134,21 @@ const CollaborationsTabComponent: React.FC<CollaborationsTabProps> = ({
               disabled={isLoadingMore}
               aria-busy={isLoadingMore}
               aria-controls="profile-collaborations-list"
+              aria-label={`Load more collaborations. Currently showing ${collabVisibleCount} of ${filteredCollaborations.length}`}
             >
               {isLoadingMore ? "Loading…" : "Load more"}
             </Button>
           )}
-        <span className="sr-only" aria-live="polite">
-          {isLoadingMore ? "Loading more collaborations" : ""}
+        <span className="sr-only" aria-live="polite" aria-atomic="true">
+          {isLoadingMore
+            ? `Loading more collaborations. Currently showing ${collabVisibleCount} of ${filteredCollaborations.length}`
+            : ""}
         </span>
         <Button
           variant="outline"
           className="w-full sm:w-auto"
           onClick={() => onNavigate("/collaborations")}
+          aria-label={`View all ${filteredCollaborations?.length || 0} collaborations`}
         >
           View all collaborations
         </Button>

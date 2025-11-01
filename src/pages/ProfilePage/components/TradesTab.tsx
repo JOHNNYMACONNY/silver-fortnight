@@ -98,17 +98,21 @@ const TradesTabComponent: React.FC<TradesTabProps> = ({
             disabled={isLoadingMore}
             aria-busy={isLoadingMore}
             aria-controls="profile-trades-list"
+            aria-label={`Load more trades. Currently showing ${tradesVisibleCount} of ${filteredTrades.length}`}
           >
             {isLoadingMore ? "Loading…" : "Load more"}
           </Button>
         )}
-        <span className="sr-only" aria-live="polite">
-          {isLoadingMore ? "Loading more trades" : ""}
+        <span className="sr-only" aria-live="polite" aria-atomic="true">
+          {isLoadingMore
+            ? `Loading more trades. Currently showing ${tradesVisibleCount} of ${filteredTrades.length}`
+            : ""}
         </span>
         <Button
           variant="outline"
           className="w-full sm:w-auto"
           onClick={() => onNavigate("/trades")}
+          aria-label={`View all ${filteredTrades?.length || 0} trades`}
         >
           View all trades
         </Button>

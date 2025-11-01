@@ -212,6 +212,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           handleSave();
         }}
         className="space-y-4"
+        aria-label="Edit profile form"
       >
         {/* Avatar uploader */}
         <div className="flex items-center gap-4">
@@ -276,10 +277,14 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
         {/* Display Name */}
         <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-2">
+          <label
+            htmlFor="displayName"
+            className="block text-sm font-medium text-muted-foreground mb-2"
+          >
             Display Name
           </label>
           <input
+            id="displayName"
             type="text"
             value={editForm.displayName}
             onChange={(e) =>
@@ -287,15 +292,20 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             }
             className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
             maxLength={80}
+            aria-label="Display name"
           />
         </div>
 
         {/* Tagline */}
         <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-2">
+          <label
+            htmlFor="tagline"
+            className="block text-sm font-medium text-muted-foreground mb-2"
+          >
             Tagline
           </label>
           <input
+            id="tagline"
             type="text"
             value={editForm.tagline}
             onChange={(e) =>
@@ -304,15 +314,20 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
             maxLength={120}
             placeholder="One sentence that captures what you do"
+            aria-label="Tagline"
           />
         </div>
 
         {/* Handle */}
         <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-2">
+          <label
+            htmlFor="handle"
+            className="block text-sm font-medium text-muted-foreground mb-2"
+          >
             Handle
           </label>
           <input
+            id="handle"
             type="text"
             value={handleInput}
             onChange={(e) => validateHandle(e.target.value)}
@@ -323,8 +338,12 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                 : "border-glass focus:ring-orange-500 dark:focus:ring-orange-400"
             }`}
             maxLength={20}
+            aria-label="Handle"
+            aria-invalid={handleError ? "true" : "false"}
+            aria-describedby={handleError ? "handle-error" : "handle-help"}
           />
           <p
+            id={handleError ? "handle-error" : "handle-help"}
             className={`mt-1 text-xs ${
               handleError ? "text-destructive" : "text-muted-foreground"
             }`}
@@ -353,25 +372,34 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
         {/* Bio */}
         <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-2">
+          <label
+            htmlFor="bio"
+            className="block text-sm font-medium text-muted-foreground mb-2"
+          >
             Bio
           </label>
           <textarea
+            id="bio"
             value={editForm.bio}
             onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
             className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
             rows={4}
             maxLength={500}
+            aria-label="Bio"
           />
         </div>
 
         {/* Skills editor */}
         <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1">
+          <label
+            htmlFor="skillsInput"
+            className="block text-sm font-medium text-muted-foreground mb-1"
+          >
             Skills
           </label>
           <div className="flex items-center gap-2">
             <input
+              id="skillsInput"
               type="text"
               value={skillsInput}
               onChange={(e) => setSkillsInput(e.target.value)}
@@ -383,8 +411,14 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               }}
               placeholder="Add a skill and press Enter"
               className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
+              aria-label="Add skill"
             />
-            <Button type="button" onClick={addSkill} className="shrink-0">
+            <Button
+              type="button"
+              onClick={addSkill}
+              className="shrink-0"
+              aria-label="Add skill to list"
+            >
               Add
             </Button>
           </div>
@@ -417,10 +451,14 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         {/* Website and Location */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-2">
+            <label
+              htmlFor="website"
+              className="block text-sm font-medium text-muted-foreground mb-2"
+            >
               Website
             </label>
             <input
+              id="website"
               type="url"
               value={editForm.website}
               onChange={(e) =>
@@ -428,13 +466,18 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               }
               placeholder="https://example.com"
               className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
+              aria-label="Website URL"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-2">
+            <label
+              htmlFor="location"
+              className="block text-sm font-medium text-muted-foreground mb-2"
+            >
               Location
             </label>
             <input
+              id="location"
               type="text"
               value={editForm.location}
               onChange={(e) =>
@@ -442,17 +485,29 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               }
               className="w-full rounded-xl border-glass glassmorphic backdrop-blur-xl bg-white/5 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition-all duration-200"
               maxLength={120}
+              aria-label="Location"
             />
           </div>
         </div>
 
         {/* Action buttons */}
         <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="ghost" onClick={onClose}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+            aria-label="Cancel editing profile"
+          >
             Cancel
           </Button>
-          <Button type="submit" className="gap-2" disabled={savingEdit}>
-            <Save className="w-4 h-4" />
+          <Button
+            type="submit"
+            className="gap-2"
+            disabled={savingEdit}
+            aria-label={savingEdit ? "Saving profile changes" : "Save profile changes"}
+            aria-busy={savingEdit}
+          >
+            <Save className="w-4 h-4" aria-hidden="true" />
             {savingEdit ? "Saving…" : "Save Changes"}
           </Button>
         </div>
