@@ -80,6 +80,7 @@ import { useProfileData } from "./hooks/useProfileData";
 import { useCollaborationsData } from "./hooks/useCollaborationsData";
 import { useTradesData } from "./hooks/useTradesData";
 import { useTabNavigation } from "./hooks/useTabNavigation";
+import { useModalState } from "./hooks/useModalState";
 
 type TabType =
   | "about"
@@ -131,9 +132,20 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   });
 
   const suppressSpyRef = React.useRef(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
   const [isBioExpanded, setIsBioExpanded] = useState(false);
-  const [showShareMenu, setShowShareMenu] = useState(false);
+
+  // Use custom hook for modal state management
+  const {
+    isEditOpen,
+    setIsEditOpen,
+    openEditModal,
+    closeEditModal,
+    showShareMenu,
+    setShowShareMenu,
+    closeShareMenu,
+    toggleShareMenu,
+  } = useModalState();
+
   const collabSentinelRef = React.useRef<HTMLDivElement | null>(null);
   const tradesSentinelRef = React.useRef<HTMLDivElement | null>(null);
   const collabScrollBusyRef = React.useRef<boolean>(false);
@@ -588,7 +600,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 <Button
                   variant="outline"
                   className="shrink-0"
-                  onClick={() => setIsEditOpen(true)}
+                  onClick={openEditModal}
                 >
                   <Edit3 className="w-4 h-4 mr-2" />
                   Complete now
@@ -610,8 +622,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           reviewsMeta={reviewsMeta}
           mutualFollows={mutualFollows}
           shareButtonRef={shareButtonRef}
-          onEditClick={() => setIsEditOpen(true)}
-          onShareClick={() => setShowShareMenu(!showShareMenu)}
+          onEditClick={openEditModal}
+          onShareClick={toggleShareMenu}
           onCopyLink={handleCopyProfileLink}
           onTabChange={handleTabChange}
         />
@@ -782,7 +794,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         {/* Edit profile modal */}
         <ProfileEditModal
           isOpen={isEditOpen}
-          onClose={() => setIsEditOpen(false)}
+          onClose={closeEditModal}
           userProfile={
             userProfile ? { ...userProfile, id: targetUserId! } : null
           }
@@ -797,7 +809,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         {/* Share Profile Menu */}
         <ProfileShareMenu
           isOpen={showShareMenu}
-          onClose={() => setShowShareMenu(false)}
+          onClose={closeShareMenu}
           shareButtonRef={shareButtonRef}
           targetUserId={targetUserId!}
           userProfile={userProfile}
