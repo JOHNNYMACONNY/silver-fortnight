@@ -79,6 +79,7 @@ import { TradesTab } from "./components/TradesTab";
 import { useProfileData } from "./hooks/useProfileData";
 import { useCollaborationsData } from "./hooks/useCollaborationsData";
 import { useTradesData } from "./hooks/useTradesData";
+import { useTabNavigation } from "./hooks/useTabNavigation";
 
 type TabType =
   | "about"
@@ -117,7 +118,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   const { userId: paramUserId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const [activeTab, setActiveTab] = useState<TabType>("about");
+
+  // Use custom hook for tab navigation
+  const { activeTab, setActiveTab, handleTabChange } = useTabNavigation();
+
   const tabRefs = React.useRef<Record<TabType, HTMLButtonElement | null>>({
     about: null,
     portfolio: null,
@@ -432,38 +436,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   );
 
 
-
-  // Deep-link support for tabs (#about, #portfolio, #progress, #collaborations, #trades)
-  useEffect(() => {
-    const hash = (window.location.hash || "").replace("#", "");
-    const valid = [
-      "about",
-      "portfolio",
-      "gamification",
-      "collaborations",
-      "trades",
-    ] as TabType[];
-    if (valid.includes(hash as TabType)) {
-      setActiveTab(hash as TabType);
-      // Scroll to the panel for a11y
-      const panel = document.getElementById(`panel-${hash}`);
-      panel?.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      // Fallback to last tab from localStorage
-      try {
-        const last = localStorage.getItem(
-          "tradeya_profile_last_tab"
-        ) as TabType | null;
-        if (last && valid.includes(last)) setActiveTab(last);
-      } catch {}
-    }
-    const onHashChange = () => {
-      const h = (window.location.hash || "").replace("#", "");
-      if (valid.includes(h as TabType)) setActiveTab(h as TabType);
-    };
-    window.addEventListener("hashchange", onHashChange);
-    return () => window.removeEventListener("hashchange", onHashChange);
-  }, []);
+  // Tab navigation is now handled by useTabNavigation hook
 
 
 
@@ -640,13 +613,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           onEditClick={() => setIsEditOpen(true)}
           onShareClick={() => setShowShareMenu(!showShareMenu)}
           onCopyLink={handleCopyProfileLink}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
         />
 
         {/* Tab Navigation */}
         <ProfileTabs
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
           tabRefs={tabRefs}
           tabs={tabs}
           getTabCount={getTabCount}
