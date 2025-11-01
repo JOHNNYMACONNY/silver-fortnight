@@ -137,19 +137,13 @@ const ProfileHeaderComponent: React.FC<ProfileHeaderProps> = ({
               <div className="relative p-1 rounded-full bg-border/50 shadow-xl">
                 {/* Avatar container */}
                 <div className="w-24 h-24 rounded-full overflow-hidden bg-background shadow-inner">
-                  {profile.photoURL || profile.profilePicture ? (
-                    <ProfileImage
-                      photoURL={profile.photoURL}
-                      profilePicture={profile.profilePicture}
-                      displayName={profile.displayName}
-                      size="xl"
-                      className="h-24 w-24"
-                    />
-                  ) : (
-                    <div className="w-24 h-24 rounded-full glassmorphic border-glass backdrop-blur-xl bg-white/10 flex items-center justify-center">
-                      <User className="w-10 h-10 text-gray-400 dark:text-gray-300" />
-                    </div>
-                  )}
+                  <ProfileImage
+                    photoURL={profile.photoURL}
+                    profilePicture={profile.profilePicture}
+                    displayName={profile.displayName}
+                    size="xl"
+                    className="h-24 w-24"
+                  />
                 </div>
               </div>
             </div>
