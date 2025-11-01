@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../../AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
 import { getUserProfile } from "../../services/firestore-exports";
@@ -50,7 +50,10 @@ import { tradeService } from "../../services/entities/TradeService";
 import { getUserReviews } from "../../services/firestore-exports";
 import { logEvent } from "../../services/analytics";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { getFirebaseInstances, initializeFirebase } from "../../firebase-config";
+import {
+  getFirebaseInstances,
+  initializeFirebase,
+} from "../../firebase-config";
 import Box from "../../components/layout/primitives/Box";
 import Stack from "../../components/layout/primitives/Stack";
 import Cluster from "../../components/layout/primitives/Cluster";
@@ -76,6 +79,11 @@ import { ProfileTabs } from "./components/ProfileTabs";
 import { AboutTab } from "./components/AboutTab";
 import { CollaborationsTab } from "./components/CollaborationsTab";
 import { TradesTab } from "./components/TradesTab";
+import { useProfileData } from "./hooks/useProfileData";
+import { useCollaborationsData } from "./hooks/useCollaborationsData";
+import { useTradesData } from "./hooks/useTradesData";
+import { useTabNavigation } from "./hooks/useTabNavigation";
+import { useModalState } from "./hooks/useModalState";
 
 type TabType =
   | "about"
@@ -114,7 +122,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   const { userId: paramUserId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const [activeTab, setActiveTab] = useState<TabType>("about");
+
+  // Use custom hook for tab navigation
+  const { activeTab, setActiveTab, handleTabChange } = useTabNavigation();
+
   const tabRefs = React.useRef<Record<TabType, HTMLButtonElement | null>>({
     about: null,
     portfolio: null,
@@ -123,44 +134,21 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     trades: null,
   });
 
-  // no navigation needed in this component
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<{
-    totalTrades: number;
-    tradesThisWeek: number;
-    currentXP?: number;
-  } | null>(null);
-  const [repScore, setRepScore] = useState<number | null>(null);
-  const [reviewsPreview, setReviewsPreview] = useState<
-    Array<{ rating: number; comment: string }>
-  >([]);
-  const [reviewsLoading, setReviewsLoading] = useState<boolean>(false);
-  const [reviewsMeta, setReviewsMeta] = useState<{
-    avg: number;
-    count: number;
-  } | null>(null);
-  const [mutualFollows, setMutualFollows] = useState<{
-    count: number;
-    names: string[];
-  }>({ count: 0, names: [] });
   const suppressSpyRef = React.useRef(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
   const [isBioExpanded, setIsBioExpanded] = useState(false);
-  const [showShareMenu, setShowShareMenu] = useState(false);
-  const [collaborations, setCollaborations] = useState<any[] | null>(null);
-  const [collaborationsLoading, setCollaborationsLoading] = useState(false);
-  const [trades, setTrades] = useState<any[] | null>(null);
-  const [tradesLoading, setTradesLoading] = useState(false);
-  const [collabVisibleCount, setCollabVisibleCount] = useState(6);
-  const [tradesVisibleCount, setTradesVisibleCount] = useState(6);
-  const [userRoleByCollabId, setUserRoleByCollabId] = useState<
-    Record<string, string>
-  >({});
-  const [isLoadingMoreCollabs, setIsLoadingMoreCollabs] = useState(false);
-  const [isLoadingMoreTrades, setIsLoadingMoreTrades] = useState(false);
-  const [collabFilter, setCollabFilter] = useState<"all" | "yours">("all");
-  const [tradeFilter, setTradeFilter] = useState<"all" | "yours">("all");
+
+  // Use custom hook for modal state management
+  const {
+    isEditOpen,
+    setIsEditOpen,
+    openEditModal,
+    closeEditModal,
+    showShareMenu,
+    setShowShareMenu,
+    closeShareMenu,
+    toggleShareMenu,
+  } = useModalState();
+
   const collabSentinelRef = React.useRef<HTMLDivElement | null>(null);
   const tradesSentinelRef = React.useRef<HTMLDivElement | null>(null);
   const collabScrollBusyRef = React.useRef<boolean>(false);
@@ -183,160 +171,52 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   const isOwnProfile = !userId || userId === currentUser?.uid;
   const targetUserId = userId || currentUser?.uid;
 
-  // Note: Banner FX settings currently persist in localStorage client-side.
-  useEffect(() => {
-    const loadUserProfile = async () => {
-      setLoading(true);
-      try {
-        if (targetUserId) {
-          // Always fetch Firestore profile data to get Cloudinary profilePicture
-          const { data: profile, error } = await getUserProfile(targetUserId);
-          if (error) {
-            console.error("Error loading user profile:", error);
-            // Fallback to Firebase Auth data for own profile if Firestore fetch fails
-            if (isOwnProfile && currentUser) {
-              setUserProfile({
-                uid: currentUser.uid,
-                email: currentUser.email || "",
-                displayName: currentUser.displayName || undefined,
-                photoURL: currentUser.photoURL || undefined,
-                metadata: {
-                  creationTime: currentUser.metadata.creationTime,
-                  lastSignInTime: currentUser.metadata.lastSignInTime,
-                },
-              });
-            }
-          } else if (profile) {
-            // Merge Firestore data with Firebase Auth metadata for own profile
-            if (isOwnProfile && currentUser) {
-              setUserProfile({
-                ...profile,
-                metadata: {
-                  creationTime: currentUser.metadata.creationTime,
-                  lastSignInTime: currentUser.metadata.lastSignInTime,
-                },
-              } as UserProfile);
-            } else {
-              setUserProfile(profile as UserProfile);
-            }
-            // Stats are deferred via IntersectionObserver
-          }
-        }
-      } catch (error) {
-        console.error("Error loading user profile:", error);
-        // Fallback to Firebase Auth data for own profile if there's an error
-        if (isOwnProfile && currentUser) {
-          setUserProfile({
-            uid: currentUser.uid,
-            email: currentUser.email || "",
-            displayName: currentUser.displayName || undefined,
-            photoURL: currentUser.photoURL || undefined,
-            metadata: {
-              creationTime: currentUser.metadata.creationTime,
-              lastSignInTime: currentUser.metadata.lastSignInTime,
-            },
-          });
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Use custom hook for profile data fetching
+  const {
+    userProfile,
+    loading,
+    stats,
+    repScore,
+    reviewsPreview,
+    reviewsLoading,
+    reviewsMeta,
+    mutualFollows,
+    setUserProfile,
+    setMutualFollows,
+  } = useProfileData(targetUserId, currentUser, isOwnProfile);
 
-    loadUserProfile();
-  }, [userId, currentUser, isOwnProfile, targetUserId]);
+  // Use custom hook for collaborations data fetching
+  const {
+    collaborations,
+    collaborationsLoading,
+    collabVisibleCount,
+    setCollabVisibleCount,
+    collabFilter,
+    setCollabFilter,
+    userRoleByCollabId,
+    setUserRoleByCollabId,
+    isLoadingMoreCollabs,
+    setIsLoadingMoreCollabs,
+    filteredCollaborations,
+  } = useCollaborationsData(
+    targetUserId,
+    activeTab,
+    roleEnrichmentEnabled,
+    showToast
+  );
 
-  // Keep edit form in sync when profile loads
-  // Fetch stats when component mounts or targetUserId changes
-  useEffect(() => {
-    if (!targetUserId) return;
-    if (stats && repScore !== null) return; // Don't refetch if we already have data
-
-    (async () => {
-      try {
-        setReviewsLoading(true);
-        // Fetch stats and social stats (skip reviews if permissions error)
-        const [statsResult, socialResult] = await Promise.all([
-          getDashboardStats(targetUserId),
-          getUserSocialStats(targetUserId),
-        ]);
-
-        // Try to get reviews, but don't fail if there's a permissions error
-        let reviewsResult: any = null;
-        try {
-          reviewsResult = await getUserReviews(targetUserId);
-        } catch (error) {
-          console.warn("Could not fetch reviews (permissions):", error);
-        }
-
-        if ((statsResult as any)?.data) {
-          const data = (statsResult as any).data;
-          setStats({
-            totalTrades: data.totalTrades,
-            tradesThisWeek: data.tradesThisWeek,
-            currentXP: data.currentXP,
-          });
-
-          // Get actual follower count from userFollows collection for accurate reputation
-          let actualFollowersCount = 0;
-          try {
-            const db = (await import("../../firebase-config")).db;
-            if (db) {
-              const { collection, query, where, getDocs } = await import(
-                "firebase/firestore"
-              );
-              const followsQuery = query(
-                collection(db, "userFollows"),
-                where("followingId", "==", targetUserId)
-              );
-              const followsSnapshot = await getDocs(followsQuery);
-              actualFollowersCount = followsSnapshot.size;
-            } else {
-              actualFollowersCount =
-                (socialResult as any)?.data?.followersCount || 0;
-            }
-          } catch (error) {
-            console.warn(
-              "Could not fetch actual follower count, using socialStats:",
-              error
-            );
-            actualFollowersCount =
-              (socialResult as any)?.data?.followersCount || 0;
-          }
-
-          // Composite reputation: XP (50%), trades (30%), followers (20%)
-          const xpNorm = Math.min(1, Number(data.currentXP || 0) / 5000);
-          const tradesNorm = Math.min(1, Number(data.totalTrades || 0) / 100);
-          const followersNorm = Math.min(1, actualFollowersCount / 1000);
-          const composite = Math.round(
-            100 * (0.5 * xpNorm + 0.3 * tradesNorm + 0.2 * followersNorm)
-          );
-          setRepScore(composite);
-        }
-        if (
-          reviewsResult &&
-          (reviewsResult as any)?.data &&
-          Array.isArray((reviewsResult as any).data)
-        ) {
-          const all = (reviewsResult as any).data as Array<any>;
-          const count = all.length;
-          const avg =
-            count > 0
-              ? all.reduce((sum, r) => sum + Number(r.rating || 0), 0) / count
-              : 0;
-          setReviewsMeta({ avg, count });
-          const list = all.slice(0, 2).map((r) => ({
-            rating: Number(r.rating || 0),
-            comment: String(r.comment || ""),
-          }));
-          setReviewsPreview(list);
-        }
-      } catch (error) {
-        console.error("Error fetching profile stats:", error);
-      } finally {
-        setReviewsLoading(false);
-      }
-    })();
-  }, [targetUserId, stats, repScore]);
+  // Use custom hook for trades data fetching
+  const {
+    trades,
+    tradesLoading,
+    tradesVisibleCount,
+    setTradesVisibleCount,
+    tradeFilter,
+    setTradeFilter,
+    isLoadingMoreTrades,
+    setIsLoadingMoreTrades,
+    filteredTrades,
+  } = useTradesData(targetUserId, activeTab, showToast);
 
   const completenessPercent = React.useMemo(() => {
     if (!userProfile) return 0;
@@ -366,10 +246,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     return fields;
   }, [userProfile]);
 
-
-
   // Handler for copying link from ProfileHeader component
-  const handleCopyProfileLink = async () => {
+  const handleCopyProfileLink = useCallback(async () => {
     if (!targetUserId || !userProfile) return;
     const path =
       userProfile.handle && !userProfile.handlePrivate
@@ -384,27 +262,30 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
       method: "clipboard",
       context: "header",
     });
-  };
-
-
+  }, [targetUserId, userProfile, showToast]);
 
   // Inline banner edit handlers
-  const handleBannerChange = async (data: BannerData) => {
-    if (!targetUserId) return;
-    try {
-      const res = await userService.updateUser(targetUserId, { banner: data });
-      if ((res as any)?.error) throw new Error((res as any).error);
-      setUserProfile((prev) =>
-        prev ? ({ ...prev, banner: data } as UserProfile) : prev
-      );
-      showToast("Banner updated", "success");
-    } catch {
-      showToast("Failed to update banner", "error");
-    }
-  };
+  const handleBannerChange = useCallback(
+    async (data: BannerData) => {
+      if (!targetUserId) return;
+      try {
+        const res = await userService.updateUser(targetUserId, {
+          banner: data,
+        });
+        if ((res as any)?.error) throw new Error((res as any).error);
+        setUserProfile((prev) =>
+          prev ? ({ ...prev, banner: data } as UserProfile) : prev
+        );
+        showToast("Banner updated", "success");
+      } catch {
+        showToast("Failed to update banner", "error");
+      }
+    },
+    [targetUserId, showToast]
+  );
 
   // Helpers
-  const formatWebsiteLabel = (raw?: string | null): string => {
+  const formatWebsiteLabel = useCallback((raw?: string | null): string => {
     if (!raw) return "";
     try {
       const url = raw.startsWith("http")
@@ -415,9 +296,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     } catch {
       return raw.replace(/^https?:\/\//, "").replace(/\/$/, "");
     }
-  };
+  }, []);
 
-  const handleBannerRemove = async () => {
+  const handleBannerRemove = useCallback(async () => {
     if (!targetUserId) return;
     try {
       const res = await userService.updateUser(targetUserId, { banner: null });
@@ -429,122 +310,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     } catch {
       showToast("Failed to remove banner", "error");
     }
-  };
+  }, [targetUserId, showToast]);
 
-  // Lazy fetch for collaborations and trades when tabs are activated
-  useEffect(() => {
-    if (!targetUserId) return;
-    if (
-      activeTab === "collaborations" &&
-      collaborations === null &&
-      !collaborationsLoading
-    ) {
-      setCollaborationsLoading(true);
-      collaborationService
-        .getCollaborationsForUser(targetUserId)
-        .then((res) => {
-          if (res.error) {
-            showToast(
-              res.error.message || "Failed to load collaborations",
-              "error"
-            );
-            setCollaborations([]);
-          } else {
-            setCollaborations(res.data || []);
-          }
-        })
-        .catch(() => setCollaborations([]))
-        .finally(() => setCollaborationsLoading(false));
-    } else if (activeTab === "trades" && trades === null && !tradesLoading) {
-      setTradesLoading(true);
-      tradeService
-        .getActiveTradesForUser(targetUserId)
-        .then((res) => {
-          if (res.error) {
-            showToast(res.error.message || "Failed to load trades", "error");
-            setTrades([]);
-          } else {
-            setTrades(res.data || []);
-          }
-        })
-        .catch(() => setTrades([]))
-        .finally(() => setTradesLoading(false));
-    }
-  }, [activeTab, targetUserId, collaborationsLoading, tradesLoading]);
-
-  // Enrich collaborations with specific user role title from roles subcollection if available
-  useEffect(() => {
-    if (!roleEnrichmentEnabled) return;
-    if (!targetUserId || !collaborations || collaborations.length === 0) return;
-    let isCancelled = false;
-    (async () => {
-      try {
-        await initializeFirebase();
-        const { db } = await getFirebaseInstances();
-        if (!db || isCancelled) return;
-        const roleMap: Record<string, string> = {};
-        // Fetch roles for currently visible set first to avoid excessive reads
-        const slice = collaborations.slice(0, collabVisibleCount);
-        for (const c of slice) {
-          // Skip if we already have a cached role for this collaboration
-          if (userRoleByCollabId[c.id]) continue;
-          try {
-            const rolesRef = collection(db, "collaborations", c.id, "roles");
-            const q = query(
-              rolesRef,
-              where("participantId", "==", targetUserId)
-            );
-            const snap = await getDocs(q);
-            const first = snap.docs[0]?.data() as any | undefined;
-            if (first?.title) {
-              roleMap[c.id] = String(first.title);
-            }
-          } catch {
-            // ignore per-collaboration role fetch errors
-          }
-        }
-        if (!isCancelled && Object.keys(roleMap).length > 0) {
-          setUserRoleByCollabId((prev) => ({ ...prev, ...roleMap }));
-        }
-      } catch {
-        // ignore batch errors
-      }
-    })();
-    return () => {
-      isCancelled = true;
-    };
-  }, [
-    targetUserId,
-    collaborations,
-    collabVisibleCount,
-    roleEnrichmentEnabled,
-    userRoleByCollabId,
-  ]);
-
-  // Filter helpers
-  const filteredCollaborations = React.useMemo(() => {
-    if (!collaborations) return [] as any[];
-    if (collabFilter === "yours") {
-      return collaborations.filter(
-        (c) =>
-          c?.creatorId === targetUserId ||
-          (Array.isArray(c?.participants) &&
-            c.participants.includes(targetUserId))
-      );
-    }
-    return collaborations;
-  }, [collaborations, collabFilter, targetUserId]);
-
-  const filteredTrades = React.useMemo(() => {
-    if (!trades) return [] as any[];
-    if (tradeFilter === "yours") {
-      return trades.filter(
-        (t) =>
-          t?.creatorId === targetUserId || t?.participantId === targetUserId
-      );
-    }
-    return trades;
-  }, [trades, tradeFilter, targetUserId]);
+  // Trades data is now fetched via useTradesData hook
 
   // Infinite scroll for collaborations
   useEffect(() => {
@@ -556,8 +324,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         const entry = entries[0];
         if (entry.isIntersecting && !collabScrollBusyRef.current) {
           collabScrollBusyRef.current = true;
-          setCollabVisibleCount((n) =>
-            Math.min(n + 6, filteredCollaborations.length)
+          setCollabVisibleCount(
+            Math.min(collabVisibleCount + 6, filteredCollaborations.length)
           );
           setTimeout(() => {
             collabScrollBusyRef.current = false;
@@ -568,7 +336,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [activeTab]);
+  }, [activeTab, collabVisibleCount, filteredCollaborations.length]);
 
   // Infinite scroll for trades
   useEffect(() => {
@@ -580,7 +348,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         const entry = entries[0];
         if (entry.isIntersecting && !tradesScrollBusyRef.current) {
           tradesScrollBusyRef.current = true;
-          setTradesVisibleCount((n) => Math.min(n + 6, filteredTrades.length));
+          setTradesVisibleCount(
+            Math.min(tradesVisibleCount + 6, filteredTrades.length)
+          );
           setTimeout(() => {
             tradesScrollBusyRef.current = false;
           }, 200);
@@ -590,7 +360,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [activeTab]);
+  }, [activeTab, tradesVisibleCount, filteredTrades.length]);
 
   // Scrollspy: update active tab while scrolling
   useEffect(() => {
@@ -671,6 +441,28 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     { id: "trades", label: "Trades" },
   ];
 
+  // Focus management: Move focus to tab panel when tab changes
+  useEffect(() => {
+    const panelId = `panel-${activeTab}`;
+    const panel = document.getElementById(panelId);
+    if (panel) {
+      // Set tabindex to allow focus
+      if (!panel.hasAttribute("tabindex")) {
+        panel.setAttribute("tabindex", "-1");
+      }
+      // Announce tab change to screen readers
+      const tabLabel = tabs.find((t) => t.id === activeTab)?.label || activeTab;
+      const announcement = document.createElement("div");
+      announcement.setAttribute("role", "status");
+      announcement.setAttribute("aria-live", "polite");
+      announcement.setAttribute("aria-atomic", "true");
+      announcement.className = "sr-only";
+      announcement.textContent = `${tabLabel} tab activated`;
+      document.body.appendChild(announcement);
+      setTimeout(() => announcement.remove(), 1000);
+    }
+  }, [activeTab, tabs]);
+
   // Define lazy components
   const GamificationDashboardLazy = ReactLazy(() =>
     import("../../components/gamification").then((m) => ({
@@ -688,41 +480,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     }))
   );
 
-
-
-  // Deep-link support for tabs (#about, #portfolio, #progress, #collaborations, #trades)
-  useEffect(() => {
-    const hash = (window.location.hash || "").replace("#", "");
-    const valid = [
-      "about",
-      "portfolio",
-      "gamification",
-      "collaborations",
-      "trades",
-    ] as TabType[];
-    if (valid.includes(hash as TabType)) {
-      setActiveTab(hash as TabType);
-      // Scroll to the panel for a11y
-      const panel = document.getElementById(`panel-${hash}`);
-      panel?.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      // Fallback to last tab from localStorage
-      try {
-        const last = localStorage.getItem(
-          "tradeya_profile_last_tab"
-        ) as TabType | null;
-        if (last && valid.includes(last)) setActiveTab(last);
-      } catch {}
-    }
-    const onHashChange = () => {
-      const h = (window.location.hash || "").replace("#", "");
-      if (valid.includes(h as TabType)) setActiveTab(h as TabType);
-    };
-    window.addEventListener("hashchange", onHashChange);
-    return () => window.removeEventListener("hashchange", onHashChange);
-  }, []);
-
-
+  // Tab navigation is now handled by useTabNavigation hook
 
   // Mutual followers snippet for non-owners
   useEffect(() => {
@@ -872,7 +630,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 <Button
                   variant="outline"
                   className="shrink-0"
-                  onClick={() => setIsEditOpen(true)}
+                  onClick={openEditModal}
                 >
                   <Edit3 className="w-4 h-4 mr-2" />
                   Complete now
@@ -894,16 +652,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           reviewsMeta={reviewsMeta}
           mutualFollows={mutualFollows}
           shareButtonRef={shareButtonRef}
-          onEditClick={() => setIsEditOpen(true)}
-          onShareClick={() => setShowShareMenu(!showShareMenu)}
+          onEditClick={openEditModal}
+          onShareClick={toggleShareMenu}
           onCopyLink={handleCopyProfileLink}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
         />
 
         {/* Tab Navigation */}
         <ProfileTabs
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
           tabRefs={tabRefs}
           tabs={tabs}
           getTabCount={getTabCount}
@@ -917,9 +675,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           <CardContent className="p-4 sm:p-6">
             {activeTab === "about" && userProfile && (
               <Box id="panel-about" role="tabpanel" aria-labelledby="about">
-                <AboutTab
-                  userProfile={{ ...userProfile, id: targetUserId! }}
-                />
+                <AboutTab userProfile={{ ...userProfile, id: targetUserId! }} />
               </Box>
             )}
 
@@ -1013,7 +769,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                   onLoadMore={() => {
                     setIsLoadingMoreCollabs(true);
                     setTimeout(() => {
-                      setCollabVisibleCount((n) => n + 6);
+                      setCollabVisibleCount(collabVisibleCount + 6);
                       setIsLoadingMoreCollabs(false);
                     }, 150);
                   }}
@@ -1045,7 +801,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                   onLoadMore={() => {
                     setIsLoadingMoreTrades(true);
                     setTimeout(() => {
-                      setTradesVisibleCount((n) => n + 6);
+                      setTradesVisibleCount(tradesVisibleCount + 6);
                       setIsLoadingMoreTrades(false);
                     }, 150);
                   }}
@@ -1066,7 +822,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         {/* Edit profile modal */}
         <ProfileEditModal
           isOpen={isEditOpen}
-          onClose={() => setIsEditOpen(false)}
+          onClose={closeEditModal}
           userProfile={
             userProfile ? { ...userProfile, id: targetUserId! } : null
           }
@@ -1081,7 +837,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         {/* Share Profile Menu */}
         <ProfileShareMenu
           isOpen={showShareMenu}
-          onClose={() => setShowShareMenu(false)}
+          onClose={closeShareMenu}
           shareButtonRef={shareButtonRef}
           targetUserId={targetUserId!}
           userProfile={userProfile}

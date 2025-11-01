@@ -3,32 +3,44 @@ import { Button } from "../../../components/ui/Button";
 import { Badge } from "../../../components/ui/Badge";
 import { CollaborationCard } from "../../../components/features/collaborations/CollaborationCard";
 
+/**
+ * Props for CollaborationsTab component
+ * Displays user's collaborations with filtering, pagination, and role information
+ */
 interface CollaborationsTabProps {
-  // Data
+  /** Array of all collaborations or null if not loaded */
   collaborations: any[] | null;
+  /** Whether collaborations are currently loading */
   collaborationsLoading: boolean;
+  /** Filtered collaborations based on current filter */
   filteredCollaborations: any[];
+  /** Map of collaboration ID to user's role in that collaboration */
   userRoleByCollabId: Record<string, string>;
+  /** ID of the user whose profile is being displayed */
   targetUserId: string;
 
-  // Pagination
+  /** Number of collaborations currently visible */
   collabVisibleCount: number;
+  /** Callback to load more collaborations */
   onLoadMore: () => void;
+  /** Whether more collaborations are currently loading */
   isLoadingMore: boolean;
 
-  // Filter
+  /** Current filter: "all" for all collaborations or "yours" for user's own */
   collabFilter: "all" | "yours";
+  /** Callback when filter is changed */
   onFilterChange: (filter: "all" | "yours") => void;
 
-  // Navigation
+  /** Whether this is the current user's own profile */
   isOwnProfile: boolean;
+  /** Callback to navigate to a different page */
   onNavigate: (path: string) => void;
 
-  // Refs
+  /** Reference to sentinel element for infinite scroll detection */
   sentinelRef: React.RefObject<HTMLDivElement>;
 }
 
-export const CollaborationsTab: React.FC<CollaborationsTabProps> = ({
+const CollaborationsTabComponent: React.FC<CollaborationsTabProps> = ({
   collaborations,
   collaborationsLoading,
   filteredCollaborations,
@@ -66,7 +78,10 @@ export const CollaborationsTab: React.FC<CollaborationsTabProps> = ({
               Create a collaboration
             </Button>
           )}
-          <Button variant="outline" onClick={() => onNavigate("/collaborations")}>
+          <Button
+            variant="outline"
+            onClick={() => onNavigate("/collaborations")}
+          >
             Browse collaborations
           </Button>
         </div>
@@ -103,26 +118,24 @@ export const CollaborationsTab: React.FC<CollaborationsTabProps> = ({
         id="profile-trades-list"
         className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4"
       >
-        {filteredCollaborations
-          .slice(0, collabVisibleCount)
-          .map((c) => (
-            <div key={c.id} className="space-y-2">
-              <CollaborationCard collaboration={c as any} variant="premium" />
-              {/* Role hint */}
-              <div className="text-xs text-muted-foreground">
-                {c?.creatorId === targetUserId ? (
-                  <Badge variant="outline">Your role: Creator</Badge>
-                ) : userRoleByCollabId[c.id] ? (
-                  <Badge variant="outline">
-                    Your role: {userRoleByCollabId[c.id]}
-                  </Badge>
-                ) : Array.isArray(c?.participants) &&
-                  c.participants.includes(targetUserId) ? (
-                  <Badge variant="outline">Your role: Participant</Badge>
-                ) : null}
-              </div>
+        {filteredCollaborations.slice(0, collabVisibleCount).map((c) => (
+          <div key={c.id} className="space-y-2">
+            <CollaborationCard collaboration={c as any} variant="premium" />
+            {/* Role hint */}
+            <div className="text-xs text-muted-foreground">
+              {c?.creatorId === targetUserId ? (
+                <Badge variant="outline">Your role: Creator</Badge>
+              ) : userRoleByCollabId[c.id] ? (
+                <Badge variant="outline">
+                  Your role: {userRoleByCollabId[c.id]}
+                </Badge>
+              ) : Array.isArray(c?.participants) &&
+                c.participants.includes(targetUserId) ? (
+                <Badge variant="outline">Your role: Participant</Badge>
+              ) : null}
             </div>
-          ))}
+          </div>
+        ))}
       </div>
       <div className="flex flex-col sm:flex-row justify-center sm:justify-end gap-2 mt-4">
         {filteredCollaborations &&
@@ -134,17 +147,23 @@ export const CollaborationsTab: React.FC<CollaborationsTabProps> = ({
               disabled={isLoadingMore}
               aria-busy={isLoadingMore}
               aria-controls="profile-collaborations-list"
+              aria-label={`Load more collaborations. Currently showing ${collabVisibleCount} of ${filteredCollaborations.length}`}
             >
               {isLoadingMore ? "Loading…" : "Load more"}
             </Button>
           )}
-        <span className="sr-only" aria-live="polite">
-          {isLoadingMore ? "Loading more collaborations" : ""}
+        <span className="sr-only" aria-live="polite" aria-atomic="true">
+          {isLoadingMore
+            ? `Loading more collaborations. Currently showing ${collabVisibleCount} of ${filteredCollaborations.length}`
+            : ""}
         </span>
         <Button
           variant="outline"
           className="w-full sm:w-auto"
           onClick={() => onNavigate("/collaborations")}
+          aria-label={`View all ${
+            filteredCollaborations?.length || 0
+          } collaborations`}
         >
           View all collaborations
         </Button>
@@ -154,3 +173,4 @@ export const CollaborationsTab: React.FC<CollaborationsTabProps> = ({
   );
 };
 
+export const CollaborationsTab = React.memo(CollaborationsTabComponent);

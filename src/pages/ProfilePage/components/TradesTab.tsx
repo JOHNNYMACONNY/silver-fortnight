@@ -2,29 +2,38 @@ import React from "react";
 import { Button } from "../../../components/ui/Button";
 import TradeCard from "../../../components/features/trades/TradeCard";
 
+/**
+ * Props for TradesTab component
+ * Displays user's trades with filtering, pagination, and status information
+ */
 interface TradesTabProps {
-  // Data
+  /** Array of all trades or null if not loaded */
   trades: any[] | null;
+  /** Whether trades are currently loading */
   tradesLoading: boolean;
+  /** Filtered trades based on current filter */
   filteredTrades: any[];
 
-  // Pagination
+  /** Number of trades currently visible */
   tradesVisibleCount: number;
+  /** Callback to load more trades */
   onLoadMore: () => void;
+  /** Whether more trades are currently loading */
   isLoadingMore: boolean;
 
-  // Filter
+  /** Current filter: "all" for all trades or "yours" for user's own */
   tradeFilter: "all" | "yours";
+  /** Callback when filter is changed */
   onFilterChange: (filter: "all" | "yours") => void;
 
-  // Navigation
+  /** Callback to navigate to a different page */
   onNavigate: (path: string) => void;
 
-  // Refs
+  /** Reference to sentinel element for infinite scroll detection */
   sentinelRef: React.RefObject<HTMLDivElement>;
 }
 
-export const TradesTab: React.FC<TradesTabProps> = ({
+const TradesTabComponent: React.FC<TradesTabProps> = ({
   trades,
   tradesLoading,
   filteredTrades,
@@ -98,17 +107,21 @@ export const TradesTab: React.FC<TradesTabProps> = ({
             disabled={isLoadingMore}
             aria-busy={isLoadingMore}
             aria-controls="profile-trades-list"
+            aria-label={`Load more trades. Currently showing ${tradesVisibleCount} of ${filteredTrades.length}`}
           >
             {isLoadingMore ? "Loading…" : "Load more"}
           </Button>
         )}
-        <span className="sr-only" aria-live="polite">
-          {isLoadingMore ? "Loading more trades" : ""}
+        <span className="sr-only" aria-live="polite" aria-atomic="true">
+          {isLoadingMore
+            ? `Loading more trades. Currently showing ${tradesVisibleCount} of ${filteredTrades.length}`
+            : ""}
         </span>
         <Button
           variant="outline"
           className="w-full sm:w-auto"
           onClick={() => onNavigate("/trades")}
+          aria-label={`View all ${filteredTrades?.length || 0} trades`}
         >
           View all trades
         </Button>
@@ -118,3 +131,4 @@ export const TradesTab: React.FC<TradesTabProps> = ({
   );
 };
 
+export const TradesTab = React.memo(TradesTabComponent);

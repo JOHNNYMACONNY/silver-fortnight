@@ -32,40 +32,74 @@ import Stack from "../../../components/layout/primitives/Stack";
 import type { UserProfile } from "../types";
 import { logEvent } from "../../../services/analytics";
 
+/**
+ * User profile statistics
+ */
 interface ProfileStats {
+  /** Total number of trades completed */
   totalTrades: number;
+  /** Number of trades completed this week */
   tradesThisWeek: number;
+  /** Current experience points */
   currentXP?: number;
 }
 
+/**
+ * Reviews metadata
+ */
 interface ReviewsMeta {
+  /** Average rating from reviews */
   avg: number;
+  /** Total number of reviews */
   count: number;
 }
 
+/**
+ * Mutual follows information
+ */
 interface MutualFollows {
+  /** Number of mutual followers */
   count: number;
+  /** Names of mutual followers */
   names: string[];
 }
 
+/**
+ * Props for ProfileHeader component
+ * Displays user profile information including avatar, stats, reviews, and action buttons
+ */
 export interface ProfileHeaderProps {
+  /** User profile data */
   profile: UserProfile & { id?: string };
+  /** Whether this is the current user's own profile */
   isOwnProfile: boolean;
+  /** ID of the user whose profile is being displayed */
   targetUserId: string;
+  /** User statistics (trades, XP) */
   stats: ProfileStats | null;
+  /** User reputation score */
   repScore: number | null;
+  /** Preview of recent reviews */
   reviewsPreview: Array<{ rating: number; comment: string }>;
+  /** Whether reviews are currently loading */
   reviewsLoading: boolean;
+  /** Reviews metadata (average rating, count) */
   reviewsMeta: ReviewsMeta | null;
+  /** Mutual followers information */
   mutualFollows: MutualFollows;
+  /** Reference to share button element */
   shareButtonRef: React.RefObject<HTMLButtonElement>;
+  /** Callback when edit button is clicked */
   onEditClick: () => void;
+  /** Callback when share button is clicked */
   onShareClick: () => void;
+  /** Callback to copy profile link */
   onCopyLink: () => Promise<void>;
+  /** Callback when tab is changed */
   onTabChange: (tab: any) => void;
 }
 
-export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
+const ProfileHeaderComponent: React.FC<ProfileHeaderProps> = ({
   profile,
   isOwnProfile,
   targetUserId,
@@ -347,7 +381,11 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
               {/* Skills - Premium design */}
               {profile.skills && profile.skills.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
+                <div
+                  className="flex flex-wrap gap-1.5"
+                  role="group"
+                  aria-label="Skills"
+                >
                   {profile.skills.slice(0, 8).map((skill, index) => (
                     <button
                       key={index}
@@ -408,8 +446,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                       variant="glassmorphic"
                       className="gap-2 shrink-0 border-primary/20 hover:border-primary/40 bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 shadow-lg hover:shadow-xl hover:shadow-primary/20"
                       onClick={onEditClick}
+                      aria-label="Edit your profile information"
                     >
-                      <Edit3 className="w-4 h-4" />
+                      <Edit3 className="w-4 h-4" aria-hidden="true" />
                       Edit Profile
                     </Button>
                     <Button
@@ -417,8 +456,10 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                       variant="ghost"
                       className="gap-2 shrink-0"
                       onClick={onShareClick}
+                      aria-label="Share your profile on social media"
+                      aria-haspopup="menu"
                     >
-                      <Share2 className="w-4 h-4" />
+                      <Share2 className="w-4 h-4" aria-hidden="true" />
                       Share profile
                     </Button>
                   </>
@@ -479,3 +520,5 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     </Card>
   );
 };
+
+export const ProfileHeader = React.memo(ProfileHeaderComponent);
