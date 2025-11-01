@@ -65,7 +65,7 @@ export interface ProfileHeaderProps {
   onTabChange: (tab: any) => void;
 }
 
-export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
+const ProfileHeaderComponent: React.FC<ProfileHeaderProps> = ({
   profile,
   isOwnProfile,
   targetUserId,
@@ -479,3 +479,5 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     </Card>
   );
 };
+
+export const ProfileHeader = React.memo(ProfileHeaderComponent);

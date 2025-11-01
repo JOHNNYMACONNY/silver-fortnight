@@ -22,7 +22,7 @@ interface ProfileTabsProps {
   getTabCount?: (id: TabType) => number | undefined;
 }
 
-export const ProfileTabs: React.FC<ProfileTabsProps> = ({
+const ProfileTabsComponent: React.FC<ProfileTabsProps> = ({
   activeTab,
   onTabChange,
   tabRefs,
@@ -260,3 +260,4 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({
   );
 };
 
+export const ProfileTabs = React.memo(ProfileTabsComponent);

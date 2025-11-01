@@ -28,7 +28,7 @@ interface CollaborationsTabProps {
   sentinelRef: React.RefObject<HTMLDivElement>;
 }
 
-export const CollaborationsTab: React.FC<CollaborationsTabProps> = ({
+const CollaborationsTabComponent: React.FC<CollaborationsTabProps> = ({
   collaborations,
   collaborationsLoading,
   filteredCollaborations,
@@ -154,3 +154,4 @@ export const CollaborationsTab: React.FC<CollaborationsTabProps> = ({
   );
 };
 
+export const CollaborationsTab = React.memo(CollaborationsTabComponent);

@@ -10,7 +10,7 @@ interface AboutTabProps {
   userProfile: UserProfile;
 }
 
-export const AboutTab: React.FC<AboutTabProps> = ({ userProfile }) => {
+const AboutTabComponent: React.FC<AboutTabProps> = ({ userProfile }) => {
   return (
     <Stack gap="md">
       <Grid columns={{ base: 1, md: 2 }} gap={{ base: "md", md: "lg" }}>
@@ -75,3 +75,4 @@ export const AboutTab: React.FC<AboutTabProps> = ({ userProfile }) => {
   );
 };
 
+export const AboutTab = React.memo(AboutTabComponent);

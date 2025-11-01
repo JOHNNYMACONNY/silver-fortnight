@@ -24,7 +24,7 @@ interface TradesTabProps {
   sentinelRef: React.RefObject<HTMLDivElement>;
 }
 
-export const TradesTab: React.FC<TradesTabProps> = ({
+const TradesTabComponent: React.FC<TradesTabProps> = ({
   trades,
   tradesLoading,
   filteredTrades,
@@ -118,3 +118,4 @@ export const TradesTab: React.FC<TradesTabProps> = ({
   );
 };
 
+export const TradesTab = React.memo(TradesTabComponent);

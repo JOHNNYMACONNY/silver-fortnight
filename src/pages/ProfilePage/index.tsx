@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../../AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
 import { getUserProfile } from "../../services/firestore-exports";
@@ -241,7 +241,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
 
 
   // Handler for copying link from ProfileHeader component
-  const handleCopyProfileLink = async () => {
+  const handleCopyProfileLink = useCallback(async () => {
     if (!targetUserId || !userProfile) return;
     const path =
       userProfile.handle && !userProfile.handlePrivate
@@ -256,12 +256,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
       method: "clipboard",
       context: "header",
     });
-  };
+  }, [targetUserId, userProfile, showToast]);
 
 
 
   // Inline banner edit handlers
-  const handleBannerChange = async (data: BannerData) => {
+  const handleBannerChange = useCallback(async (data: BannerData) => {
     if (!targetUserId) return;
     try {
       const res = await userService.updateUser(targetUserId, { banner: data });
@@ -273,10 +273,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     } catch {
       showToast("Failed to update banner", "error");
     }
-  };
+  }, [targetUserId, showToast]);
 
   // Helpers
-  const formatWebsiteLabel = (raw?: string | null): string => {
+  const formatWebsiteLabel = useCallback((raw?: string | null): string => {
     if (!raw) return "";
     try {
       const url = raw.startsWith("http")
@@ -287,9 +287,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     } catch {
       return raw.replace(/^https?:\/\//, "").replace(/\/$/, "");
     }
-  };
+  }, []);
 
-  const handleBannerRemove = async () => {
+  const handleBannerRemove = useCallback(async () => {
     if (!targetUserId) return;
     try {
       const res = await userService.updateUser(targetUserId, { banner: null });
@@ -301,7 +301,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     } catch {
       showToast("Failed to remove banner", "error");
     }
-  };
+  }, [targetUserId, showToast]);
 
   // Trades data is now fetched via useTradesData hook
 
@@ -327,7 +327,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [activeTab]);
+  }, [activeTab, collabVisibleCount, filteredCollaborations.length]);
 
   // Infinite scroll for trades
   useEffect(() => {
@@ -349,7 +349,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [activeTab]);
+  }, [activeTab, tradesVisibleCount, filteredTrades.length]);
 
   // Scrollspy: update active tab while scrolling
   useEffect(() => {
