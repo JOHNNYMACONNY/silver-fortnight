@@ -19,8 +19,7 @@ jest.mock("../../../components/ui/ReputationBadge", () => {
 jest.mock("../../../components/ui/Tooltip", () => {
   const React = require("react");
   return {
-    Tooltip: ({ children }: any) =>
-      React.createElement("div", null, children),
+    Tooltip: ({ children }: any) => React.createElement("div", null, children),
   };
 });
 
@@ -190,4 +189,3 @@ describe("ProfileHeader", () => {
     expect(secondRender).toBeInTheDocument();
   });
 });
-

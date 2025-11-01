@@ -4,14 +4,26 @@ import { Link2, Share2, Twitter, Facebook, Linkedin } from "lucide-react";
 import { logEvent } from "../../../services/analytics";
 import { useToast } from "../../../contexts/ToastContext";
 
+/**
+ * Props for ProfileShareMenu component
+ * Dropdown menu for sharing user profile on social media or copying link
+ */
 interface ProfileShareMenuProps {
+  /** Whether the menu is currently open */
   isOpen: boolean;
+  /** Callback to close the menu */
   onClose: () => void;
+  /** Reference to the share button element for positioning */
   shareButtonRef: React.RefObject<HTMLButtonElement>;
+  /** ID of the user whose profile is being shared */
   targetUserId: string;
+  /** User profile data for generating share links */
   userProfile: {
+    /** User's display name */
     displayName?: string;
+    /** User's handle (username) */
     handle?: string;
+    /** Whether the handle is private */
     handlePrivate?: boolean;
   } | null;
 }
@@ -47,7 +59,10 @@ export const ProfileShareMenu: React.FC<ProfileShareMenuProps> = ({
         top: shouldFlipUp ? rect.top - dropdownHeight - 8 : rect.bottom + 8,
         left: Math.max(
           16,
-          Math.min(rect.right - dropdownWidth, window.innerWidth - dropdownWidth - 16)
+          Math.min(
+            rect.right - dropdownWidth,
+            window.innerWidth - dropdownWidth - 16
+          )
         ),
       });
     }
@@ -196,7 +211,10 @@ export const ProfileShareMenu: React.FC<ProfileShareMenuProps> = ({
               onClick={handleShareNative}
               aria-label="Share profile using native share dialog"
             >
-              <Share2 className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+              <Share2
+                className="w-4 h-4 text-muted-foreground"
+                aria-hidden="true"
+              />
               <span className="text-sm">Share...</span>
             </button>
           )}
@@ -244,4 +262,3 @@ export const ProfileShareMenu: React.FC<ProfileShareMenuProps> = ({
     document.body
   );
 };
-

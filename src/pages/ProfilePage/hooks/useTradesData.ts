@@ -40,7 +40,7 @@ export interface TradesDataHookReturn {
  * @returns TradesDataHookReturn object with trades data and utilities
  *
  * @example
- * const { trades, filteredTrades, tradeFilter, setTradeFilter } = 
+ * const { trades, filteredTrades, tradeFilter, setTradeFilter } =
  *   useTradesData(userId, activeTab, showToast);
  */
 export const useTradesData = (
@@ -79,7 +79,8 @@ export const useTradesData = (
     if (!trades) return [] as TradeData[];
     if (tradeFilter === "yours") {
       return trades.filter(
-        (t) => t?.creatorId === targetUserId || t?.participantId === targetUserId
+        (t) =>
+          t?.creatorId === targetUserId || t?.participantId === targetUserId
       );
     }
     return trades;
@@ -103,4 +104,3 @@ export const useTradesData = (
     refetch,
   };
 };
-

@@ -6,7 +6,12 @@ import Grid from "../../../components/layout/primitives/Grid";
 import { Button } from "../../../components/ui/Button";
 import { UserProfile } from "../../../types/user";
 
+/**
+ * Props for AboutTab component
+ * Displays user profile information including email, join date, bio, and skills
+ */
 interface AboutTabProps {
+  /** User profile data to display */
   userProfile: UserProfile;
 }
 

@@ -67,7 +67,9 @@ export interface ProfileDataHookReturn {
   reviewsLoading: boolean;
   reviewsMeta: ReviewsMeta | null;
   mutualFollows: { count: number; names: string[] };
-  setUserProfile: (profile: UserProfile | ((prev: UserProfile | null) => UserProfile | null)) => void;
+  setUserProfile: (
+    profile: UserProfile | ((prev: UserProfile | null) => UserProfile | null)
+  ) => void;
   setMutualFollows: (follows: { count: number; names: string[] }) => void;
   refetch: () => Promise<void>;
 }
@@ -271,4 +273,3 @@ export const useProfileData = (
     refetch,
   };
 };
-

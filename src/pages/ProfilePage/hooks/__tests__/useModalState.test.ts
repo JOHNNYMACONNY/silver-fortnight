@@ -130,4 +130,3 @@ describe("useModalState", () => {
     expect(result.current.showShareMenu).toBe(true);
   });
 });
-

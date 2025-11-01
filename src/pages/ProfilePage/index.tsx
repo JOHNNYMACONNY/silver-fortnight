@@ -50,7 +50,10 @@ import { tradeService } from "../../services/entities/TradeService";
 import { getUserReviews } from "../../services/firestore-exports";
 import { logEvent } from "../../services/analytics";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { getFirebaseInstances, initializeFirebase } from "../../firebase-config";
+import {
+  getFirebaseInstances,
+  initializeFirebase,
+} from "../../firebase-config";
 import Box from "../../components/layout/primitives/Box";
 import Stack from "../../components/layout/primitives/Stack";
 import Cluster from "../../components/layout/primitives/Cluster";
@@ -195,7 +198,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     isLoadingMoreCollabs,
     setIsLoadingMoreCollabs,
     filteredCollaborations,
-  } = useCollaborationsData(targetUserId, activeTab, roleEnrichmentEnabled, showToast);
+  } = useCollaborationsData(
+    targetUserId,
+    activeTab,
+    roleEnrichmentEnabled,
+    showToast
+  );
 
   // Use custom hook for trades data fetching
   const {
@@ -238,8 +246,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     return fields;
   }, [userProfile]);
 
-
-
   // Handler for copying link from ProfileHeader component
   const handleCopyProfileLink = useCallback(async () => {
     if (!targetUserId || !userProfile) return;
@@ -258,22 +264,25 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     });
   }, [targetUserId, userProfile, showToast]);
 
-
-
   // Inline banner edit handlers
-  const handleBannerChange = useCallback(async (data: BannerData) => {
-    if (!targetUserId) return;
-    try {
-      const res = await userService.updateUser(targetUserId, { banner: data });
-      if ((res as any)?.error) throw new Error((res as any).error);
-      setUserProfile((prev) =>
-        prev ? ({ ...prev, banner: data } as UserProfile) : prev
-      );
-      showToast("Banner updated", "success");
-    } catch {
-      showToast("Failed to update banner", "error");
-    }
-  }, [targetUserId, showToast]);
+  const handleBannerChange = useCallback(
+    async (data: BannerData) => {
+      if (!targetUserId) return;
+      try {
+        const res = await userService.updateUser(targetUserId, {
+          banner: data,
+        });
+        if ((res as any)?.error) throw new Error((res as any).error);
+        setUserProfile((prev) =>
+          prev ? ({ ...prev, banner: data } as UserProfile) : prev
+        );
+        showToast("Banner updated", "success");
+      } catch {
+        showToast("Failed to update banner", "error");
+      }
+    },
+    [targetUserId, showToast]
+  );
 
   // Helpers
   const formatWebsiteLabel = useCallback((raw?: string | null): string => {
@@ -339,7 +348,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
         const entry = entries[0];
         if (entry.isIntersecting && !tradesScrollBusyRef.current) {
           tradesScrollBusyRef.current = true;
-          setTradesVisibleCount(Math.min(tradesVisibleCount + 6, filteredTrades.length));
+          setTradesVisibleCount(
+            Math.min(tradesVisibleCount + 6, filteredTrades.length)
+          );
           setTimeout(() => {
             tradesScrollBusyRef.current = false;
           }, 200);
@@ -469,10 +480,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
     }))
   );
 
-
   // Tab navigation is now handled by useTabNavigation hook
-
-
 
   // Mutual followers snippet for non-owners
   useEffect(() => {
@@ -667,9 +675,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
           <CardContent className="p-4 sm:p-6">
             {activeTab === "about" && userProfile && (
               <Box id="panel-about" role="tabpanel" aria-labelledby="about">
-                <AboutTab
-                  userProfile={{ ...userProfile, id: targetUserId! }}
-                />
+                <AboutTab userProfile={{ ...userProfile, id: targetUserId! }} />
               </Box>
             )}
 

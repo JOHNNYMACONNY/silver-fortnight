@@ -33,13 +33,17 @@ describe("useCollaborationsData", () => {
   });
 
   it("should not fetch collaborations when tab is not active", () => {
-    const { collaborationService } = require("../../../services/entities/CollaborationService");
+    const {
+      collaborationService,
+    } = require("../../../services/entities/CollaborationService");
 
     const { result } = renderHook(() =>
       useCollaborationsData("user-123", "about", false, jest.fn())
     );
 
-    expect(collaborationService.getCollaborationsByUserId).not.toHaveBeenCalled();
+    expect(
+      collaborationService.getCollaborationsByUserId
+    ).not.toHaveBeenCalled();
   });
 
   it("should fetch collaborations when tab becomes active", async () => {
@@ -48,7 +52,9 @@ describe("useCollaborationsData", () => {
       { id: "collab-2", name: "Collab 2" },
     ];
 
-    const { collaborationService } = require("../../../services/entities/CollaborationService");
+    const {
+      collaborationService,
+    } = require("../../../services/entities/CollaborationService");
     collaborationService.getCollaborationsByUserId.mockResolvedValue({
       data: mockCollaborations,
     });
@@ -73,7 +79,9 @@ describe("useCollaborationsData", () => {
       { id: "collab-2", participants: ["user-789"] },
     ];
 
-    const { collaborationService } = require("../../../services/entities/CollaborationService");
+    const {
+      collaborationService,
+    } = require("../../../services/entities/CollaborationService");
     collaborationService.getCollaborationsByUserId.mockResolvedValue({
       data: mockCollaborations,
     });
@@ -81,7 +89,12 @@ describe("useCollaborationsData", () => {
     const { result, rerender } = renderHook(
       ({ tab, filter }) =>
         useCollaborationsData("user-123", tab, false, jest.fn()),
-      { initialProps: { tab: "collaborations" as const, filter: "all" as const } }
+      {
+        initialProps: {
+          tab: "collaborations" as const,
+          filter: "all" as const,
+        },
+      }
     );
 
     await waitFor(() => {
@@ -101,7 +114,9 @@ describe("useCollaborationsData", () => {
       name: `Collab ${i}`,
     }));
 
-    const { collaborationService } = require("../../../services/entities/CollaborationService");
+    const {
+      collaborationService,
+    } = require("../../../services/entities/CollaborationService");
     collaborationService.getCollaborationsByUserId.mockResolvedValue({
       data: mockCollaborations,
     });
@@ -132,4 +147,3 @@ describe("useCollaborationsData", () => {
     expect(typeof result.current.refetch).toBe("function");
   });
 });
-

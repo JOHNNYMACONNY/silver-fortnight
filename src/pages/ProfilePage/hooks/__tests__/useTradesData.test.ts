@@ -142,4 +142,3 @@ describe("useTradesData", () => {
     expect(typeof result.current.refetch).toBe("function");
   });
 });
-

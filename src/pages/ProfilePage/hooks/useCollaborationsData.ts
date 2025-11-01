@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { collaborationService } from "../../../services/entities/CollaborationService";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { initializeFirebase, getFirebaseInstances } from "../../../firebase-config";
+import {
+  initializeFirebase,
+  getFirebaseInstances,
+} from "../../../firebase-config";
 
 /**
  * Collaboration data interface
@@ -26,7 +29,11 @@ export interface CollaborationsDataHookReturn {
   collabFilter: "all" | "yours";
   setCollabFilter: (filter: "all" | "yours") => void;
   userRoleByCollabId: Record<string, string>;
-  setUserRoleByCollabId: (roles: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
+  setUserRoleByCollabId: (
+    roles:
+      | Record<string, string>
+      | ((prev: Record<string, string>) => Record<string, string>)
+  ) => void;
   isLoadingMoreCollabs: boolean;
   setIsLoadingMoreCollabs: (loading: boolean) => void;
   filteredCollaborations: CollaborationData[];
@@ -44,7 +51,7 @@ export interface CollaborationsDataHookReturn {
  * @returns CollaborationsDataHookReturn object with collaborations data and utilities
  *
  * @example
- * const { collaborations, filteredCollaborations, collabFilter, setCollabFilter } = 
+ * const { collaborations, filteredCollaborations, collabFilter, setCollabFilter } =
  *   useCollaborationsData(userId, activeTab, true, showToast);
  */
 export const useCollaborationsData = (
@@ -53,23 +60,34 @@ export const useCollaborationsData = (
   roleEnrichmentEnabled: boolean,
   showToast: (message: string, type: "error" | "success" | "info") => void
 ): CollaborationsDataHookReturn => {
-  const [collaborations, setCollaborations] = useState<CollaborationData[] | null>(null);
+  const [collaborations, setCollaborations] = useState<
+    CollaborationData[] | null
+  >(null);
   const [collaborationsLoading, setCollaborationsLoading] = useState(false);
   const [collabVisibleCount, setCollabVisibleCount] = useState(6);
   const [collabFilter, setCollabFilter] = useState<"all" | "yours">("all");
-  const [userRoleByCollabId, setUserRoleByCollabId] = useState<Record<string, string>>({});
+  const [userRoleByCollabId, setUserRoleByCollabId] = useState<
+    Record<string, string>
+  >({});
   const [isLoadingMoreCollabs, setIsLoadingMoreCollabs] = useState(false);
 
   // Lazy fetch collaborations when tab is activated
   useEffect(() => {
     if (!targetUserId) return;
-    if (activeTab === "collaborations" && collaborations === null && !collaborationsLoading) {
+    if (
+      activeTab === "collaborations" &&
+      collaborations === null &&
+      !collaborationsLoading
+    ) {
       setCollaborationsLoading(true);
       collaborationService
         .getCollaborationsForUser(targetUserId)
         .then((res) => {
           if (res.error) {
-            showToast(res.error.message || "Failed to load collaborations", "error");
+            showToast(
+              res.error.message || "Failed to load collaborations",
+              "error"
+            );
             setCollaborations([]);
           } else {
             setCollaborations((res.data as CollaborationData[]) || []);
@@ -103,7 +121,10 @@ export const useCollaborationsData = (
 
           try {
             const rolesRef = collection(db, "collaborations", c.id, "roles");
-            const q = query(rolesRef, where("participantId", "==", targetUserId));
+            const q = query(
+              rolesRef,
+              where("participantId", "==", targetUserId)
+            );
             const snap = await getDocs(q);
             const first = snap.docs[0]?.data() as any | undefined;
             if (first?.title) {
@@ -125,7 +146,13 @@ export const useCollaborationsData = (
     return () => {
       isCancelled = true;
     };
-  }, [targetUserId, collaborations, collabVisibleCount, roleEnrichmentEnabled, userRoleByCollabId]);
+  }, [
+    targetUserId,
+    collaborations,
+    collabVisibleCount,
+    roleEnrichmentEnabled,
+    userRoleByCollabId,
+  ]);
 
   // Filter collaborations based on filter setting
   const filteredCollaborations = useCallback(() => {
@@ -134,7 +161,9 @@ export const useCollaborationsData = (
       return collaborations.filter(
         (c) =>
           c?.creatorId === targetUserId ||
-          (Array.isArray(c?.participants) && targetUserId && c.participants.includes(targetUserId))
+          (Array.isArray(c?.participants) &&
+            targetUserId &&
+            c.participants.includes(targetUserId))
       );
     }
     return collaborations;
@@ -161,4 +190,3 @@ export const useCollaborationsData = (
     refetch,
   };
 };
-

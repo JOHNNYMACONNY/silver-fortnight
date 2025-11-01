@@ -132,4 +132,3 @@ describe("useProfileData", () => {
     expect(result.current.userProfile).toEqual(newProfile);
   });
 });
-

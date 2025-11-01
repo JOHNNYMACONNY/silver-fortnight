@@ -115,4 +115,3 @@ describe("ProfileTabs", () => {
     expect(screen.getByText("🎨")).toBeInTheDocument();
   });
 });
-

@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 
+/**
+ * Valid tab types for profile page
+ */
 type TabType =
   | "about"
   | "portfolio"
@@ -9,16 +12,29 @@ type TabType =
   | "collaborations"
   | "trades";
 
+/**
+ * Props for ProfileTabs component
+ * Displays tab navigation with keyboard support and scroll indicators
+ */
 interface ProfileTabsProps {
+  /** Currently active tab */
   activeTab: TabType;
+  /** Callback when tab is changed */
   onTabChange: (tab: TabType) => void;
+  /** References to tab button elements for focus management */
   tabRefs: React.MutableRefObject<Record<TabType, HTMLButtonElement | null>>;
+  /** Array of tab definitions with labels, icons, and hover callbacks */
   tabs: Array<{
+    /** Unique tab identifier */
     id: TabType;
+    /** Display label for the tab */
     label: string;
+    /** Optional icon to display in the tab */
     icon?: React.ReactNode;
+    /** Optional callback when tab is hovered (for prefetching) */
     onHover?: () => void;
   }>;
+  /** Optional function to get count for a tab (e.g., number of items) */
   getTabCount?: (id: TabType) => number | undefined;
 }
 
@@ -74,17 +90,17 @@ const ProfileTabsComponent: React.FC<ProfileTabsProps> = ({
   // Handle tab click
   const handleTabClick = (tab: { id: TabType; label: string }) => {
     onTabChange(tab.id);
-    
+
     // Update hash for deep-linking
     try {
       window.history.replaceState({}, "", `#${tab.id}`);
     } catch {}
-    
+
     // Save to localStorage
     try {
       localStorage.setItem("tradeya_profile_last_tab", tab.id);
     } catch {}
-    
+
     // Scroll to panel
     const panel = document.getElementById(`panel-${tab.id}`);
     const behavior = prefersReducedMotion ? "auto" : "smooth";
@@ -141,14 +157,14 @@ const ProfileTabsComponent: React.FC<ProfileTabsProps> = ({
               tabHasOverflow && tabCanScrollLeft ? "opacity-100" : "opacity-0"
             }`}
           />
-          
+
           {/* Right gradient fade */}
           <div
             className={`pointer-events-none absolute right-0 top-0 h-full w-6 bg-gradient-to-l from-white/10 to-transparent transition-opacity duration-200 ${
               tabHasOverflow && tabCanScrollRight ? "opacity-100" : "opacity-0"
             }`}
           />
-          
+
           <div
             ref={tabScrollRef}
             className="overflow-x-auto scroll-smooth px-6 scrollbar-hide"
@@ -186,7 +202,7 @@ const ProfileTabsComponent: React.FC<ProfileTabsProps> = ({
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            
+
             {/* Right scroll chevron */}
             <button
               type="button"
@@ -209,7 +225,7 @@ const ProfileTabsComponent: React.FC<ProfileTabsProps> = ({
             >
               <ChevronRight className="w-4 h-4" />
             </button>
-            
+
             {/* Tab buttons */}
             <div className="flex gap-4">
               {tabs.map((tab, index) => (

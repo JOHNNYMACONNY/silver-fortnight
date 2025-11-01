@@ -2,25 +2,34 @@ import React from "react";
 import { Button } from "../../../components/ui/Button";
 import TradeCard from "../../../components/features/trades/TradeCard";
 
+/**
+ * Props for TradesTab component
+ * Displays user's trades with filtering, pagination, and status information
+ */
 interface TradesTabProps {
-  // Data
+  /** Array of all trades or null if not loaded */
   trades: any[] | null;
+  /** Whether trades are currently loading */
   tradesLoading: boolean;
+  /** Filtered trades based on current filter */
   filteredTrades: any[];
 
-  // Pagination
+  /** Number of trades currently visible */
   tradesVisibleCount: number;
+  /** Callback to load more trades */
   onLoadMore: () => void;
+  /** Whether more trades are currently loading */
   isLoadingMore: boolean;
 
-  // Filter
+  /** Current filter: "all" for all trades or "yours" for user's own */
   tradeFilter: "all" | "yours";
+  /** Callback when filter is changed */
   onFilterChange: (filter: "all" | "yours") => void;
 
-  // Navigation
+  /** Callback to navigate to a different page */
   onNavigate: (path: string) => void;
 
-  // Refs
+  /** Reference to sentinel element for infinite scroll detection */
   sentinelRef: React.RefObject<HTMLDivElement>;
 }
 

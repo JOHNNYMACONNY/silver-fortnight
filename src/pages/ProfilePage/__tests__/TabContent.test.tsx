@@ -157,4 +157,3 @@ describe("TradesTab", () => {
     expect(screen.getByText("Trade 1")).toBeInTheDocument();
   });
 });
-

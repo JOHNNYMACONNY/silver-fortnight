@@ -13,11 +13,20 @@ import { logEvent } from "../../../services/analytics";
 import type { UserProfile } from "../types";
 import { Copy as CopyIcon } from "lucide-react";
 
+/**
+ * Props for ProfileEditModal component
+ * Modal for editing user profile information including avatar, display name, bio, and skills
+ */
 interface ProfileEditModalProps {
+  /** Whether the modal is currently open */
   isOpen: boolean;
+  /** Callback to close the modal */
   onClose: () => void;
+  /** Current user profile data or null if not loaded */
   userProfile: UserProfile | null;
+  /** ID of the user whose profile is being edited */
   targetUserId: string;
+  /** Callback when profile is successfully saved with updated fields */
   onSaveSuccess: (updates: Partial<UserProfile>) => void;
 }
 
@@ -504,7 +513,9 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             type="submit"
             className="gap-2"
             disabled={savingEdit}
-            aria-label={savingEdit ? "Saving profile changes" : "Save profile changes"}
+            aria-label={
+              savingEdit ? "Saving profile changes" : "Save profile changes"
+            }
             aria-busy={savingEdit}
           >
             <Save className="w-4 h-4" aria-hidden="true" />

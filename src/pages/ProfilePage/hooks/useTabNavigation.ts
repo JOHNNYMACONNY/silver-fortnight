@@ -3,7 +3,12 @@ import { useState, useEffect, useCallback } from "react";
 /**
  * Valid tab types for ProfilePage
  */
-export type TabType = "about" | "portfolio" | "gamification" | "collaborations" | "trades";
+export type TabType =
+  | "about"
+  | "portfolio"
+  | "gamification"
+  | "collaborations"
+  | "trades";
 
 /**
  * Return type for useTabNavigation hook
@@ -61,19 +66,22 @@ export const useTabNavigation = (): TabNavigationHookReturn => {
   /**
    * Handle tab change with smooth scroll to panel
    */
-  const handleTabChange = useCallback((tab: TabType) => {
-    setActiveTab(tab);
-    // Update URL hash for deep linking
-    window.location.hash = tab;
-    // Scroll to the panel for a11y
-    const panel = document.getElementById(`panel-${tab}`);
-    panel?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [setActiveTab]);
+  const handleTabChange = useCallback(
+    (tab: TabType) => {
+      setActiveTab(tab);
+      // Update URL hash for deep linking
+      window.location.hash = tab;
+      // Scroll to the panel for a11y
+      const panel = document.getElementById(`panel-${tab}`);
+      panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+    },
+    [setActiveTab]
+  );
 
   // Initialize tab from URL hash or localStorage on mount
   useEffect(() => {
     const hash = (window.location.hash || "").replace("#", "");
-    
+
     // Priority 1: URL hash
     if (VALID_TABS.includes(hash as TabType)) {
       setActiveTabState(hash as TabType);
@@ -110,4 +118,3 @@ export const useTabNavigation = (): TabNavigationHookReturn => {
     handleTabChange,
   };
 };
-
