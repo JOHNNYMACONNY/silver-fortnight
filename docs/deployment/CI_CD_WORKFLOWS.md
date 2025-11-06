@@ -121,6 +121,7 @@ The TradeYa CI/CD pipeline consists of **9 workflows** organized into the follow
 - ❌ Removed duplicate Gitleaks check (was running twice)
 - ❌ Removed placeholder "banned dependencies" check
 - ✅ Improved GPL license check (now targets AGPL specifically)
+- ✅ Fixed Gitleaks to scan full git history (`fetch-depth: 0` + `GITLEAKS_LOG_OPTS: "--all"`)
 
 ---
 
