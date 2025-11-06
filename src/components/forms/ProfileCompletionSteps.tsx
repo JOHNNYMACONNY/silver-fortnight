@@ -587,7 +587,7 @@ export const TradingPreferencesStep: React.FC<StepComponentProps> = ({
           <label className="flex items-center space-x-3">
             <input
               type="checkbox"
-              checked={data.emailNotifications || true}
+              checked={data.emailNotifications ?? true}
               onChange={(e) => onChange("emailNotifications", e.target.checked)}
               className="w-4 h-4 text-primary bg-white/20 border-border rounded focus:ring-ring focus:ring-2"
             />
@@ -599,7 +599,7 @@ export const TradingPreferencesStep: React.FC<StepComponentProps> = ({
           <label className="flex items-center space-x-3">
             <input
               type="checkbox"
-              checked={data.weeklyDigest || true}
+              checked={data.weeklyDigest ?? true}
               onChange={(e) => onChange("weeklyDigest", e.target.checked)}
               className="w-4 h-4 text-blue-500 bg-white/20 border-border rounded focus:ring-blue-500 focus:ring-2"
             />
@@ -611,7 +611,7 @@ export const TradingPreferencesStep: React.FC<StepComponentProps> = ({
           <label className="flex items-center space-x-3">
             <input
               type="checkbox"
-              checked={data.communityUpdates || false}
+              checked={data.communityUpdates ?? false}
               onChange={(e) => onChange("communityUpdates", e.target.checked)}
               className="w-4 h-4 text-purple-500 bg-white/20 border-border rounded focus:ring-purple-500 focus:ring-2"
             />
