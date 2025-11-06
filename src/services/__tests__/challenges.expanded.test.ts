@@ -209,7 +209,7 @@ const mockChallenge: Challenge = {
   title: "React Component Challenge",
   description: "Build a reusable React component",
   type: ChallengeType.SKILL,
-  category: ChallengeCategory.WEB_DEVELOPMENT,
+  category: ChallengeCategory.DEVELOPMENT,
   difficulty: ChallengeDifficulty.INTERMEDIATE,
   requirements: [
     {
@@ -286,7 +286,7 @@ describe("Challenge Service - Expanded Tests", () => {
       const challengeData = {
         title: "New Challenge",
         description: "Test challenge description",
-        category: ChallengeCategory.WEB_DEVELOPMENT,
+        category: ChallengeCategory.DEVELOPMENT,
         difficulty: ChallengeDifficulty.BEGINNER,
         endDate: createMockTimestamp(Math.floor(Date.now() / 1000) + 86400),
         rewards: { xp: 100 },
@@ -300,7 +300,7 @@ describe("Challenge Service - Expanded Tests", () => {
         expect.objectContaining({
           title: "New Challenge",
           description: "Test challenge description",
-          category: ChallengeCategory.WEB_DEVELOPMENT,
+          category: ChallengeCategory.DEVELOPMENT,
           difficulty: ChallengeDifficulty.BEGINNER,
           status: ChallengeStatus.DRAFT,
         })
@@ -335,7 +335,7 @@ describe("Challenge Service - Expanded Tests", () => {
 
       const challengeData = {
         title: "Error Challenge",
-        category: ChallengeCategory.WEB_DEVELOPMENT,
+        category: ChallengeCategory.DEVELOPMENT,
         endDate: createMockTimestamp(Math.floor(Date.now() / 1000) + 86400),
       };
 

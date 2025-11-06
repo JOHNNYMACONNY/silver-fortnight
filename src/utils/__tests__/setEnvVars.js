@@ -17,17 +17,9 @@ process.env = {
   VITE_APP_VERSION: '1.0.0-test'
 };
 
-// Mock import.meta.env for Vite
-global.import = {
-  meta: {
-    env: Object.entries(process.env)
-      .filter(([key]) => key.startsWith('VITE_'))
-      .reduce((acc, [key, value]) => {
-        acc[key] = value;
-        return acc;
-      }, {})
-  }
-};
+// NOTE: import.meta.env is now handled by src/config/env.ts
+// The env config is mocked in jest.setup.ts
+// This avoids the "Cannot assign to read only property" error
 
 // Setup test-specific values
 global.__TEST__ = true;

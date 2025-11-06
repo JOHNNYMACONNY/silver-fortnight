@@ -29,6 +29,7 @@ import {
   DocumentData,
   CollectionReference,
   Firestore,
+  Query,
 } from "firebase/firestore";
 import { CreateUserProfileData } from "../firebase-config";
 import { ServiceResult } from "../types/ServiceError";
@@ -2664,7 +2665,7 @@ export const searchUsers = async (
       getDocs(totalCountQuery),
     ]);
 
-    const users = querySnapshot.docs.map((doc) => doc.data());
+    const users = querySnapshot.docs.map((doc) => doc.data() as User);
 
     const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
     const hasMore = users.length === (pagination?.limit || 10);
@@ -2966,7 +2967,7 @@ const collectTradesWithClientFiltering = async (
         ? query(tradesCollection, ...baseConstraints)
         : query(tradesCollection);
     const snapshot = await getDocs(baseQuery);
-    const trades = snapshot.docs.map((doc) => doc.data());
+    const trades = snapshot.docs.map((doc) => doc.data() as Trade);
     const filtered = filterTradesForClient(trades, {
       includeNonPublic: includePrivate,
       filters,
@@ -2977,7 +2978,7 @@ const collectTradesWithClientFiltering = async (
       items: filtered,
       totalFiltered: filtered.length,
       hasMore: false,
-      lastDoc: snapshot.docs[snapshot.docs.length - 1],
+      lastDoc: snapshot.docs[snapshot.docs.length - 1] as any,
     };
   }
 
@@ -2992,7 +2993,7 @@ const collectTradesWithClientFiltering = async (
   let iterations = 0;
   let exhausted = false;
   let iterationLimitReached = false;
-  let lastDoc: QueryDocumentSnapshot<Trade> | undefined;
+  let lastDoc: any;
 
   while (collected.length < pageSize && iterations < MAX_TRADE_QUERY_BATCHES) {
     iterations += 1;
@@ -3016,7 +3017,7 @@ const collectTradesWithClientFiltering = async (
     lastDoc = snapshot.docs[snapshot.docs.length - 1];
     cursor = lastDoc;
 
-    const trades = snapshot.docs.map((doc) => doc.data());
+    const trades = snapshot.docs.map((doc) => doc.data() as Trade);
     const filteredBatch = filterTradesForClient(trades, {
       includeNonPublic: includePrivate,
       filters,

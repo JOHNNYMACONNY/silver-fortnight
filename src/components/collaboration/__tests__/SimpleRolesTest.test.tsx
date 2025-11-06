@@ -1,6 +1,7 @@
 // Minimal test to check if basic component rendering works
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 
 // Mock everything that might cause issues
@@ -11,8 +12,9 @@ jest.mock('../../../firebase-config', () => ({
 }));
 
 jest.mock('../../ui/ProfileImageWithUser', () => {
+  const React = require('react');
   return function MockProfileImageWithUser() {
-    return <div data-testid="profile-image-with-user">Mock Profile</div>;
+    return React.createElement('div', { 'data-testid': 'profile-image-with-user' }, 'Mock Profile');
   };
 });
 
@@ -74,23 +76,25 @@ const mockRoles: CollaborationRoleData[] = [
 ];
 
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <AuthContext.Provider value={{
-    user: mockUser,
-    currentUser: mockUser,
-    loading: false,
-    error: null,
-    signIn: jest.fn(),
-    signInWithEmail: jest.fn(),
-    signInWithGoogle: jest.fn(),
-    signOut: jest.fn(),
-    logout: jest.fn()
-  }}>
-    <ThemeProvider>
-      <ToastProvider>
-        {children}
-      </ToastProvider>
-    </ThemeProvider>
-  </AuthContext.Provider>
+  <MemoryRouter>
+    <AuthContext.Provider value={{
+      user: mockUser,
+      currentUser: mockUser,
+      loading: false,
+      error: null,
+      signIn: jest.fn(),
+      signInWithEmail: jest.fn(),
+      signInWithGoogle: jest.fn(),
+      signOut: jest.fn(),
+      logout: jest.fn()
+    }}>
+      <ThemeProvider>
+        <ToastProvider>
+          {children}
+        </ToastProvider>
+      </ThemeProvider>
+    </AuthContext.Provider>
+  </MemoryRouter>
 );
 
 describe('Simple CollaborationRolesSection Tests', () => {

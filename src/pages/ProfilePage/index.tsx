@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../../AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
 import { getUserProfile } from "../../services/firestore-exports";
+import { getEnvVar } from "../../config/env";
 // Portfolio tab will be lazy-loaded for performance
 // Lazy-load heavy components
 const ReactLazy = React.lazy;
@@ -156,10 +157,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   const shareButtonRef = useRef<HTMLButtonElement | null>(null);
 
   // Feature flag to control role enrichment reads
-  const viteEnv: any =
-    (typeof import.meta !== "undefined" && (import.meta as any).env) || {};
-  const ENABLE_ROLE_ENRICHMENT: boolean =
-    viteEnv.VITE_PROFILE_ENRICH_ROLES !== "false";
+  const ENABLE_ROLE_ENRICHMENT: boolean = getEnvVar('VITE_PROFILE_ENRICH_ROLES', 'true') !== "false";
   const [roleEnrichmentEnabled, setRoleEnrichmentEnabled] = useState<boolean>(
     ENABLE_ROLE_ENRICHMENT
   );

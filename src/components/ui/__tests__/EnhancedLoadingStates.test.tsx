@@ -2,6 +2,20 @@
  * @jest-environment jsdom
  */
 
+// Mock Framer Motion before imports
+jest.mock('framer-motion', () => {
+  const React = require('react');
+  return {
+    motion: {
+      div: (props: any) => React.createElement('div', props, props.children),
+      span: (props: any) => React.createElement('span', props, props.children),
+      svg: (props: any) => React.createElement('svg', props, props.children),
+      circle: (props: any) => React.createElement('circle', props, props.children),
+    },
+    AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children),
+  };
+});
+
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { act } from 'react';

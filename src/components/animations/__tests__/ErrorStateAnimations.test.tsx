@@ -9,6 +9,20 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ErrorStateAnimation, TradeErrorAnimation, NetworkErrorAnimation } from '../ErrorStateAnimations';
 import type { ErrorState } from '../ErrorStateAnimations';
 
+// Mock Framer Motion
+jest.mock('framer-motion', () => {
+  const React = require('react');
+  return {
+    motion: {
+      div: ({ children, role, className, style, ...props }: any) =>
+        React.createElement('div', { role, className, style, ...props }, children),
+      button: ({ children, onClick, className, disabled, ...props }: any) =>
+        React.createElement('button', { onClick, className, disabled, ...props }, children),
+    },
+    AnimatePresence: ({ children }: any) => children,
+  };
+});
+
 // Mock the animation hooks
 jest.mock('../../../hooks/useTradeYaAnimation', () => ({
   useTradeYaAnimation: jest.fn(() => ({

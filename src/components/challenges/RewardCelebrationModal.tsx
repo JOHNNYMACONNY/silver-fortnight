@@ -294,7 +294,7 @@ export const RewardCelebrationModal: React.FC<RewardCelebrationModalProps> = ({
                             New Tier Unlocked
                           </p>
                           <p className="text-xs text-white/60">
-                            {rewards.tierProgress.tierUnlocked}
+                            {rewards.tierProgress?.tierUnlocked}
                           </p>
                         </div>
                       </div>

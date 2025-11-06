@@ -418,8 +418,8 @@ const AdminDashboard: React.FC = () => {
           <tbody className="bg-card divide-y divide-border">
             {trades.map((trade) => (
               <tr key={trade.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{trade.offeredSkills.map((s: any) => s.skill).join(', ')}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{trade.requestedSkills.map((s: any) => s.skill).join(', ')}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{trade.offeredSkills?.map((s: any) => s.skill).join(', ') || 'N/A'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{trade.requestedSkills?.map((s: any) => s.skill).join(', ') || 'N/A'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{trade.creatorId}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
