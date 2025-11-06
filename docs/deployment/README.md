@@ -18,6 +18,7 @@ This directory contains all deployment-related documentation for the TradeYa pla
 - **[MANUAL_INDEX_DEPLOYMENT.md](./MANUAL_INDEX_DEPLOYMENT.md)** - Manual Firestore index deployment
 
 ### CI/CD
+- **[CI_CD_WORKFLOWS.md](./CI_CD_WORKFLOWS.md)** - 📚 Complete CI/CD workflows documentation (start here)
 - **[setup-github-deployment.md](./setup-github-deployment.md)** - GitHub Actions deployment setup
 
 ## Deployment Workflow

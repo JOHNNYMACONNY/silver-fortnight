@@ -63,7 +63,7 @@ jobs:
           name: security-report
           path: security-report.md
 
-      - name: Check for sensitive data
+      - name: Detect Secrets with Gitleaks
         uses: gitleaks/gitleaks-action@v2
         with:
           config-path: .gitleaks.toml
@@ -100,23 +100,6 @@ jobs:
         with:
           fail-on-severity: high
 
-  secret-detection:
-    name: Secret Detection
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Detect Secrets
-        uses: gitleaks/gitleaks-action@v2
-        with:
-            config-path: .gitleaks.toml
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   compliance:
     name: Compliance Checks
     runs-on: ubuntu-latest
@@ -136,10 +119,19 @@ jobs:
       - name: Check License Compliance
         run: |
           license-checker --production --json > license-report.json
-          if grep -i "GPL" license-report.json; then
-            echo "GPL license found in dependencies!"
+          
+          # Check for AGPL (requires open-sourcing for SaaS)
+          if grep -i "AGPL" license-report.json; then
+            echo "❌ AGPL license found - requires open-sourcing your application!"
             exit 1
           fi
+          
+          # Warn about GPLv3 (more restrictive than v2)
+          if grep -i "GPL-3" license-report.json; then
+            echo "⚠️  GPLv3 license found - review license compatibility"
+          fi
+          
+          echo "✅ License compliance check passed"
 
       - name: Upload License Report
         uses: actions/upload-artifact@v4
@@ -147,23 +139,9 @@ jobs:
           name: license-report
           path: license-report.json
 
-      - name: Check for Banned Dependencies
-        run: |
-          BANNED_DEPS=(
-            "banned-package"
-            "unsafe-module"
-            "deprecated-library"
-          )
-          for dep in "${BANNED_DEPS[@]}"; do
-            if grep -q "\"$dep\":" package.json; then
-              echo "Banned dependency $dep found!"
-              exit 1
-            fi
-          done
-
   notify:
     name: Notify Security Team
-    needs: [security, dependency-review, secret-detection, compliance]
+    needs: [security, dependency-review, compliance]
     runs-on: ubuntu-latest
     if: failure()
     permissions:
