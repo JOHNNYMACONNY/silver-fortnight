@@ -24,7 +24,7 @@ Optimized GitHub Actions workflows to eliminate redundancies, reduce CI minutes,
 
 ---
 
-### 2. **Removed Duplicate Secret Detection** ❌
+### 2. **Removed Duplicate Secret Detection** ❌ (with critical fix)
 
 **Problem:**
 - `security.yml` was running Gitleaks **twice**:
@@ -34,11 +34,16 @@ Optimized GitHub Actions workflows to eliminate redundancies, reduce CI minutes,
 **Solution:**
 - Removed standalone `secret-detection` job
 - Kept Gitleaks in main `security` job
+- **Added `fetch-depth: 0`** to security job checkout (critical!)
 - Updated `notify` job dependencies to remove deleted job
+
+**Critical Fix Applied:**
+The original `secret-detection` job used `fetch-depth: 0` to scan the entire git history. When consolidating into the main `security` job, we preserved this by adding `fetch-depth: 0` to the checkout step (line 24), ensuring secrets in older commits are still detected.
 
 **Impact:**
 - 🎉 ~1-2 minutes saved per security scan
 - 🎉 Cleaner workflow output
+- ✅ Full git history scanning preserved
 
 ---
 

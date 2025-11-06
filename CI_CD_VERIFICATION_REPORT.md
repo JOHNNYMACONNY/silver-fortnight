@@ -18,11 +18,12 @@ All CI/CD workflow optimizations have been thoroughly verified and are ready for
   - Was redundant with `ci-cd.yml`
 
 ### **Modified Files (1)**
-- ✅ `.github/workflows/security.yml` - **4 CHANGES APPLIED**
-  1. Removed duplicate `secret-detection` job
-  2. Kept Gitleaks in main `security` job (line 66-72)
-  3. Removed placeholder "banned dependencies" check
-  4. Improved GPL license check to target AGPL specifically
+- ✅ `.github/workflows/security.yml` - **5 CHANGES APPLIED**
+  1. Added `fetch-depth: 0` to checkout for full history scanning (line 24)
+  2. Removed duplicate `secret-detection` job
+  3. Kept Gitleaks in main `security` job (line 66-72)
+  4. Removed placeholder "banned dependencies" check
+  5. Improved GPL license check to target AGPL specifically
 
 ### **Documentation Created (3)**
 - ✅ `docs/deployment/CI_CD_WORKFLOWS.md` - Comprehensive workflow guide

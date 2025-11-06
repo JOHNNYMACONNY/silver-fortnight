@@ -97,10 +97,11 @@ The TradeYa CI/CD pipeline consists of **9 workflows** organized into the follow
 **Jobs:**
 
 #### **security** (Main security job)
+- ✅ Checkout with full git history (`fetch-depth: 0`) for comprehensive secret scanning
 - ✅ Run custom security script (`./scripts/security-checks.sh`)
 - ✅ **CodeQL Analysis** - GitHub's semantic code analysis
 - ✅ **Snyk Scanning** - Dependency vulnerability detection
-- ✅ **Gitleaks** - Secret detection (continues on error for PRs)
+- ✅ **Gitleaks** - Secret detection scanning entire git history (continues on error for PRs)
 - ✅ **OWASP ZAP** - Dynamic application security testing (main branch only)
 - ✅ Upload security report artifact
 
