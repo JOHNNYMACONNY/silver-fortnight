@@ -70,7 +70,10 @@ jobs:
         with:
           config-path: .gitleaks.toml
         env:
+          GITLEAKS_ENABLE_COMMENTS: false
+          GITLEAKS_NOTIFY_USER_LIST: "@security"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LOG_OPTS: "--all"  # Scan entire git history
         continue-on-error: ${{ github.event_name == 'pull_request' }}
 
       - name: Start local server for ZAP scan

@@ -40,7 +40,7 @@ security:
 
 ---
 
-## ✅ Fix Applied
+## ✅ Fix Applied (TWO PARTS REQUIRED!)
 
 ### **Corrected Version (Secure):**
 ```yaml
@@ -49,22 +49,39 @@ security:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        fetch-depth: 0  # ← Full history restored ✅
+        fetch-depth: 0  # ← Part 1: Download full history ✅
     
     - name: Detect Secrets with Gitleaks
       uses: gitleaks/gitleaks-action@v2
+      with:
+        config-path: .gitleaks.toml
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITLEAKS_LOG_OPTS: "--all"  # ← Part 2: Actually scan it! ✅
 ```
 
-### **File Modified:**
-- `.github/workflows/security.yml` line 21-24
+### **Why BOTH are needed:**
+1. **`fetch-depth: 0`** - Downloads the full git history
+2. **`GITLEAKS_LOG_OPTS: "--all"`** - Tells Gitleaks to scan the git log (not just working tree)
 
-### **Change:**
+### **File Modified:**
+- `.github/workflows/security.yml` lines 21-24 and 68-77
+
+### **Changes:**
 ```diff
   steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 +     with:
 +       fetch-depth: 0  # Full history for secret scanning
+
+    - name: Detect Secrets with Gitleaks
+      uses: gitleaks/gitleaks-action@v2
+      with:
+        config-path: .gitleaks.toml
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++       GITLEAKS_LOG_OPTS: "--all"  # Scan entire git history
 ```
 
 ---
@@ -87,10 +104,14 @@ security:
 ### **Validation:**
 ```bash
 $ python3 -c "import yaml; config = yaml.safe_load(open('.github/workflows/security.yml')); \
-  checkout = config['jobs']['security']['steps'][0]; \
-  print('fetch-depth:', checkout.get('with', {}).get('fetch-depth', 'MISSING'))"
+  steps = config['jobs']['security']['steps']; \
+  checkout = [s for s in steps if 'Checkout' in s.get('name', '')][0]; \
+  gitleaks = [s for s in steps if 'Gitleaks' in s.get('name', '')][0]; \
+  print('fetch-depth:', checkout.get('with', {}).get('fetch-depth', 'MISSING')); \
+  print('GITLEAKS_LOG_OPTS:', gitleaks.get('env', {}).get('GITLEAKS_LOG_OPTS', 'MISSING'))"
 
-✅ Checkout step has fetch-depth: 0
+✅ fetch-depth: 0
+✅ GITLEAKS_LOG_OPTS: --all
 ```
 
 ---
@@ -156,7 +177,8 @@ git commit -m "Update docs"
 1. ✅ Check for hidden configuration differences
 2. ✅ Pay attention to `fetch-depth`, `checkout` depth, etc.
 3. ✅ Verify security tools still have full access
-4. ✅ Test before merging
+4. ✅ **Understand how tools work** - just checking out history ≠ scanning history!
+5. ✅ Test before merging
 
 ### **For Future Optimizations:**
 1. ✅ Always validate security coverage hasn't regressed
@@ -188,9 +210,10 @@ All documentation has been updated to reflect this fix:
 
 **FIXED AND VERIFIED** ✅
 
-- ✅ `fetch-depth: 0` added to security job
+- ✅ `fetch-depth: 0` added to security job (line 24)
+- ✅ `GITLEAKS_LOG_OPTS: "--all"` added to Gitleaks step (line 76)
 - ✅ YAML syntax validated
-- ✅ Full history scanning restored
+- ✅ Full history scanning **actually works now**
 - ✅ Documentation updated
 - ✅ Security coverage maintained
 

@@ -34,11 +34,16 @@ Optimized GitHub Actions workflows to eliminate redundancies, reduce CI minutes,
 **Solution:**
 - Removed standalone `secret-detection` job
 - Kept Gitleaks in main `security` job
-- **Added `fetch-depth: 0`** to security job checkout (critical!)
+- **Added `fetch-depth: 0`** to security job checkout (critical - part 1!)
+- **Added `GITLEAKS_LOG_OPTS: "--all"`** to Gitleaks step (critical - part 2!)
 - Updated `notify` job dependencies to remove deleted job
 
-**Critical Fix Applied:**
-The original `secret-detection` job used `fetch-depth: 0` to scan the entire git history. When consolidating into the main `security` job, we preserved this by adding `fetch-depth: 0` to the checkout step (line 24), ensuring secrets in older commits are still detected.
+**Critical Fix Applied (TWO parts required):**
+The original `secret-detection` job used `fetch-depth: 0` to scan the entire git history. When consolidating into the main `security` job, we preserved this functionality by:
+1. Adding `fetch-depth: 0` to the checkout step (line 24) - downloads full history
+2. Adding `GITLEAKS_LOG_OPTS: "--all"` to Gitleaks env (line 76) - tells Gitleaks to actually scan it
+
+**Why both are needed:** Simply downloading git history doesn't make Gitleaks scan it. By default, Gitleaks only scans the working tree. The `--all` flag tells it to scan the entire git log.
 
 **Impact:**
 - 🎉 ~1-2 minutes saved per security scan
