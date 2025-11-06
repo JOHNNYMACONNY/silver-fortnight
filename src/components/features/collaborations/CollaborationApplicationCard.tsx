@@ -56,7 +56,7 @@ export const CollaborationApplicationCard: React.FC<CollaborationApplicationCard
           <ProfileHoverCard
             userId={application.applicantId}
             displayName={application.applicantName ?? `User ${application.applicantId.substring(0, 5)}`}
-            photoURL={application.applicantPhotoURL}
+            photoURL={application.applicantPhotoURL ?? undefined}
           >
             <div className="flex items-center">
               <img

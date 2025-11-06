@@ -14,8 +14,36 @@ jest.mock('../contexts/ToastContext', () => ({
 
 // Mock business metrics
 jest.mock('../contexts/PerformanceContext', () => ({
-  useBusinessMetrics: () => ({ track: jest.fn() })
+  useBusinessMetrics: () => ({ track: jest.fn() }),
+  usePerformance: () => ({
+    metrics: {},
+    criticalPathAnalysis: null,
+    sessionInfo: null,
+    config: {} as any,
+    isAnalyzing: false,
+    error: null,
+    performanceScore: 85,
+    budgetStatus: 'pass' as const,
+    collectMetrics: jest.fn(),
+    analyzeCriticalPath: jest.fn(() => Promise.resolve()),
+    trackJourneyStep: jest.fn(),
+    addBusinessMetric: jest.fn(),
+    updateConfig: jest.fn(),
+    resetMetrics: jest.fn(),
+    applyOptimizations: jest.fn(),
+    exportData: jest.fn(() => ({})),
+    getRUMService: jest.fn(() => null),
+  }),
 }));
+
+// Mock performance API
+global.performance.getEntriesByType = jest.fn(() => [
+  {
+    loadEventEnd: 100,
+    startTime: 0,
+    domInteractive: 50,
+  },
+]) as any;
 
 // Mock services
 const mockChallenges = [

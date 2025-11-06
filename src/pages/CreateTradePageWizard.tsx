@@ -15,8 +15,8 @@ import {
   BentoGrid, 
   BentoItem 
 } from '../components/ui';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Textarea } from '../components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/Select';
+import { Textarea } from '../components/ui/Textarea';
 import { 
   Plus, 
   X, 

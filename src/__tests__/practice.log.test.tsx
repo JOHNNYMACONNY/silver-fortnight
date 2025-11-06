@@ -1,6 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { MemoryRouter } from "react-router-dom";
 import { ChallengesPage } from "../pages/ChallengesPage";
 
 jest.mock("../AuthContext", () => ({
@@ -30,6 +31,29 @@ jest.mock("../contexts/ToastContext", () => ({
   useToast: () => ({ addToast: jest.fn() }),
 }));
 
+jest.mock("../contexts/PerformanceContext", () => ({
+  useBusinessMetrics: () => ({ track: jest.fn() }),
+  usePerformance: () => ({
+    metrics: {},
+    criticalPathAnalysis: null,
+    sessionInfo: null,
+    config: {} as any,
+    isAnalyzing: false,
+    error: null,
+    performanceScore: 85,
+    budgetStatus: 'pass' as const,
+    collectMetrics: jest.fn(),
+    analyzeCriticalPath: jest.fn(() => Promise.resolve()),
+    trackJourneyStep: jest.fn(),
+    addBusinessMetric: jest.fn(),
+    updateConfig: jest.fn(),
+    resetMetrics: jest.fn(),
+    applyOptimizations: jest.fn(),
+    exportData: jest.fn(() => ({})),
+    getRUMService: jest.fn(() => null),
+  }),
+}));
+
 describe("ChallengesPage daily practice quick action", () => {
   afterEach(() => {
     // optional: ensures tests remain isolated if you add more tests later
@@ -37,7 +61,11 @@ describe("ChallengesPage daily practice quick action", () => {
   });
 
   it("calls markSkillPracticeDay when clicking Log practice", async () => {
-    render(<ChallengesPage />);
+    render(
+      <MemoryRouter>
+        <ChallengesPage />
+      </MemoryRouter>
+    );
     const btn = await screen.findByRole("button", { name: /Log practice/i });
     fireEvent.click(btn);
     expect(mockMarkSkillPracticeDay).toHaveBeenCalledWith("u1");

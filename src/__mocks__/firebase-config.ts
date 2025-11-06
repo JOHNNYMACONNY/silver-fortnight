@@ -1,4 +1,7 @@
-// Mock Firebase configuration for tests
+/**
+ * Firebase configuration mock for tests
+ * Comprehensive mock that covers both firebase-config imports and Firebase SDK imports
+ */
 import { Firestore } from "firebase/firestore";
 
 // Mock Firestore instance
@@ -21,6 +24,7 @@ const mockAuth = {
   onAuthStateChanged: jest.fn(),
   signInWithEmailAndPassword: jest.fn(),
   signOut: jest.fn(),
+  createUserWithEmailAndPassword: jest.fn(),
 } as any;
 
 // Mock Firebase Storage
@@ -28,9 +32,24 @@ const mockStorage = {
   app: {},
   maxOperationRetryTime: 120000,
   maxUploadRetryTime: 600000,
+  ref: jest.fn(),
+  uploadBytes: jest.fn(),
+  getDownloadURL: jest.fn(),
+  deleteObject: jest.fn(),
 } as any;
 
-// Mock functions
+// Mock Firebase App
+export const mockFirebaseApp = {
+  name: '[DEFAULT]',
+  options: {
+    apiKey: 'test-api-key',
+    authDomain: 'test-project.firebaseapp.com',
+    projectId: 'test-project',
+    storageBucket: 'test-project.appspot.com',
+  }
+};
+
+// Mock initialization functions
 export const getFirebaseConfig = jest.fn(() => ({
   apiKey: "test-api-key",
   authDomain: "test-project.firebaseapp.com",
@@ -48,20 +67,49 @@ export const initializeFirebase = jest.fn(() =>
   })
 );
 
+export function initializeApp(config?: any) {
+  return mockFirebaseApp;
+}
+
 export const getFirebaseInstances = jest.fn(() => ({
   auth: mockAuth,
   db: mockFirestore,
   storage: mockStorage,
 }));
 
+// Sync getters - CRITICAL for many tests!
 export const getSyncFirebaseAuth = jest.fn(() => mockAuth);
 export const getSyncFirebaseDb = jest.fn(() => mockFirestore);
 export const getSyncFirebaseStorage = jest.fn(() => mockStorage);
 
-// Export mock instances
+// Mock SDK functions
+export function getAuth(app?: any) {
+  return mockAuth;
+}
+
+export function getFirestore(app?: any) {
+  return mockFirestore;
+}
+
+export function getStorage(app?: any) {
+  return mockStorage;
+}
+
+export function getAnalytics(app?: any) {
+  return {
+    logEvent: jest.fn(),
+    setUserId: jest.fn(),
+    setUserProperties: jest.fn()
+  };
+}
+
+// Export instances with multiple aliases for compatibility
 export const firebaseAuth = mockAuth;
 export const firebaseDb = mockFirestore;
 export const db = mockFirestore;
+export const auth = mockAuth;
+export const storage = mockStorage;
+export const analytics = getAnalytics();
 
 // Default export
 export default getSyncFirebaseDb;
@@ -109,7 +157,7 @@ export const mockGetDocs = jest.fn(() =>
     forEach: jest.fn(),
   })
 );
-export const mockOnSnapshot = jest.fn(() => jest.fn()); // Returns unsubscribe function
+export const mockOnSnapshot = jest.fn(() => jest.fn());
 export const mockRunTransaction = jest.fn(() => Promise.resolve());
 export const mockWriteBatch = jest.fn(() => ({
   set: jest.fn(),
@@ -122,7 +170,6 @@ export const mockWriteBatch = jest.fn(() => ({
 export const resetAllMocks = () => {
   jest.clearAllMocks();
 
-  // Reset mock implementations
   getSyncFirebaseDb.mockReturnValue(mockFirestore);
   getSyncFirebaseAuth.mockReturnValue(mockAuth);
   getSyncFirebaseStorage.mockReturnValue(mockStorage);

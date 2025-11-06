@@ -1,3 +1,10 @@
+import { 
+  CLOUDINARY_CLOUD_NAME as ENV_CLOUD_NAME,
+  CLOUDINARY_UPLOAD_PRESET as ENV_UPLOAD_PRESET,
+  CLOUDINARY_API_KEY as ENV_API_KEY,
+  getEnvVar
+} from '../config/env';
+
 export function safeImageUrl(url?: string | null): string | undefined {
   if (!url) return undefined;
   try {
@@ -43,30 +50,10 @@ export interface ImageOptimizationOptions {
   version?: string;
 }
 
-// Get environment variables
-let CLOUDINARY_CLOUD_NAME: string;
-let CLOUDINARY_UPLOAD_PRESET: string;
-let CLOUDINARY_API_KEY: string;
-
-// Handle both Vite and Jest environments
-try {
-  if (process.env.NODE_ENV === 'test') {
-    CLOUDINARY_CLOUD_NAME = 'test-cloud-name';
-    CLOUDINARY_UPLOAD_PRESET = 'test-preset';
-    CLOUDINARY_API_KEY = 'test-key';
-  } else {
-    // Attempt to get environment variables from Vite or fallback to defaults
-    const viteEnv = (typeof import.meta !== 'undefined' && (import.meta as any).env) || (globalThis as any).__VITE_ENV__ || {};
-    CLOUDINARY_CLOUD_NAME = viteEnv.VITE_CLOUDINARY_CLOUD_NAME || 'doqqhj2nt';
-    CLOUDINARY_UPLOAD_PRESET = viteEnv.VITE_CLOUDINARY_UPLOAD_PRESET || 'tradeya_uploads';
-    CLOUDINARY_API_KEY = viteEnv.VITE_CLOUDINARY_API_KEY || '';
-  }
-} catch {
-  // Fallback values if environment variables are not available
-  CLOUDINARY_CLOUD_NAME = 'doqqhj2nt';
-  CLOUDINARY_UPLOAD_PRESET = 'tradeya_uploads';
-  CLOUDINARY_API_KEY = '';
-}
+// Get environment variables from centralized config
+const CLOUDINARY_CLOUD_NAME = ENV_CLOUD_NAME;
+const CLOUDINARY_UPLOAD_PRESET = ENV_UPLOAD_PRESET;
+const CLOUDINARY_API_KEY = ENV_API_KEY;
 
 export const formatCloudinaryUrl = (
   url: string | null | undefined,
@@ -122,7 +109,7 @@ export const uploadImageToCloudinary = async (file: File): Promise<CloudinaryUpl
   const formData = new FormData();
   formData.append('file', file);
   // Prefer the dedicated profile preset if available; fall back to generic
-  const profilePreset = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_CLOUDINARY_PROFILE_PRESET) || (globalThis as any)?.VITE_CLOUDINARY_PROFILE_PRESET;
+  const profilePreset = getEnvVar('VITE_CLOUDINARY_PROFILE_PRESET', '');
   formData.append('upload_preset', profilePreset || CLOUDINARY_UPLOAD_PRESET);
   formData.append('cloud_name', CLOUDINARY_CLOUD_NAME);
   // Use a consistent folder for profile uploads when using this util

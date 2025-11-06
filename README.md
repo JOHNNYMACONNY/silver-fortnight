@@ -233,18 +233,38 @@ npm run test:ci:full
 - Secure API endpoints via Cloud Functions
 - Input validation and sanitization
 
-See [SECURITY.md](./SECURITY.md) for more details.
+See [SECURITY.md](./docs/security/SECURITY.md) for more details.
 
 ---
 
 ## 📚 Documentation
 
-Comprehensive documentation is available in the `docs/` directory:
+Comprehensive documentation is now organized in the `docs/` directory. See **[docs/README.md](./docs/README.md)** for the complete documentation index.
 
-- **[User Guide](./docs/USER_GUIDE.md)** - End-user documentation
-- **[Testing Guide](./docs/TESTING.md)** - Testing strategies and procedures
-- **[Deployment Guide](./docs/DEPLOYMENT.md)** - Deployment procedures
-- **[Documentation Index](./docs/COMPREHENSIVE_DOCUMENTATION_INDEX.md)** - Complete documentation index
+### Quick Links
+
+- **[Implementation Master Plan](./docs/IMPLEMENTATION_MASTER_PLAN.md)** - Overall project architecture and roadmap
+- **[Implementation Progress](./docs/IMPLEMENTATION_PROGRESS.md)** - Current status and tracking
+- **[Quick Deploy Guide](./docs/deployment/QUICK_DEPLOY_INSTRUCTIONS.md)** - Fast deployment instructions
+- **[Testing Guide](./docs/testing/TESTING.md)** - Testing strategy and execution
+- **[User Guide](./docs/guides/USER_GUIDE.md)** - End-user documentation
+
+### Documentation Categories
+
+- 📁 **[Features](./docs/features/)** - Authentication, messaging, portfolio, collaboration, etc.
+- 🏆 **[Challenges](./docs/challenges/)** - Challenge system documentation
+- 🎮 **[Gamification](./docs/gamification/)** - Gamification, XP, achievements
+- 🔄 **[Trade System](./docs/trade-system/)** - Trade lifecycle and proposals
+- 🎨 **[Design](./docs/design/)** - Design system and UI components
+- 🚀 **[Deployment](./docs/deployment/)** - Deployment guides and CI/CD
+- 🔥 **[Firebase](./docs/firebase/)** - Firebase security, indexes, migrations
+- ⚡ **[Performance](./docs/performance/)** - Optimization and profiling
+- 🧪 **[Testing](./docs/testing/)** - Test strategies and coverage
+- 📱 **[iOS](./docs/ios/)** - Swift/iOS migration documentation
+- 🔐 **[Security](./docs/security/)** - Security policies and fixes
+- 🛠️ **[Technical](./docs/technical/)** - Technical reference and configs
+- 📚 **[Guides](./docs/guides/)** - Best practices and workflows
+- 📊 **[Summaries](./docs/summaries/)** - Reports and status updates
 
 ---
 

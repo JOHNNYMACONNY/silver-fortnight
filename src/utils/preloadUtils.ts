@@ -1,5 +1,7 @@
+import { isDevelopment } from '../config/env';
+
 /**
- * Preload and Prefetch Utilities
+ * Utility for preloading resources and prefetching critical assets
  * 
  * This file provides utilities for preloading and prefetching resources
  * to improve performance and user experience.
@@ -151,7 +153,7 @@ export const prefetchRoutes = (routes: string[]): void => {
   // This was causing 404 errors and infinite refresh loops
   // TODO: Implement proper route prefetching when we have code splitting
 
-  if ((typeof import.meta !== 'undefined' && typeof import.meta.env !== 'undefined' && (import.meta.env.DEV || process.env.NODE_ENV === 'development')) || process.env.NODE_ENV === 'development') {
+  if (isDevelopment()) {
     console.log('Route prefetching disabled to prevent infinite refresh loops:', routes);
   }
 

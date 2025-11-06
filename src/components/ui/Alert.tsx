@@ -57,7 +57,7 @@ const alertVariants = cva(
 )
 
 // Icon mapping for semantic variants
-const getDefaultIcon = (variant: string) => {
+const getDefaultIcon = (variant: string): React.ReactElement | undefined => {
   switch (variant) {
     case 'success':
     case 'glass-success':
@@ -105,7 +105,7 @@ interface AlertProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   ({ className, variant = "default", size = "md", icon, dismissible, onDismiss, actions, children, ...props }, ref) => {
-    const displayIcon = icon || getDefaultIcon(variant) || null
+    const displayIcon = icon ?? getDefaultIcon(variant ?? "default")
     
     return (
       <div

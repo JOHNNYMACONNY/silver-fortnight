@@ -39,12 +39,14 @@ jest.mock("../../../hooks/useSwipeGestures", () => ({
 // Mock framer-motion
 jest.mock("framer-motion", () => ({
   motion: {
-    div: ({ children, ...props }: any) => {
+    div: ({ children, drag, dragConstraints, dragElastic, onPan, onPanEnd, animate, whileHover, whileTap, transition, variants, initial, exit, style, ...props }: any) => {
       const React = require("react");
-      return React.createElement("div", props, children);
+      // Filter out framer-motion specific props and only pass valid DOM props
+      return React.createElement("div", { ...props, style }, children);
     },
-    button: ({ children, ...props }: any) => {
+    button: ({ children, whileHover, whileTap, transition, variants, initial, animate, exit, ...props }: any) => {
       const React = require("react");
+      // Filter out framer-motion specific props
       return React.createElement("button", props, children);
     },
   },
@@ -53,7 +55,7 @@ jest.mock("framer-motion", () => ({
 
 // Mock AnimatedSkillBadge component
 jest.mock("../AnimatedSkillBadge", () => ({
-  AnimatedSkillBadge: ({ skill, ...props }: any) => {
+  AnimatedSkillBadge: ({ skill, level, showLevel, tradingContext, ...props }: any) => {
     const React = require("react");
     // Ensure we never pass an object as a React child — use skill.name or a string fallback
     const displaySkill =
@@ -65,7 +67,7 @@ jest.mock("../AnimatedSkillBadge", () => ({
       {
         "data-testid": "animated-skill-badge",
         "data-skill": displaySkill,
-        ...props,
+        // Only spread props that are valid for DOM elements
       },
       displaySkill
     );
@@ -74,14 +76,14 @@ jest.mock("../AnimatedSkillBadge", () => ({
 
 // Mock TradeStatusIndicator component
 jest.mock("../TradeStatusIndicator", () => ({
-  TradeStatusIndicator: ({ status, ...props }: any) => {
+  TradeStatusIndicator: ({ status, showAnimation, size, showLabel, ...props }: any) => {
     const React = require("react");
     return React.createElement(
       "div",
       {
         "data-testid": "trade-status-indicator",
         "data-status": status,
-        ...props,
+        // Only spread props that are valid for DOM elements
       },
       status
     );

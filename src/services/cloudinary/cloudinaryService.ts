@@ -5,21 +5,27 @@
  * for uploading, managing, and optimizing images.
  */
 
+import {
+  CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_PROFILE_PRESET,
+  CLOUDINARY_BANNER_PRESET,
+  CLOUDINARY_PORTFOLIO_PRESET,
+  CLOUDINARY_PROJECT_PRESET,
+  isDevelopment
+} from '../../config/env';
+
 // Maximum file size in bytes (5MB)
 export const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 // Allowed file types
 export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
-// Cloudinary configuration
-const CLOUDINARY_CLOUD_NAME = import.meta.env?.VITE_CLOUDINARY_CLOUD_NAME ?? process.env.VITE_CLOUDINARY_CLOUD_NAME;
-
 // Upload preset constants to prevent typos
 export const UPLOAD_PRESETS = {
-  PROFILE: import.meta.env?.VITE_CLOUDINARY_PROFILE_PRESET ?? process.env.VITE_CLOUDINARY_PROFILE_PRESET,
-  BANNER: import.meta.env?.VITE_CLOUDINARY_BANNER_PRESET ?? process.env.VITE_CLOUDINARY_BANNER_PRESET,
-  PORTFOLIO: import.meta.env?.VITE_CLOUDINARY_PORTFOLIO_PRESET ?? process.env.VITE_CLOUDINARY_PORTFOLIO_PRESET,
-  PROJECT: import.meta.env?.VITE_CLOUDINARY_PROJECT_PRESET ?? process.env.VITE_CLOUDINARY_PROJECT_PRESET
+  PROFILE: CLOUDINARY_PROFILE_PRESET,
+  BANNER: CLOUDINARY_BANNER_PRESET,
+  PORTFOLIO: CLOUDINARY_PORTFOLIO_PRESET,
+  PROJECT: CLOUDINARY_PROJECT_PRESET
 } as const;
 
 // Validate environment variables
@@ -28,11 +34,7 @@ if (!CLOUDINARY_CLOUD_NAME) {
 }
 
 // Safe dev environment check for logging
-const isDev =
-  (typeof import.meta !== 'undefined' &&
-    typeof import.meta.env !== 'undefined' &&
-    (import.meta.env.DEV || process.env.NODE_ENV === 'development')) ||
-  process.env.NODE_ENV === 'development';
+const isDev = isDevelopment();
 
 if (isDev) {
   console.log('Initializing Cloudinary Service with presets:', {
@@ -40,9 +42,7 @@ if (isDev) {
     BANNER: UPLOAD_PRESETS.BANNER,
     PORTFOLIO: UPLOAD_PRESETS.PORTFOLIO,
     PROJECT: UPLOAD_PRESETS.PROJECT,
-    rawEnvValue:
-      (typeof import.meta !== 'undefined' && typeof import.meta.env !== 'undefined' && import.meta.env.VITE_CLOUDINARY_BANNER_PRESET) ||
-      process.env.VITE_CLOUDINARY_BANNER_PRESET
+    rawEnvValue: CLOUDINARY_BANNER_PRESET || process.env.VITE_CLOUDINARY_BANNER_PRESET
   });
 }
 
@@ -114,9 +114,7 @@ export const validatePreset = (preset: string): { valid: boolean; error?: string
   console.log('Validating preset:', {
     preset,
     availablePresets: UPLOAD_PRESETS,
-    environmentValue:
-      (typeof import.meta !== 'undefined' && typeof import.meta.env !== 'undefined' && import.meta.env.VITE_CLOUDINARY_BANNER_PRESET) ||
-      process.env.VITE_CLOUDINARY_BANNER_PRESET
+    environmentValue: CLOUDINARY_BANNER_PRESET || process.env.VITE_CLOUDINARY_BANNER_PRESET
   });
 
   if (!preset) {
@@ -134,9 +132,7 @@ export const validatePreset = (preset: string): { valid: boolean; error?: string
     console.warn('Preset validation failed:', {
       providedPreset: preset,
       availablePresets: presetValues,
-      envValue:
-        (typeof import.meta !== 'undefined' && typeof import.meta.env !== 'undefined' && import.meta.env.VITE_CLOUDINARY_BANNER_PRESET) ||
-        process.env.VITE_CLOUDINARY_BANNER_PRESET
+      envValue: CLOUDINARY_BANNER_PRESET || process.env.VITE_CLOUDINARY_BANNER_PRESET
     });
     return {
       valid: false,

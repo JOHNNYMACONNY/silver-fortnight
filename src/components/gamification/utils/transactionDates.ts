@@ -83,7 +83,7 @@ export const normalizeTransactionDate = (
   }
 
   const rawTimestamp = extractRawTimestamp(value);
-  if (rawTimestamp) {
+  if (rawTimestamp && rawTimestamp.seconds !== undefined && rawTimestamp.nanoseconds !== undefined) {
     const millis =
       rawTimestamp.seconds * 1000 + Math.floor(rawTimestamp.nanoseconds / 1e6);
     const date = new Date(millis);

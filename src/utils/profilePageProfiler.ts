@@ -5,7 +5,7 @@
  * Integrates with React DevTools Profiler and Web Vitals
  */
 
-import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals';
+import { onCLS, onFCP, onLCP, onTTFB, onINP } from 'web-vitals';
 
 export interface ProfilePageMetrics {
   scenario: string;
@@ -13,7 +13,7 @@ export interface ProfilePageMetrics {
   metrics: {
     fcp?: number;
     lcp?: number;
-    fid?: number;
+    inp?: number;
     cls?: number;
     ttfb?: number;
     renderTime?: number;
@@ -65,30 +65,30 @@ class ProfilePageProfiler {
   async collectWebVitals(): Promise<{
     fcp?: number;
     lcp?: number;
-    fid?: number;
+    inp?: number;
     cls?: number;
     ttfb?: number;
   }> {
     return new Promise((resolve) => {
       const vitals: any = {};
 
-      getFCP((metric) => {
+      onFCP((metric) => {
         vitals.fcp = metric.value;
       });
 
-      getLCP((metric) => {
+      onLCP((metric) => {
         vitals.lcp = metric.value;
       });
 
-      getFID((metric) => {
-        vitals.fid = metric.value;
+      onINP((metric) => {
+        vitals.inp = metric.value;
       });
 
-      getCLS((metric) => {
+      onCLS((metric) => {
         vitals.cls = metric.value;
       });
 
-      getTTFB((metric) => {
+      onTTFB((metric) => {
         vitals.ttfb = metric.value;
       });
 
@@ -177,7 +177,7 @@ class ProfilePageProfiler {
       m.timestamp,
       m.metrics.fcp || '',
       m.metrics.lcp || '',
-      m.metrics.fid || '',
+      m.metrics.inp || '',
       m.metrics.cls || '',
       m.metrics.ttfb || '',
       m.metrics.renderTime || '',

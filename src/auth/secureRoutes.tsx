@@ -8,7 +8,7 @@ interface RequireAuthProps {
 }
 
 export const RequireAuth: React.FC<RequireAuthProps> = ({ children, requireAdmin = false }) => {
-  const { user, loading } = useAuth();
+  const { user, userProfile, loading, isAdmin } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -20,8 +20,9 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children, requireAdmin
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (requireAdmin && !user.email?.endsWith('@admin.com')) {
+  if (requireAdmin && !isAdmin) {
     // Redirect to forbidden if admin access is required but user isn't admin
+    // Uses proper role checking from AuthContext (checkIsAdmin function + Firestore roles)
     return <Navigate to="/forbidden" replace />;
   }
 

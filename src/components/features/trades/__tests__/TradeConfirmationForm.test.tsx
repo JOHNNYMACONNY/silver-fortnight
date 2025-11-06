@@ -8,6 +8,10 @@ import { generateTradePortfolioItem } from '../../../../services/portfolio';
 jest.mock('../../../../AuthContext');
 jest.mock('../../../../services/firestore');
 jest.mock('../../../../services/portfolio');
+jest.mock('../../../../contexts/PerformanceContext', () => ({
+  usePerformance: () => ({ addBusinessMetric: jest.fn() }),
+  useBusinessMetrics: () => ({ track: jest.fn() }),
+}));
 jest.mock('../../../features/evidence/EvidenceGallery', () => ({
   EvidenceGallery: ({ title, emptyMessage }: { title: string; emptyMessage: string }) => {
     const React = require('react');
