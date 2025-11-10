@@ -38,6 +38,7 @@ const LoginPage: React.FC = () => {
 
   // New state for input validation
   const [emailValid, setEmailValid] = useState<boolean | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordValid, setPasswordValid] = useState<boolean | null>(null);
 
   // Track if we've already shown the success toast for this login session
@@ -71,6 +72,9 @@ const LoginPage: React.FC = () => {
     }
   }, [currentUser]);
 
+const sanitizeEmailInput = (rawValue: string) =>
+  rawValue.replace(/[\u200B-\u200D\uFEFF]/g, '');
+
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -78,9 +82,34 @@ const LoginPage: React.FC = () => {
 
   // Improved email change handling with validation feedback
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setEmail(value);
-    setEmailValid(value ? validateEmail(value) : null);
+    const rawValue = sanitizeEmailInput(e.target.value);
+    const trimmedValue = rawValue.trim();
+
+    setEmail(trimmedValue);
+
+    if (!trimmedValue) {
+      setEmailValid(null);
+      setEmailError(null);
+      return;
+    }
+
+    if (/\s/.test(trimmedValue)) {
+      setEmailValid(false);
+      setEmailError('Email cannot contain spaces or invisible characters.');
+      return;
+    }
+
+    const normalizedEmail = trimmedValue.toLowerCase();
+    const isValidFormat = validateEmail(normalizedEmail);
+
+    if (!isValidFormat) {
+      setEmailValid(false);
+      setEmailError('Please enter a valid email address.');
+      return;
+    }
+
+    setEmailValid(true);
+    setEmailError(null);
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +124,15 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signInWithEmail(email, password);
+    const sanitizedEmail = sanitizeEmailInput(email).trim().toLowerCase();
+
+    if (!sanitizedEmail || !validateEmail(sanitizedEmail)) {
+      setEmailValid(false);
+      setEmailError('Please enter a valid email address.');
+      return;
+    }
+
+    await signInWithEmail(sanitizedEmail, password);
     // Effect handles redirect & toast
   };
 
@@ -142,7 +179,7 @@ const LoginPage: React.FC = () => {
             onChange={handleEmailChange}
             required
             icon={<MailIcon className="h-5 w-5" />}
-            error={emailValid === false ? 'Please enter a valid email address' : undefined}
+            error={emailError ?? (emailValid === false ? 'Please enter a valid email address.' : undefined)}
             autoComplete="email"
           />
         </AccessibleFormField>
