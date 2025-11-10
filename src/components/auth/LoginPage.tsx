@@ -132,7 +132,7 @@ const LoginPage: React.FC = () => {
             <AlertDescription>{getFriendlyErrorMessage(error)}</AlertDescription>
           </Alert>
         )}
-        <AccessibleFormField id="email" label="Email" error={emailValid === false ? 'Please enter a valid email address' : undefined}>
+        <AccessibleFormField id="email" label="Email">
           <GlassmorphicInput
             id="email"
             type="email"
@@ -151,7 +151,7 @@ const LoginPage: React.FC = () => {
             Forgot password?
           </Link>
         </div>
-        <AccessibleFormField id="password" label="Password" error={passwordValid === false ? 'Password must be at least 6 characters' : undefined}>
+        <AccessibleFormField id="password" label="Password">
           <GlassmorphicInput
             id="password"
             type="password"
@@ -166,7 +166,8 @@ const LoginPage: React.FC = () => {
         </AccessibleFormField>
         <Button
           type="submit"
-          className="w-full"
+          variant="glassmorphic"
+          className="w-full mt-6 hover:scale-[1.02] hover:shadow-xl hover:shadow-orange-500/25 transition-all duration-300"
           isLoading={loading}
           disabled={loading}
         >
@@ -177,16 +178,16 @@ const LoginPage: React.FC = () => {
             <div className="w-full border-t border-border"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-card text-muted-foreground">
+            <span className="px-2 glassmorphic text-muted-foreground">
               Or continue with
             </span>
           </div>
         </div>
         <Button
           type="button"
-          variant="outline"
+          variant="glassmorphic"
           onClick={handleGoogleSignIn}
-          className="mt-4 w-full"
+          className="mt-4 w-full hover:scale-[1.01] hover:shadow-lg hover:shadow-orange-500/15 transition-all duration-300"
           isLoading={loading}
           disabled={loading}
         >

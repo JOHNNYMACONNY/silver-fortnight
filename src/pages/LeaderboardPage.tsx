@@ -1,16 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import { Leaderboard } from '../components/features/Leaderboard';
 import { SocialFeatures } from '../components/features/SocialFeatures';
 import { LeaderboardCategory, LeaderboardPeriod } from '../types/gamification';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import { Award, Trophy, Users, Calendar, TrendingUp } from '../utils/icons';
+import { Button } from '../components/ui/Button';
+import { Skeleton } from '../components/ui/skeletons/Skeleton';
+import { getUserXP, UserXP } from '../services/gamification';
+import { getLeaderboard } from '../services/leaderboards';
 
 
 const LeaderboardPage: React.FC = () => {
   const { currentUser } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<LeaderboardCategory>(LeaderboardCategory.TOTAL_XP);
   const [selectedPeriod, setSelectedPeriod] = useState<LeaderboardPeriod>(LeaderboardPeriod.ALL_TIME);
+  
+  // Quick Stats state
+  const [userXP, setUserXP] = useState<UserXP | null>(null);
+  const [userRank, setUserRank] = useState<number | null>(null);
+  const [weeklyXP, setWeeklyXP] = useState<number | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   const categories = [
     { value: LeaderboardCategory.TOTAL_XP, label: 'Total XP', icon: <Trophy className="h-4 w-4" /> },
@@ -25,18 +35,65 @@ const LeaderboardPage: React.FC = () => {
     { value: LeaderboardPeriod.WEEKLY, label: 'This Week' },
   ];
 
+  // Fetch user stats for Quick Stats section
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      if (!currentUser?.uid) return;
+      
+      try {
+        setStatsLoading(true);
+        
+        // Fetch user XP
+        const xpResult = await getUserXP(currentUser.uid);
+        if (xpResult.success && xpResult.data) {
+          setUserXP(xpResult.data);
+        }
+        
+        // Fetch user rank from total XP leaderboard
+        const rankResult = await getLeaderboard(
+          LeaderboardCategory.TOTAL_XP,
+          LeaderboardPeriod.ALL_TIME,
+          100,
+          currentUser.uid
+        );
+        if (rankResult.success && rankResult.data?.currentUserEntry) {
+          setUserRank(rankResult.data.currentUserEntry.rank);
+        }
+        
+        // Fetch weekly XP
+        const weeklyResult = await getLeaderboard(
+          LeaderboardCategory.WEEKLY_XP,
+          LeaderboardPeriod.WEEKLY,
+          100,
+          currentUser.uid
+        );
+        if (weeklyResult.success && weeklyResult.data?.currentUserEntry) {
+          setWeeklyXP(weeklyResult.data.currentUserEntry.value);
+        }
+      } catch (error) {
+        console.error('Failed to load user stats:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+    
+    fetchUserStats();
+  }, [currentUser?.uid]);
+
   if (!currentUser) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-card text-card-foreground p-8 text-center">
-          <Award className="h-16 w-16 mx-auto mb-4 text-yellow-500" />
-          <h2 className="text-2xl font-bold mb-4 text-text-primary">
-            Join the Competition!
-          </h2>
-          <p className="mb-6 text-text-secondary">
-            Sign in to view leaderboards and compete with other TradeYa users.
-          </p>
-        </div>
+        <Card variant="glass" className="rounded-lg shadow-sm border border-border">
+          <CardBody className="p-8 text-center">
+            <Award className="h-16 w-16 mx-auto mb-4 text-yellow-500" />
+            <h2 className="text-2xl font-bold mb-4 text-text-primary">
+              Join the Competition!
+            </h2>
+            <p className="mb-6 text-text-secondary">
+              Sign in to view leaderboards and compete with other TradeYa users.
+            </p>
+          </CardBody>
+        </Card>
       </div>
     );
   }
@@ -59,47 +116,38 @@ const LeaderboardPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Main Leaderboard */}
         <div className="lg:col-span-3">
-          <Card>
+          <Card variant="glass" className="rounded-lg shadow-sm border border-border">
             <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <h2 className="text-xl font-semibold text-text-primary">
-                  Leaderboard Rankings
-                </h2>
-                
+              <div className="flex flex-col gap-4">
                 {/* Category Selector */}
                 <div className="flex flex-wrap gap-2">
                   {categories.map((category) => (
-                    <button
+                    <Button
                       key={category.value}
                       onClick={() => setSelectedCategory(category.value)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        selectedCategory === category.value
-                          ? 'bg-primary text-primary-foreground shadow-lg'
-                          : 'bg-primary/10 text-primary hover:bg-primary/20'
-                      }`}
+                      variant={selectedCategory === category.value ? 'default' : 'outline'}
+                      size="sm"
+                      className="flex items-center gap-2"
                     >
                       {category.icon}
                       {category.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
-              </div>
 
-              {/* Period Selector */}
-              <div className="flex flex-wrap gap-2 mt-4">
-                {periods.map((period) => (
-                  <button
-                    key={period.value}
-                    onClick={() => setSelectedPeriod(period.value)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
-                      selectedPeriod === period.value
-                        ? 'bg-secondary text-secondary-foreground'
-                        : 'bg-secondary/10 text-secondary hover:bg-secondary/20'
-                    }`}
-                  >
-                    {period.label}
-                  </button>
-                ))}
+                {/* Period Selector */}
+                <div className="flex flex-wrap gap-2">
+                  {periods.map((period) => (
+                    <Button
+                      key={period.value}
+                      onClick={() => setSelectedPeriod(period.value)}
+                      variant={selectedPeriod === period.value ? 'default' : 'outline'}
+                      size="sm"
+                    >
+                      {period.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </CardHeader>
             
@@ -110,6 +158,7 @@ const LeaderboardPage: React.FC = () => {
                 limit={20}
                 showCurrentUser={true}
                 compact={false}
+                wrapped={false}
               />
             </CardBody>
           </Card>
@@ -118,7 +167,7 @@ const LeaderboardPage: React.FC = () => {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Social Features */}
-          <Card>
+          <Card variant="glass" className="rounded-lg shadow-sm border border-border">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-primary" />
@@ -136,7 +185,7 @@ const LeaderboardPage: React.FC = () => {
           </Card>
 
           {/* Quick Stats */}
-          <Card>
+          <Card variant="glass" className="rounded-lg shadow-sm border border-border">
             <CardHeader>
               <h3 className="text-lg font-semibold text-text-primary">
                 Quick Stats
@@ -146,21 +195,33 @@ const LeaderboardPage: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-text-secondary">Your Rank</span>
-                  <span className="font-semibold text-primary">
-                    Loading...
-                  </span>
+                  {statsLoading ? (
+                    <Skeleton className="h-5 w-12" />
+                  ) : (
+                    <span className="font-semibold text-primary">
+                      #{userRank || '--'}
+                    </span>
+                  )}
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-text-secondary">Total XP</span>
-                  <span className="font-semibold text-secondary">
-                    Loading...
-                  </span>
+                  {statsLoading ? (
+                    <Skeleton className="h-5 w-16" />
+                  ) : (
+                    <span className="font-semibold text-secondary">
+                      {userXP?.totalXP.toLocaleString() || 0}
+                    </span>
+                  )}
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-text-secondary">This Week</span>
-                  <span className="font-semibold text-accent">
-                    Loading...
-                  </span>
+                  {statsLoading ? (
+                    <Skeleton className="h-5 w-16" />
+                  ) : (
+                    <span className="font-semibold text-accent">
+                      {weeklyXP?.toLocaleString() || 0} XP
+                    </span>
+                  )}
                 </div>
               </div>
             </CardBody>
