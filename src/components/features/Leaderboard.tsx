@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trophy,
@@ -36,6 +36,7 @@ interface LeaderboardProps {
   compact?: boolean;
   refreshInterval?: number;
   wrapped?: boolean; // Control whether to render Card wrapper
+  headerControls?: ReactNode;
 }
 
 interface LeaderboardDashboardProps {
@@ -50,7 +51,8 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   showCurrentUser = true,
   compact = false,
   refreshInterval = 300000, // 5 minutes
-  wrapped = true // Default to true for backward compatibility
+  wrapped = true, // Default to true for backward compatibility
+  headerControls
 }) => {
   const { user } = useAuth();
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
@@ -331,41 +333,48 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   return (
     <Card variant="glass" className="@container glassmorphic border-glass hover:shadow-md transition-shadow duration-300" interactive={true}>
       <CardHeader>
-        <Cluster justify="between" align="center" gap="md">
-          <Cluster gap="sm" align="center">
-            <Box
-              className={`w-10 h-10 rounded-lg flex items-center justify-center text-primary-foreground ${config?.color ? '' : 'bg-primary'}`}
-              style={config?.color ? { backgroundColor: config.color } : undefined}
-            >
-              {config?.icon || '🏆'}
-            </Box>
-            <Stack gap="xs">
-              <CardTitle>{config?.title || 'Leaderboard'}</CardTitle>
-              <CardDescription>{config?.description || 'Top performers'}</CardDescription>
+        <Stack gap="md">
+          <Cluster justify="between" align="center" gap="md">
+            <Cluster gap="sm" align="center">
+              <Box
+                className={`w-10 h-10 rounded-lg flex items-center justify-center text-primary-foreground ${config?.color ? '' : 'bg-primary'}`}
+                style={config?.color ? { backgroundColor: config.color } : undefined}
+              >
+                {config?.icon || '🏆'}
+              </Box>
+              <Stack gap="xs">
+                <CardTitle>{config?.title || 'Leaderboard'}</CardTitle>
+                <CardDescription>{config?.description || 'Top performers'}</CardDescription>
+              </Stack>
+            </Cluster>
+            <Stack gap="xs" align="end" className="text-right text-sm text-muted-foreground">
+              <div>{leaderboardData.totalParticipants} participants</div>
+              <div className="text-xs">
+                Updated {new Date(leaderboardData.lastUpdated.toDate()).toLocaleTimeString()}
+              </div>
+              {user?.uid && (followingCount ?? 0) > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !showMyCircle;
+                    setShowMyCircle(next);
+                    try { window.localStorage.setItem(`leaderboard-circle-${user!.uid}`, next ? '1' : '0'); } catch {}
+                  }}
+                  className="text-xs text-primary hover:underline"
+                  aria-pressed={showMyCircle}
+                  title={showMyCircle ? 'Showing only people you follow' : 'View leaderboard for people you follow'}
+                >
+                  {showMyCircle ? 'Showing: My Circle' : 'Filter: My Circle'}
+                </button>
+              )}
             </Stack>
           </Cluster>
-          <Stack gap="xs" align="end" className="text-right text-sm text-muted-foreground">
-            <div>{leaderboardData.totalParticipants} participants</div>
-            <div className="text-xs">
-              Updated {new Date(leaderboardData.lastUpdated.toDate()).toLocaleTimeString()}
+          {headerControls && (
+            <div className="w-full">
+              {headerControls}
             </div>
-            {user?.uid && (followingCount ?? 0) > 0 && (
-              <button
-                type="button"
-                onClick={() => {
-                  const next = !showMyCircle;
-                  setShowMyCircle(next);
-                  try { window.localStorage.setItem(`leaderboard-circle-${user!.uid}`, next ? '1' : '0'); } catch {}
-                }}
-                className="text-xs text-primary hover:underline"
-                aria-pressed={showMyCircle}
-                title={showMyCircle ? 'Showing only people you follow' : 'View leaderboard for people you follow'}
-              >
-                {showMyCircle ? 'Showing: My Circle' : 'Filter: My Circle'}
-              </button>
-            )}
-          </Stack>
-        </Cluster>
+          )}
+        </Stack>
       </CardHeader>
       <CardContent className={`${compact ? 'max-h-64' : 'max-h-96'} overflow-y-auto`}>
         {entriesContent}

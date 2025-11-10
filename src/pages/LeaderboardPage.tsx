@@ -9,6 +9,7 @@ import { Button } from '../components/ui/Button';
 import { Skeleton } from '../components/ui/skeletons/Skeleton';
 import { getUserXP, UserXP } from '../services/gamification';
 import { getLeaderboard } from '../services/leaderboards';
+import Stack from '../components/layout/primitives/Stack';
 
 
 const LeaderboardPage: React.FC = () => {
@@ -116,10 +117,14 @@ const LeaderboardPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Main Leaderboard */}
         <div className="lg:col-span-3">
-          <Card variant="glass" className="rounded-lg shadow-sm border border-border">
-            <CardHeader>
-              <div className="flex flex-col gap-4">
-                {/* Category Selector */}
+          <Leaderboard
+            category={selectedCategory}
+            period={selectedPeriod}
+            limit={20}
+            showCurrentUser={true}
+            compact={false}
+            headerControls={
+              <Stack gap="md">
                 <div className="flex flex-wrap gap-2">
                   {categories.map((category) => (
                     <Button
@@ -134,8 +139,6 @@ const LeaderboardPage: React.FC = () => {
                     </Button>
                   ))}
                 </div>
-
-                {/* Period Selector */}
                 <div className="flex flex-wrap gap-2">
                   {periods.map((period) => (
                     <Button
@@ -148,20 +151,9 @@ const LeaderboardPage: React.FC = () => {
                     </Button>
                   ))}
                 </div>
-              </div>
-            </CardHeader>
-            
-            <CardBody>
-              <Leaderboard
-                category={selectedCategory}
-                period={selectedPeriod}
-                limit={20}
-                showCurrentUser={true}
-                compact={false}
-                wrapped={false}
-              />
-            </CardBody>
-          </Card>
+              </Stack>
+            }
+          />
         </div>
 
         {/* Sidebar */}

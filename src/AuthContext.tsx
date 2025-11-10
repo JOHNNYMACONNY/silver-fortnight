@@ -165,7 +165,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log("AuthProvider: Attempting email sign in");
       setLoading(true);
       setError(null);
-      const result = await signInWithEmailAndPassword(auth, email, password);
+      const sanitizedEmail = email
+        .replace(/[\u200B-\u200D\uFEFF]/g, "")
+        .replace(/\s+/g, "")
+        .toLowerCase();
+      const result = await signInWithEmailAndPassword(auth, sanitizedEmail, password);
       // Don't call setUser here - let the onAuthStateChanged callback handle it
       // This prevents double setUser calls that cause duplicate toasts
       setIsAdmin(checkIsAdmin(result.user));
