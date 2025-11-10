@@ -35,6 +35,7 @@ interface LeaderboardProps {
   showCurrentUser?: boolean;
   compact?: boolean;
   refreshInterval?: number;
+  wrapped?: boolean; // Control whether to render Card wrapper
 }
 
 interface LeaderboardDashboardProps {
@@ -48,7 +49,8 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   limit = 10,
   showCurrentUser = true,
   compact = false,
-  refreshInterval = 300000 // 5 minutes
+  refreshInterval = 300000, // 5 minutes
+  wrapped = true // Default to true for backward compatibility
 }) => {
   const { user } = useAuth();
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
@@ -156,8 +158,8 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   };
 
   if (loading) {
-    return (
-      <Card className={compact ? 'h-64' : 'h-96'}>
+    const content = (
+      <>
         <CardHeader>
           <Skeleton className="h-6 w-1/2" />
         </CardHeader>
@@ -175,29 +177,39 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
             ))}
           </Stack>
         </CardContent>
-      </Card>
+      </>
     );
+
+    return wrapped ? (
+      <Card variant="glass" className={compact ? 'h-64' : 'h-96'}>
+        {content}
+      </Card>
+    ) : content;
   }
 
   if (error) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <EmptyState
-            icon={<Trophy className="w-12 h-12" />}
-            title="Error"
-            description={error}
-            actionLabel="Try Again"
-            onAction={fetchLeaderboard}
-          />
-        </CardContent>
-      </Card>
+    const content = (
+      <CardContent className="pt-6">
+        <EmptyState
+          icon={<Trophy className="w-12 h-12" />}
+          title="Error"
+          description={error}
+          actionLabel="Try Again"
+          onAction={fetchLeaderboard}
+        />
+      </CardContent>
     );
+
+    return wrapped ? (
+      <Card variant="glass">
+        {content}
+      </Card>
+    ) : content;
   }
 
   if (!leaderboardData || leaderboardData.entries.length === 0) {
-    return (
-      <Card>
+    const content = (
+      <>
         <CardHeader>
           <CardTitle>{config?.title || 'Leaderboard'}</CardTitle>
           <CardDescription>{config?.description || 'Top performers'}</CardDescription>
@@ -207,7 +219,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
             <EmptyState
               icon={<Users className="w-12 h-12" />}
               title="No Circle Rankings Yet"
-              description="People you follow haven’t appeared on this leaderboard yet."
+              description="People you follow haven't appeared on this leaderboard yet."
               actionLabel="Show Global"
               onAction={() => setShowMyCircle(false)}
             />
@@ -219,12 +231,105 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
             />
           )}
         </CardContent>
-      </Card>
+      </>
     );
+
+    return wrapped ? (
+      <Card variant="glass">
+        {content}
+      </Card>
+    ) : content;
   }
 
+  // Leaderboard entries content
+  const entriesContent = (
+    <Stack gap="xs">
+      <AnimatePresence>
+        {leaderboardData.entries.map((entry, index) => (
+          <motion.div
+            key={entry.userId}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ delay: index * 0.1 }}
+            className={`p-3 rounded-lg transition-colors ${
+              entry.isCurrentUser
+                ? 'bg-primary/10'
+                : 'hover:bg-muted/50'
+            }`}
+          >
+            <Cluster justify="between" align="center" gap="sm">
+              <Cluster gap="sm" align="center">
+                <Box className="flex-shrink-0 w-8 text-center">{getRankIcon(entry.rank)}</Box>
+                <Avatar
+                  src={entry.userAvatar}
+                  alt={entry.userName || 'User'}
+                  fallback={entry.userName?.charAt(0).toUpperCase()}
+                  className="w-8 h-8"
+                />
+                <Stack gap="xs">
+                  <div className="font-medium">
+                    {entry.userName}
+                    {entry.isCurrentUser && (
+                      <span className="ml-2 text-xs bg-primary/20 text-primary rounded-full px-2 py-1">
+                        You
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Rank #{entry.rank}
+                  </div>
+                </Stack>
+              </Cluster>
+              <Stack gap="xs" align="end" className="text-right">
+                <div className="font-semibold">{formatValue(entry.value, category)}</div>
+                {entry.rankChange !== 0 && (
+                  <Cluster gap="xs" align="center" justify="end" className="text-xs">
+                    {getRankChangeIndicator(entry.rankChange)}
+                    <span>{Math.abs(entry.rankChange)}</span>
+                  </Cluster>
+                )}
+              </Stack>
+            </Cluster>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+      {leaderboardData.currentUserEntry && !leaderboardData.entries.find(e => e.userId === leaderboardData.currentUserEntry!.userId) && (
+        <div className="mt-2 border-t border-border pt-2">
+          <div className="text-xs text-muted-foreground mb-1">Your rank</div>
+          <div className="p-3 rounded-lg bg-primary/5">
+            <Cluster justify="between" align="center" gap="sm">
+              <Cluster gap="sm" align="center">
+                <Box className="flex-shrink-0 w-8 text-center">{getRankIcon(leaderboardData.currentUserEntry.rank)}</Box>
+                <Avatar
+                  src={leaderboardData.currentUserEntry.userAvatar}
+                  alt={leaderboardData.currentUserEntry.userName || 'You'}
+                  fallback={(leaderboardData.currentUserEntry.userName || 'Y').charAt(0).toUpperCase()}
+                  className="w-8 h-8"
+                />
+                <Stack gap="xs">
+                  <div className="font-medium">You</div>
+                  <div className="text-sm text-muted-foreground">Rank #{leaderboardData.currentUserEntry.rank}</div>
+                </Stack>
+              </Cluster>
+              <Stack gap="xs" align="end" className="text-right">
+                <div className="font-semibold">{formatValue(leaderboardData.currentUserEntry.value, category)}</div>
+              </Stack>
+            </Cluster>
+          </div>
+        </div>
+      )}
+    </Stack>
+  );
+
+  // When wrapped=false, only render entries without header
+  if (!wrapped) {
+    return entriesContent;
+  }
+
+  // When wrapped=true, render full Card with header
   return (
-    <Card className="@container">
+    <Card variant="glass" className="@container glassmorphic border-glass hover:shadow-md transition-shadow duration-300" interactive={true}>
       <CardHeader>
         <Cluster justify="between" align="center" gap="md">
           <Cluster gap="sm" align="center">
@@ -262,85 +367,8 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           </Stack>
         </Cluster>
       </CardHeader>
-
-        <CardContent className={`${compact ? 'max-h-64' : 'max-h-96'} overflow-y-auto`}>
-        <Stack gap="xs">
-          <AnimatePresence>
-            {leaderboardData.entries.map((entry, index) => (
-              <motion.div
-                key={entry.userId}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ delay: index * 0.1 }}
-                className={`p-3 rounded-lg transition-colors ${
-                  entry.isCurrentUser
-                    ? 'bg-primary/10'
-                    : 'hover:bg-muted/50'
-                }`}
-              >
-                <Cluster justify="between" align="center" gap="sm">
-                  <Cluster gap="sm" align="center">
-                    <Box className="flex-shrink-0 w-8 text-center">{getRankIcon(entry.rank)}</Box>
-                    <Avatar
-                      src={entry.userAvatar}
-                      alt={entry.userName || 'User'}
-                      fallback={entry.userName?.charAt(0).toUpperCase()}
-                      className="w-8 h-8"
-                    />
-                    <Stack gap="xs">
-                      <div className="font-medium">
-                        {entry.userName}
-                        {entry.isCurrentUser && (
-                          <span className="ml-2 text-xs bg-primary/20 text-primary rounded-full px-2 py-1">
-                            You
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Rank #{entry.rank}
-                      </div>
-                    </Stack>
-                  </Cluster>
-                  <Stack gap="xs" align="end" className="text-right">
-                    <div className="font-semibold">{formatValue(entry.value, category)}</div>
-                    {entry.rankChange !== 0 && (
-                      <Cluster gap="xs" align="center" justify="end" className="text-xs">
-                        {getRankChangeIndicator(entry.rankChange)}
-                        <span>{Math.abs(entry.rankChange)}</span>
-                      </Cluster>
-                    )}
-                  </Stack>
-                </Cluster>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-          {leaderboardData.currentUserEntry && !leaderboardData.entries.find(e => e.userId === leaderboardData.currentUserEntry!.userId) && (
-            <div className="mt-2 border-t border-border pt-2">
-              <div className="text-xs text-muted-foreground mb-1">Your rank</div>
-              <div className="p-3 rounded-lg bg-primary/5">
-                <Cluster justify="between" align="center" gap="sm">
-                  <Cluster gap="sm" align="center">
-                    <Box className="flex-shrink-0 w-8 text-center">{getRankIcon(leaderboardData.currentUserEntry.rank)}</Box>
-                    <Avatar
-                      src={leaderboardData.currentUserEntry.userAvatar}
-                      alt={leaderboardData.currentUserEntry.userName || 'You'}
-                      fallback={(leaderboardData.currentUserEntry.userName || 'Y').charAt(0).toUpperCase()}
-                      className="w-8 h-8"
-                    />
-                    <Stack gap="xs">
-                      <div className="font-medium">You</div>
-                      <div className="text-sm text-muted-foreground">Rank #{leaderboardData.currentUserEntry.rank}</div>
-                    </Stack>
-                  </Cluster>
-                  <Stack gap="xs" align="end" className="text-right">
-                    <div className="font-semibold">{formatValue(leaderboardData.currentUserEntry.value, category)}</div>
-                  </Stack>
-                </Cluster>
-              </div>
-            </div>
-          )}
-        </Stack>
+      <CardContent className={`${compact ? 'max-h-64' : 'max-h-96'} overflow-y-auto`}>
+        {entriesContent}
       </CardContent>
     </Card>
   );
