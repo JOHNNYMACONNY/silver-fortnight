@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect, ReactNode, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trophy,
@@ -27,6 +27,8 @@ import Stack from '../layout/primitives/Stack';
 import Cluster from '../layout/primitives/Cluster';
 import Grid from '../layout/primitives/Grid';
 import { Button } from '../ui/Button';
+
+const MOBILE_COLLAPSED_ENTRY_COUNT = 10;
 
 interface LeaderboardProps {
   category: LeaderboardCategory;
@@ -60,6 +62,13 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [showMyCircle, setShowMyCircle] = useState(false);
   const [followingCount, setFollowingCount] = useState<number | null>(null);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [showAllEntries, setShowAllEntries] = useState<boolean>(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return window.innerWidth >= 640;
+  });
 
   const config = LEADERBOARD_CONFIGS.find(c => c.category === category && c.period === period);
 
@@ -102,6 +111,41 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
     const interval = setInterval(fetchLeaderboard, refreshInterval);
     return () => clearInterval(interval);
   }, [category, period, limit, user?.uid, refreshInterval, showMyCircle]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia('(max-width: 639px)');
+
+    const applyViewportState = (matches: boolean) => {
+      setIsMobileViewport(matches);
+      if (!matches) {
+        setShowAllEntries(true);
+      }
+    };
+
+    applyViewportState(mediaQuery.matches);
+
+    const handleChange = (event: MediaQueryListEvent) => {
+      applyViewportState(event.matches);
+    };
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (isMobileViewport) {
+      setShowAllEntries(false);
+    }
+  }, [isMobileViewport]);
 
   // Load following count to gate the My Circle toggle
   useEffect(() => {
@@ -159,6 +203,23 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
     return null;
   };
 
+  const visibleEntries = useMemo(() => {
+    if (!leaderboardData?.entries) {
+      return [];
+    }
+    if (!isMobileViewport || showAllEntries) {
+      return leaderboardData.entries;
+    }
+    return leaderboardData.entries.slice(0, MOBILE_COLLAPSED_ENTRY_COUNT);
+  }, [leaderboardData, isMobileViewport, showAllEntries]);
+
+  const hiddenEntryCount = useMemo(() => {
+    if (!leaderboardData?.entries) {
+      return 0;
+    }
+    return Math.max(leaderboardData.entries.length - MOBILE_COLLAPSED_ENTRY_COUNT, 0);
+  }, [leaderboardData]);
+
   if (loading) {
     const content = (
       <>
@@ -169,7 +230,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           <Stack gap="sm">
             {Array.from({ length: limit }).map((_, i) => (
               <Cluster key={i} gap="sm" align="center">
-                <Skeleton className="w-8 h-8 rounded-full" />
+                <Skeleton className="w-7 h-7 rounded-full sm:w-9 sm:h-9" />
                 <Stack gap="xs" className="flex-1">
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-3 w-1/2" />
@@ -243,34 +304,33 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
     ) : content;
   }
 
-  // Leaderboard entries content
   const entriesContent = (
-    <Stack gap="xs">
+    <Stack gap="md">
       <AnimatePresence>
-        {leaderboardData.entries.map((entry, index) => (
+        {visibleEntries.map((entry, index) => (
           <motion.div
             key={entry.userId}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ delay: index * 0.1 }}
-            className={`p-3 rounded-lg transition-colors ${
+            className={`py-4 px-3 rounded-xl transition-colors border ${
               entry.isCurrentUser
-                ? 'bg-primary/10'
-                : 'hover:bg-muted/50'
+                ? 'bg-primary/10 border-primary/20'
+                : 'border-border/40 hover:bg-muted/50'
             }`}
           >
-            <Cluster justify="between" align="center" gap="sm">
-              <Cluster gap="sm" align="center">
-                <Box className="flex-shrink-0 w-8 text-center">{getRankIcon(entry.rank)}</Box>
+            <Cluster justify="between" align="center" gap="sm" wrap className="w-full">
+              <Cluster gap="sm" align="center" className="flex-1 min-w-0">
+                <Box className="flex-shrink-0 w-7 sm:w-8 text-center">{getRankIcon(entry.rank)}</Box>
                 <Avatar
                   src={entry.userAvatar}
                   alt={entry.userName || 'User'}
                   fallback={entry.userName?.charAt(0).toUpperCase()}
-                  className="w-8 h-8"
+                  className="w-7 h-7 sm:w-9 sm:h-9"
                 />
-                <Stack gap="xs">
-                  <div className="font-medium">
+                <Stack gap="xs" className="min-w-0">
+                  <div className="font-medium truncate text-sm sm:text-base">
                     {entry.userName}
                     {entry.isCurrentUser && (
                       <span className="ml-2 text-xs bg-primary/20 text-primary rounded-full px-2 py-1">
@@ -283,10 +343,14 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                   </div>
                 </Stack>
               </Cluster>
-              <Stack gap="xs" align="end" className="text-right">
-                <div className="font-semibold">{formatValue(entry.value, category)}</div>
+              <Stack
+                gap="xs"
+                align="start"
+                className="w-full text-left leading-relaxed mt-3 sm:mt-0 sm:w-auto sm:text-right sm:items-end"
+              >
+                <div className="font-semibold break-words text-base sm:text-lg">{formatValue(entry.value, category)}</div>
                 {entry.rankChange !== 0 && (
-                  <Cluster gap="xs" align="center" justify="end" className="text-xs">
+                  <Cluster gap="xs" align="center" justify="start" className="text-xs text-muted-foreground sm:justify-end">
                     {getRankChangeIndicator(entry.rankChange)}
                     <span>{Math.abs(entry.rankChange)}</span>
                   </Cluster>
@@ -296,18 +360,30 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           </motion.div>
         ))}
       </AnimatePresence>
+      {isMobileViewport && hiddenEntryCount > 0 && (
+        <Button
+          type="button"
+          variant="glass-toggle"
+          size="sm"
+          className="w-full justify-center mt-2"
+          onClick={() => setShowAllEntries(prev => !prev)}
+          aria-expanded={showAllEntries}
+        >
+          {showAllEntries ? 'Show less' : `Show more (${hiddenEntryCount})`}
+        </Button>
+      )}
       {leaderboardData.currentUserEntry && !leaderboardData.entries.find(e => e.userId === leaderboardData.currentUserEntry!.userId) && (
         <div className="mt-2 border-t border-border pt-2">
           <div className="text-xs text-muted-foreground mb-1">Your rank</div>
           <div className="p-3 rounded-lg bg-primary/5">
             <Cluster justify="between" align="center" gap="sm">
               <Cluster gap="sm" align="center">
-                <Box className="flex-shrink-0 w-8 text-center">{getRankIcon(leaderboardData.currentUserEntry.rank)}</Box>
+                <Box className="flex-shrink-0 w-7 sm:w-8 text-center">{getRankIcon(leaderboardData.currentUserEntry.rank)}</Box>
                 <Avatar
                   src={leaderboardData.currentUserEntry.userAvatar}
                   alt={leaderboardData.currentUserEntry.userName || 'You'}
                   fallback={(leaderboardData.currentUserEntry.userName || 'Y').charAt(0).toUpperCase()}
-                  className="w-8 h-8"
+                  className="w-7 h-7 sm:w-9 sm:h-9"
                 />
                 <Stack gap="xs">
                   <div className="font-medium">You</div>
@@ -334,22 +410,32 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
     <Card variant="glass" className="@container glassmorphic border-glass hover:shadow-md transition-shadow duration-300" interactive={true}>
       <CardHeader>
         <Stack gap="md">
-          <Cluster justify="between" align="center" gap="md">
+          <Cluster justify="between" align="center" gap="md" wrap>
             <Cluster gap="sm" align="center">
               <Box
                 className={`w-10 h-10 rounded-lg flex items-center justify-center text-primary-foreground ${config?.color ? '' : 'bg-primary'}`}
                 style={config?.color ? { backgroundColor: config.color } : undefined}
               >
-                {config?.icon || '🏆'}
+                {(config?.icon ?? Trophy) && (
+                  <span className="flex items-center justify-center text-inherit">
+                    {React.createElement(config?.icon ?? Trophy, { className: 'h-5 w-5' })}
+                  </span>
+                )}
               </Box>
               <Stack gap="xs">
                 <CardTitle>{config?.title || 'Leaderboard'}</CardTitle>
                 <CardDescription>{config?.description || 'Top performers'}</CardDescription>
               </Stack>
             </Cluster>
-            <Stack gap="xs" align="end" className="text-right text-sm text-muted-foreground">
-              <div>{leaderboardData.totalParticipants} participants</div>
-              <div className="text-xs">
+            <Stack
+              gap="xs"
+              align="start"
+              className="w-full text-left text-xs text-muted-foreground leading-relaxed sm:w-auto sm:text-sm sm:text-right sm:items-end"
+            >
+              <div className="w-full sm:w-auto">
+                {leaderboardData.totalParticipants} participants
+              </div>
+              <div className="w-full sm:w-auto text-xs sm:text-[0.75rem]">
                 Updated {new Date(leaderboardData.lastUpdated.toDate()).toLocaleTimeString()}
               </div>
               {user?.uid && (followingCount ?? 0) > 0 && (
@@ -360,7 +446,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                     setShowMyCircle(next);
                     try { window.localStorage.setItem(`leaderboard-circle-${user!.uid}`, next ? '1' : '0'); } catch {}
                   }}
-                  className="text-xs text-primary hover:underline"
+                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline rounded-full bg-primary/10 px-3 py-1 text-left sm:text-right sm:self-end sm:bg-transparent sm:px-0 sm:py-0"
                   aria-pressed={showMyCircle}
                   title={showMyCircle ? 'Showing only people you follow' : 'View leaderboard for people you follow'}
                 >
@@ -376,7 +462,9 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           )}
         </Stack>
       </CardHeader>
-      <CardContent className={`${compact ? 'max-h-64' : 'max-h-96'} overflow-y-auto`}>
+      <CardContent
+        className={`${compact ? 'max-h-64 sm:max-h-72' : 'max-h-[30rem] sm:max-h-[34rem]'} overflow-y-auto`}
+      >
         {entriesContent}
       </CardContent>
     </Card>

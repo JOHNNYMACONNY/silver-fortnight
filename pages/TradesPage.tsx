@@ -37,15 +37,195 @@ const RefreshIcon = () => (
   </svg>
 );
 
+type StatusFilter =
+  | 'all'
+  | 'open'
+  | 'in-progress'
+  | 'pending_evidence'
+  | 'pending_confirmation'
+  | 'completed';
+
+const STATUS_QUERY_MAP: Record<Exclude<StatusFilter, 'all'>, string[]> = {
+  open: ['open', 'active', 'draft'],
+  'in-progress': ['in-progress', 'in_progress', 'matched', 'pending_confirmation', 'pending_evidence'],
+  pending_evidence: ['pending_evidence'],
+  pending_confirmation: ['pending_confirmation'],
+  completed: ['completed']
+};
+
+const STATUS_MATCH_MAP: Record<Exclude<StatusFilter, 'all'>, string[]> = {
+  open: ['open'],
+  'in-progress': ['in-progress', 'pending_confirmation', 'pending_evidence'],
+  pending_evidence: ['pending_evidence'],
+  pending_confirmation: ['pending_confirmation'],
+  completed: ['completed']
+};
+
 export const TradesPage: React.FC = () => {
   const { currentUser, userProfile } = useAuth();
   const [trades, setTrades] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [skillsFilter, setSkillsFilter] = useState<string[]>([]);
   const [availableSkills, setAvailableSkills] = useState<string[]>([]);
+
+  const normalizeTradeStatus = (status: string | undefined): string => {
+    const normalized = typeof status === 'string' ? status.toLowerCase() : '';
+    switch (normalized) {
+      case 'active':
+      case 'draft':
+        return 'open';
+      case 'in_progress':
+      case 'matched':
+        return 'in-progress';
+      case 'pending_evidence':
+      case 'pending-evidence':
+        return 'pending_evidence';
+      case 'pending_confirmation':
+      case 'pending-confirmation':
+        return 'pending_confirmation';
+      case 'cancelled':
+        return 'cancelled';
+      case 'completed':
+        return 'completed';
+      case 'open':
+        return 'open';
+      case 'in-progress':
+        return 'in-progress';
+      default:
+        return normalized || 'unknown';
+    }
+  };
+
+  const extractSkillNames = (skillSource: any): string[] => {
+    if (!Array.isArray(skillSource)) {
+      return [];
+    }
+
+    return skillSource
+      .map((skill) => {
+        if (typeof skill === 'string') {
+          return skill.trim();
+        }
+
+        if (skill && typeof skill === 'object') {
+          if (typeof skill.name === 'string') {
+            return skill.name.trim();
+          }
+          if ('label' in skill && typeof (skill as any).label === 'string') {
+            return (skill as any).label.trim();
+          }
+          if ('title' in skill && typeof (skill as any).title === 'string') {
+            return (skill as any).title.trim();
+          }
+        }
+
+        return null;
+      })
+      .filter((value): value is string => Boolean(value));
+  };
+
+  const collectAllSkillNames = (trade: any): string[] => {
+    const offered = extractSkillNames(trade?.skillsOffered ?? trade?.offeredSkills);
+    const wanted = extractSkillNames(trade?.skillsWanted ?? trade?.requestedSkills);
+    const legacy = extractSkillNames(trade?.skills);
+
+    return Array.from(new Set([...offered, ...wanted, ...legacy]));
+  };
+
+  const getParticipantIds = (trade: any, includeInterested = false): string[] => {
+    const ids = new Set<string>();
+
+    if (Array.isArray(trade?.participants)) {
+      trade.participants
+        .filter((id: unknown): id is string => typeof id === 'string' && id.length > 0)
+        .forEach((id: string) => ids.add(id));
+    } else if (trade?.participants && typeof trade.participants === 'object') {
+      Object.values(trade.participants)
+        .filter((id): id is string => typeof id === 'string' && id.length > 0)
+        .forEach((id: string) => ids.add(id));
+    }
+
+    if (includeInterested && Array.isArray(trade?.interestedUsers)) {
+      trade.interestedUsers
+        .filter((id: unknown): id is string => typeof id === 'string' && id.length > 0)
+        .forEach((id: string) => ids.add(id));
+    }
+
+    return Array.from(ids);
+  };
+
+  const buildJoinUpdate = (trade: any, userId: string): Record<string, any> | null => {
+    if (!trade) {
+      return null;
+    }
+
+    if (trade.participants && !Array.isArray(trade.participants) && typeof trade.participants === 'object') {
+      const participantsObj = { ...trade.participants };
+
+      if (participantsObj.creator === userId || participantsObj.participant === userId) {
+        return null;
+      }
+
+      if (!participantsObj.participant) {
+        return { participants: { ...participantsObj, participant: userId } };
+      }
+
+      const interestedUsers: string[] = Array.isArray(trade.interestedUsers) ? [...trade.interestedUsers] : [];
+      if (!interestedUsers.includes(userId)) {
+        interestedUsers.push(userId);
+        return { interestedUsers };
+      }
+
+      return null;
+    }
+
+    const participantIds = getParticipantIds(trade);
+    if (participantIds.includes(userId)) {
+      return null;
+    }
+
+    return { participants: [...participantIds, userId] };
+  };
+
+  const buildLeaveUpdate = (trade: any, userId: string): Record<string, any> | null => {
+    if (!trade) {
+      return null;
+    }
+
+    if (trade.participants && !Array.isArray(trade.participants) && typeof trade.participants === 'object') {
+      const participantsObj = { ...trade.participants };
+      const updatePayload: Record<string, any> = {};
+      let changed = false;
+
+      if (participantsObj.participant === userId) {
+        participantsObj.participant = null;
+        changed = true;
+      }
+
+      if (changed) {
+        updatePayload.participants = participantsObj;
+      }
+
+      if (Array.isArray(trade.interestedUsers) && trade.interestedUsers.includes(userId)) {
+        updatePayload.interestedUsers = trade.interestedUsers.filter((id: string) => id !== userId);
+      }
+
+      return Object.keys(updatePayload).length > 0 ? updatePayload : null;
+    }
+
+    const participantIds = getParticipantIds(trade);
+    if (!participantIds.includes(userId)) {
+      if (Array.isArray(trade.interestedUsers) && trade.interestedUsers.includes(userId)) {
+        return { interestedUsers: trade.interestedUsers.filter((id: string) => id !== userId) };
+      }
+      return null;
+    }
+
+    return { participants: participantIds.filter((id: string) => id !== userId) };
+  };
   
   // Fetch trades
   const fetchTrades = async () => {
@@ -57,19 +237,29 @@ export const TradesPage: React.FC = () => {
       
       // Add status filter
       if (statusFilter !== 'all') {
-        constraints.push({
-          field: 'status',
-          operator: '==',
-          value: statusFilter
-        });
+        const constraintStatuses = STATUS_QUERY_MAP[statusFilter] ?? [statusFilter];
+
+        if (constraintStatuses.length === 1) {
+          constraints.push({
+            field: 'status',
+            operator: '==',
+            value: constraintStatuses[0]
+          });
+        } else {
+          constraints.push({
+            field: 'status',
+            operator: 'in',
+            value: constraintStatuses
+          });
+        }
       }
       
       // Add public filter if user is not logged in
       if (!currentUser) {
         constraints.push({
-          field: 'isPublic',
+          field: 'visibility',
           operator: '==',
-          value: true
+          value: 'public'
         });
       }
       
@@ -81,17 +271,21 @@ export const TradesPage: React.FC = () => {
       }
       
       if (data) {
-        setTrades(data);
+        const tradesWithNormalizedStatus = data.map((trade: any) => ({
+          ...trade,
+          normalizedStatus: normalizeTradeStatus(trade?.status)
+        }));
+
+        const normalizedTrades = !currentUser
+          ? tradesWithNormalizedStatus.filter((trade: any) => (trade?.visibility ?? 'public') === 'public')
+          : tradesWithNormalizedStatus;
+
+        setTrades(normalizedTrades);
         
         // Extract all unique skills
         const skills = new Set<string>();
-        data.forEach((trade: any) => {
-          if (trade.skillsOffered) {
-            trade.skillsOffered.forEach((skill: string) => skills.add(skill));
-          }
-          if (trade.skillsWanted) {
-            trade.skillsWanted.forEach((skill: string) => skills.add(skill));
-          }
+        normalizedTrades.forEach((trade: any) => {
+          collectAllSkillNames(trade).forEach((skill) => skills.add(skill));
         });
         
         setAvailableSkills(Array.from(skills).sort());
@@ -110,19 +304,38 @@ export const TradesPage: React.FC = () => {
   }, [currentUser, statusFilter]);
   
   // Filter trades based on search term and skills filter
-  const filteredTrades = trades.filter(trade => {
-    // Search term filter
-    const searchMatch = searchTerm === '' || 
-      trade.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trade.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    // Skills filter
-    const skillsMatch = skillsFilter.length === 0 || 
-      skillsFilter.some(skill => 
-        (trade.skillsOffered && trade.skillsOffered.includes(skill)) || 
-        (trade.skillsWanted && trade.skillsWanted.includes(skill))
-      );
-    
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  const filteredTrades = trades.filter((trade) => {
+    const title = typeof trade.title === 'string' ? trade.title : '';
+    const description = typeof trade.description === 'string' ? trade.description : '';
+    const normalizedStatus =
+      typeof (trade as any).normalizedStatus === 'string'
+        ? (trade as any).normalizedStatus
+        : normalizeTradeStatus(trade.status);
+
+    if (statusFilter !== 'all') {
+      const allowedStatuses = STATUS_MATCH_MAP[statusFilter] ?? [statusFilter];
+      if (!allowedStatuses.includes(normalizedStatus)) {
+        return false;
+      }
+    }
+
+    const searchMatch =
+      normalizedSearchTerm === '' ||
+      title.toLowerCase().includes(normalizedSearchTerm) ||
+      description.toLowerCase().includes(normalizedSearchTerm);
+
+    if (skillsFilter.length === 0) {
+      return searchMatch;
+    }
+
+    const offered = extractSkillNames(trade?.skillsOffered ?? trade?.offeredSkills);
+    const wanted = extractSkillNames(trade?.skillsWanted ?? trade?.requestedSkills);
+    const legacy = extractSkillNames(trade?.skills);
+    const skillSet = new Set([...offered, ...wanted, ...legacy]);
+
+    const skillsMatch = skillsFilter.some((skill) => skillSet.has(skill));
+
     return searchMatch && skillsMatch;
   });
   
@@ -138,29 +351,23 @@ export const TradesPage: React.FC = () => {
   // Join a trade
   const handleJoinTrade = async (tradeId: string) => {
     if (!currentUser) return;
-    
+
+    const trade = trades.find((item) => item.id === tradeId);
+
+    if (!trade) {
+      console.error('Trade not found when attempting to join:', tradeId);
+      return;
+    }
+
+    const updatePayload = buildJoinUpdate(trade, currentUser.uid);
+
+    if (!updatePayload) {
+      return;
+    }
+
     try {
-      // Get the trade
-      const { data: trade, error: getError } = await getDocuments('trades', [
-        { field: 'id', operator: '==', value: tradeId }
-      ]);
-      
-      if (getError || !trade || trade.length === 0) {
-        console.error('Error getting trade:', getError);
-        return;
-      }
-      
-      // Add current user to participants
-      const participants = trade[0].participants || [];
-      
-      if (!participants.includes(currentUser.uid)) {
-        await updateDocument('trades', tradeId, {
-          participants: [...participants, currentUser.uid]
-        });
-        
-        // Refresh trades
-        fetchTrades();
-      }
+      await updateDocument('trades', tradeId, updatePayload);
+      fetchTrades();
     } catch (err: any) {
       console.error('Error joining trade:', err);
       alert('Failed to join trade. Please try again.');
@@ -170,26 +377,22 @@ export const TradesPage: React.FC = () => {
   // Leave a trade
   const handleLeaveTrade = async (tradeId: string) => {
     if (!currentUser) return;
-    
+
+    const trade = trades.find((item) => item.id === tradeId);
+
+    if (!trade) {
+      console.error('Trade not found when attempting to leave:', tradeId);
+      return;
+    }
+
+    const updatePayload = buildLeaveUpdate(trade, currentUser.uid);
+
+    if (!updatePayload) {
+      return;
+    }
+
     try {
-      // Get the trade
-      const { data: trade, error: getError } = await getDocuments('trades', [
-        { field: 'id', operator: '==', value: tradeId }
-      ]);
-      
-      if (getError || !trade || trade.length === 0) {
-        console.error('Error getting trade:', getError);
-        return;
-      }
-      
-      // Remove current user from participants
-      const participants = trade[0].participants || [];
-      
-      await updateDocument('trades', tradeId, {
-        participants: participants.filter((id: string) => id !== currentUser.uid)
-      });
-      
-      // Refresh trades
+      await updateDocument('trades', tradeId, updatePayload);
       fetchTrades();
     } catch (err: any) {
       console.error('Error leaving trade:', err);
@@ -254,12 +457,14 @@ export const TradesPage: React.FC = () => {
             <span className="text-sm font-medium text-gray-700">Status:</span>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
               className="rounded-md border border-gray-300 px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
             >
               <option value="all">All</option>
               <option value="open">Open</option>
-              <option value="in_progress">In Progress</option>
+              <option value="in-progress">In Progress</option>
+              <option value="pending_evidence">Pending Evidence</option>
+              <option value="pending_confirmation">Pending Confirmation</option>
               <option value="completed">Completed</option>
             </select>
           </div>
@@ -343,14 +548,17 @@ export const TradesPage: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTrades.map(trade => (
-              <TradeCard
-                key={trade.id}
-                trade={trade}
-                onInitiateTrade={() => handleJoinTrade(trade.id)}
-                showInitiateButton={currentUser && trade.participants && !trade.participants.includes(currentUser.uid)}
-              />
-            ))}
+            {filteredTrades.map(trade => {
+              const userIsParticipant = currentUser ? getParticipantIds(trade, true).includes(currentUser.uid) : false;
+              return (
+                <TradeCard
+                  key={trade.id}
+                  trade={trade}
+                  onInitiateTrade={() => handleJoinTrade(trade.id)}
+                  showInitiateButton={Boolean(currentUser && !userIsParticipant)}
+                />
+              );
+            })}
           </div>
         )
       )}

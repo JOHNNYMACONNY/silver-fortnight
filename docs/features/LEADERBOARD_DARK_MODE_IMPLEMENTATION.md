@@ -122,6 +122,17 @@ Successfully implemented comprehensive dark mode support for all leaderboard and
 - **High contrast mode**: Additional accessibility option
 - **Animation preferences**: Respect user motion preferences
 
+### November 2025 Glass Refresh
+
+- **Glass Toggle Controls**: Leaderboard category and time-range selectors now use the shared `glass-toggle` button variant for consistent transparency and active-state feedback.
+- **Icon Consistency**: Emoji placeholders were replaced with Lucide icons defined in `LEADERBOARD_CONFIGS`, keeping badges aligned with the rest of the app.
+- **Social Sidebar Layout**: `SocialFeatures` supports an embedded surface without nested cards, and its stat tiles are now glassmorphic with improved mobile spacing.
+- **Responsive Polish (Nov 11, 2025)**: Leaderboard filters stack vertically on <640 px screens with full-width touch targets, Quick Stats spacing adapts for handhelds, and the Social header/follow button collapse into a single column to reduce mobile crowding.
+- **Wrapper Cleanup (Nov 12, 2025)**: Removed the outer glass wrapper around the leaderboard grid so mobile layouts breathe more, while inner cards retain their glass styling.
+- **Metadata & Entry Comfort (Nov 13, 2025)**: XP Champions header wraps gracefully on phones, leaderboard rows gained roomier padding with responsive alignment, and the entry list height now scales per breakpoint to avoid card overflow without introducing horizontal scroll.
+- **Mobile Comfort Controls (Nov 13, 2025)**: The leaderboard now limits mobile users to the top 10 rows with a glass “Show more” toggle, collapses Quick Stats and Social cards into tap-to-expand disclosures on handhelds, and refreshes card padding/icon sizing for a calmer vertical rhythm.
+- **Mobile Padding Trim (Nov 14, 2025)**: Glass cards on the leaderboard page standardize to `px-4 py-4` on phones (while retaining `sm:p-6` and larger), tightening the perimeter spacing without crowding stats tiles or accordion affordances.
+
 ### Performance Considerations
 
 - **CSS optimization**: Dark mode classes add minimal bundle size

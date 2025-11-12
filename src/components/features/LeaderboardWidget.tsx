@@ -153,7 +153,7 @@ export const LeaderboardWidget: React.FC<LeaderboardWidgetProps> = ({
               className="w-6 h-6 rounded flex items-center justify-center text-xs text-primary-foreground"
               style={{ backgroundColor: config?.color || 'hsl(var(--primary))' }}
             >
-              {config?.icon || '🏆'}
+              {React.createElement(config?.icon ?? Trophy, { className: 'h-4 w-4' })}
             </div>
             <CardTitle className="text-sm">{displayTitle}</CardTitle>
           </div>
