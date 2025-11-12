@@ -11,6 +11,7 @@ import ProfileAvatarButton from '../../ui/ProfileAvatarButton';
 import { migrationRegistry, Trade as BaseTrade, TradeSkill } from '../../../services/migration';
 import { formatDate } from '../../../utils/dateUtils';
 import { themeClasses } from '../../../utils/themeUtils';
+import { Button } from '../../ui/Button';
 
 // Extended Trade interface to include missing fields used in the UI
 export interface ExtendedTrade extends BaseTrade {
@@ -30,6 +31,70 @@ interface TradeCardProps {
   enhanced?: boolean; // Enable/disable enhanced effects
 }
 
+type DisplaySkill = {
+  name: string;
+  level?: TradeSkill['level'];
+};
+
+const toDisplaySkill = (skill: TradeSkill | string | null | undefined): DisplaySkill | null => {
+  if (!skill) {
+    return null;
+  }
+
+  if (typeof skill === 'string') {
+    const trimmed = skill.trim();
+    return trimmed ? { name: trimmed } : null;
+  }
+
+  if (typeof skill === 'object') {
+    const nameCandidates = [
+      (skill as TradeSkill).name,
+      (skill as any)?.label,
+      (skill as any)?.title,
+      (skill as any)?.id
+    ];
+
+    const resolvedName = nameCandidates.find(
+      (candidate) => typeof candidate === 'string' && candidate.trim().length > 0
+    );
+
+    if (!resolvedName) {
+      return null;
+    }
+
+    return {
+      name: resolvedName.trim(),
+      level: (skill as TradeSkill).level
+    };
+  }
+
+  return null;
+};
+
+const mergeSkillSources = (
+  primary: unknown,
+  legacy: unknown
+): DisplaySkill[] => {
+  const combined = [
+    ...(Array.isArray(primary) ? primary : []),
+    ...(Array.isArray(legacy) ? legacy : [])
+  ];
+
+  const unique = new Map<string, DisplaySkill>();
+
+  combined.forEach((entry) => {
+    const normalized = toDisplaySkill(entry as TradeSkill | string | null | undefined);
+    if (normalized) {
+      const key = normalized.name.toLowerCase();
+      if (!unique.has(key)) {
+        unique.set(key, normalized);
+      }
+    }
+  });
+
+  return Array.from(unique.values());
+};
+
 const TradeCard: React.FC<TradeCardProps> = React.memo(({
   trade: initialTrade,
   onInitiateTrade,
@@ -47,8 +112,14 @@ const TradeCard: React.FC<TradeCardProps> = React.memo(({
       case 'active':
         return 'pending';
       case 'matched':
+      case 'in-progress':
       case 'in_progress':
+      case 'pending_evidence':
+      case 'pending-evidence':
         return 'negotiating';
+      case 'pending_confirmation':
+      case 'pending-confirmation':
+        return 'confirmed';
       case 'completed':
         return 'completed';
       case 'cancelled':
@@ -164,11 +235,11 @@ const TradeCard: React.FC<TradeCardProps> = React.memo(({
   const creatorInitial = creatorInfo.name?.charAt(0).toUpperCase() || 'U';
 
   // Get skills with migration compatibility
-  const getSkills = (type: 'offered' | 'wanted'): TradeSkill[] => {
+  const getSkills = (type: 'offered' | 'wanted'): DisplaySkill[] => {
     if (type === 'offered') {
-      return trade.skillsOffered || trade.offeredSkills || [];
+      return mergeSkillSources(trade.skillsOffered, trade.offeredSkills);
     } else {
-      return trade.skillsWanted || trade.requestedSkills || [];
+      return mergeSkillSources(trade.skillsWanted, trade.requestedSkills);
     }
   };
 
@@ -262,6 +333,20 @@ const TradeCard: React.FC<TradeCardProps> = React.memo(({
             {trade.description && (
               <div className="flex-1 min-h-0 mb-3">
                 <p className={cn(themeClasses.bodySmall, 'text-muted-foreground line-clamp-4')}>{trade.description}</p>
+              </div>
+            )}
+
+            {showInitiateButton && typeof onInitiateTrade === 'function' && (
+              <div className="mt-2 mb-3">
+                <Button
+                  variant="primary"
+                  fullWidth
+                  isLoading={isRefreshing}
+                  onClick={handleInitiateTrade}
+                  disabled={isRefreshing}
+                >
+                  Join Trade
+                </Button>
               </div>
             )}
             

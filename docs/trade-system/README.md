@@ -47,6 +47,16 @@ The trade system supports the following states:
 - Status timeline visualization
 - Real-time updates via Firestore listeners
 
+## Recent Updates
+
+- **2025-11-10** – Hardened the trades listing experience:
+  - Join/leave actions now resolve trades directly by document ID and respect both array- and object-based participant schemas.
+  - Skill filters normalize object and string skill entries, preventing mismatched labels and empty filter results.
+  - Trade search gracefully handles missing descriptions to avoid runtime errors in mixed data sets.
+- **2025-11-11** – Synced trade status filters and legacy skill rendering:
+  - Pending evidence and confirmation states now surface under the canonical “In Progress” filter and can be targeted individually across the UI.
+  - Trade cards normalize string-based skill entries so legacy trades render consistent badge labels.
+
 ## Related Documentation
 
 - Features: `../features/`

@@ -642,7 +642,9 @@ export const TradesPage: React.FC = () => {
                       <SelectContent className="glassmorphic border-glass backdrop-blur-xl bg-white/10">
                         <SelectItem value="all">All Statuses</SelectItem>
                         <SelectItem value="open">Open</SelectItem>
-                        <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="in-progress">In Progress</SelectItem>
+                        <SelectItem value="pending_evidence">Pending Evidence</SelectItem>
+                        <SelectItem value="pending_confirmation">Pending Confirmation</SelectItem>
                         <SelectItem value="completed">Completed</SelectItem>
                         <SelectItem value="cancelled">Cancelled</SelectItem>
                       </SelectContent>

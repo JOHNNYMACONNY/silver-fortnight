@@ -1,4 +1,12 @@
 import { Timestamp } from 'firebase/firestore';
+import type { LucideIcon } from 'lucide-react';
+import {
+  Trophy,
+  Zap,
+  Award,
+  Handshake,
+  Sparkles
+} from 'lucide-react';
 
 /**
  * User XP and Level System Types
@@ -403,7 +411,7 @@ export interface LeaderboardConfig {
   period: LeaderboardPeriod;
   title: string;
   description: string;
-  icon: string;
+  icon?: LucideIcon;
   color: string;
   refreshInterval: number; // minutes
   minParticipants: number;
@@ -415,7 +423,7 @@ export const LEADERBOARD_CONFIGS: LeaderboardConfig[] = [
     period: LeaderboardPeriod.ALL_TIME,
     title: 'XP Champions',
     description: 'Top earners of all time',
-    icon: '🏆',
+    icon: Trophy,
     color: '#fbbf24',
     refreshInterval: 60,
     minParticipants: 5
@@ -425,7 +433,7 @@ export const LEADERBOARD_CONFIGS: LeaderboardConfig[] = [
     period: LeaderboardPeriod.WEEKLY,
     title: 'Weekly Warriors',
     description: 'Top XP earners this week',
-    icon: '⚡',
+    icon: Zap,
     color: '#8b5cf6',
     refreshInterval: 30,
     minParticipants: 3
@@ -435,7 +443,7 @@ export const LEADERBOARD_CONFIGS: LeaderboardConfig[] = [
     period: LeaderboardPeriod.MONTHLY,
     title: 'Monthly Masters',
     description: 'Top XP earners this month',
-    icon: '🌟',
+    icon: Sparkles,
     color: '#34d399',
     refreshInterval: 120,
     minParticipants: 5
@@ -445,7 +453,7 @@ export const LEADERBOARD_CONFIGS: LeaderboardConfig[] = [
     period: LeaderboardPeriod.ALL_TIME,
     title: 'Trade Leaders',
     description: 'Most active traders',
-    icon: '🤝',
+    icon: Handshake,
     color: '#60a5fa',
     refreshInterval: 60,
     minParticipants: 3
@@ -455,7 +463,7 @@ export const LEADERBOARD_CONFIGS: LeaderboardConfig[] = [
     period: LeaderboardPeriod.ALL_TIME,
     title: 'Collaboration Experts',
     description: 'Highest rated collaborators',
-    icon: '⭐',
+    icon: Award,
     color: '#f97316',
     refreshInterval: 120,
     minParticipants: 5

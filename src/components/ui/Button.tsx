@@ -22,6 +22,8 @@ const buttonVariantsConfig = {
       success: "bg-success-500 text-white hover:bg-success-600 rounded-xl backdrop-blur-sm border border-success-500/20 shadow-md",
       warning: "bg-warning-500 text-white hover:bg-warning-600 rounded-xl backdrop-blur-sm border border-warning-500/20 shadow-md",
       glassmorphic: "glassmorphic text-white font-medium hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-200",
+      "glass-toggle":
+        "glassmorphic text-white/80 font-medium transition-colors duration-200 border border-white/10 hover:text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/30 data-[active=true]:text-white data-[active=true]:bg-white/20 data-[active=true]:border-white/20 data-[active=true]:shadow-lg",
       premium: "bg-gradient-to-r from-primary to-primary/80 text-gray-900 font-semibold shadow-lg hover:shadow-xl hover:from-primary/90 hover:to-primary/70 transition-all duration-300 transform hover:scale-105 border border-primary/20 backdrop-blur-sm rounded-xl",
       "premium-outline": "border border-primary/30 text-white font-semibold bg-transparent hover:bg-primary/10 hover:text-white transition-all duration-300 transform hover:scale-105 backdrop-blur-sm rounded-xl shadow-sm",
       interactive: "bg-gradient-to-r from-primary/90 to-primary/70 text-gray-900 font-medium shadow-md hover:shadow-lg hover:from-primary hover:to-primary/80 transition-all duration-200 transform hover:scale-102 border border-primary/20 backdrop-blur-sm rounded-xl",
@@ -91,7 +93,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       return (
         <Comp
           className={cn(
-            buttonVariants({ variant, size, className }),
+            buttonVariants({ variant, size }),
+            className,
             fullWidth && "w-full",
             rounded && "rounded-full",
             topicClasses
@@ -107,7 +110,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Comp
         className={cn(
-          buttonVariants({ variant, size, className }),
+          buttonVariants({ variant, size }),
+          className,
           fullWidth && "w-full",
           rounded && "rounded-full",
           topicClasses

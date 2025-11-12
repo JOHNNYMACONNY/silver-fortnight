@@ -21,6 +21,8 @@ import {
 import { useAuth } from '../../AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { getProfileImageUrl } from '../../utils/imageUtils';
+import { Button } from '../ui/Button';
+import { cn } from '../../utils/cn';
 
 interface SocialFeaturesProps {
   userId: string;
@@ -29,6 +31,7 @@ interface SocialFeaturesProps {
   showFollowButton?: boolean;
   showStats?: boolean;
   compact?: boolean;
+  surface?: 'embedded' | 'standalone';
 }
 
 interface UserSocialStatsProps {
@@ -44,7 +47,8 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
   userAvatar,
   showFollowButton = true,
   showStats = true,
-  compact = false
+  compact = false,
+  surface = 'standalone'
 }) => {
   const { user } = useAuth();
   const { addToast } = useToast();
@@ -228,18 +232,18 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
         )}
         
         {showFollowButton && !isOwnProfile && user && (
-          <button
+          <Button
+            type="button"
             onClick={isFollowing ? handleUnfollow : handleFollow}
             disabled={loading}
-            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-              isFollowing
-                ? 'bg-muted text-muted-foreground hover:bg-accent'
-                : 'bg-primary text-primary-foreground hover:bg-primary/90'
-            } disabled:opacity-50`}
+            isLoading={loading}
+            variant="glass-toggle"
+            size="sm"
+            data-active={isFollowing}
+            aria-pressed={isFollowing}
+            className="rounded-full px-3"
           >
-            {loading ? (
-              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            ) : isFollowing ? (
+            {isFollowing ? (
               <>
                 <UserMinus className="w-4 h-4 mr-1" />
                 Following
@@ -250,17 +254,22 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
                 Follow
               </>
             )}
-          </button>
+          </Button>
         )}
       </div>
     );
   }
 
-  return (
-    <div className="bg-card text-card-foreground rounded-lg shadow-sm border border-border p-6">
+  const statTileClass = cn(
+    'glassmorphic border-glass px-4 py-3 rounded-xl text-center transition-all duration-200',
+    'shadow-sm hover:shadow-md'
+  );
+
+  const content = (
+    <div className="space-y-6 sm:space-y-7">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
           {userAvatar ? (
             <img
               src={getProfileImageUrl(userAvatar, 48)}
@@ -268,61 +277,63 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
               className="w-12 h-12 rounded-full object-cover"
             />
           ) : (
-            <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+            <div className="w-12 h-12 glassmorphic border-glass rounded-full flex items-center justify-center">
               <Users className="w-6 h-6 text-muted-foreground" />
             </div>
           )}
           <div>
-            <h3 className="font-semibold text-foreground">{userName}</h3>
+            <h3 className="font-semibold text-foreground text-lg">{userName}</h3>
             <p className="text-sm text-muted-foreground">
               {isOwnProfile ? 'Your Profile' : 'Trader Profile'}
             </p>
           </div>
         </div>
 
-        {showFollowButton && !isOwnProfile && user && (
-          <button
-            onClick={isFollowing ? handleUnfollow : handleFollow}
-            disabled={loading}
-            className={`inline-flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
-              isFollowing
-                ? 'bg-muted text-muted-foreground hover:bg-accent'
-                : 'bg-primary text-primary-foreground hover:bg-primary/90'
-            } disabled:opacity-50`}
-          >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            ) : isFollowing ? (
-              <>
-                <UserMinus className="w-5 h-5 mr-2" />
-                Following
-              </>
-            ) : (
-              <>
-                <UserPlus className="w-5 h-5 mr-2" />
-                Follow
-              </>
-            )}
-          </button>
-        )}
+        <div className="w-full sm:w-auto">
+          {showFollowButton && !isOwnProfile && user && (
+            <Button
+              type="button"
+              onClick={isFollowing ? handleUnfollow : handleFollow}
+              disabled={loading}
+              isLoading={loading}
+              variant="glass-toggle"
+              size="sm"
+              data-active={isFollowing}
+              aria-pressed={isFollowing}
+              className="rounded-full w-full justify-center h-auto px-4 py-3 sm:w-auto sm:py-2"
+            >
+              {isFollowing ? (
+                <>
+                  <UserMinus className="w-5 h-5 mr-2" />
+                  Following
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-5 h-5 mr-2" />
+                  Follow
+                </>
+              )}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Stats */}
       {showStats && (
-        <div className="space-y-4">
+        <div className="space-y-4 sm:space-y-5">
           {statsLoading ? (
             <div className="animate-pulse">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="h-16 bg-muted rounded"></div>
+                  <div key={i} className="glassmorphic border-glass h-16 rounded-xl"></div>
                 ))}
               </div>
             </div>
           ) : socialStats ? (
             <>
               {/* Basic Stats */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-muted rounded-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className={statTileClass}>
                   <div className="flex items-center justify-center mb-1">
                     <Users className="w-5 h-5 text-primary" />
                   </div>
@@ -332,7 +343,7 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
                   <div className="text-sm text-muted-foreground">Followers</div>
                 </div>
 
-                <div className="text-center p-3 bg-muted rounded-lg">
+                <div className={statTileClass}>
                   <div className="flex items-center justify-center mb-1">
                     <Heart className="w-5 h-5 text-accent" />
                   </div>
@@ -342,7 +353,7 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
                   <div className="text-sm text-muted-foreground">Following</div>
                 </div>
 
-                <div className="text-center p-3 bg-muted rounded-lg">
+                <div className={statTileClass}>
                   <div className="flex items-center justify-center mb-1">
                     <TrendingUp className="w-5 h-5 text-success" />
                   </div>
@@ -352,7 +363,7 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
                   <div className="text-sm text-muted-foreground">Leaderboard Spots</div>
                 </div>
 
-                <div className="text-center p-3 bg-muted rounded-lg">
+                <div className={statTileClass}>
                   <div className="flex items-center justify-center mb-1">
                     <Award className="w-5 h-5 text-secondary" />
                   </div>
@@ -365,8 +376,8 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
 
               {/* Top Ranks */}
               {socialStats.topRanks && Object.keys(socialStats.topRanks).length > 0 && (
-                <div>
-                  <h4 className="font-medium text-foreground mb-3 flex items-center">
+                <div className="space-y-3">
+                  <h4 className="font-medium text-foreground flex items-center">
                     <Star className="w-4 h-4 mr-2 text-accent" />
                     Best Rankings
                   </h4>
@@ -384,6 +395,16 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
           )}
         </div>
       )}
+    </div>
+  );
+
+  if (surface === 'embedded') {
+    return content;
+  }
+
+  return (
+    <div className="glassmorphic border-glass rounded-2xl p-6 shadow-lg text-card-foreground">
+      {content}
     </div>
   );
 };

@@ -75,7 +75,9 @@ export const EnhancedFilterPanel: React.FC<EnhancedFilterPanelProps> = ({
 
   const statusOptions: FilterOption[] = [
     { value: 'open', label: 'Open' },
-    { value: 'in_progress', label: 'In Progress' },
+    { value: 'in-progress', label: 'In Progress' },
+    { value: 'pending_evidence', label: 'Pending Evidence' },
+    { value: 'pending_confirmation', label: 'Pending Confirmation' },
     { value: 'completed', label: 'Completed' },
     { value: 'cancelled', label: 'Cancelled' }
   ];
@@ -107,7 +109,7 @@ export const EnhancedFilterPanel: React.FC<EnhancedFilterPanelProps> = ({
     { label: 'Quick Projects', filters: { timeCommitment: '1-hour' } },
     { label: 'Tech Focus', filters: { category: 'tech' } },
     { label: 'Beginner Friendly', filters: { skillLevel: 'beginner' } },
-    { label: 'Active Projects', filters: { status: 'in_progress' } }
+    { label: 'Active Projects', filters: { status: 'in-progress' } }
   ];
 
   const handleFilterChange = (key: string, value: any) => {
