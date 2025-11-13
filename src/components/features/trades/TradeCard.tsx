@@ -119,7 +119,7 @@ const TradeCard: React.FC<TradeCardProps> = React.memo(({
         return 'negotiating';
       case 'pending_confirmation':
       case 'pending-confirmation':
-        return 'confirmed';
+        return 'pending';
       case 'completed':
         return 'completed';
       case 'cancelled':
@@ -339,7 +339,8 @@ const TradeCard: React.FC<TradeCardProps> = React.memo(({
             {showInitiateButton && typeof onInitiateTrade === 'function' && (
               <div className="mt-2 mb-3">
                 <Button
-                  variant="primary"
+                  variant="glassmorphic"
+                  className="backdrop-blur-lg bg-white/10 text-white border border-white/15 shadow-[0_10px_30px_rgba(15,23,42,0.25)] transition-all duration-300 hover:bg-white/16 hover:shadow-[0_18px_45px_rgba(15,23,42,0.35)]"
                   fullWidth
                   isLoading={isRefreshing}
                   onClick={handleInitiateTrade}

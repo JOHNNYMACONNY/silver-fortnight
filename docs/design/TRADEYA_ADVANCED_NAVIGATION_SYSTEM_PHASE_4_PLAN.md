@@ -82,3 +82,10 @@ This phase will enhance the entire navigation experience by abstracting state lo
 -   **E2E Testing:** Use Playwright to simulate user interactions: scrolling the page, opening/closing the mobile menu, and using the command palette.
 -   **Accessibility:** Run `axe-core` tests on all navigation components. Manually test keyboard navigation and focus trapping.
 -   **Visual Regression:** Capture Chromatic snapshots of the `Navbar` in its default and scrolled states, and the `MobileMenu` in its open and closed states.
+
+---
+
+## 📌 Phase 4 Implementation Notes (November 2025)
+
+-   [x] Command palette backdrop now supports click-to-dismiss while maintaining keyboard accessibility through pointer-event layering.
+-   [x] Added regression tests covering backdrop dismissal to guard against future pointer-event regressions.

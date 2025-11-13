@@ -201,8 +201,8 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
       };
 
       const getRankColor = (rank: number) => {
-        if (rank === 1) return 'text-accent bg-accent/10';
-        if (rank <= 3) return 'text-secondary bg-secondary/10';
+        if (rank === 1) return 'text-accent-foreground bg-[color:var(--color-accent-foreground)/0.12]';
+        if (rank <= 3) return 'text-secondary-foreground bg-[color:var(--color-secondary-foreground)/0.12]';
         if (rank <= 10) return 'text-primary bg-primary/10';
         return 'bg-muted text-muted-foreground';
       };
@@ -345,7 +345,7 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
 
                 <div className={statTileClass}>
                   <div className="flex items-center justify-center mb-1">
-                    <Heart className="w-5 h-5 text-accent" />
+                    <Heart className="w-5 h-5 text-accent-foreground" />
                   </div>
                   <div className="text-2xl font-bold text-foreground">
                     {socialStats.followingCount.toLocaleString()}
@@ -365,7 +365,7 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
 
                 <div className={statTileClass}>
                   <div className="flex items-center justify-center mb-1">
-                    <Award className="w-5 h-5 text-secondary" />
+                    <Award className="w-5 h-5 text-secondary-foreground" />
                   </div>
                   <div className="text-2xl font-bold text-foreground">
                     {Object.keys(socialStats.topRanks || {}).length}
@@ -378,7 +378,7 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
               {socialStats.topRanks && Object.keys(socialStats.topRanks).length > 0 && (
                 <div className="space-y-3">
                   <h4 className="font-medium text-foreground flex items-center">
-                    <Star className="w-4 h-4 mr-2 text-accent" />
+                    <Star className="w-4 h-4 mr-2 text-accent-foreground" />
                     Best Rankings
                   </h4>
                   <div className="flex flex-wrap gap-2">

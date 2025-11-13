@@ -201,17 +201,19 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
     <div className="fixed inset-0 z-[60]">
       {/* Backdrop */}
       <div 
+        data-testid="command-palette-backdrop"
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
       
       {/* Command Palette */}
-      <div className="absolute inset-0 flex items-start justify-center pt-[15vh] px-4">
+      <div className="absolute inset-0 flex items-start justify-center pt-[15vh] px-4 pointer-events-none">
         <div className={cn(
           "w-full max-w-2xl mx-auto",
           "glassmorphic",
           "rounded-xl shadow-glass-lg",
-          "animate-command-palette-in"
+          "animate-command-palette-in",
+          "pointer-events-auto"
         )}>
           {/* Search Input */}
           <div className="flex items-center gap-3 p-4 border-b border-glass">
