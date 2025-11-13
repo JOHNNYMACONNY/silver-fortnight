@@ -6,11 +6,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { doc, runTransaction } from 'firebase/firestore';
 import TradeCard from '../src/components/features/trades/TradeCard';
 import { Button } from '../src/components/ui/Button';
 import { Input } from '../src/components/ui/Input';
 import { useAuth } from '../src/AuthContext';
-import { getDocuments, addDocument, updateDocument } from '../src/firebase-config';
+import { getDocuments, getSyncFirebaseDb } from '../src/firebase-config';
 
 // Icons (you can replace these with your preferred icon library)
 const PlusIcon = () => (
@@ -359,15 +360,37 @@ export const TradesPage: React.FC = () => {
       return;
     }
 
-    const updatePayload = buildJoinUpdate(trade, currentUser.uid);
-
-    if (!updatePayload) {
-      return;
-    }
-
     try {
-      await updateDocument('trades', tradeId, updatePayload);
-      fetchTrades();
+      const db = getSyncFirebaseDb();
+      const didUpdate = await runTransaction(db, async (transaction) => {
+        const tradeRef = doc(db, 'trades', tradeId);
+        const snapshot = await transaction.get(tradeRef);
+
+        if (!snapshot.exists()) {
+          console.error('Trade not found in Firestore when attempting to join:', tradeId);
+          return false;
+        }
+
+        const snapshotData = snapshot.data();
+        const updatePayload = buildJoinUpdate(
+          {
+            id: tradeRef.id,
+            ...(snapshotData ?? {})
+          },
+          currentUser.uid
+        );
+
+        if (!updatePayload) {
+          return false;
+        }
+
+        transaction.update(tradeRef, updatePayload);
+        return true;
+      });
+
+      if (didUpdate) {
+        fetchTrades();
+      }
     } catch (err: any) {
       console.error('Error joining trade:', err);
       alert('Failed to join trade. Please try again.');
@@ -385,15 +408,37 @@ export const TradesPage: React.FC = () => {
       return;
     }
 
-    const updatePayload = buildLeaveUpdate(trade, currentUser.uid);
-
-    if (!updatePayload) {
-      return;
-    }
-
     try {
-      await updateDocument('trades', tradeId, updatePayload);
-      fetchTrades();
+      const db = getSyncFirebaseDb();
+      const didUpdate = await runTransaction(db, async (transaction) => {
+        const tradeRef = doc(db, 'trades', tradeId);
+        const snapshot = await transaction.get(tradeRef);
+
+        if (!snapshot.exists()) {
+          console.error('Trade not found in Firestore when attempting to leave:', tradeId);
+          return false;
+        }
+
+        const snapshotData = snapshot.data();
+        const updatePayload = buildLeaveUpdate(
+          {
+            id: tradeRef.id,
+            ...(snapshotData ?? {})
+          },
+          currentUser.uid
+        );
+
+        if (!updatePayload) {
+          return false;
+        }
+
+        transaction.update(tradeRef, updatePayload);
+        return true;
+      });
+
+      if (didUpdate) {
+        fetchTrades();
+      }
     } catch (err: any) {
       console.error('Error leaving trade:', err);
       alert('Failed to leave trade. Please try again.');

@@ -330,7 +330,7 @@ const LeaderboardPage: React.FC = () => {
                         {statsLoading ? (
                           <Skeleton className="h-5 w-20" />
                         ) : (
-                          <span className="font-semibold text-secondary text-base sm:text-lg">
+                          <span className="font-semibold text-secondary-foreground text-base sm:text-lg">
                             {userXP?.totalXP.toLocaleString() || 0}
                           </span>
                         )}
@@ -340,7 +340,7 @@ const LeaderboardPage: React.FC = () => {
                         {statsLoading ? (
                           <Skeleton className="h-5 w-20" />
                         ) : (
-                          <span className="font-semibold text-accent text-base sm:text-lg">
+                          <span className="font-semibold text-accent-foreground text-base sm:text-lg">
                             {weeklyXP?.toLocaleString() || 0} XP
                           </span>
                         )}

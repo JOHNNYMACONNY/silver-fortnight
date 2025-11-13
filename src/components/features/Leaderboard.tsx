@@ -171,11 +171,11 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Crown className="w-5 h-5 text-accent" />;
+        return <Crown className="w-5 h-5 text-accent-foreground" />;
       case 2:
         return <Medal className="w-5 h-5 text-muted-foreground" />;
       case 3:
-        return <Trophy className="w-5 h-5 text-secondary" />;
+        return <Trophy className="w-5 h-5 text-secondary-foreground" />;
       default:
         return <span className="text-sm font-bold text-muted-foreground">#{rank}</span>;
     }

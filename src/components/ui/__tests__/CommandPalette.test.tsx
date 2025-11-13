@@ -184,6 +184,36 @@ describe('CommandPalette', () => {
     });
   });
 
+  describe('Dismissal', () => {
+    it('should close when clicking the backdrop', async () => {
+      const user = userEvent.setup();
+      render(
+        <TestWrapper>
+          <CommandPalette isOpen={true} onClose={mockOnClose} />
+        </TestWrapper>
+      );
+
+      const backdrop = screen.getByTestId('command-palette-backdrop');
+      await user.click(backdrop);
+
+      expect(mockOnClose).toHaveBeenCalled();
+    });
+
+    it('should remain open when interacting inside the palette', async () => {
+      const user = userEvent.setup();
+      render(
+        <TestWrapper>
+          <CommandPalette isOpen={true} onClose={mockOnClose} />
+        </TestWrapper>
+      );
+
+      const input = screen.getByPlaceholderText('Type a command or search...');
+      await user.click(input);
+
+      expect(mockOnClose).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Keyboard Navigation', () => {
     // SKIPPED: Tests keyboard navigation behavior - implementation detail
     it.skip('should navigate commands with arrow keys', async () => {
