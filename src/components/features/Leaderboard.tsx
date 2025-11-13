@@ -416,11 +416,9 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                 className={`w-10 h-10 rounded-lg flex items-center justify-center text-primary-foreground ${config?.color ? '' : 'bg-primary'}`}
                 style={config?.color ? { backgroundColor: config.color } : undefined}
               >
-                {(config?.icon ?? Trophy) && (
-                  <span className="flex items-center justify-center text-inherit">
-                    {React.createElement(config?.icon ?? Trophy, { className: 'h-5 w-5' })}
-                  </span>
-                )}
+                <span className="flex items-center justify-center text-inherit">
+                  {React.createElement(config?.icon ?? Trophy, { className: 'h-5 w-5' })}
+                </span>
               </Box>
               <Stack gap="xs">
                 <CardTitle>{config?.title || 'Leaderboard'}</CardTitle>
