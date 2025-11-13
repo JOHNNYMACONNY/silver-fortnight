@@ -69,8 +69,9 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
         // Query actual follower count from userFollows for accuracy
         if (stats) {
           try {
-            const { db } = await import('../../firebase-config');
+            const { getSyncFirebaseDb } = await import('../../firebase-config');
             const { collection, query, where, getDocs } = await import('firebase/firestore');
+            const db = getSyncFirebaseDb();
             
             // Get actual followers count
             const followersQuery = query(
@@ -428,8 +429,9 @@ export const UserSocialStats: React.FC<UserSocialStatsProps> = ({
         // Query actual follower count from userFollows for accuracy
         if (stats) {
           try {
-            const { db } = await import('../../firebase-config');
+            const { getSyncFirebaseDb } = await import('../../firebase-config');
             const { collection, query, where, getDocs } = await import('firebase/firestore');
+            const db = getSyncFirebaseDb();
             
             // Get actual followers count
             const followersQuery = query(
