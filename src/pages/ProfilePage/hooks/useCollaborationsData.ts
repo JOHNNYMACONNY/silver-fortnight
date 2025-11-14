@@ -96,7 +96,7 @@ export const useCollaborationsData = (
         .catch(() => setCollaborations([]))
         .finally(() => setCollaborationsLoading(false));
     }
-  }, [activeTab, targetUserId, collaborationsLoading, showToast]);
+  }, [activeTab, targetUserId, collaborations, collaborationsLoading, showToast]);
 
   // Enrich collaborations with user role titles from roles subcollection
   useEffect(() => {

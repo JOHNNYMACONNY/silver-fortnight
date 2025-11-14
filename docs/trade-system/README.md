@@ -56,6 +56,10 @@ The trade system supports the following states:
 - **2025-11-11** – Synced trade status filters and legacy skill rendering:
   - Pending evidence and confirmation states now surface under the canonical “In Progress” filter and can be targeted individually across the UI.
   - Trade cards normalize string-based skill entries so legacy trades render consistent badge labels.
+- **2025-11-14** – Profile tabs now stay in sync with refreshed trade data:
+  - Trade and collaboration profile hooks trigger fresh loads after `refetch()` calls instead of remaining empty.
+  - Participant lookups honor the normalized `participants` object/array schema alongside legacy `participantId` fields.
+  - Service queries aggregate participant matches across both schemas, keeping historical and migrated trades visible.
 
 ## Related Documentation
 
