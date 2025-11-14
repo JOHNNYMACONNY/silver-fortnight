@@ -416,12 +416,38 @@ export class TradeService extends BaseService<Trade> {
       // Get trades where user is participant
       const participantResult = await this.executeQuery(
         async () => {
-          const constraints: QueryConstraint[] = [
-            where('participantId', '==', userId),
-            where('status', 'in', participantActiveStatuses)
+          const aggregated = new Map<string, Trade>();
+          const errors: { code: string; message: string }[] = [];
+
+          const statusConstraint = where('status', 'in', participantActiveStatuses);
+          const variants: QueryConstraint[][] = [
+            [where('participantId', '==', userId), statusConstraint],
+            [where('participants.participant', '==', userId), statusConstraint],
+            [where('participants', 'array-contains', userId), statusConstraint],
+            [where('participantIds', 'array-contains', userId), statusConstraint]
           ];
-          const result = await this.list(constraints);
-          return result.data?.items || [];
+
+          for (const constraints of variants) {
+            const result = await this.list(constraints);
+            if (result.error) {
+              errors.push(result.error);
+              continue;
+            }
+
+            (result.data?.items || []).forEach((trade) => {
+              const id = (trade as any)?.id;
+              if (typeof id === 'string' && id.length > 0) {
+                aggregated.set(id, trade as Trade);
+              }
+            });
+          }
+
+          if (aggregated.size === 0 && errors.length === variants.length) {
+            const firstError = errors[0];
+            throw new Error(firstError?.message || 'Failed to get active trades as participant');
+          }
+
+          return Array.from(aggregated.values());
         },
         'get active trades as participant'
       );
