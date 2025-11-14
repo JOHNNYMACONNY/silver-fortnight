@@ -5,7 +5,7 @@
  * and test message loading functionality
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getSyncFirebaseDb } from '../../firebase-config';
 import { collection, query, orderBy, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { getHealthStatus, performQuickHealthCheck } from '../../utils/firebaseHealthCheck';
@@ -40,6 +40,14 @@ export const FirebaseDebugPanel: React.FC = () => {
     }
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  const realtimeListenerRef = useRef<(() => void) | null>(null);
+  const cleanupRealtimeListener = useCallback(() => {
+    if (realtimeListenerRef.current) {
+      realtimeListenerRef.current();
+      realtimeListenerRef.current = null;
+    }
+  }, []);
 
   const runHealthCheck = async () => {
     setIsLoading(true);
@@ -99,7 +107,8 @@ export const FirebaseDebugPanel: React.FC = () => {
       const conversationsRef = collection(db, 'conversations');
       const q = query(conversationsRef, orderBy('updatedAt', 'desc'));
       
-      const unsubscribe = onSnapshot(q, 
+      cleanupRealtimeListener();
+      realtimeListenerRef.current = onSnapshot(q, 
         (snapshot) => {
           results.realtimeListener = true;
           setDebugInfo(prev => ({
@@ -107,7 +116,7 @@ export const FirebaseDebugPanel: React.FC = () => {
             testResults: results,
             connectionStatus: 'connected'
           }));
-          unsubscribe();
+          cleanupRealtimeListener();
         },
         (error) => {
           results.realtimeListener = false;
@@ -118,6 +127,7 @@ export const FirebaseDebugPanel: React.FC = () => {
             lastError: error.message
           }));
           console.error('Realtime listener test failed:', error);
+          cleanupRealtimeListener();
         }
       );
     } catch (error) {
@@ -191,6 +201,12 @@ export const FirebaseDebugPanel: React.FC = () => {
   useEffect(() => {
     runHealthCheck();
   }, []);
+
+  useEffect(() => {
+    return () => {
+      cleanupRealtimeListener();
+    };
+  }, [cleanupRealtimeListener]);
 
   return (
     <Card className="p-6 space-y-4">

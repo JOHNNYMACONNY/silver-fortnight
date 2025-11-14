@@ -11,14 +11,66 @@ import Stack from '../components/layout/primitives/Stack';
 import { themeClasses } from '../utils/themeUtils';
 import { semanticClasses } from '../utils/semanticColors';
 import { TopicLink } from '../components/ui/TopicLink';
+import { Skeleton } from '../components/ui/skeletons/Skeleton';
+import {
+  HomePageDataProvider,
+  useHomeStats,
+  useCollaborationHighlights,
+  useChallengeSpotlight,
+  useCommunityActivity,
+} from '../hooks/useHomePageData';
 
-/**
- * HomePage component
- *
- * Landing page for the TradeYa application using asymmetric layout system
- * Following established card and BentoGrid standards
- */
-const HomePage: React.FC = () => {
+const activityAccentMap: Record<string, string> = {
+  green: 'bg-green-500',
+  blue: 'bg-blue-500',
+  purple: 'bg-purple-500',
+  orange: 'bg-orange-500',
+};
+
+const activityBackgroundMap: Record<string, string> = {
+  green: 'bg-green-50 dark:bg-green-950/20',
+  blue: 'bg-blue-50 dark:bg-blue-950/20',
+  purple: 'bg-purple-50 dark:bg-purple-950/20',
+  orange: 'bg-orange-50 dark:bg-orange-950/20',
+};
+
+const formatNumber = (value?: number) => {
+  if (value === undefined || value === null) return '—';
+  return value.toLocaleString();
+};
+
+const formatTimeLabel = (value?: Date) => {
+  if (!value) return '';
+  return value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+const HomePageContent: React.FC = () => {
+  const { stats, loading: statsLoading, error: statsError } = useHomeStats();
+  const {
+    highlights,
+    loading: highlightsLoading,
+    error: highlightsError,
+  } = useCollaborationHighlights();
+  const {
+    challenge,
+    loading: challengeLoading,
+    error: challengeError,
+  } = useChallengeSpotlight();
+  const {
+    activity,
+    loading: activityLoading,
+    error: activityError,
+  } = useCommunityActivity();
+
+  const statsPending = statsLoading && !stats;
+  const activityPending = activityLoading && activity.length === 0;
+  const noHighlights = !highlightsLoading && highlights.length === 0;
+  const noActivity = !activityLoading && activity.length === 0;
+  const lastUpdatedDate = stats?.community.lastUpdated
+    ? (stats.community.lastUpdated as any).toDate?.() ??
+      (stats.community.lastUpdated as any)
+    : undefined;
+
   return (
     <Box className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <PerformanceMonitor pageName="HomePage" />
@@ -113,14 +165,31 @@ const HomePage: React.FC = () => {
                 </p>
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   <div className={`text-center p-3 ${semanticClasses('trades').bgSubtle} rounded-lg`}>
-                    <div className={`text-body-large font-bold ${semanticClasses('trades').text}`}>1,247</div>
+                    {statsPending ? (
+                      <Skeleton className="h-7 w-16 mx-auto mb-2" />
+                    ) : (
+                      <div className={`text-body-large font-bold ${semanticClasses('trades').text}`}>
+                        {formatNumber(stats?.trades.active)}
+                      </div>
+                    )}
                     <div className="text-caption text-muted-foreground">Active Trades</div>
                   </div>
                   <div className={`text-center p-3 ${semanticClasses('community').bgSubtle} rounded-lg`}>
-                    <div className={`text-body-large font-bold ${semanticClasses('community').text} dark:text-blue-400`}>892</div>
+                    {statsPending ? (
+                      <Skeleton className="h-7 w-16 mx-auto mb-2" />
+                    ) : (
+                      <div className={`text-body-large font-bold ${semanticClasses('community').text}`}>
+                        {formatNumber(stats?.trades.completed)}
+                      </div>
+                    )}
                     <div className="text-caption text-muted-foreground">Completed</div>
                   </div>
                 </div>
+                {statsError && (
+                  <p className="text-caption text-destructive mt-2">
+                    {statsError}
+                  </p>
+                )}
               </CardContent>
               <CardFooter>
                 <TopicLink to="/trades" topic="trades" className="w-full text-center text-body-small font-medium transition-colors">
@@ -156,19 +225,51 @@ const HomePage: React.FC = () => {
                   Join collaborative efforts or start your own. Find team members with the skills you need.
                 </p>
                 <div className="space-y-2">
-                  <div className="flex items-center space-x-3 p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span className="text-caption">Design Team - 3 members needed</span>
-                  </div>
-                  <div className="flex items-center space-x-3 p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-caption">Mobile App - 2 developers</span>
-                  </div>
-                  <div className="flex items-center space-x-3 p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-caption">Content Creation - Writers & Designers</span>
-                  </div>
+                  {highlightsLoading && highlights.length === 0 ? (
+                    Array.from({ length: 3 }).map((_, index) => (
+                      <div
+                        key={`highlight-skeleton-${index}`}
+                        className="p-3 rounded-lg border border-border/50"
+                      >
+                        <Skeleton className="h-4 w-2/3 mb-2" />
+                        <Skeleton className="h-3 w-1/3" />
+                      </div>
+                    ))
+                  ) : noHighlights ? (
+                    <p className="text-caption text-muted-foreground">
+                      No collaborations are recruiting right now.
+                    </p>
+                  ) : (
+                    highlights.map((highlight) => (
+                      <div
+                        key={highlight.id}
+                        className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-white/40 dark:bg-neutral-900/40"
+                      >
+                        <div className="pr-3">
+                          <p className="text-caption font-semibold text-foreground">
+                            {highlight.title}
+                          </p>
+                          <p className="text-caption text-muted-foreground line-clamp-2">
+                            {highlight.summary}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-body-small font-bold text-foreground">
+                            {formatNumber(highlight.openRoles)}
+                          </p>
+                          <p className="text-caption text-muted-foreground">
+                            roles open
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
+                {highlightsError && (
+                  <p className="text-caption text-destructive mt-2">
+                    {highlightsError}
+                  </p>
+                )}
               </CardContent>
               <CardFooter>
                 <TopicLink to="/collaborations" topic="collaboration" className="w-full text-center text-body-small font-medium transition-colors">
@@ -199,21 +300,45 @@ const HomePage: React.FC = () => {
                 </div>
               </CardHeader>
               <CardContent className="flex-1 pb-3">
-                <p className="text-body-small text-muted-foreground mb-3">
-                  Participate in weekly and monthly challenges to showcase your skills and win rewards.
-                </p>
-                <div className="space-y-2">
-                  <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                    <div className="text-caption font-medium">UI/UX Design Sprint</div>
-                    <div className="text-caption text-muted-foreground">Ends in 3 days</div>
+                {challengeLoading && !challenge ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
                   </div>
-                </div>
+                ) : challenge ? (
+                  <div className="space-y-2">
+                    <p className="text-body-small text-muted-foreground">
+                      {challenge.title}
+                    </p>
+                    {challenge.deadline && (
+                      <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                        <div className="text-caption font-medium">
+                          Ends at {formatTimeLabel(challenge.deadline)}
+                        </div>
+                        {challenge.rewardSummary && (
+                          <div className="text-caption text-muted-foreground">
+                            Reward: {challenge.rewardSummary}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-body-small text-muted-foreground">
+                    No active challenges right now. Check back soon!
+                  </p>
+                )}
               </CardContent>
               <CardFooter>
                 <TopicLink to="/challenges" topic="success" className="w-full text-center text-body-small font-medium transition-colors">
                   View Challenges →
                 </TopicLink>
               </CardFooter>
+              {challengeError && (
+                <div className="px-5 pb-4">
+                  <p className="text-caption text-destructive">{challengeError}</p>
+                </div>
+              )}
             </Card>
           </BentoItem>
 
@@ -241,15 +366,48 @@ const HomePage: React.FC = () => {
               <CardContent className="flex-1 pb-3">
                 <div className="space-y-4">
                   <div className="text-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                    <div className="text-body-large font-bold text-green-600 dark:text-green-400">5,892</div>
-                    <div className="text-caption text-muted-foreground">Active Users</div>
+                    {statsPending ? (
+                      <Skeleton className="h-7 w-20 mx-auto mb-1" />
+                    ) : (
+                      <div className="text-body-large font-bold text-green-600 dark:text-green-400">
+                        {formatNumber(stats?.community.activeUsers)}
+                      </div>
+                    )}
+                    <div className="text-caption text-muted-foreground">
+                      Active Users (7d)
+                    </div>
                   </div>
                   <div className="text-center p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
-                    <div className="text-body-large font-bold text-purple-600 dark:text-purple-400">1,247</div>
-                    <div className="text-caption text-muted-foreground">Skills Traded</div>
+                    {statsPending ? (
+                      <Skeleton className="h-7 w-20 mx-auto mb-1" />
+                    ) : (
+                      <div className="text-body-large font-bold text-purple-600 dark:text-purple-400">
+                        {formatNumber(stats?.community.skillsTraded)}
+                      </div>
+                    )}
+                    <div className="text-caption text-muted-foreground">
+                      Skills Traded
+                    </div>
                   </div>
+                  <div className="text-caption text-muted-foreground text-center">
+                    {statsPending
+                      ? 'Measuring collaboration momentum...'
+                      : `${formatNumber(
+                          stats?.community.collaborations
+                        )} collaborations in progress`}
+                  </div>
+                  {lastUpdatedDate && (
+                    <p className="text-caption text-muted-foreground text-center">
+                      Updated {formatTimeLabel(lastUpdatedDate)}
+                    </p>
+                  )}
                 </div>
               </CardContent>
+              {statsError && (
+                <div className="px-5 pb-4">
+                  <p className="text-caption text-destructive">{statsError}</p>
+                </div>
+              )}
             </Card>
           </BentoItem>
 
@@ -274,42 +432,40 @@ const HomePage: React.FC = () => {
                 </div>
               </CardHeader>
               <CardContent className="flex-1 pb-3">
-                <div className="space-y-1">
-                  {/* Activity item with gradient border to next */}
-                  <div className="relative">
-                    <div className="flex items-center space-x-3 p-2 bg-green-50 dark:bg-green-950/20 rounded-lg transition-all duration-300 hover:bg-green-100 dark:hover:bg-green-950/30">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-caption">New trade: Web Dev for UI Design</span>
-                    </div>
-                    {/* Gradient connector to next item */}
-                    <div className="absolute left-4 top-full w-px h-2 bg-gradient-to-b from-green-500/60 to-blue-500/60 animate-pulse"></div>
-                  </div>
-                  
-                  {/* Activity item with gradient border to next */}
-                  <div className="relative">
-                    <div className="flex items-center space-x-3 p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg transition-all duration-300 hover:bg-blue-100 dark:hover:bg-blue-950/30">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-caption">Joined: Mobile App Team</span>
-                    </div>
-                    {/* Gradient connector to next item */}
-                    <div className="absolute left-4 top-full w-px h-2 bg-gradient-to-b from-blue-500/60 to-purple-500/60 animate-pulse"></div>
-                  </div>
-                  
-                  {/* Activity item with gradient border to next */}
-                  <div className="relative">
-                    <div className="flex items-center space-x-3 p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg transition-all duration-300 hover:bg-purple-100 dark:hover:bg-purple-950/30">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                      <span className="text-caption">Completed: UI/UX Design Sprint</span>
-                    </div>
-                    {/* Gradient connector to next item */}
-                    <div className="absolute left-4 top-full w-px h-2 bg-gradient-to-b from-purple-500/60 to-primary/60 animate-pulse"></div>
-                  </div>
-                  
-                  {/* Final activity item */}
-                  <div className="flex items-center space-x-3 p-2 bg-primary/10 rounded-lg transition-all duration-300 hover:bg-primary/15">
-                    <div className="w-2 h-2 bg-primary rounded-full"></div>
-                    <span className="text-caption">New user: Sarah Chen (Designer)</span>
-                  </div>
+                <div className="space-y-2">
+                  {activityPending ? (
+                    Array.from({ length: 4 }).map((_, index) => (
+                      <div
+                        key={`activity-skeleton-${index}`}
+                        className="p-2 rounded-lg border border-border/40"
+                      >
+                        <Skeleton className="h-4 w-3/4" />
+                      </div>
+                    ))
+                  ) : noActivity ? (
+                    <p className="text-caption text-muted-foreground">
+                      Things are quiet right now. Start a trade or collaboration to get featured here.
+                    </p>
+                  ) : (
+                    activity.map((item) => {
+                      const dotColor = activityAccentMap[item.accent] || 'bg-primary';
+                      const bgColor = activityBackgroundMap[item.accent] || 'bg-primary/10';
+                      return (
+                        <div
+                          key={item.id}
+                          className={`flex items-center justify-between p-2 rounded-lg ${bgColor}`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-2 h-2 rounded-full ${dotColor}`}></div>
+                            <span className="text-caption">{item.description}</span>
+                          </div>
+                          <span className="text-caption text-muted-foreground">
+                            {formatTimeLabel(item.timestamp)}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </CardContent>
               <CardFooter>
@@ -317,6 +473,11 @@ const HomePage: React.FC = () => {
                   Browse Community →
                 </TopicLink>
               </CardFooter>
+              {activityError && (
+                <div className="px-5 pb-4">
+                  <p className="text-caption text-destructive">{activityError}</p>
+                </div>
+              )}
             </Card>
           </BentoItem>
         </BentoGrid>
@@ -405,5 +566,11 @@ const HomePage: React.FC = () => {
     </Box>
   );
 };
+
+const HomePage: React.FC = () => (
+  <HomePageDataProvider>
+    <HomePageContent />
+  </HomePageDataProvider>
+);
 
 export default HomePage;

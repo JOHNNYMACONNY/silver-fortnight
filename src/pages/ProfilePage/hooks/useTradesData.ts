@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { tradeService } from "../../../services/entities/TradeService";
+import { isTradeOwnedByUser } from "../../../utils/tradeParticipants";
 
 /**
  * Trade data interface
@@ -54,32 +55,6 @@ export const useTradesData = (
   const [tradeFilter, setTradeFilter] = useState<"all" | "yours">("all");
   const [isLoadingMoreTrades, setIsLoadingMoreTrades] = useState(false);
 
-  const collectParticipantIds = (trade: TradeData): string[] => {
-    const ids = new Set<string>();
-
-    const addId = (value: unknown) => {
-      if (typeof value === "string" && value.trim().length > 0) {
-        ids.add(value);
-      }
-    };
-
-    addId(trade?.participantId);
-
-    const participantIds = (trade as any)?.participantIds;
-    if (Array.isArray(participantIds)) {
-      participantIds.forEach(addId);
-    }
-
-    const participants = (trade as any)?.participants;
-    if (Array.isArray(participants)) {
-      participants.forEach(addId);
-    } else if (participants && typeof participants === "object") {
-      Object.values(participants).forEach(addId);
-    }
-
-    return Array.from(ids);
-  };
-
   // Lazy fetch trades when tab is activated
   useEffect(() => {
     if (!targetUserId) return;
@@ -108,13 +83,7 @@ export const useTradesData = (
         return trades;
       }
 
-      return trades.filter((trade) => {
-        if (trade?.creatorId === targetUserId) {
-          return true;
-        }
-
-        return collectParticipantIds(trade).includes(targetUserId);
-      });
+      return trades.filter((trade) => isTradeOwnedByUser(trade, targetUserId));
     }
     return trades;
   }, [trades, tradeFilter, targetUserId]);

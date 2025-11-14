@@ -465,6 +465,55 @@ const BentoGrid: React.FC<BentoGridProps> = ({ children, className = '', gap = '
 </BentoGrid>
 ```
 
+### 2a. HomePage Live Data Contract
+
+To replace the placeholder content in `src/pages/HomePage.tsx` with real, query-backed information we standardize the data contract described below. Each block references the service(s) that should power it along with fallbacks for offline/unauthenticated scenarios.
+
+| Section / Card | Required Fields | Source(s) | Notes |
+| --- | --- | --- | --- |
+| `heroStats` (Skill Trades card) | `activeTradesCount`, `completedTradesCount`, `ctaHref` | `getSystemStats()` from `src/services/firestore-extensions.ts` for aggregate counts; fall back to `0` if unavailable. | Counts are global, not user-scoped. Use cached system stats or Cloud Function aggregation once available. |
+| `collaborationHighlights` | `id`, `title`, `headline`, `openRoles`, `statusBadge` | `CollaborationService.getCollaborationsByStatus('recruiting', limit)` in `src/services/entities/CollaborationService.ts`. | Limit to 3 newest recruiting collaborations; show role summaries derived from `roles` array. |
+| `challengeSpotlight` | `id`, `title`, `rewardSummary`, `deadline`, `status` | `getChallenges({ status: [ChallengeStatus.ACTIVE], sortBy: 'endDate', limit: 1 })` in `src/services/challenges.ts`. | Prefer soonest-ending active challenge; if none active, surface the next scheduled challenge. |
+| `communityStats` | `activeUsers`, `skillsTraded`, `totalCollaborations` | Extend `SystemStats` to include `weeklyActiveUsers`, `skillsTraded` derived from trades/completions; cache doc under `systemStats/latest`. | Display badges marked “Live” only when the snapshot is <15 minutes old. |
+| `recentActivityFeed` | Array of `{ id, type, description, timestamp, accent }` | New helper `getGlobalActivityFeed(limit)` inside `src/services/dashboard.ts` (reuse trade/challenge events + public XP transactions). | This feed is global; exclude private events. Provide graceful empty state if fewer than 2 events exist. |
+
+Implementation Details:
+
+1. **Type Definitions**  
+   Add `HomePageData` and sub-interfaces in `src/types/homepage.ts` (new file) to consolidate the contract. This keeps hooks and tests aligned.
+
+2. **Service Layer**  
+   - Introduce `src/services/homepage.ts` that orchestrates the calls listed above, handles Promise.all batching, and normalizes results into the `HomePageData` shape.  
+   - Extend `getSystemStats` to cache recent totals (e.g., store doc `systemStats/live` with `lastUpdated`). If Firestore limits are a concern, gate the full scan behind a scheduled Cloud Function and have the client read the aggregated doc.
+   - Implement `getGlobalActivityFeed` inside `dashboard.ts` (or the new homepage service) by querying:
+     - `trades` collection (`status in ['open','in-progress','completed']`, order by `createdAt` desc, limit 5).
+     - `collaborations` collection (recent recruiting/in-progress events).
+     - `xpTransactions` collection (public leaderboard-worthy events where `visibility == 'public'`).
+     Merge + sort by timestamp descending.
+
+3. **Error / Loading Contract**  
+   Each section should surface:
+   - `isLoading` per hook for skeletons.
+   - `error` message (logged via `PerformanceMonitor`) but with non-blocking UI fallback text (e.g., “Statistics unavailable”).
+   - Optional stale data indicator by comparing `lastUpdated` vs `Date.now()`.
+
+4. **Indexes & Security**  
+   - If we query `trades` or `collaborations` by `status` + `createdAt`, ensure matching composite indexes exist (`firestore.indexes.json`).  
+   - The global feed must only read documents flagged as public; update security rules accordingly (`firestore.rules`) if we introduce `visibility` filters.
+
+5. **Testing Guidance**  
+   - Mock `HomePageData` contract in unit tests (see plan section §5).  
+   - Add regression tests ensuring the component renders skeletons for each data block when hooks are loading and falls back gracefully when errors occur.
+
+Documenting this contract ensures future contributors know which services feed the HomePage and how to extend the live data without breaking the layout guidelines defined above.
+
+### Implementation Notes (Nov 2025)
+
+- `HomePageDataProvider` + hooks (`useHomeStats`, `useCollaborationHighlights`, etc.) live in `src/hooks/useHomePageData.tsx` and wrap `HomePage.tsx` so each section receives consistent loading/error states without duplicate fetches.
+- `fetchHomePageData` in `src/services/homepage.ts` batches `getSystemStats`, `CollaborationService.getCollaborationsByStatus`, `getChallenges`, and a new `getGlobalActivityFeed` helper to hydrate the UI with the contract above.
+- `src/pages/HomePage.tsx` renders skeletons and fallbacks per section and pipes any service errors through `PerformanceMonitor`, keeping the asymmetric layout intact while data resolves.
+- Unit coverage exists in `src/hooks/__tests__/useHomePageData.test.tsx` to guard the provider contract and ensure regressions in the data orchestration layer are caught quickly.
+
 ### 3. Grid Span Classes
 
 | Span Type | Available Values | CSS Classes |

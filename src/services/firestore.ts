@@ -30,6 +30,7 @@ import {
   CollectionReference,
   Firestore,
   Query,
+  runTransaction,
 } from "firebase/firestore";
 import { CreateUserProfileData } from "../firebase-config";
 import { ServiceResult } from "../types/ServiceError";
@@ -2371,6 +2372,8 @@ export const updateTradeProposalStatus = async (
   proposalId: string,
   status: "accepted" | "rejected"
 ): Promise<ServiceResult<void>> => {
+  const PROPOSAL_NOT_FOUND_ERROR = "proposal-not-found";
+
   try {
     const db = getSyncFirebaseDb();
     const tradeRef = doc(db, COLLECTIONS.TRADES, tradeId);
@@ -2382,40 +2385,49 @@ export const updateTradeProposalStatus = async (
       proposalId
     );
 
-    const batch = writeBatch(db);
+    const proposalRefWithConverter =
+      proposalRef.withConverter(tradeProposalConverter);
 
-    if (status === "accepted") {
-      const proposalDoc = await getDoc(
-        proposalRef.withConverter(tradeProposalConverter)
-      );
+    await runTransaction(db, async (transaction) => {
+      const proposalDoc = await transaction.get(proposalRefWithConverter);
       if (!proposalDoc.exists()) {
-        return {
-          data: null,
-          error: { code: "not-found", message: "Proposal not found" },
-        };
+        throw new Error(PROPOSAL_NOT_FOUND_ERROR);
       }
+
       const proposalData = proposalDoc.data() as TradeProposal;
 
-      // Filter out undefined values - Firestore doesn't accept them
-      const tradeUpdates: any = {
-        status: "in-progress",
-        participantId: proposalData.proposerId,
-      };
-      if (proposalData.proposerName !== undefined) {
-        tradeUpdates.participantName = proposalData.proposerName;
-      }
-      if (proposalData.proposerPhotoURL !== undefined) {
-        tradeUpdates.participantPhotoURL = proposalData.proposerPhotoURL;
+      if (status === "accepted") {
+        const tradeUpdates: Record<string, unknown> = {
+          status: "in-progress",
+          participantId: proposalData.proposerId,
+        };
+
+        if (proposalData.proposerName !== undefined) {
+          tradeUpdates.participantName = proposalData.proposerName;
+        }
+
+        if (proposalData.proposerPhotoURL !== undefined) {
+          tradeUpdates.participantPhotoURL = proposalData.proposerPhotoURL;
+        }
+
+        transaction.update(tradeRef, tradeUpdates);
       }
 
-      batch.update(tradeRef, tradeUpdates);
-    }
-
-    batch.update(proposalRef, { status });
-    await batch.commit();
+      transaction.update(proposalRef, { status });
+    });
 
     return { data: null, error: null };
   } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === PROPOSAL_NOT_FOUND_ERROR
+    ) {
+      return {
+        data: null,
+        error: { code: "not-found", message: "Proposal not found" },
+      };
+    }
+
     console.error(
       `Error updating proposal ${proposalId} for trade ${tradeId}:`,
       error
