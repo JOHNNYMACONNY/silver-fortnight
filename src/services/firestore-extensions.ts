@@ -395,6 +395,10 @@ const toMillis = (value: any): number | null => {
   return null;
 };
 
+export const canWriteSystemStatsCache = (): boolean => {
+  return typeof window === "undefined";
+};
+
 export const getSystemStats = async (): Promise<ServiceResult<SystemStats>> => {
   try {
     const db = getSyncFirebaseDb();
@@ -442,7 +446,13 @@ export const getSystemStats = async (): Promise<ServiceResult<SystemStats>> => {
       lastUpdated: Timestamp.now()
     };
 
-    await setDoc(statsRef, stats, { merge: true });
+    if (canWriteSystemStatsCache()) {
+      try {
+        await setDoc(statsRef, stats, { merge: true });
+      } catch (cacheError) {
+        console.warn("Skipping systemStats cache write (client context or permission issue)", cacheError);
+      }
+    }
 
     return { data: stats, error: null };
   } catch (error: any) {

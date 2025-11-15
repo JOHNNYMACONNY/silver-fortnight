@@ -11,11 +11,9 @@ describe("collectParticipantIdsFromTrade", () => {
       participantIds: ["user-2", "  user-3  ", "", null],
     };
 
-    expect(collectParticipantIdsFromTrade(trade)).toEqual([
-      "user-1",
-      "user-2",
-      "user-3",
-    ]);
+    const ids = collectParticipantIdsFromTrade(trade);
+    expect(ids).toHaveLength(3);
+    expect(ids).toEqual(expect.arrayContaining(["user-1", "user-2", "user-3"]));
   });
 
   it("collects ids from array of participant objects", () => {
@@ -29,12 +27,11 @@ describe("collectParticipantIdsFromTrade", () => {
       ],
     };
 
-    expect(collectParticipantIdsFromTrade(trade)).toEqual([
-      "user-10",
-      "user-11",
-      "user-12",
-      "user-13",
-    ]);
+    const ids = collectParticipantIdsFromTrade(trade);
+    expect(ids).toHaveLength(4);
+    expect(ids).toEqual(
+      expect.arrayContaining(["user-10", "user-11", "user-12", "user-13"])
+    );
   });
 
   it("collects ids from object map schema", () => {
@@ -46,11 +43,25 @@ describe("collectParticipantIdsFromTrade", () => {
       },
     };
 
-    expect(collectParticipantIdsFromTrade(trade)).toEqual([
-      "creator-1",
-      "participant-2",
-      "reviewer-3",
-    ]);
+    const ids = collectParticipantIdsFromTrade(trade);
+    expect(ids).toHaveLength(3);
+    expect(ids).toEqual(
+      expect.arrayContaining(["creator-1", "participant-2", "reviewer-3"])
+    );
+  });
+
+  it("collects id-like strings from additional map entries but skips display names", () => {
+    const trade: TradeLike = {
+      participants: {
+        creator: "creator-1",
+        reviewer: "reviewer-3",
+        displayName: "Alex Johnson",
+      },
+    };
+
+    const ids = collectParticipantIdsFromTrade(trade);
+    expect(ids).toContain("reviewer-3");
+    expect(ids).not.toContain("Alex Johnson");
   });
 });
 

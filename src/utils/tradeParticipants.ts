@@ -18,14 +18,22 @@ const PARTICIPANT_ID_KEYS = [
   "uid",
   "participant",
   "participantId",
+  "participantUid",
+  "participantUserId",
   "creator",
   "creatorId",
+  "member",
+  "memberId",
+  "user",
 ] as const;
 
 const isString = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
 
 const normalizeString = (value: string): string => value.trim();
+
+const looksLikeIdentifier = (value: string): boolean =>
+  /^(?=.*[0-9_\-@.])[A-Za-z0-9_\-.@]+$/.test(value.trim());
 
 /**
  * Collect every participant ID that might appear on a trade, handling
@@ -61,18 +69,14 @@ export const collectParticipantIdsFromTrade = (
     if (typeof value === "object") {
       const record = value as Record<string, unknown>;
 
-      let matchedKey = false;
       for (const key of PARTICIPANT_ID_KEYS) {
         if (Object.prototype.hasOwnProperty.call(record, key)) {
-          matchedKey = true;
           extractFromValue(record[key]);
         }
       }
 
-      // If this object didn't expose any of the canonical keys, it might
-      // be the legacy map shape where each value is a string user id.
-      Object.values(record).forEach((innerValue) => {
-        if (isString(innerValue) && !matchedKey) {
+      Object.entries(record).forEach(([, innerValue]) => {
+        if (isString(innerValue) && looksLikeIdentifier(innerValue)) {
           addId(innerValue);
         } else if (
           innerValue &&
