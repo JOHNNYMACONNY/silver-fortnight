@@ -513,6 +513,7 @@ Documenting this contract ensures future contributors know which services feed t
 - `fetchHomePageData` in `src/services/homepage.ts` batches `getSystemStats`, `CollaborationService.getCollaborationsByStatus`, `getChallenges`, and a new `getGlobalActivityFeed` helper to hydrate the UI with the contract above.
 - `src/pages/HomePage.tsx` renders skeletons and fallbacks per section and pipes any service errors through `PerformanceMonitor`, keeping the asymmetric layout intact while data resolves.
 - Unit coverage exists in `src/hooks/__tests__/useHomePageData.test.tsx` to guard the provider contract and ensure regressions in the data orchestration layer are caught quickly.
+- `getSystemStats` only writes to the `systemStats/live` cache when running in a privileged/server context; browser clients compute and return live stats but skip the cache write to avoid Firestore permission errors. A future Cloud Function can periodically refresh the cache document for faster client reads.
 
 ### 3. Grid Span Classes
 
