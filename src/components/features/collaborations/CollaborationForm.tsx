@@ -220,98 +220,128 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
         addToast('success', 'Collaboration created successfully');
         onSuccess(id);
       } else if (collaboration && collaboration.id) {
-        // Now we're sure collaboration.id exists
-        await runTransaction(getSyncFirebaseDb(), async (transaction) => {
-          logTransaction({
-            operation: 'updateCollaboration',
-            timestamp: Date.now(),
-            details: { collaborationId: collaboration.id, title, description },
-            status: 'started'
+        const COLLAB_NOT_FOUND_ERROR = 'collaboration-not-found';
+        const COLLAB_CONFLICT_ERROR = 'collaboration-conflict';
+        const db = getSyncFirebaseDb();
+        const collaborationRef = doc(db, COLLECTIONS.COLLABORATIONS, collaboration.id);
+        const rolesCollection = collection(collaborationRef, 'roles');
+
+        const existingRolesSnapshot = await getDocs(rolesCollection);
+        const existingRoles = existingRolesSnapshot.docs.map(docSnapshot => {
+          const docData = docSnapshot.data() as Partial<CollaborationRoleData>;
+          return {
+            id: docSnapshot.id,
+            ...docData
+          } as CollaborationRoleData;
+        });
+
+        console.log('Existing roles in Firestore:', 
+          existingRoles.map(r => ({ id: r.id, title: r.title }))
+        );
+        console.log('Current roles in state:', 
+          roles.map(r => ({ id: r.id, title: r.title, isTemp: r.id.startsWith('temp-') }))
+        );
+
+        const collaborationSnapshot = await getDoc(collaborationRef);
+        const normalizeTimestampValue = (value?: Timestamp | null): number | null => {
+          if (!value) return null;
+          return value.toMillis();
+        };
+        const baselineUpdatedAt = normalizeTimestampValue(collaborationSnapshot.data()?.updatedAt as Timestamp | undefined);
+
+        const pendingRoleCreations = roles
+          .filter(role => role.id.startsWith('temp-'))
+          .map(role => {
+            const roleRef = doc(rolesCollection);
+            const { id: _tempId, ...roleData } = role;
+            const timestamp = Timestamp.now();
+            const sanitizedRole: CollaborationRoleData = {
+              ...roleData,
+              id: roleRef.id,
+              collaborationId: collaboration.id,
+              createdAt: timestamp,
+              updatedAt: timestamp,
+            };
+            return {
+              tempId: role.id,
+              ref: roleRef,
+              data: sanitizedRole
+            };
           });
 
-          // Ensure the collaboration ID exists
-          if (!collaboration.id) {
-            throw new Error('Collaboration ID is missing');
-          }
-          
-          const collaborationRef = doc(getSyncFirebaseDb(), COLLECTIONS.COLLABORATIONS, collaboration.id);
+        logTransaction({
+          operation: 'updateCollaboration',
+          timestamp: Date.now(),
+          details: { collaborationId: collaboration.id, title, description },
+          status: 'started'
+        });
+
+        try {
+          await runTransaction(db, async (transaction) => {
           const collaborationDoc = await transaction.get(collaborationRef);
-          
+
           if (!collaborationDoc.exists()) {
-            throw new Error('Collaboration not found');
+            throw new Error(COLLAB_NOT_FOUND_ERROR);
           }
 
-          // Update collaboration document
+          const currentUpdatedAt = normalizeTimestampValue(collaborationDoc.data()?.updatedAt as Timestamp | undefined);
+          if (
+            baselineUpdatedAt &&
+            currentUpdatedAt &&
+            currentUpdatedAt !== baselineUpdatedAt
+          ) {
+            throw new Error(COLLAB_CONFLICT_ERROR);
+          }
+
           transaction.update(collaborationRef, {
             title,
             description,
             updatedAt: Timestamp.now()
           });
 
-          // Handle roles (update, create, delete as needed)
-          const rolesCollection = collection(collaborationRef, 'roles');
-          
-          // Get existing roles from Firestore for comparison
-          const existingRolesSnapshot = await getDocs(rolesCollection);
-          const existingRoles = existingRolesSnapshot.docs.map(doc => {
-            const docData = doc.data() as Partial<CollaborationRoleData>;
-            return {
-              id: doc.id,
-              ...docData
-            } as CollaborationRoleData;
+          pendingRoleCreations.forEach(({ ref, data }) => {
+            transaction.set(ref, data);
           });
-          
-          console.log('Existing roles in Firestore:', 
-            existingRoles.map(r => ({ id: r.id, title: r.title }))
-          );
-          console.log('Current roles in state:', 
-            roles.map(r => ({ id: r.id, title: r.title, isTemp: r.id.startsWith('temp-') }))
-          );
-
-          // Process each role in our state
-          for (const role of roles) {
-            // Skip roles that have already been created in Firebase directly
-            if (!role.id.startsWith('temp-')) {
-              // Handle updating existing roles if needed
-              // This is already covered by the modifyRole function called elsewhere
-              continue; 
+          });
+        } catch (txError) {
+          if (txError instanceof Error) {
+            if (txError.message === COLLAB_NOT_FOUND_ERROR) {
+              throw new Error('Collaboration not found');
             }
+            if (txError.message === COLLAB_CONFLICT_ERROR) {
+              throw new Error('Collaboration was updated elsewhere. Please refresh and try again.');
+            }
+          }
+          throw txError;
+        }
 
-            // This is a temporary role that needs to be created in Firebase
-            console.log('Creating new role in handleSubmit:', role.title);
-            
-            const roleRef = doc(rolesCollection);
-            // Create clean role data without the temp ID
-            const { ...roleData } = role;
-            
-            // Add the role document
-            transaction.set(roleRef, {
-              ...roleData,
-              id: roleRef.id,
-              collaborationId: collaboration.id,
-              createdAt: Timestamp.now(),
-              updatedAt: Timestamp.now()
-            });
+        if (pendingRoleCreations.length > 0) {
+          const replacementMap = new Map(
+            pendingRoleCreations.map(({ tempId, data }) => [tempId, data])
+          );
+          setRoles(prevRoles =>
+            prevRoles.map(role => replacementMap.get(role.id) ?? role) as CollaborationRoleData[]
+          );
 
+          pendingRoleCreations.forEach(({ data }) => {
             logTransaction({
               operation: 'createRoleInTransaction',
               timestamp: Date.now(),
-              details: { roleId: roleRef.id, roleTitle: role.title },
+              details: { roleId: data.id, roleTitle: data.title },
               status: 'completed'
             });
-          }
-          
-          // Log completion
-          logTransaction({
-            operation: 'updateCollaboration',
-            timestamp: Date.now(),
-            details: { 
-              collaborationId: collaboration.id, 
-              updatedTitle: title,
-              roleCount: roles.length 
-            },
-            status: 'completed'
           });
+        }
+
+        logTransaction({
+          operation: 'updateCollaboration',
+          timestamp: Date.now(),
+          details: { 
+            collaborationId: collaboration.id, 
+            updatedTitle: title,
+            roleCount: roles.length 
+          },
+          status: 'completed'
         });
 
         addToast('success', 'Collaboration updated successfully');

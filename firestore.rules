@@ -210,9 +210,7 @@ service cloud.firestore {
 
     // Conversations (legacy chat data)
     match /conversations/{conversationId} {
-      // Temporarily allow all authenticated users to read/list conversations
-      // TODO: Implement proper participant checking after debugging
-      allow read, list: if isAuthenticated();
+      allow read, list: if isAuthenticated() && isConversationParticipant(conversationId);
 
       // Only participants can update or delete the conversation
       allow update, delete: if isAuthenticated() && (
@@ -243,10 +241,9 @@ service cloud.firestore {
         // Allow participants to update read receipts - secure rule that works with arrayUnion
         // This rule works with Firestore's arrayUnion() operations while maintaining security
         allow update: if isAuthenticated() &&
+           isConversationParticipant(conversationId) &&
            // Only allow updating readBy field (prevents unauthorized field changes)
-           request.resource.data.diff(resource.data).changedKeys().hasOnly(['readBy']) &&
-           // Ensure user is authenticated
-           request.auth != null;
+           request.resource.data.diff(resource.data).changedKeys().hasOnly(['readBy']);
         // Messages cannot be deleted
         allow delete: if false;
       }

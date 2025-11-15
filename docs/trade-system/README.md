@@ -60,6 +60,8 @@ The trade system supports the following states:
   - Trade and collaboration profile hooks trigger fresh loads after `refetch()` calls instead of remaining empty.
   - Participant lookups honor the normalized `participants` object/array schema alongside legacy `participantId` fields.
   - Service queries aggregate participant matches across both schemas, keeping historical and migrated trades visible.
+  - Profile filtering now runs participant normalization on the client, so trades returned via array-of-object participant schemas remain visible under the “Yours” tab.
+  - The normalization helper now extracts IDs from nested participant maps (e.g., reviewer/member objects) while ignoring plain display names, preventing regressions as new participant roles ship.
 
 ## Related Documentation
 

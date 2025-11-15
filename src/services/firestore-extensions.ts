@@ -365,31 +365,94 @@ export interface SystemStats {
   totalTrades: number;
   totalCollaborations: number;
   totalChallenges: number;
-  activeUsers: number; // Placeholder for more complex logic
+  activeUsers: number;
+  weeklyActiveUsers: number;
   completedTrades: number;
+  skillsTraded: number;
   lastUpdated: Timestamp;
 }
+
+const SYSTEM_STATS_COLLECTION = 'systemStats';
+const SYSTEM_STATS_CACHE_DOC = 'live';
+const SYSTEM_STATS_CACHE_TTL_MS = 5 * 60 * 1000;
+
+const toMillis = (value: any): number | null => {
+  if (!value) return null;
+  if (value instanceof Timestamp) return value.toMillis();
+  if (typeof value.toMillis === 'function') {
+    try {
+      return value.toMillis();
+    } catch {
+      return null;
+    }
+  }
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+  if (typeof value === 'number') return value;
+  return null;
+};
+
+export const canWriteSystemStatsCache = (): boolean => {
+  return typeof window === "undefined";
+};
 
 export const getSystemStats = async (): Promise<ServiceResult<SystemStats>> => {
   try {
     const db = getSyncFirebaseDb();
-    const users = await getDocs(collection(db, COLLECTIONS.USERS));
-    const trades = await getDocs(collection(db, COLLECTIONS.TRADES));
-    const collaborations = await getDocs(collection(db, COLLECTIONS.COLLABORATIONS));
-    const challenges = await getDocs(collection(db, COLLECTIONS.CHALLENGES));
+    const statsRef = doc(db, SYSTEM_STATS_COLLECTION, SYSTEM_STATS_CACHE_DOC);
+    const cachedSnap = await getDoc(statsRef);
+    const now = Date.now();
 
-    const completedTradesQuery = query(collection(db, COLLECTIONS.TRADES), where('status', '==', 'completed'));
-    const completedTrades = await getDocs(completedTradesQuery);
+    if (cachedSnap.exists()) {
+      const cached = cachedSnap.data() as SystemStats;
+      const lastUpdatedMs = toMillis(cached.lastUpdated);
+      if (lastUpdatedMs && now - lastUpdatedMs < SYSTEM_STATS_CACHE_TTL_MS) {
+        return { data: cached, error: null };
+      }
+    }
+
+    const [users, trades, collaborations, challenges, completedTrades] = await Promise.all([
+      getDocs(collection(db, COLLECTIONS.USERS)),
+      getDocs(collection(db, COLLECTIONS.TRADES)),
+      getDocs(collection(db, COLLECTIONS.COLLABORATIONS)),
+      getDocs(collection(db, COLLECTIONS.CHALLENGES)),
+      getDocs(query(collection(db, COLLECTIONS.TRADES), where('status', '==', 'completed')))
+    ]);
+
+    const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+    let weeklyActiveUsers = 0;
+
+    users.forEach((userDoc) => {
+      const data = userDoc.data() as Record<string, any>;
+      const lastActiveValue = data?.lastActiveAt || data?.metadata?.lastSignInTime || data?.updatedAt;
+      const millis = toMillis(lastActiveValue);
+      if (millis && millis >= sevenDaysAgo) {
+        weeklyActiveUsers += 1;
+      }
+    });
 
     const stats: SystemStats = {
       totalUsers: users.size,
       totalTrades: trades.size,
       totalCollaborations: collaborations.size,
       totalChallenges: challenges.size,
-      activeUsers: users.size, // Simplified - in reality would check last activity
+      activeUsers: weeklyActiveUsers,
+      weeklyActiveUsers,
       completedTrades: completedTrades.size,
+      skillsTraded: completedTrades.size,
       lastUpdated: Timestamp.now()
     };
+
+    if (canWriteSystemStatsCache()) {
+      try {
+        await setDoc(statsRef, stats, { merge: true });
+      } catch (cacheError) {
+        console.warn("Skipping systemStats cache write (client context or permission issue)", cacheError);
+      }
+    }
 
     return { data: stats, error: null };
   } catch (error: any) {

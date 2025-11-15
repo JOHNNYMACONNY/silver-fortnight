@@ -101,6 +101,11 @@ ChatContainer: DEBUG - Conversation [CONV_ID] participantIds: [...] participants
 **Cause:** Real-time listener configuration
 **Solution:** Check onSnapshot error handling
 
+### Issue 5: Listener Cleanup / Memory Leaks
+**Symptoms:** Intermittent performance drops after navigating away from message or debug pages
+**Cause:** `onSnapshot` listeners not unsubscribed during component teardown
+**Solution:** Always capture the unsubscribe function and call it in the effect cleanup or via a shared helper (for example, store it in a `useRef`, call it when the listener resolves, and again inside the component's `useEffect` cleanup). Utilities such as `useListenerPerformance`, `createFirestoreListenerManager`, or the new cleanup pattern in `FirebaseDebugPanel` can be used as references.
+
 ## Next Steps Based on Results
 
 ### If Test Messages Page Shows Conversations:
