@@ -29,6 +29,7 @@ Note: Preset must be Unsigned (whitelisted) in Cloudinary.
 ### Retrieval
 - `getProfileImageUrl(profilePicture, size)` formats a Cloudinary URL from publicId or returns external URLs as-is.
 - `ProfileImage` prioritizes `profilePicture` over `photoURL` and applies face-crop and sizing.
+- `getUserProfile()` now returns a sanitized record (display name + profile picture fields) even when a profile is marked private, ensuring avatars can always render while still hiding sensitive fields unless `includePrivateFields` is explicitly requested.
 
 ## Best Practices
 - Prefer storing `publicId`; it’s more flexible than storing a fixed URL.

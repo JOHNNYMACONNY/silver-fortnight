@@ -13,16 +13,16 @@ const mockQuery = jest.fn(() => ({}));
 const mockWhere = jest.fn(() => ({}));
 
 jest.mock("firebase/firestore", () => {
-  const actual = jest.requireActual("firebase/firestore");
+  const actual = jest.requireActual<typeof import("firebase/firestore")>("firebase/firestore");
   return {
     ...actual,
-    doc: (...args: any[]) => mockDoc(...args),
-    setDoc: (...args: any[]) => mockSetDoc(...args),
-    getDoc: (...args: any[]) => mockGetDoc(...args),
-    getDocs: (...args: any[]) => mockGetDocs(...args),
-    collection: (...args: any[]) => mockCollection(...args),
-    query: (...args: any[]) => mockQuery(...args),
-    where: (...args: any[]) => mockWhere(...args),
+    doc: (...args: Parameters<typeof actual.doc>) => mockDoc(...args),
+    setDoc: (...args: Parameters<typeof actual.setDoc>) => mockSetDoc(...args),
+    getDoc: (...args: Parameters<typeof actual.getDoc>) => mockGetDoc(...args),
+    getDocs: (...args: Parameters<typeof actual.getDocs>) => mockGetDocs(...args),
+    collection: (...args: Parameters<typeof actual.collection>) => mockCollection(...args),
+    query: (...args: Parameters<typeof actual.query>) => mockQuery(...args),
+    where: (...args: Parameters<typeof actual.where>) => mockWhere(...args),
     Timestamp: actual.Timestamp,
   };
 });

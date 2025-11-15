@@ -708,8 +708,17 @@ export const createUserProfile = async (
   }
 };
 
+export interface GetUserProfileOptions {
+  /**
+   * When true, bypass privacy sanitization and return the full document data.
+   * Only set this when you have already validated the caller can access private fields.
+   */
+  includePrivateFields?: boolean;
+}
+
 export const getUserProfile = async (
-  uid: string
+  uid: string,
+  options: GetUserProfileOptions = {}
 ): Promise<ServiceResult<User | undefined>> => {
   try {
     const db = await getDbWithInitialization();
@@ -721,19 +730,38 @@ export const getUserProfile = async (
     }
 
     const data = docSnap.data() as User;
-    let canViewPrivate = false;
+    let canViewPrivateFields = false;
     try {
       const authUser = requireAuth();
-      canViewPrivate = authUser.uid === uid;
+      canViewPrivateFields = authUser.uid === uid;
     } catch {
-      canViewPrivate = false;
+      canViewPrivateFields = false;
     }
 
-    if (data && (data.public === true || canViewPrivate)) {
+    const shouldReturnFullProfile =
+      data &&
+      (data.public === true ||
+        canViewPrivateFields ||
+        options.includePrivateFields === true);
+
+    if (shouldReturnFullProfile) {
       return { data, error: null };
     }
 
-    // Private profile: treat as hidden for callers without access.
+    if (data) {
+      const publicFacingProfile: User = {
+        id: data.id || uid,
+        uid,
+        displayName: data.displayName || data.email || `User ${uid.substring(0, 5)}`,
+        photoURL: data.photoURL,
+        profilePicture: data.profilePicture,
+        reputationScore: data.reputationScore,
+        public: data.public ?? false,
+      };
+
+      return { data: publicFacingProfile, error: null };
+    }
+
     return { data: undefined, error: null };
   } catch (error: any) {
     if (error?.code === "permission-denied") {
