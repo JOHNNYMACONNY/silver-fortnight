@@ -27,10 +27,7 @@ const DEFAULT_FEED_LIMIT = 6;
 const buildHomeStats = (stats?: SystemStats | null): HomeStats => {
   return {
     trades: {
-      active: Math.max(
-        0,
-        (stats?.totalTrades || 0) - (stats?.completedTrades || 0)
-      ),
+      active: stats?.activeTrades || 0,
       completed: stats?.completedTrades || 0,
     },
     community: {

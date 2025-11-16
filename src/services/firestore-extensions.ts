@@ -367,6 +367,7 @@ export interface SystemStats {
   totalChallenges: number;
   activeUsers: number;
   weeklyActiveUsers: number;
+  activeTrades: number;
   completedTrades: number;
   skillsTraded: number;
   lastUpdated: Timestamp;
@@ -414,12 +415,13 @@ export const getSystemStats = async (): Promise<ServiceResult<SystemStats>> => {
       }
     }
 
-    const [users, trades, collaborations, challenges, completedTrades] = await Promise.all([
+    const [users, trades, collaborations, challenges, completedTrades, activeTrades] = await Promise.all([
       getDocs(collection(db, COLLECTIONS.USERS)),
       getDocs(collection(db, COLLECTIONS.TRADES)),
       getDocs(collection(db, COLLECTIONS.COLLABORATIONS)),
       getDocs(collection(db, COLLECTIONS.CHALLENGES)),
-      getDocs(query(collection(db, COLLECTIONS.TRADES), where('status', '==', 'completed')))
+      getDocs(query(collection(db, COLLECTIONS.TRADES), where('status', '==', 'completed'))),
+      getDocs(query(collection(db, COLLECTIONS.TRADES), where('status', 'in', ['open', 'in-progress', 'pending_confirmation', 'pending_evidence'])))
     ]);
 
     const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
@@ -441,6 +443,7 @@ export const getSystemStats = async (): Promise<ServiceResult<SystemStats>> => {
       totalChallenges: challenges.size,
       activeUsers: weeklyActiveUsers,
       weeklyActiveUsers,
+      activeTrades: activeTrades.size,
       completedTrades: completedTrades.size,
       skillsTraded: completedTrades.size,
       lastUpdated: Timestamp.now()

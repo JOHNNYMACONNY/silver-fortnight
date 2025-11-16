@@ -46,10 +46,11 @@ const primeGetDocsQueue = () => {
   ]);
   const queue = [
     usersSnapshot,
-    buildDocsSnapshot(5),
-    buildDocsSnapshot(4),
-    buildDocsSnapshot(3),
-    buildDocsSnapshot(2),
+    buildDocsSnapshot(5), // total trades
+    buildDocsSnapshot(4), // collaborations
+    buildDocsSnapshot(3), // challenges
+    buildDocsSnapshot(2), // completed trades
+    buildDocsSnapshot(3), // active trades (open, in-progress, etc.)
   ];
   mockGetDocs.mockImplementation(() => Promise.resolve(queue.shift() ?? buildDocsSnapshot(0)));
 };
