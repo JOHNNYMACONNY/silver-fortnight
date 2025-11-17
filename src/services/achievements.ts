@@ -23,6 +23,7 @@ import { ServiceResponse } from '../types/services';
 import { createNotification, NotificationType } from './notifications/unifiedNotificationService';
 import { awardXP } from './gamification';
 import { getUserStats as getAggregatedUserStats } from './userStats';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Predefined achievements for the TradeYa platform
@@ -197,7 +198,7 @@ export const initializeAchievements = async (): Promise<ServiceResponse<void>> =
     await Promise.all(batch);
     return { success: true };
   } catch (error: any) {
-    console.error('Error initializing achievements:', error);
+    logger.error('Error initializing achievements:', 'SERVICE', {}, error as Error);
     return { success: false, error: error.message || 'Failed to initialize achievements' };
   }
 };
@@ -239,7 +240,7 @@ export const checkAndUnlockAchievements = async (userId: string): Promise<Achiev
 
     return newAchievements;
   } catch (error: any) {
-    console.error('Error checking achievements:', error);
+    logger.error('Error checking achievements:', 'SERVICE', {}, error as Error);
     return [];
   }
 };
@@ -287,7 +288,7 @@ export const unlockAchievement = async (
 
     return { success: true };
   } catch (error: any) {
-    console.error('Error unlocking achievement:', error);
+    logger.error('Error unlocking achievement:', 'SERVICE', {}, error as Error);
     return { success: false, error: error.message || 'Failed to unlock achievement' };
   }
 };
@@ -307,7 +308,7 @@ export const getUserAchievements = async (userId: string): Promise<ServiceRespon
 
     return { success: true, data: achievements };
   } catch (error: any) {
-    console.error('Error getting user achievements:', error);
+    logger.error('Error getting user achievements:', 'SERVICE', {}, error as Error);
     return { success: false, error: error.message || 'Failed to get user achievements' };
   }
 };

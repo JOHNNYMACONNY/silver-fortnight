@@ -3,6 +3,7 @@ import { getUserReviews, Review } from '../../../services/firestore-exports';
 import { ReviewsList } from './ReviewsList';
 import { Alert, AlertDescription, AlertTitle } from '../../ui/Alert';
 import { AlertTriangle } from 'lucide-react';
+import { logger } from '@utils/logging/logger';
 // import { themeClasses } from '../../../utils/themeUtils';
 
 interface ReviewsTabProps {
@@ -22,7 +23,7 @@ export const ReviewsTab: React.FC<ReviewsTabProps> = ({ userId }) => {
       try {
         const reviewResult = await getUserReviews(userId);
         if (reviewResult.error) {
-          console.error('Error fetching user reviews:', reviewResult.error);
+          logger.error('Error fetching user reviews:', 'COMPONENT', {}, reviewResult.error as Error);
           throw new Error(reviewResult.error.message);
         }
         

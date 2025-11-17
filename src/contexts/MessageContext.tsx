@@ -8,6 +8,7 @@ import React, {
 import { useAuth } from "../AuthContext";
 import { ChatConversation } from "../types/chat";
 import { useChatError } from "./ChatErrorContext";
+import { logger } from '@utils/logging/logger';
 
 interface MessageContextType {
   markMessagesAsRead: (messageIds: string[], userId: string) => Promise<any>;
@@ -61,10 +62,7 @@ export const MessageProvider: React.FC<{ children: ReactNode }> = ({
 
         // Return the error but don't update UI state for permission errors
         if (error.message?.includes("Missing or insufficient permissions")) {
-          console.log(
-            "Permission error when marking messages as read (expected):",
-            error.message
-          );
+          logger.debug('Permission error when marking messages as read (expected):', 'CONTEXT', error.message);
         }
 
         return { error: { message: error.message || "An error occurred" } };

@@ -1,6 +1,7 @@
 import { doc, getDoc, setDoc, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
 import { getSyncFirebaseDb } from '../firebase-config';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '@utils/logging/logger';
 
 interface StateSnapshot {
   id: string;
@@ -81,7 +82,7 @@ export class RollbackManager {
 
       await batch.commit();
     } catch (error) {
-      console.error(`Failed to rollback transaction ${transactionId}:`, error);
+      logger.error(`Failed to rollback transaction ${transactionId}:`, 'UTILITY', {}, error as Error);
       throw error;
     }
   }

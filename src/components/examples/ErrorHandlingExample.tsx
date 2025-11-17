@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Badge } from '../ui/Badge';
 import EnhancedErrorBoundary from '../ui/EnhancedErrorBoundary';
+import { logger } from '@utils/logging/logger';
 
 const ErrorHandlingExample: React.FC = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -46,7 +47,7 @@ const ErrorHandlingExample: React.FC = () => {
       },
       async () => {
         // This would normally be a form submission
-        console.log('Form would be submitted:', formData);
+        logger.debug('Form would be submitted:', 'COMPONENT', formData);
       }
     );
   };
@@ -75,7 +76,7 @@ const ErrorHandlingExample: React.FC = () => {
           true
         );
       }
-      console.log('Operation succeeded after retries!');
+      logger.debug('Operation succeeded after retries!', 'COMPONENT');
     }, 3);
   };
 

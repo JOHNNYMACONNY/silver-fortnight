@@ -26,6 +26,7 @@ import {
 } from "./DropdownMenu";
 import { Button } from "./Button";
 import { Avatar } from "./Avatar";
+import { logger } from '@utils/logging/logger';
 
 interface UserMenuProps {
   className?: string;
@@ -69,7 +70,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
         const { data: profile, error } = await getUserProfile(currentUser.uid);
         let resolved: string | null = null;
         if (error) {
-          console.warn("Failed to fetch user profile for UserMenu:", error);
+          logger.warn('Failed to fetch user profile for UserMenu:', 'COMPONENT', error);
           resolved = currentUser.photoURL;
         } else if (profile?.profilePicture) {
           resolved = getProfileImageUrl(profile.profilePicture, 32);
@@ -80,7 +81,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
         cache.set(currentUser.uid, resolved);
         setUserProfileImage(resolved);
       } catch (error) {
-        console.error("Error fetching user profile for UserMenu:", error);
+        logger.error('Error fetching user profile for UserMenu:', 'COMPONENT', {}, error as Error);
         // Fallback to Firebase Auth photoURL
         setUserProfileImage(currentUser.photoURL);
       } finally {

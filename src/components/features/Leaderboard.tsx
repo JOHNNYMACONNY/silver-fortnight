@@ -27,6 +27,7 @@ import Stack from '../layout/primitives/Stack';
 import Cluster from '../layout/primitives/Cluster';
 import Grid from '../layout/primitives/Grid';
 import { Button } from '../ui/Button';
+import { logger } from '@utils/logging/logger';
 
 const MOBILE_COLLAPSED_ENTRY_COUNT = 10;
 
@@ -99,7 +100,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
       }
     } catch (err) {
       setError('Failed to load leaderboard');
-      console.error('Leaderboard fetch error:', err);
+      logger.error('Leaderboard fetch error:', 'COMPONENT', {}, err as Error);
     } finally {
       setLoading(false);
     }
@@ -502,7 +503,7 @@ export const LeaderboardDashboard: React.FC<LeaderboardDashboardProps> = ({
           setMultipleLeaderboards(result.data);
         }
       } catch (error) {
-        console.error('Failed to load leaderboards:', error);
+        logger.error('Failed to load leaderboards:', 'COMPONENT', {}, error as Error);
         addToast('error', 'Failed to load leaderboards');
       } finally {
         setLoading(false);

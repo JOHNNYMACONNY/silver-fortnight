@@ -2,6 +2,7 @@ import { getUserTrades } from './firestore';
 import { getUserXP, getUserXPHistory } from './gamification';
 import { getConnections } from './firestore-exports';
 import { ServiceResponse } from '../types/services';
+import { logger } from '@utils/logging/logger';
 
 export interface DashboardStats {
   tradesThisWeek: number;
@@ -52,7 +53,7 @@ export const getDashboardStats = async (userId: string): Promise<ServiceResponse
     if (xpData.success && xpData.data) {
       currentXP = xpData.data.totalXP;
     } else {
-      console.warn('⚠️ Failed to fetch XP data:', xpData.error);
+      logger.warn('⚠️ Failed to fetch XP data:', 'SERVICE', xpData.error);
     }
     
     // Calculate XP gained this week (with error handling)
@@ -65,7 +66,7 @@ export const getDashboardStats = async (userId: string): Promise<ServiceResponse
           .reduce((sum, transaction) => sum + transaction.amount, 0);
       }
     } catch (error) {
-      console.warn('Could not fetch XP history:', error);
+      logger.warn('Could not fetch XP history:', 'SERVICE', error);
       // XP this week will remain 0
     }
 
@@ -92,7 +93,7 @@ export const getDashboardStats = async (userId: string): Promise<ServiceResponse
       data: stats
     };
   } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
+    logger.error('Error fetching dashboard stats:', 'SERVICE', {}, error as Error);
     // Return default stats instead of failing completely
     return {
       success: true,
@@ -128,7 +129,7 @@ export const getRecentActivity = async (userId: string, limit: number = 10): Pro
         }
       }
     } catch (error) {
-      console.warn('Could not fetch XP history for activity:', error);
+      logger.warn('Could not fetch XP history for activity:', 'SERVICE', error);
     }
 
     // Get recent trades with error handling
@@ -149,7 +150,7 @@ export const getRecentActivity = async (userId: string, limit: number = 10): Pro
         }
       }
     } catch (error) {
-      console.warn('Could not fetch trades for activity:', error);
+      logger.warn('Could not fetch trades for activity:', 'SERVICE', error);
     }
 
     // Sort all activities by timestamp (most recent first)
@@ -160,7 +161,7 @@ export const getRecentActivity = async (userId: string, limit: number = 10): Pro
       data: activities.slice(0, limit)
     };
   } catch (error) {
-    console.error('Error fetching recent activity:', error);
+    logger.error('Error fetching recent activity:', 'SERVICE', {}, error as Error);
     return {
       success: true,
       data: [] // Return empty array instead of failing

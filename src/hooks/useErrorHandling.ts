@@ -7,6 +7,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { AppError, ErrorCode, ErrorSeverity, ErrorContext, ErrorRecoveryAction } from '../types/errors';
 import { errorService, handleAsyncError, createRetryableOperation } from '../services/errorService';
 import { useToast } from '../contexts/ToastContext';
+import { logger } from '@utils/logging/logger';
 
 interface UseErrorHandlingOptions {
   enableToastNotifications?: boolean;
@@ -92,7 +93,7 @@ export const useErrorHandling = (options: UseErrorHandlingOptions = {}): UseErro
     // Log to console if enabled
     if (enableConsoleLogging) {
       console.group(`🚨 Component Error: ${component}`);
-      console.error('Error:', appError.toJSON());
+      logger.error('Error:', 'APP', {}, appError.toJSON() as Error);
       console.groupEnd();
     }
 

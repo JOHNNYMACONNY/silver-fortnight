@@ -4,6 +4,7 @@ import { transactionManager } from './transactionManager';
 import { roleTransactionHandler } from './roleTransactions';
 import { rollbackManager } from '../utils/rollbackManager';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '@utils/logging/logger';
 
 interface RoleOperation {
   type: 'update' | 'delete' | 'create';
@@ -116,7 +117,7 @@ export class MonitoredRoleOperations {
       // Log failure for monitoring
       await this.logOperationFailure(operation, transactionId);
     } catch (error) {
-      console.error('Failed to handle operation failure:', error);
+      logger.error('Failed to handle operation failure:', 'SERVICE', {}, error as Error);
       throw error;
     }
   }

@@ -30,6 +30,7 @@ import {
 } from "firebase/firestore";
 import { getSyncFirebaseDb } from "../../firebase-config";
 import { ServiceResult } from "../../types/ServiceError";
+import { logger } from '@utils/logging/logger';
 import {
   ChatMessage,
   ChatConversation,
@@ -83,14 +84,14 @@ export const getUserConversations = (
 
         callback(conversations);
       } catch (error) {
-        console.error("Error processing conversation snapshot:", error);
+        logger.error('Error processing conversation snapshot:', 'SERVICE', {}, error as Error);
         if (onError) {
           onError(error instanceof Error ? error : new Error(String(error)));
         }
       }
     },
     (error) => {
-      console.error("Error in conversation listener:", error);
+      logger.error('Error in conversation listener:', 'SERVICE', {}, error as Error);
       if (onError) {
         onError(error instanceof Error ? error : new Error(String(error)));
       }
@@ -170,7 +171,7 @@ export const getOrCreateDirectConversation = async (
       updatedAt: Timestamp.now(),
     };
   } catch (error) {
-    console.error("Error getting or creating conversation:", error);
+    logger.error('Error getting or creating conversation:', 'SERVICE', {}, error as Error);
     throw error;
   }
 };
@@ -211,7 +212,7 @@ export const createGroupConversation = async (
       updatedAt: Timestamp.now(),
     };
   } catch (error) {
-    console.error("Error creating group conversation:", error);
+    logger.error('Error creating group conversation:', 'SERVICE', {}, error as Error);
     throw error;
   }
 };
@@ -259,14 +260,14 @@ export const getConversationMessages = (
 
         callback(messages);
       } catch (error) {
-        console.error("Error processing message snapshot:", error);
+        logger.error('Error processing message snapshot:', 'SERVICE', {}, error as Error);
         if (onError) {
           onError(error instanceof Error ? error : new Error(String(error)));
         }
       }
     },
     (error) => {
-      console.error("Error in message listener:", error);
+      logger.error('Error in message listener:', 'SERVICE', {}, error as Error);
       if (onError) {
         onError(error instanceof Error ? error : new Error(String(error)));
       }
@@ -319,7 +320,7 @@ export const sendMessage = async (
       readBy: [],
     };
   } catch (error) {
-    console.error("Error sending message:", error);
+    logger.error('Error sending message:', 'SERVICE', {}, error as Error);
     throw error;
   }
 };
@@ -391,12 +392,10 @@ export const markMessagesAsRead = async (
 
     await batch.commit();
   } catch (error: any) {
-    console.error("Error marking messages as read:", error);
+    logger.error('Error marking messages as read:', 'SERVICE', {}, error as Error);
     // Provide more specific error information for debugging
     if (error.code === "permission-denied") {
-      console.error(
-        "Permission denied - check Firebase Security Rules for messages subcollection"
-      );
+      logger.error("Permission denied - check Firebase Security Rules for messages subcollection", 'SERVICE');
     }
     throw error;
   }
@@ -443,7 +442,7 @@ export const addUserToGroupConversation = async (
       updatedAt: serverTimestamp(),
     });
   } catch (error) {
-    console.error("Error adding user to group conversation:", error);
+    logger.error('Error adding user to group conversation:', 'SERVICE', {}, error as Error);
     throw error;
   }
 };
@@ -485,7 +484,7 @@ export const removeUserFromGroupConversation = async (
       updatedAt: serverTimestamp(),
     });
   } catch (error) {
-    console.error("Error removing user from group conversation:", error);
+    logger.error('Error removing user from group conversation:', 'SERVICE', {}, error as Error);
     throw error;
   }
 };
@@ -527,7 +526,7 @@ export const deleteConversation = async (
       error: null,
     };
   } catch (error) {
-    console.error("Error deleting conversation:", error);
+    logger.error('Error deleting conversation:', 'SERVICE', {}, error as Error);
     return {
       data: undefined,
       error:

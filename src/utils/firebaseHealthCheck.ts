@@ -7,6 +7,7 @@
 
 import { getSyncFirebaseDb } from '../firebase-config';
 import { doc, getDoc, collection, query, limit, getDocs } from 'firebase/firestore';
+import { logger } from '@utils/logging/logger';
 
 export interface HealthCheckResult {
   isHealthy: boolean;
@@ -157,7 +158,7 @@ export const performQuickHealthCheck = async (): Promise<boolean> => {
     const result = await checker.performHealthCheck();
     return result.isHealthy;
   } catch (error) {
-    console.error('Quick health check failed:', error);
+    logger.error('Quick health check failed:', 'UTILITY', {}, error as Error);
     return false;
   }
 };

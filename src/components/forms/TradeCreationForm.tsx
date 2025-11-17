@@ -7,6 +7,7 @@
 
 import React, { useState, useCallback } from "react";
 import { MultiStepForm, FormStep } from "./MultiStepForm";
+import { logger } from '@utils/logging/logger';
 import {
   ItemDetailsStep,
   PricingStep,
@@ -164,7 +165,7 @@ export const TradeCreationForm: React.FC<TradeCreationFormProps> = ({
 
       await onSubmit(completeData);
     } catch (error) {
-      console.error('Trade creation error:', error);
+      logger.error('Trade creation error:', 'COMPONENT', {}, error as Error);
       setSubmitError(
         error instanceof Error 
           ? error.message 
@@ -179,7 +180,7 @@ export const TradeCreationForm: React.FC<TradeCreationFormProps> = ({
   // Handle step changes
   const handleStepChange = useCallback((currentStep: number, totalSteps: number) => {
     // Could be used for analytics or progress tracking
-    console.log(`Trade creation progress: ${currentStep}/${totalSteps}`);
+    logger.debug(`Trade creation progress: ${currentStep}/${totalSteps}`, 'COMPONENT');
   }, []);
 
   return (

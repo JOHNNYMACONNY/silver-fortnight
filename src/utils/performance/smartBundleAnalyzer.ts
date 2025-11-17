@@ -3,6 +3,7 @@
 
 import { performanceLogger } from './structuredLogger';
 import type { ExtendedNavigator } from '../../types/browser';
+import { logger } from '@utils/logging/logger';
 
 export interface BundleMetrics {
   totalSize: number;
@@ -528,7 +529,7 @@ class SmartBundleAnalyzer {
   private logError(message: string, ...args: any[]): void {
     // Use structured logging instead of console.error
     if (process.env.NODE_ENV === 'development') {
-      console.error(`[SmartBundleAnalyzer] ${message}`, ...args);
+      logger.error(`[SmartBundleAnalyzer] ${message}`, 'UTILITY', ...args);
     }
   }
 

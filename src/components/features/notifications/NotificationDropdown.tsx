@@ -14,6 +14,7 @@ import {
   markAllNotificationsAsRead 
 } from '../../../services/notifications/notificationService';
 import { useAuth } from '../../../AuthContext';
+import { logger } from '@utils/logging/logger';
 
 // Icons
 const BellIcon = () => (
@@ -118,7 +119,7 @@ export const NotificationDropdown: React.FC = () => {
         return date.toLocaleDateString();
       }
     } catch (err) {
-      console.error('Error formatting timestamp:', err);
+      logger.error('Error formatting timestamp:', 'COMPONENT', {}, err as Error);
       return '';
     }
   };
@@ -206,7 +207,7 @@ export const NotificationDropdown: React.FC = () => {
         }))
       );
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      logger.error('Error marking all notifications as read:', 'COMPONENT', {}, error as Error);
     }
   };
   

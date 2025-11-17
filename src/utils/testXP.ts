@@ -1,9 +1,10 @@
 import { awardXP } from '../services/gamification';
 import { XPSource } from '../types/gamification';
+import { logger } from '@utils/logging/logger';
 
 export const initializeTestUserXP = async (userId: string) => {
   try {
-    console.log('Initializing test XP for user:', userId);
+    logger.debug('Initializing test XP for user:', 'UTILITY', userId);
     
     // Award some initial XP to test the system
     const result = await awardXP(
@@ -14,10 +15,10 @@ export const initializeTestUserXP = async (userId: string) => {
       'Welcome bonus XP'
     );
     
-    console.log('Test XP award result:', result);
+    logger.debug('Test XP award result:', 'UTILITY', result);
     return result;
   } catch (error) {
-    console.error('Error initializing test XP:', error);
+    logger.error('Error initializing test XP:', 'UTILITY', {}, error as Error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 };

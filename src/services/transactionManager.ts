@@ -2,6 +2,7 @@
 
 import { doc, runTransaction, setDoc } from 'firebase/firestore';
 import { getSyncFirebaseDb } from '../firebase-config';
+import { logger } from '@utils/logging/logger';
 
 export enum IsolationLevel {
   READ_UNCOMMITTED = 'READ_UNCOMMITTED',
@@ -50,7 +51,7 @@ export class TransactionManager {
         
         await new Promise(resolve => setTimeout(resolve, retryDelay));
       } catch (error) {
-        console.error('Lock acquisition error:', error);
+        logger.error('Lock acquisition error:', 'SERVICE', {}, error as Error);
         if (attempt === retryCount - 1) throw error;
       }
     }
@@ -77,7 +78,7 @@ export class TransactionManager {
 
       return success;
     } catch (error) {
-      console.error('Lock release error:', error);
+      logger.error('Lock release error:', 'SERVICE', {}, error as Error);
       throw error;
     }
   }

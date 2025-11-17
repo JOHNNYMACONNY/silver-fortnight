@@ -5,6 +5,7 @@
 
 import { GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { getAuth } from 'firebase/auth';
+import { logger } from '@utils/logging/logger';
 
 /**
  * FIREBASE APPROACH: Use only Firebase's built-in Google OAuth
@@ -12,7 +13,7 @@ import { getAuth } from 'firebase/auth';
  */
 export const signInWithGoogleFirebase = async (): Promise<any> => {
   try {
-    console.log('FirebaseGoogleAuth: Using Firebase built-in OAuth...');
+    logger.debug('FirebaseGoogleAuth: Using Firebase built-in OAuth...', 'UTILITY');
     
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
@@ -28,16 +29,16 @@ export const signInWithGoogleFirebase = async (): Promise<any> => {
     
     try {
       // Try popup first (most user-friendly)
-      console.log('FirebaseGoogleAuth: Attempting popup sign-in...');
+      logger.debug('FirebaseGoogleAuth: Attempting popup sign-in...', 'UTILITY');
       const result = await signInWithPopup(auth, provider);
-      console.log('FirebaseGoogleAuth: Popup sign-in successful!');
+      logger.debug('FirebaseGoogleAuth: Popup sign-in successful!', 'UTILITY');
       return result;
     } catch (popupError: any) {
-      console.log('FirebaseGoogleAuth: Popup failed, trying redirect...', popupError.message);
+      logger.debug('FirebaseGoogleAuth: Popup failed, trying redirect...', 'UTILITY', popupError.message);
       
       // If popup fails, try redirect
       if (popupError.code === 'auth/popup-blocked' || popupError.code === 'auth/popup-closed-by-user') {
-        console.log('FirebaseGoogleAuth: Initiating redirect sign-in...');
+        logger.debug('FirebaseGoogleAuth: Initiating redirect sign-in...', 'UTILITY');
         await signInWithRedirect(auth, provider);
         return {
           user: null,
@@ -51,7 +52,7 @@ export const signInWithGoogleFirebase = async (): Promise<any> => {
       throw popupError;
     }
   } catch (error: any) {
-    console.error('FirebaseGoogleAuth: All methods failed', error);
+    logger.error('FirebaseGoogleAuth: All methods failed', 'UTILITY', {}, error as Error);
     throw error;
   }
 };
@@ -61,20 +62,20 @@ export const signInWithGoogleFirebase = async (): Promise<any> => {
  */
 export const handleGoogleRedirectResult = async (): Promise<any> => {
   try {
-    console.log('FirebaseGoogleAuth: Checking for redirect result...');
+    logger.debug('FirebaseGoogleAuth: Checking for redirect result...', 'UTILITY');
     
     const auth = getAuth();
     const result = await getRedirectResult(auth);
     
     if (result) {
-      console.log('FirebaseGoogleAuth: Redirect result found!');
+      logger.debug('FirebaseGoogleAuth: Redirect result found!', 'UTILITY');
       return result;
     }
     
-    console.log('FirebaseGoogleAuth: No redirect result found');
+    logger.debug('FirebaseGoogleAuth: No redirect result found', 'UTILITY');
     return null;
   } catch (error: any) {
-    console.error('FirebaseGoogleAuth: Error handling redirect result:', error);
+    logger.error('FirebaseGoogleAuth: Error handling redirect result:', 'UTILITY', {}, error as Error);
     throw error;
   }
 };

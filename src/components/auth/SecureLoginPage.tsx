@@ -11,6 +11,7 @@ import { Label } from "../ui/Label";
 import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Lock, Eye, EyeOff } from "lucide-react";
+import { logger } from '@utils/logging/logger';
 
 interface SecureLoginPageProps {
   onLoginSuccess?: () => void;
@@ -31,7 +32,7 @@ const SecureLoginPage = ({ onLoginSuccess, onError }: SecureLoginPageProps) => {
     try {
       // Dummy logic for now, replace with actual auth logic
       if (password === "password") {
-        console.log("Logged in");
+        logger.debug("Logged in", 'COMPONENT');
         onLoginSuccess?.();
       } else {
         throw new Error("Invalid password");

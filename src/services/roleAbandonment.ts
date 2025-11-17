@@ -3,6 +3,7 @@ import { doc, updateDoc, getDoc, Timestamp, collection, query, where, getDocs } 
 import { CollaborationRoleData, RoleState, Collaboration } from '../types/collaboration'; // Added RoleState and Collaboration
 import { getAuth } from 'firebase/auth';
 import { createNotification, NotificationType } from './notifications/unifiedNotificationService';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Service for handling role abandonment in collaborations.
@@ -79,7 +80,7 @@ export const abandonRole = async (roleId: string, reason: string): Promise<void>
     }
 
   } catch (error) {
-    console.error('Error abandoning role:', error);
+    logger.error('Error abandoning role:', 'SERVICE', {}, error as Error);
     throw error;
   }
 };
@@ -146,7 +147,7 @@ export const reopenRole = async (roleId: string, _reason: string): Promise<void>
     }
 
   } catch (error) {
-    console.error('Error reopening role:', error);
+    logger.error('Error reopening role:', 'SERVICE', {}, error as Error);
     throw error;
   }
 };
@@ -213,7 +214,7 @@ export const markRoleAsUnneeded = async (roleId: string, _reason: string): Promi
     }
 
   } catch (error) {
-    console.error('Error marking role as unneeded:', error);
+    logger.error('Error marking role as unneeded:', 'SERVICE', {}, error as Error);
     throw error;
   }
 };
@@ -240,7 +241,7 @@ export const getAbandonedRoles = async (collaborationId: string): Promise<Collab
     });
 
   } catch (error) {
-    console.error('Error getting abandoned roles:', error);
+    logger.error('Error getting abandoned roles:', 'SERVICE', {}, error as Error);
     throw error;
   }
 };

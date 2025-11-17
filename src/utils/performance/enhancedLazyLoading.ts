@@ -1,4 +1,5 @@
 import { lazy, ComponentType, LazyExoticComponent } from 'react';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Enhanced lazy loading configuration
@@ -53,11 +54,11 @@ export function enhancedLazy<T extends ComponentType<any>>(
       retryCount = 0; // Reset on success
       return module;
     } catch (error) {
-      console.error('Lazy loading failed:', error);
+      logger.error('Lazy loading failed:', 'UTILITY', {}, error as Error);
 
       if (retryCount < retryAttempts) {
         retryCount++;
-        console.log(`Retrying lazy load (attempt ${retryCount}/${retryAttempts})`);
+        logger.debug(`Retrying lazy load (attempt ${retryCount}/${retryAttempts})`, 'UTILITY');
         
         // Wait before retrying
         await new Promise(resolve => setTimeout(resolve, retryDelay * retryCount));
@@ -101,7 +102,7 @@ export class RouteBasedPreloader {
           await importFn();
           this.preloadedRoutes.add(route);
         } catch (error) {
-          console.error(`Failed to preload route ${route}:`, error);
+          logger.error(`Failed to preload route ${route}:`, 'UTILITY', {}, error as Error);
         }
       });
     }
@@ -365,11 +366,11 @@ export class PerformanceAwareLoader {
       const errorCount = (this.errorCounts.get(name) || 0) + 1;
       this.errorCounts.set(name, errorCount);
 
-      console.error(`Failed to load component ${name} (attempt ${errorCount}):`, error);
+      logger.error(`Failed to load component ${name} (attempt ${errorCount}):`, 'UTILITY', {}, error as Error);
 
       // Use fallback if available and error count is high
       if (fallback && errorCount >= 3) {
-        console.warn(`Using fallback for component ${name} after ${errorCount} failures`);
+        logger.warn(`Using fallback for component ${name} after ${errorCount} failures`, 'UTILITY');
         return fallback();
       }
 

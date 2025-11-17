@@ -6,6 +6,7 @@ import {
   Trade 
 } from './firestore';
 import { createTradeNotification } from './notifications/unifiedNotificationService';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Client-side auto-resolution service
@@ -49,23 +50,23 @@ export const processAutoResolution = async (): Promise<AutoResolutionResult> => 
       trade.completionRequestedBy
     );
 
-    console.log(`Found ${pendingTrades.length} pending confirmation trades`);
+    logger.debug(`Found ${pendingTrades.length} pending confirmation trades`, 'SERVICE');
 
     for (const trade of pendingTrades) {
       try {
         await processPendingTrade(trade, result);
       } catch (error: any) {
         result.errors.push(`Error processing trade ${trade.id}: ${error.message}`);
-        console.error('Error processing trade:', trade.id, error);
+        logger.error('Error processing trade:', 'SERVICE', { arg0: trade.id }, error as Error);
       }
     }
 
-    console.log('Auto-resolution completed:', result);
+    logger.debug('Auto-resolution completed:', 'SERVICE', result);
     return result;
 
   } catch (error: any) {
     result.errors.push(`Auto-resolution failed: ${error.message}`);
-    console.error('Auto-resolution error:', error);
+    logger.error('Auto-resolution error:', 'SERVICE', {}, error as Error);
     return result;
   }
 };
@@ -96,7 +97,7 @@ const processPendingTrade = async (trade: Trade, result: AutoResolutionResult): 
 const autoCompleteTrade = async (trade: Trade): Promise<void> => {
   if (!trade.id) return;
 
-  console.log(`Auto-completing trade: ${trade.id} - ${trade.title}`);
+  logger.debug(`Auto-completing trade: ${trade.id} - ${trade.title}`, 'SERVICE');
 
   // Update the trade status
   const { error: updateError } = await updateTrade(trade.id, {
@@ -124,7 +125,7 @@ const autoCompleteTrade = async (trade: Trade): Promise<void> => {
           type: 'complete'
         });
       } catch (error: any) {
-        console.error('Failed to send auto-completion notification:', error);
+        logger.error('Failed to send auto-completion notification:', 'SERVICE', {}, error as Error);
       }
     }
   }

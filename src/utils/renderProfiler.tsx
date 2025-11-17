@@ -1,4 +1,5 @@
 import React, { Profiler, ProfilerOnRenderCallback } from 'react';
+import { logger } from '@utils/logging/logger';
 
 interface RenderInfo {
   id: string;
@@ -44,9 +45,7 @@ const handleRender: ProfilerOnRenderCallback = (
   
   // Log slow renders
   if (actualDuration > SLOW_RENDER_THRESHOLD) {
-    console.warn(
-      `Slow render detected: ${id} took ${actualDuration.toFixed(2)}ms to render (${phase})`
-    );
+    logger.warn(`Slow render detected: ${id} took ${actualDuration.toFixed(2)}ms to render (${phase})`, 'UTILITY');
   }
 };
 

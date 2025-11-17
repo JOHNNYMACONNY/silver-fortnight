@@ -5,6 +5,7 @@ import { useAuth } from '../../../AuthContext';
 import { getProfileImageUrl } from '../../../utils/imageUtils';
 import { themeClasses } from '../../../utils/themeUtils';
 import { Timestamp } from 'firebase/firestore';
+import { logger } from '@utils/logging/logger';
 
 interface MessageListProps {
   messages: ChatMessage[];
@@ -23,9 +24,9 @@ export const MessageList: React.FC<MessageListProps> = ({
 }) => {
   const { userProfile } = useAuth();
   // Debug log for messages
-  console.log('MessageList received messages:', messages);
-  console.log('MessageList currentUserId:', currentUserId);
-  console.log('MessageList usersData:', usersData);
+  logger.debug('MessageList received messages:', 'COMPONENT', messages);
+  logger.debug('MessageList currentUserId:', 'COMPONENT', currentUserId);
+  logger.debug('MessageList usersData:', 'COMPONENT', usersData);
   // Format date
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
@@ -56,9 +57,9 @@ export const MessageList: React.FC<MessageListProps> = ({
             const senderName = senderData.displayName || `User ${message.senderId?.substring(0, 5) || 'Unknown'}`;
             const senderAvatar = senderData.profilePicture;
 
-            console.log('Rendering message:', message);
-            console.log('Is current user?', isCurrentUser);
-            console.log('Message sender data:', usersData[message.senderId]);
+            logger.debug('Rendering message:', 'COMPONENT', message);
+            logger.debug('Is current user?', 'COMPONENT', isCurrentUser);
+            logger.debug('Message sender data:', 'COMPONENT', usersData[message.senderId]);
 
             return (
               <div

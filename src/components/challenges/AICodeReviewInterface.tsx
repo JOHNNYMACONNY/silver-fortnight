@@ -12,6 +12,7 @@ import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Textarea } from '../ui/Textarea';
+import { logger } from '@utils/logging/logger';
 import { 
   Brain, 
   Code, 
@@ -76,7 +77,7 @@ export const AICodeReviewInterface: React.FC<AICodeReviewInterfaceProps> = ({
         setError(reviewResponse.error || 'Failed to review code');
       }
     } catch (err) {
-      console.error('Code review error:', err);
+      logger.error('Code review error:', 'COMPONENT', {}, err as Error);
       setError('An unexpected error occurred during review');
     } finally {
       setIsReviewing(false);

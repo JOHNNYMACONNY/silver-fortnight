@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 import {
   CollaborationRoleData,
   RoleState,
@@ -298,14 +299,14 @@ export class RoleStateMachine {
   // Helper methods for state transitions
   private async getRole(roleId: string): Promise<CollaborationRoleData | null> { // Add roleId parameter
     // Placeholder implementation - replace with actual data fetching
-    console.warn(`getRole placeholder called for roleId: ${roleId}`);
+    logger.warn(`getRole placeholder called for roleId: ${roleId}`, 'SERVICE');
     // Example: return await getRoleFromFirestore(roleId);
     return null; 
   }
 
   private async updateRoleState(roleId: string, newState: RoleState, role: CollaborationRoleData): Promise<void> { // Add parameters
     // Placeholder implementation - replace with actual state update logic
-    console.warn(`updateRoleState placeholder called for roleId: ${roleId} to state: ${newState}`);
+    logger.warn(`updateRoleState placeholder called for roleId: ${roleId} to state: ${newState}`, 'SERVICE');
     // Example: await updateRoleInFirestore(roleId, { status: newState });
     // This is where you would also update the role object if needed, or refetch
     role.status = newState; 
@@ -313,13 +314,13 @@ export class RoleStateMachine {
 
   private async getRoleApplications(/* roleId: string */): Promise<any[]> { // roleId might be needed
     // Placeholder implementation - replace with actual data fetching
-    console.warn('getRoleApplications placeholder called');
+    logger.warn('getRoleApplications placeholder called', 'SERVICE');
     return []; 
   }
 
   private async getAssignedUsers(/* roleId: string */): Promise<any[]> { // roleId might be needed
     // Placeholder implementation - replace with actual data fetching
-    console.warn('getAssignedUsers placeholder called');
+    logger.warn('getAssignedUsers placeholder called', 'SERVICE');
     return [];
   }
 
@@ -404,19 +405,19 @@ export class RoleStateMachine {
 
   private async validateCompletionCriteria(): Promise<boolean> {
     // Placeholder implementation - replace with actual validation logic
-    console.warn('validateCompletionCriteria placeholder called');
+    logger.warn('validateCompletionCriteria placeholder called', 'SERVICE');
     return true; 
   }
 
   private async validateCompletionApproval(): Promise<boolean> {
     // Placeholder implementation - replace with actual validation logic
-    console.warn('validateCompletionApproval placeholder called');
+    logger.warn('validateCompletionApproval placeholder called', 'SERVICE');
     return true;
   }
 
   private async validateAbandonmentReason(): Promise<boolean> {
     // Placeholder implementation - replace with actual validation logic
-    console.warn('validateAbandonmentReason placeholder called');
+    logger.warn('validateAbandonmentReason placeholder called', 'SERVICE');
     return true; 
   }
 

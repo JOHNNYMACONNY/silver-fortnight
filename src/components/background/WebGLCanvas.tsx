@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { useTheme } from '../../utils/themeInitializer';
 import { hexToRgb, cssColorToRgb } from './ColorUtils';
+import { logger } from '@utils/logging/logger';
 
 const vertexShaderSource = `
   attribute vec2 a_position;
@@ -173,7 +174,7 @@ const WebGLCanvas: React.FC<WebGLCanvasProps> = ({ colors, className, transparen
     glRef.current = gl;
     
     if (!gl) {
-      console.error('WebGL not supported');
+      logger.error('WebGL not supported', 'COMPONENT');
       return;
     }
 
@@ -182,7 +183,7 @@ const WebGLCanvas: React.FC<WebGLCanvasProps> = ({ colors, className, transparen
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
       if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        console.error('Error compiling shader:', gl.getShaderInfoLog(shader));
+        logger.error('Error compiling shader:', 'COMPONENT', gl.getShaderInfoLog(shader));
         gl.deleteShader(shader);
         return null;
       }
@@ -200,7 +201,7 @@ const WebGLCanvas: React.FC<WebGLCanvasProps> = ({ colors, className, transparen
     gl.linkProgram(program);
 
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.error('Error linking program:', gl.getProgramInfoLog(program));
+      logger.error('Error linking program:', 'COMPONENT', gl.getProgramInfoLog(program));
       return;
     }
 

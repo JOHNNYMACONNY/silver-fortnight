@@ -16,6 +16,7 @@ import {
 import { useAuth } from '../AuthContext';
 import { Button } from '../components/ui/Button';
 import { cn } from '../utils/cn';
+import { logger } from '@utils/logging/logger';
 
 
 // Icons
@@ -136,7 +137,7 @@ export const NotificationsPage: React.FC = () => {
         minute: '2-digit'
       });
     } catch (err) {
-      console.error('Error formatting timestamp:', err);
+      logger.error('Error formatting timestamp:', 'PAGE', {}, err as Error);
       return '';
     }
   };
@@ -246,7 +247,7 @@ export const NotificationsPage: React.FC = () => {
         )
       );
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      logger.error('Error marking notification as read:', 'PAGE', {}, error as Error);
     }
   };
   
@@ -264,7 +265,7 @@ export const NotificationsPage: React.FC = () => {
         prevNotifications.filter(n => n.id !== notification.id)
       );
     } catch (error) {
-      console.error('Error deleting notification:', error);
+      logger.error('Error deleting notification:', 'PAGE', {}, error as Error);
     }
   };
   
@@ -283,7 +284,7 @@ export const NotificationsPage: React.FC = () => {
         }))
       );
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      logger.error('Error marking all notifications as read:', 'PAGE', {}, error as Error);
     }
   };
   

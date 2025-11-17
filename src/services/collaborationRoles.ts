@@ -2,6 +2,7 @@
 import { collection, doc, getDocs, updateDoc, deleteDoc, setDoc, Timestamp, increment } from 'firebase/firestore';
 import { getSyncFirebaseDb } from '../firebase-config';
 import { CollaborationRoleData } from '../types/collaboration';
+import { logger } from '@utils/logging/logger';
 import { ServiceResponse } from '../types/services'; // Import ServiceResponse
 
 // Function needed by multiple files
@@ -10,7 +11,7 @@ export const updateCollaborationRoleCounts = async (
   roleId: string
 ): Promise<void> => {
   // Implementation goes here
-  console.log(`Updating role counts for collaboration ${collaborationId}, role ${roleId}`);
+  logger.debug(`Updating role counts for collaboration ${collaborationId}, role ${roleId}`, 'SERVICE');
 };
 
 // Function imported in CollaborationDetailPage
@@ -45,7 +46,7 @@ export const getCollaborationRoles = async (collaborationId: string): Promise<Se
     });
     return { success: true, data: roles }; // Return ServiceResponse
   } catch (error: any) {
-    console.error("Error fetching collaboration roles:", error);
+    logger.error('Error fetching collaboration roles:', 'SERVICE', {}, error as Error);
     return { success: false, error: error.message || 'Failed to fetch roles' }; // Return ServiceResponse
   }
 };
@@ -76,7 +77,7 @@ export const modifyRole = async (roleId: string, roleData: any) => {
     });
     return { success: true };
   } catch (error) {
-    console.error("Error modifying role:", error);
+    logger.error('Error modifying role:', 'SERVICE', {}, error as Error);
     throw error;
   }
 };
@@ -121,7 +122,7 @@ export const createRoleHierarchy = async (roles: CollaborationRoleData[]) => {
     // Return the new role ID
     return roleRef.id;
   } catch (error) {
-    console.error("Error creating role hierarchy:", error);
+    logger.error('Error creating role hierarchy:', 'SERVICE', {}, error as Error);
     throw error;
   }
 };
@@ -156,7 +157,7 @@ export const deleteRole = async (roleId: string, collaborationId?: string) => {
     
     return true;
   } catch (error) {
-    console.error("Error deleting role:", error);
+    logger.error('Error deleting role:', 'SERVICE', {}, error as Error);
     return false;
   }
 };

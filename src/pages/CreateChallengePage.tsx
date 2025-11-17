@@ -9,6 +9,7 @@ import { createChallenge } from "../services/challenges";
 import { useToast } from "../contexts/ToastContext";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "../components/ui/Button";
+import { logger } from '@utils/logging/logger';
 
 export const CreateChallengePage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -53,7 +54,7 @@ export const CreateChallengePage: React.FC = () => {
         throw new Error(response.error || "Failed to create challenge");
       }
     } catch (error) {
-      console.error("Challenge creation error:", error);
+      logger.error('Challenge creation error:', 'PAGE', {}, error as Error);
       addToast(
         "error",
         error instanceof Error ? error.message : "Failed to create challenge"

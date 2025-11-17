@@ -20,6 +20,7 @@ import { ServiceResponse } from '../types/services';
 import { awardXP, XPSource } from './gamification';
 import { updateProgressionOnChallengeCompletion } from './threeTierProgression';
 import { ChallengeType } from '../types/gamification';
+import { logger } from '@utils/logging/logger';
 
 const getDb = () => getSyncFirebaseDb();
 
@@ -118,7 +119,7 @@ export const submitCodeForReview = async (
       data: submissionWithReview
     };
   } catch (error) {
-    console.error('Error submitting code for review:', error);
+    logger.error('Error submitting code for review:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to submit code'
@@ -159,7 +160,7 @@ export const getUserChallengeSubmissions = async (
       data: submissions
     };
   } catch (error) {
-    console.error('Error getting user submissions:', error);
+    logger.error('Error getting user submissions:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: 'Failed to get submissions'
@@ -225,7 +226,7 @@ export const approveSubmission = async (
       };
     });
   } catch (error) {
-    console.error('Error approving submission:', error);
+    logger.error('Error approving submission:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to approve submission'
@@ -282,7 +283,7 @@ const awardXPForSubmission = async (
       `Code review completed! Score: ${aiReview.overallScore}/100`
     );
   } catch (error) {
-    console.error('Error awarding XP for submission:', error);
+    logger.error('Error awarding XP for submission:', 'SERVICE', {}, error as Error);
   }
 };
 
@@ -374,7 +375,7 @@ export const getAIReviewMetrics = async (
       data: metrics
     };
   } catch (error) {
-    console.error('Error getting AI review metrics:', error);
+    logger.error('Error getting AI review metrics:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: 'Failed to get metrics'

@@ -7,6 +7,7 @@
 
 import { RUMMetrics } from '../../services/performance/rumService';
 import { CriticalPathAnalysis, ResourceInfo } from './criticalPathAnalyzer';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Image optimization configuration
@@ -406,7 +407,7 @@ export class ResourceOptimizer {
       
       return plan;
     } catch (error) {
-      console.error('Failed to optimize dynamic imports:', error);
+      logger.error('Failed to optimize dynamic imports:', 'UTILITY', {}, error as Error);
       return this.createEmptyOptimizationPlan();
     }
   }
@@ -460,7 +461,7 @@ export class ResourceOptimizer {
 
       return plan;
     } catch (error) {
-      console.error('Failed to optimize image loading:', error);
+      logger.error('Failed to optimize image loading:', 'UTILITY', {}, error as Error);
       return this.createEmptyImagePlan();
     }
   }
@@ -509,7 +510,7 @@ export class ResourceOptimizer {
 
       return plan;
     } catch (error) {
-      console.error('Failed to optimize font loading:', error);
+      logger.error('Failed to optimize font loading:', 'UTILITY', {}, error as Error);
       return this.createEmptyFontPlan();
     }
   }
@@ -560,7 +561,7 @@ export class ResourceOptimizer {
 
       return plan;
     } catch (error) {
-      console.error('Failed to generate bundle optimizations:', error);
+      logger.error('Failed to generate bundle optimizations:', 'UTILITY', {}, error as Error);
       return {
         splitCandidates: [],
         deadCodeTargets: [],
@@ -983,18 +984,18 @@ export class ResourceOptimizer {
     console.group('Bundle Optimization Recommendations');
     
     if (plan.splitCandidates.length > 0) {
-      console.log('Split candidates:', plan.splitCandidates);
+      logger.debug('Split candidates:', 'UTILITY', plan.splitCandidates);
     }
     
     if (plan.dynamicImportOpportunities.length > 0) {
-      console.log('Dynamic import opportunities:', plan.dynamicImportOpportunities);
+      logger.debug('Dynamic import opportunities:', 'UTILITY', plan.dynamicImportOpportunities);
     }
     
     if (plan.treeShakingOpportunities.length > 0) {
-      console.log('Tree shaking opportunities:', plan.treeShakingOpportunities);
+      logger.debug('Tree shaking opportunities:', 'UTILITY', plan.treeShakingOpportunities);
     }
     
-    console.log('Estimated size reduction:', plan.estimatedSizeReduction, 'bytes');
+    logger.debug('Estimated size reduction:', 'UTILITY', { arg0: plan.estimatedSizeReduction, arg1: 'bytes' });
     console.groupEnd();
   }
 

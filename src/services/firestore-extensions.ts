@@ -28,6 +28,7 @@ import {
 } from 'firebase/firestore';
 import { ServiceResult } from '../types/ServiceError';
 import { COLLECTIONS, Connection, Challenge, Collaboration, Trade } from './firestore';
+import { logger } from '@utils/logging/logger';
 
 // Connection Management Functions
 export const getConnections = async (userId: string): Promise<ServiceResult<Connection[]>> => {
@@ -49,7 +50,7 @@ export const getConnections = async (userId: string): Promise<ServiceResult<Conn
     
     return { data: connections, error: null };
   } catch (error: any) {
-    console.error('Error getting connections:', error);
+    logger.error('Error getting connections:', 'SERVICE', {}, error as Error);
     return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to get connections' } };
   }
 };
@@ -74,26 +75,26 @@ export const getConnectionRequests = async (userId: string): Promise<ServiceResu
     
     return { data: requests, error: null };
   } catch (error: any) {
-    console.error('Error getting connection requests:', error);
+    logger.error('Error getting connection requests:', 'SERVICE', {}, error as Error);
     return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to get connection requests' } };
   }
 };
 
 export const getSentConnectionRequests = async (userId: string): Promise<ServiceResult<Connection[]>> => {
   try {
-    console.log('🔍 getSentConnectionRequests: Starting query for user:', userId);
+    logger.debug('🔍 getSentConnectionRequests: Starting query for user:', 'SERVICE', userId);
     
     const db = getSyncFirebaseDb();
     const connectionsRef = collection(db, 'users', userId, 'connections');
     
     // For debugging - let's see ALL connections first
-    console.log('🔍 getSentConnectionRequests: Fetching ALL connections to debug...');
+    logger.debug('🔍 getSentConnectionRequests: Fetching ALL connections to debug...', 'SERVICE');
     const allConnectionsSnap = await getDocs(connectionsRef);
-    console.log(`📊 getSentConnectionRequests: Found ${allConnectionsSnap.size} total connections`);
+    logger.debug(`📊 getSentConnectionRequests: Found ${allConnectionsSnap.size} total connections`, 'SERVICE');
     
     allConnectionsSnap.docs.forEach(doc => {
       const data = doc.data() as any;
-      console.log(`📋 getSentConnectionRequests: Connection ${doc.id}:`, {
+      logger.debug('📋 getSentConnectionRequests: Connection ${doc.id}:', 'SERVICE', {
         status: data.status,
         userId: data.userId,
         connectedUserId: data.connectedUserId,
@@ -112,9 +113,9 @@ export const getSentConnectionRequests = async (userId: string): Promise<Service
       // Removed senderId filter since old connections don't have this field
     );
     
-    console.log('🔍 getSentConnectionRequests: Running query for all pending connections in user subcollection...');
+    logger.debug('🔍 getSentConnectionRequests: Running query for all pending connections in user subcollection...', 'SERVICE');
     const requestDocs = await getDocs(pendingRequestsQuery);
-    console.log(`📊 getSentConnectionRequests: Found ${requestDocs.size} pending connections`);
+    logger.debug(`📊 getSentConnectionRequests: Found ${requestDocs.size} pending connections`, 'SERVICE');
     
     const requests = requestDocs.docs.map(doc => {
       const data = doc.data() as Connection;
@@ -125,7 +126,7 @@ export const getSentConnectionRequests = async (userId: string): Promise<Service
       const isSentByUser = data.senderId === userId || 
                           (data.senderId === undefined && data.userId === userId);
       
-      console.log(`🔍 getSentConnectionRequests: Connection ${doc.id} - sent by user: ${isSentByUser}`, {
+      logger.debug('🔍 getSentConnectionRequests: Connection ${doc.id} - sent by user: ${isSentByUser}', 'SERVICE', {
         senderId: data.senderId,
         userId: data.userId,
         currentUserId: userId,
@@ -142,10 +143,10 @@ export const getSentConnectionRequests = async (userId: string): Promise<Service
       return cleanReq;
     });
     
-    console.log(`🎉 getSentConnectionRequests: Returning ${cleanRequests.length} sent requests`);
+    logger.debug(`🎉 getSentConnectionRequests: Returning ${cleanRequests.length} sent requests`, 'SERVICE');
     return { data: cleanRequests, error: null };
   } catch (error: any) {
-    console.error('❌ getSentConnectionRequests: Error:', error);
+    logger.error('❌ getSentConnectionRequests: Error:', 'SERVICE', {}, error as Error);
     return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to get sent connection requests' } };
   }
 };
@@ -191,10 +192,10 @@ export const updateConnectionStatus = async (
         status,
         updatedAt: Timestamp.now()
       });
-      console.log('✅ updateConnectionStatus: Updated connection in other user\'s subcollection');
+      logger.debug('✅ updateConnectionStatus: Updated connection in other user\'s subcollection', 'SERVICE');
     } else {
-      console.warn('⚠️ updateConnectionStatus: No matching connection found in other user\'s subcollection');
-      console.log('Query details:', {
+      logger.warn('⚠️ updateConnectionStatus: No matching connection found in other user\'s subcollection', 'SERVICE');
+      logger.debug('Query details:', 'SERVICE', {
         otherUserId,
         userId: connectionData.userId,
         connectedUserId: connectionData.connectedUserId
@@ -203,7 +204,7 @@ export const updateConnectionStatus = async (
     
     return { data: undefined, error: null };
   } catch (error: any) {
-    console.error('Error updating connection status:', error);
+    logger.error('Error updating connection status:', 'SERVICE', {}, error as Error);
     return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to update connection status' } };
   }
 };
@@ -242,7 +243,7 @@ export const removeConnection = async (userId: string, connectionId: string): Pr
     
     return { data: undefined, error: null };
   } catch (error: any) {
-    console.error('Error removing connection:', error);
+    logger.error('Error removing connection:', 'SERVICE', {}, error as Error);
     return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to remove connection' } };
   }
 };
@@ -253,15 +254,15 @@ export const createConnectionRequest = async (
   message?: string
 ): Promise<ServiceResult<string>> => {
   try {
-    console.log('🔍 createConnectionRequest: Starting request creation');
-    console.log('🔍 createConnectionRequest: Sender ID:', userId);
-    console.log('🔍 createConnectionRequest: Receiver ID:', connectedUserId);
-    console.log('🔍 createConnectionRequest: Message:', message);
+    logger.debug('🔍 createConnectionRequest: Starting request creation', 'SERVICE');
+    logger.debug('🔍 createConnectionRequest: Sender ID:', 'SERVICE', userId);
+    logger.debug('🔍 createConnectionRequest: Receiver ID:', 'SERVICE', connectedUserId);
+    logger.debug('🔍 createConnectionRequest: Message:', 'SERVICE', message);
 
     const db = getSyncFirebaseDb();
     
     // Check if connection already exists in user's subcollection
-    console.log('🔍 createConnectionRequest: Checking for existing connections...');
+    logger.debug('🔍 createConnectionRequest: Checking for existing connections...', 'SERVICE');
     const connectionsRef = collection(db, 'users', userId, 'connections');
     const existingQuery = query(
       connectionsRef,
@@ -270,39 +271,39 @@ export const createConnectionRequest = async (
     
     const existingDocs = await getDocs(existingQuery);
     if (!existingDocs.empty) {
-      console.log('❌ createConnectionRequest: Connection already exists');
+      logger.debug('❌ createConnectionRequest: Connection already exists', 'SERVICE');
       return { data: null, error: { code: 'already-exists', message: 'Connection request already exists' } };
     }
 
     // Fetch sender (current user) profile data
-    console.log('🔍 createConnectionRequest: Fetching sender profile...');
+    logger.debug('🔍 createConnectionRequest: Fetching sender profile...', 'SERVICE');
     const senderRef = doc(db, 'users', userId);
     const senderSnap = await getDoc(senderRef);
     
     if (!senderSnap.exists()) {
-      console.error('❌ createConnectionRequest: Sender profile not found');
+      logger.error('❌ createConnectionRequest: Sender profile not found', 'SERVICE');
       return { data: null, error: { code: 'not-found', message: 'Sender profile not found' } };
     }
     
     const senderData = senderSnap.data() as any;
     const senderName = senderData.displayName || senderData.name || senderData.email || `User ${userId.substring(0, 5)}`;
     const senderPhotoURL = senderData.photoURL || senderData.profilePicture;
-    console.log('✅ createConnectionRequest: Sender data fetched:', { senderName, senderPhotoURL });
+    logger.debug('✅ createConnectionRequest: Sender data fetched:', 'SERVICE', { senderName, senderPhotoURL });
 
     // Fetch receiver profile data
-    console.log('🔍 createConnectionRequest: Fetching receiver profile...');
+    logger.debug('🔍 createConnectionRequest: Fetching receiver profile...', 'SERVICE');
     const receiverRef = doc(db, 'users', connectedUserId);
     const receiverSnap = await getDoc(receiverRef);
     
     if (!receiverSnap.exists()) {
-      console.error('❌ createConnectionRequest: Receiver profile not found');
+      logger.error('❌ createConnectionRequest: Receiver profile not found', 'SERVICE');
       return { data: null, error: { code: 'not-found', message: 'Receiver profile not found' } };
     }
     
     const receiverData = receiverSnap.data() as any;
     const receiverName = receiverData.displayName || receiverData.name || receiverData.email || `User ${connectedUserId.substring(0, 5)}`;
     const receiverPhotoURL = receiverData.photoURL || receiverData.profilePicture;
-    console.log('✅ createConnectionRequest: Receiver data fetched:', { receiverName, receiverPhotoURL });
+    logger.debug('✅ createConnectionRequest: Receiver data fetched:', 'SERVICE', { receiverName, receiverPhotoURL });
     
     const connectionData: Omit<Connection, 'id'> = {
       userId,
@@ -320,24 +321,24 @@ export const createConnectionRequest = async (
       receiverPhotoURL
     };
     
-    console.log('🔍 createConnectionRequest: Creating connection documents...');
-    console.log('🔍 createConnectionRequest: Connection data:', connectionData);
+    logger.debug('🔍 createConnectionRequest: Creating connection documents...', 'SERVICE');
+    logger.debug('🔍 createConnectionRequest: Connection data:', 'SERVICE', connectionData);
     
     // Create connection in sender's subcollection
     const docRef = await addDoc(connectionsRef, connectionData);
-    console.log('✅ createConnectionRequest: Created sender connection:', docRef.id);
+    logger.debug('✅ createConnectionRequest: Created sender connection:', 'SERVICE', docRef.id);
     
     // Also create the same connection in recipient's subcollection for easier querying
     const recipientConnectionsRef = collection(db, 'users', connectedUserId, 'connections');
     await addDoc(recipientConnectionsRef, {
       ...connectionData  // Keep all the same data including names and photos
     });
-    console.log('✅ createConnectionRequest: Created recipient connection');
+    logger.debug('✅ createConnectionRequest: Created recipient connection', 'SERVICE');
     
-    console.log('🎉 createConnectionRequest: Connection request created successfully!');
+    logger.debug('🎉 createConnectionRequest: Connection request created successfully!', 'SERVICE');
     return { data: docRef.id, error: null };
   } catch (error: any) {
-    console.error('❌ createConnectionRequest: Error creating connection request:', error);
+    logger.error('❌ createConnectionRequest: Error creating connection request:', 'SERVICE', {}, error as Error);
     return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to create connection request' } };
   }
 };
@@ -354,7 +355,7 @@ export const getChallenge = async (challengeId: string): Promise<ServiceResult<C
       return { data: undefined, error: null };
     }
   } catch (error: any) {
-    console.error('Error getting challenge:', error);
+    logger.error('Error getting challenge:', 'SERVICE', {}, error as Error);
     return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to get challenge' } };
   }
 };
@@ -453,13 +454,13 @@ export const getSystemStats = async (): Promise<ServiceResult<SystemStats>> => {
       try {
         await setDoc(statsRef, stats, { merge: true });
       } catch (cacheError) {
-        console.warn("Skipping systemStats cache write (client context or permission issue)", cacheError);
+        logger.warn('Skipping systemStats cache write (client context or permission issue)', 'SERVICE', cacheError);
       }
     }
 
     return { data: stats, error: null };
   } catch (error: any) {
-    console.error('Error getting system stats:', error);
+    logger.error('Error getting system stats:', 'SERVICE', {}, error as Error);
     return { data: null, error: { code: error.code || 'unknown', message: error.message || 'Failed to get system stats' } };
   }
 };

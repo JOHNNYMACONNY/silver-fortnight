@@ -2,6 +2,7 @@
 
 import { AUTH_CONSTANTS } from '../utils/constants';
 import { SecurityEvent, ErrorSeverity, SecurityEventType } from '../types/security';
+import { logger } from '@utils/logging/logger';
 
 export class SecurityMonitoringService {
   private events: SecurityEvent[] = [];
@@ -37,7 +38,7 @@ export class SecurityMonitoringService {
       // Analyze for suspicious patterns
       await this.analyzeSuspiciousPatterns(enrichedEvent);
     } catch (error) {
-      console.error('Failed to log security event:', error);
+      logger.error('Failed to log security event:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -51,14 +52,14 @@ export class SecurityMonitoringService {
         // Example using a hypothetical monitoring service:
         // await monitoringService.logSecurityEvent(event);
         
-        console.log('Security Event:', {
+        logger.debug('Security Event:', 'SERVICE', {
           type: event.type,
           severity: event.severity,
           timestamp: new Date(event.timestamp).toISOString(),
           details: this.sanitizeEventDetails(event)
         });
       } catch (error) {
-        console.error('Failed to send to monitoring service:', error);
+        logger.error('Failed to send to monitoring service:', 'SERVICE', {}, error as Error);
       }
     }
   }

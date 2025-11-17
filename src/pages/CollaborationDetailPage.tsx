@@ -35,6 +35,7 @@ import { TopicLink } from '../components/ui/TopicLink';
 import { semanticClasses } from '../utils/semanticColors';
 import { formatDate } from '../utils/dateUtils';
 import { getProfileImageUrl } from '../utils/imageUtils';
+import { logger } from '@utils/logging/logger';
 
 // Transform legacy roles to new CollaborationRoleData format
 const transformLegacyRoles = (roles: any[], collaborationId: string): CollaborationRoleData[] => {
@@ -217,7 +218,7 @@ export const CollaborationDetailPage: React.FC = () => {
         throw new Error(result.error || 'Failed to submit application');
       }
     } catch (error) {
-      console.error('Error submitting application:', error);
+      logger.error('Error submitting application:', 'PAGE', {}, error as Error);
       addToast('error', error instanceof Error ? error.message : 'Failed to submit application');
     }
   };

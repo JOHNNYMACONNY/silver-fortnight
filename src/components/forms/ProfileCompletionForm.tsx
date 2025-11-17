@@ -7,6 +7,7 @@
 
 import React, { useState, useCallback } from "react";
 import { MultiStepForm, FormStep } from "./MultiStepForm";
+import { logger } from '@utils/logging/logger';
 import {
   BasicInfoStep,
   AvatarBioStep,
@@ -179,7 +180,7 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
 
         await onSubmit(completeData);
       } catch (error) {
-        console.error("Profile completion error:", error);
+        logger.error('Profile completion error:', 'COMPONENT', {}, error as Error);
         setSubmitError(
           error instanceof Error
             ? error.message
@@ -197,7 +198,7 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
   const handleStepChange = useCallback(
     (currentStep: number, totalSteps: number) => {
       // Could be used for analytics or progress tracking
-      console.log(`Profile completion progress: ${currentStep}/${totalSteps}`);
+      logger.debug(`Profile completion progress: ${currentStep}/${totalSteps}`, 'COMPONENT');
     },
     []
   );

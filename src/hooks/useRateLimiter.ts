@@ -4,6 +4,7 @@
  */
 
 import { useRef, useCallback } from "react";
+import { logger } from '@utils/logging/logger';
 
 interface RateLimiterOptions {
   maxCalls: number;
@@ -172,9 +173,7 @@ export const getGlobalRateLimiter = () => {
   if (!globalRateLimiter) {
     // This is a workaround since we can't use hooks outside components
     // In practice, this would be managed by a context provider
-    console.warn(
-      "Global rate limiter not initialized. Use within a component context."
-    );
+    logger.warn("Global rate limiter not initialized. Use within a component context.", 'APP');
   }
   return globalRateLimiter;
 };
@@ -188,7 +187,7 @@ export const emergencyRateLimit = (operation: string): boolean => {
 
   if (now - lastCall < 1000) {
     // 1 second minimum between calls
-    console.warn(`Emergency rate limit triggered for ${operation}`);
+    logger.warn(`Emergency rate limit triggered for ${operation}`, 'APP');
     return false;
   }
 

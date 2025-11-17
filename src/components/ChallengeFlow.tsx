@@ -9,6 +9,7 @@ import Grid from './layout/primitives/Grid';
 import Cluster from './layout/primitives/Cluster';
 import { AICodeReviewInterface } from './challenges/AICodeReviewInterface';
 import { AICodeReview } from '../services/ai/codeReviewService';
+import { logger } from '@utils/logging/logger';
 
 // Main challenge dashboard showing progression through tiers
 export const ChallengeProgressionDashboard: React.FC = () => {
@@ -110,7 +111,7 @@ export const SoloChallengeCard: React.FC<{ challenge: Challenge }> = ({ challeng
     // Could trigger challenge completion logic here based on review score
     if (review.overallScore >= 70) {
       // Auto-complete challenge if score is good enough
-      console.log('Challenge completed with good score!');
+      logger.debug('Challenge completed with good score!', 'COMPONENT');
     }
   };
 

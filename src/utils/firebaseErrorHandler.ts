@@ -32,7 +32,7 @@ export const exponentialBackoff = async (attempt: number, options: RetryOptions 
   const jitter = Math.random() * 0.1 * delay;
   const finalDelay = delay + jitter;
   
-  console.warn(`🔄 Firebase operation failed, retrying in ${Math.round(finalDelay)}ms (attempt ${attempt + 1})`);
+  logger.warn(`🔄 Firebase operation failed, retrying in ${Math.round(finalDelay)}ms (attempt ${attempt + 1})`, 'UTILITY');
   
   return new Promise(resolve => setTimeout(resolve, finalDelay));
 };
@@ -83,13 +83,13 @@ export const withFirebaseRetry = async <T>(
       
       // If this isn't a retriable error, throw immediately
       if (!isRetriableFirebaseError(error)) {
-        console.error('🚨 Non-retriable Firebase error:', error);
+        logger.error('🚨 Non-retriable Firebase error:', 'UTILITY', {}, error as Error);
         throw error;
       }
       
       // If we've exhausted retries, throw the last error
       if (attempt === opts.maxRetries) {
-        console.error('🚨 Firebase operation failed after all retries:', error);
+        logger.error('🚨 Firebase operation failed after all retries:', 'UTILITY', {}, error as Error);
         throw error;
       }
       
@@ -142,7 +142,7 @@ export const createQuotaMonitor = () => {
       lastQuotaError = new Date();
       
       if (quotaExceededCount > 5) {
-        console.error('🚨 Multiple quota errors detected. Consider implementing rate limiting.');
+        logger.error('Error occurred', 'UTILITY', undefined, '🚨 Multiple quota errors detected. Consider implementing rate limiting.' as Error);
       }
     },
     

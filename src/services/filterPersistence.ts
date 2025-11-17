@@ -5,6 +5,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { CollaborationFilters } from './firestore-exports';
+import { logger } from '@utils/logging/logger';
 
 // Filter persistence interfaces
 export interface FilterAnalytics {
@@ -90,7 +91,7 @@ export class FilterPersistenceService {
       // Update URL without page reload
       window.history.replaceState({}, '', url.toString());
     } catch (error) {
-      console.warn('Failed to sync filters to URL:', error);
+      logger.warn('Failed to sync filters to URL:', 'SERVICE', error);
     }
   }
 
@@ -124,7 +125,7 @@ export class FilterPersistenceService {
 
       return filters;
     } catch (error) {
-      console.warn('Failed to get filters from URL:', error);
+      logger.warn('Failed to get filters from URL:', 'SERVICE', error);
       return {};
     }
   }
@@ -170,7 +171,7 @@ export class FilterPersistenceService {
       preferences.updatedAt = new Date();
       await this.saveUserPreferences(userId, preferences);
     } catch (error) {
-      console.error('Failed to save user filter preferences:', error);
+      logger.error('Failed to save user filter preferences:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -191,7 +192,7 @@ export class FilterPersistenceService {
         };
       }
     } catch (error) {
-      console.warn('Failed to load user filter preferences:', error);
+      logger.warn('Failed to load user filter preferences:', 'SERVICE', error);
     }
 
     // Return default preferences
@@ -213,7 +214,7 @@ export class FilterPersistenceService {
       preferences.updatedAt = new Date();
       await this.saveUserPreferences(userId, preferences);
     } catch (error) {
-      console.error('Failed to set default filters:', error);
+      logger.error('Failed to set default filters:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -221,7 +222,7 @@ export class FilterPersistenceService {
     try {
       localStorage.setItem(`${this.storageKey}_${userId}`, JSON.stringify(preferences));
     } catch (error) {
-      console.error('Failed to save user preferences:', error);
+      logger.error('Failed to save user preferences:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -277,7 +278,7 @@ export class FilterPersistenceService {
       preferences.updatedAt = now;
       await this.saveUserPreferences(userId, preferences);
     } catch (error) {
-      console.error('Failed to track filter usage:', error);
+      logger.error('Failed to track filter usage:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -286,7 +287,7 @@ export class FilterPersistenceService {
       const preferences = await this.getUserFilterPreferences(userId);
       return preferences.analytics.sort((a, b) => b.usageCount - a.usageCount);
     } catch (error) {
-      console.error('Failed to get filter analytics:', error);
+      logger.error('Failed to get filter analytics:', 'SERVICE', {}, error as Error);
       return [];
     }
   }
@@ -312,7 +313,7 @@ export class FilterPersistenceService {
 
       return popularFilters;
     } catch (error) {
-      console.error('Failed to get popular filters:', error);
+      logger.error('Failed to get popular filters:', 'SERVICE', {}, error as Error);
       return [];
     }
   }
@@ -322,7 +323,7 @@ export class FilterPersistenceService {
     try {
       localStorage.removeItem(`${this.storageKey}_${userId}`);
     } catch (error) {
-      console.error('Failed to clear user preferences:', error);
+      logger.error('Failed to clear user preferences:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -331,7 +332,7 @@ export class FilterPersistenceService {
       const stored = localStorage.getItem(`${this.storageKey}_${userId}`);
       return stored || '{}';
     } catch (error) {
-      console.error('Failed to export user preferences:', error);
+      logger.error('Failed to export user preferences:', 'SERVICE', {}, error as Error);
       return '{}';
     }
   }
@@ -342,7 +343,7 @@ export class FilterPersistenceService {
       localStorage.setItem(`${this.storageKey}_${userId}`, data);
       return true;
     } catch (error) {
-      console.error('Failed to import user preferences:', error);
+      logger.error('Failed to import user preferences:', 'SERVICE', {}, error as Error);
       return false;
     }
   }

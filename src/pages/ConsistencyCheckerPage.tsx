@@ -5,6 +5,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/Tabs';
+import { logger } from '@utils/logging/logger';
 
 const ConsistencyCheckerPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -16,7 +17,7 @@ const ConsistencyCheckerPage: React.FC = () => {
     try {
       return useIntelligentAudit ? intelligentAppAudit() : comprehensiveAppAudit();
     } catch (error) {
-      console.warn('Intelligent audit failed, falling back to comprehensive audit:', error);
+      logger.warn('Intelligent audit failed, falling back to comprehensive audit:', 'PAGE', error);
       return comprehensiveAppAudit();
     }
   }, [refreshKey, useIntelligentAudit]);
@@ -136,7 +137,7 @@ const ConsistencyCheckerPage: React.FC = () => {
             </Button>
             <Button 
               onClick={() => {
-                console.log(`${useIntelligentAudit ? 'Intelligent' : 'Comprehensive'} Consistency Report:`, report);
+                logger.debug(`${useIntelligentAudit ? 'Intelligent' : 'Comprehensive'} Consistency Report:`, 'PAGE', report);
                 alert('Report exported to console! Check browser developer tools.');
               }}
               className="px-6"

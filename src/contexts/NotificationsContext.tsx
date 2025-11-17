@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
+import { logger } from '@utils/logging/logger';
 import {
   markNotificationAsRead,
   createNotification,
@@ -48,7 +49,7 @@ const adaptNotification = (notification: Partial<Notification>): Partial<Notific
     // Add other cases if new types are introduced
     default:
       // Handle unknown types gracefully, perhaps log a warning
-      console.warn(`Unknown notification type encountered: ${notification.type}`);
+      logger.warn(`Unknown notification type encountered: ${notification.type}`, 'CONTEXT');
       firestoreType = 'system'; // Default to system type for unknown types
   }
 
@@ -164,7 +165,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   const fetchNotifications = async () => {
     // This is now a no-op since we're using real-time updates
     // But we keep it for API compatibility
-    console.log('Manual notification refresh requested - using real-time updates instead');
+    logger.debug('Manual notification refresh requested - using real-time updates instead', 'CONTEXT');
   };
 
   // Mark a notification as read

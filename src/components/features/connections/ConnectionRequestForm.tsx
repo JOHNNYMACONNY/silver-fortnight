@@ -6,6 +6,7 @@ import { Button } from '../../ui/Button';
 import { Textarea } from '../../ui/Textarea';
 import { Label } from '../../ui/Label';
 import { Alert, AlertDescription, AlertTitle } from '../../ui/Alert';
+import { logger } from '@utils/logging/logger';
 
 interface ConnectionRequestFormProps {
   receiverId: string;
@@ -31,20 +32,20 @@ export const ConnectionRequestForm: React.FC<ConnectionRequestFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log('🔍 ConnectionRequestForm: Form submitted');
-    console.log('🔍 ConnectionRequestForm: Current user:', currentUser?.uid);
-    console.log('🔍 ConnectionRequestForm: User profile:', !!userProfile);
-    console.log('🔍 ConnectionRequestForm: Receiver ID:', receiverId);
-    console.log('🔍 ConnectionRequestForm: Message:', message);
+    logger.debug('🔍 ConnectionRequestForm: Form submitted', 'COMPONENT');
+    logger.debug('🔍 ConnectionRequestForm: Current user:', 'COMPONENT', currentUser?.uid);
+    logger.debug('🔍 ConnectionRequestForm: User profile:', 'COMPONENT', !!userProfile);
+    logger.debug('🔍 ConnectionRequestForm: Receiver ID:', 'COMPONENT', receiverId);
+    logger.debug('🔍 ConnectionRequestForm: Message:', 'COMPONENT', message);
 
     if (!currentUser || !userProfile) {
-      console.error('❌ ConnectionRequestForm: User not logged in or profile missing');
+      logger.error('❌ ConnectionRequestForm: User not logged in or profile missing', 'COMPONENT');
       setError('You must be logged in to send a connection request');
       return;
     }
 
     if (currentUser.uid === receiverId) {
-      console.error('❌ ConnectionRequestForm: Trying to connect with self');
+      logger.error('❌ ConnectionRequestForm: Trying to connect with self', 'COMPONENT');
       setError('You cannot connect with yourself');
       return;
     }
@@ -53,27 +54,27 @@ export const ConnectionRequestForm: React.FC<ConnectionRequestFormProps> = ({
     setError(null);
 
     try {
-      console.log('🚀 ConnectionRequestForm: Calling createConnectionRequest...');
+      logger.debug('🚀 ConnectionRequestForm: Calling createConnectionRequest...', 'COMPONENT');
       const result = await createConnectionRequest(currentUser.uid, receiverId, message);
 
-      console.log('📄 ConnectionRequestForm: Result received:', result);
+      logger.debug('📄 ConnectionRequestForm: Result received:', 'COMPONENT', result);
 
       if (result.error || !result.data) {
-        console.error('❌ ConnectionRequestForm: Error in result:', result.error);
+        logger.error('❌ ConnectionRequestForm: Error in result:', 'COMPONENT', {}, result.error as Error);
         throw new Error(result.error?.message || 'Failed to send connection request');
       }
 
-      console.log('✅ ConnectionRequestForm: Success! Connection ID:', result.data);
+      logger.debug('✅ ConnectionRequestForm: Success! Connection ID:', 'COMPONENT', result.data);
       addToast('success', 'Connection request sent successfully');
       onSuccess();
     } catch (err: unknown) {
-      console.error('❌ ConnectionRequestForm: Exception caught:', err);
+      logger.error('❌ ConnectionRequestForm: Exception caught:', 'COMPONENT', {}, err as Error);
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
       addToast('error', errorMessage);
     } finally {
       setLoading(false);
-      console.log('🔍 ConnectionRequestForm: Form submission completed');
+      logger.debug('🔍 ConnectionRequestForm: Form submission completed', 'COMPONENT');
     }
   };
 

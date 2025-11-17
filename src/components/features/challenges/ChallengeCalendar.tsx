@@ -7,6 +7,7 @@ import {
 } from "../../../services/challenges";
 import { useBusinessMetrics } from "../../../contexts/PerformanceContext";
 import { useAuth } from "../../../AuthContext";
+import { logger } from '@utils/logging/logger';
 
 interface ChallengeCalendarProps {
   className?: string;
@@ -42,11 +43,11 @@ export const ChallengeCalendar: React.FC<ChallengeCalendarProps> = ({
 
         const [d, w] = await Promise.all([
           getDailyChallenges().catch((err) => {
-            console.warn("Failed to load daily challenges:", err);
+            logger.warn('Failed to load daily challenges:', 'COMPONENT', err);
             return { success: false, challenges: [], error: err.message };
           }),
           getWeeklyChallenges().catch((err) => {
-            console.warn("Failed to load weekly challenges:", err);
+            logger.warn('Failed to load weekly challenges:', 'COMPONENT', err);
             return { success: false, challenges: [], error: err.message };
           }),
         ]);

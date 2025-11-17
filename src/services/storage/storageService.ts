@@ -10,6 +10,7 @@
 import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from 'firebase/storage';
 import { getSyncFirebaseStorage } from '../../firebase-config';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '@utils/logging/logger';
 
 // Maximum file size in bytes (5MB)
 export const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -83,7 +84,7 @@ export const uploadFile = async (
     
     return { url: downloadURL, error: null };
   } catch (err: any) {
-    console.error('Error uploading file:', err);
+    logger.error('Error uploading file:', 'SERVICE', {}, err as Error);
     return { 
       url: null, 
       error: err.message || 'Failed to upload file'
@@ -116,7 +117,7 @@ export const deleteFile = async (
     
     return { success: true, error: null };
   } catch (err: any) {
-    console.error('Error deleting file:', err);
+    logger.error('Error deleting file:', 'SERVICE', {}, err as Error);
     return { 
       success: false, 
       error: err.message || 'Failed to delete file'
@@ -145,7 +146,7 @@ export const listFiles = async (
     
     return { urls, error: null };
   } catch (err: any) {
-    console.error('Error listing files:', err);
+    logger.error('Error listing files:', 'SERVICE', {}, err as Error);
     return { 
       urls: null, 
       error: err.message || 'Failed to list files'

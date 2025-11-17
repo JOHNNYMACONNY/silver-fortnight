@@ -1,6 +1,7 @@
 import React from 'react';
 import { AppError, ErrorCode, ErrorSeverity } from '../types/errors';
 import { errorService } from './errorService';
+import { logger } from '@utils/logging/logger';
 
 interface NetworkConfig {
   maxRetries: number;
@@ -81,7 +82,7 @@ class NetworkResilienceService {
   }
 
   private handleOnline(): void {
-    console.log('🌐 Network: Back online');
+    logger.debug('🌐 Network: Back online', 'SERVICE');
     this.isOnline = true;
     
     if (this.offlineStartTime) {
@@ -94,7 +95,7 @@ class NetworkResilienceService {
   }
 
   private handleOffline(): void {
-    console.log('🌐 Network: Gone offline');
+    logger.debug('🌐 Network: Gone offline', 'SERVICE');
     this.isOnline = false;
     this.offlineStartTime = Date.now();
   }
@@ -102,7 +103,7 @@ class NetworkResilienceService {
   private handleConnectionChange(): void {
     const connection = (navigator as any).connection;
     if (connection) {
-      console.log(`🌐 Network: Connection changed - ${connection.effectiveType}, ${connection.downlink}Mbps`);
+      logger.debug(`🌐 Network: Connection changed - ${connection.effectiveType}, ${connection.downlink}Mbps`, 'SERVICE');
       
       // Adjust retry strategy based on connection quality
       if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') {
@@ -236,7 +237,7 @@ class NetworkResilienceService {
       return;
     }
 
-    console.log(`🌐 Network: Processing ${this.requestQueue.length} queued requests`);
+    logger.debug(`🌐 Network: Processing ${this.requestQueue.length} queued requests`, 'SERVICE');
 
     const requests = [...this.requestQueue];
     this.requestQueue = [];
@@ -246,7 +247,7 @@ class NetworkResilienceService {
         await this.retryRequest(request);
         this.metrics.queuedRequests--;
       } catch (error) {
-        console.error('Failed to process queued request:', error);
+        logger.error('Failed to process queued request:', 'SERVICE', {}, error as Error);
         
         // Re-queue if retries remaining
         if (request.retryCount < this.config.maxRetries) {

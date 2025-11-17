@@ -1,4 +1,5 @@
 import { isDevelopment } from '../config/env';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Utility for preloading resources and prefetching critical assets
@@ -154,7 +155,7 @@ export const prefetchRoutes = (routes: string[]): void => {
   // TODO: Implement proper route prefetching when we have code splitting
 
   if (isDevelopment()) {
-    console.log('Route prefetching disabled to prevent infinite refresh loops:', routes);
+    logger.debug('Route prefetching disabled to prevent infinite refresh loops:', 'UTILITY', routes);
   }
 
   // For now, we'll just log the routes that would be prefetched

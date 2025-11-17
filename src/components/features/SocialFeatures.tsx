@@ -23,6 +23,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { getProfileImageUrl } from '../../utils/imageUtils';
 import { Button } from '../ui/Button';
 import { cn } from '../../utils/cn';
+import { logger } from '@utils/logging/logger';
 
 interface SocialFeaturesProps {
   userId: string;
@@ -94,13 +95,13 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
               followingCount: followingSnapshot.size
             };
           } catch (error) {
-            console.warn('Could not fetch actual follow counts, using socialStats:', error);
+            logger.warn('Could not fetch actual follow counts, using socialStats:', 'COMPONENT', error);
           }
         }
         
         setSocialStats(stats);
       } catch (error) {
-        console.error('Failed to load social stats:', error);
+        logger.error('Failed to load social stats:', 'COMPONENT', {}, error as Error);
       } finally {
         setStatsLoading(false);
       }
@@ -121,7 +122,7 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
         const following = await checkIsFollowing(user.uid, userId);
         setIsFollowing(following);
       } catch (error) {
-        console.error('Failed to check follow status:', error);
+        logger.error('Failed to check follow status:', 'COMPONENT', {}, error as Error);
         setIsFollowing(false);
       }
     };
@@ -152,7 +153,7 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
       }
     } catch (error) {
       addToast('error', 'Failed to follow user');
-      console.error('Follow error:', error);
+      logger.error('Follow error:', 'COMPONENT', {}, error as Error);
     } finally {
       setLoading(false);
     }
@@ -178,7 +179,7 @@ export const SocialFeatures: React.FC<SocialFeaturesProps> = ({
       }
     } catch (error) {
       addToast('error', 'Failed to unfollow user');
-      console.error('Unfollow error:', error);
+      logger.error('Unfollow error:', 'COMPONENT', {}, error as Error);
     } finally {
       setLoading(false);
     }
@@ -454,13 +455,13 @@ export const UserSocialStats: React.FC<UserSocialStatsProps> = ({
               followingCount: followingSnapshot.size
             };
           } catch (error) {
-            console.warn('Could not fetch actual follow counts, using socialStats:', error);
+            logger.warn('Could not fetch actual follow counts, using socialStats:', 'COMPONENT', error);
           }
         }
         
         setSocialStats(stats);
       } catch (error) {
-        console.error('Failed to load social stats:', error);
+        logger.error('Failed to load social stats:', 'COMPONENT', {}, error as Error);
       } finally {
         setLoading(false);
       }

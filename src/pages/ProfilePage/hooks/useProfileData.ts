@@ -5,6 +5,7 @@ import { getUserSocialStats } from "../../../services/leaderboards";
 import { getUserReviews } from "../../../services/firestore-exports";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import type { BannerData } from "../../../utils/imageUtils";
+import { logger } from '@utils/logging/logger';
 
 /**
  * UserProfile interface representing the complete user profile data
@@ -111,7 +112,7 @@ export const useProfileData = (
         if (targetUserId) {
           const { data: profile, error } = await getUserProfile(targetUserId);
           if (error) {
-            console.error("Error loading user profile:", error);
+            logger.error('Error loading user profile:', 'PAGE', {}, error as Error);
             // Fallback to Firebase Auth data for own profile if Firestore fetch fails
             if (isOwnProfile && currentUser) {
               setUserProfile({
@@ -141,7 +142,7 @@ export const useProfileData = (
           }
         }
       } catch (error) {
-        console.error("Error loading user profile:", error);
+        logger.error('Error loading user profile:', 'PAGE', {}, error as Error);
         // Fallback to Firebase Auth data for own profile if there's an error
         if (isOwnProfile && currentUser) {
           setUserProfile({
@@ -181,7 +182,7 @@ export const useProfileData = (
         try {
           reviewsResult = await getUserReviews(targetUserId);
         } catch (error) {
-          console.warn("Could not fetch reviews (permissions):", error);
+          logger.warn('Could not fetch reviews (permissions):', 'PAGE', error);
         }
 
         if ((statsResult as any)?.data) {
@@ -208,10 +209,7 @@ export const useProfileData = (
                 (socialResult as any)?.data?.followersCount || 0;
             }
           } catch (error) {
-            console.warn(
-              "Could not fetch actual follower count, using socialStats:",
-              error
-            );
+            logger.warn('Could not fetch actual follower count, using socialStats:', 'PAGE', error);
             actualFollowersCount =
               (socialResult as any)?.data?.followersCount || 0;
           }
@@ -245,7 +243,7 @@ export const useProfileData = (
           setReviewsPreview(list);
         }
       } catch (error) {
-        console.error("Error fetching profile stats:", error);
+        logger.error('Error fetching profile stats:', 'PAGE', {}, error as Error);
       } finally {
         setReviewsLoading(false);
       }

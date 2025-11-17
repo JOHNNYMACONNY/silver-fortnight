@@ -13,6 +13,7 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { CollaborationRoleData } from '../types/collaboration';
+import { logger } from '@utils/logging/logger';
 
 interface Collaboration {
   id: string;
@@ -347,7 +348,7 @@ export async function getCollaboration(collaborationId: string): Promise<{
       data: collaboration
     };
   } catch (error: any) {
-    console.error('Error getting collaboration:', error);
+    logger.error('Error getting collaboration:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: { message: error.message || 'Failed to get collaboration' }

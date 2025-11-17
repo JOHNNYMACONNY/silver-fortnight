@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { getSyncFirebaseDb } from '../firebase-config';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { logger } from '@utils/logging/logger';
 
 export const MessageTestPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -17,7 +18,7 @@ export const MessageTestPage: React.FC = () => {
 
     // Hardcoded conversation ID
     const conversationId = 'bcB1UuJ2VHwTXsTFG71g';
-    console.log('Directly testing conversation:', conversationId);
+    logger.debug('Directly testing conversation:', 'PAGE', conversationId);
 
     // Create a direct reference to the messages subcollection
     const messagesRef = collection(getSyncFirebaseDb(), 'conversations', conversationId, 'messages');
@@ -26,8 +27,8 @@ export const MessageTestPage: React.FC = () => {
     // Set up real-time listener
     const unsubscribe = onSnapshot(q, (snapshot) => {
       try {
-        console.log('Direct test - snapshot received, empty?', snapshot.empty);
-        console.log('Direct test - snapshot size:', snapshot.size);
+        logger.debug('Direct test - snapshot received, empty?', 'PAGE', snapshot.empty);
+        logger.debug('Direct test - snapshot size:', 'PAGE', snapshot.size);
 
         const messagesList: any[] = [];
 
@@ -37,20 +38,20 @@ export const MessageTestPage: React.FC = () => {
             id: doc.id,
             ...(raw && typeof raw === 'object' ? raw : {})
           };
-          console.log('Direct test - found message:', doc.id, messageData);
+          logger.debug('Direct test - found message:', 'PAGE', { arg0: doc.id, arg1: messageData });
           messagesList.push(messageData);
         });
 
-        console.log('Direct test - total messages found:', messagesList.length);
+        logger.debug('Direct test - total messages found:', 'PAGE', messagesList.length);
         setMessages(messagesList);
         setLoading(false);
       } catch (err: any) {
-        console.error('Direct test - error processing messages:', err);
+        logger.error('Direct test - error processing messages:', 'PAGE', {}, err as Error);
         setError(err.message || 'Failed to process messages');
         setLoading(false);
       }
     }, (err) => {
-      console.error('Direct test - error fetching messages:', err);
+      logger.error('Direct test - error fetching messages:', 'PAGE', {}, err as Error);
       setError(err.message || 'Failed to fetch messages');
       setLoading(false);
     });

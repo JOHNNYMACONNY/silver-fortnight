@@ -19,6 +19,7 @@ import { ServiceResponse } from '../types/services';
 import { SkillLevel, UserSkill } from '../types/gamification';
 import { awardXP } from './gamification';
 import { XPSource } from '../types/gamification';
+import { logger } from '@utils/logging/logger';
 
 const getDb = () => getSyncFirebaseDb();
 
@@ -145,7 +146,7 @@ export const createSkillAssessment = async (
       data: fullAssessment
     };
   } catch (error) {
-    console.error('Error creating skill assessment:', error);
+    logger.error('Error creating skill assessment:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to create assessment'
@@ -181,7 +182,7 @@ export const getUserSkillAssessments = async (
       data: assessments
     };
   } catch (error) {
-    console.error('Error getting skill assessments:', error);
+    logger.error('Error getting skill assessments:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: 'Failed to get assessments'
@@ -227,7 +228,7 @@ const updateUserSkill = async (
       await setDoc(skillRef, newSkill);
     }
   } catch (error) {
-    console.error('Error updating user skill:', error);
+    logger.error('Error updating user skill:', 'SERVICE', {}, error as Error);
   }
 };
 
@@ -301,7 +302,7 @@ export const getSkillProgressAnalytics = async (
       data: analytics
     };
   } catch (error) {
-    console.error('Error getting skill progress analytics:', error);
+    logger.error('Error getting skill progress analytics:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: 'Failed to get analytics'
@@ -351,7 +352,7 @@ export const identifySkillGaps = async (
       data: gaps
     };
   } catch (error) {
-    console.error('Error identifying skill gaps:', error);
+    logger.error('Error identifying skill gaps:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: 'Failed to identify skill gaps'

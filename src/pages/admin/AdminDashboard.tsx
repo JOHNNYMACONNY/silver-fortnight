@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { formatDate } from '../../utils/dateUtils';
 import { getProfileImageUrl } from '../../utils/imageUtils';
+import { logger } from '@utils/logging/logger';
 
 // Define tab types
 type TabType = 'dashboard' | 'users' | 'trades' | 'collaborations';
@@ -53,7 +54,7 @@ const AdminDashboard: React.FC = () => {
   const refreshGamificationMetrics = async () => {
     const { data, error } = await getGamificationMetrics7d();
     if (error) {
-      console.warn('Gamification metrics refresh failed:', error.message);
+      logger.warn('Gamification metrics refresh failed:', 'PAGE', error.message);
       addToast('error', error.message || 'Failed to refresh metrics');
       setGamiMetrics(null);
     } else {
@@ -78,7 +79,7 @@ const AdminDashboard: React.FC = () => {
             // Fetch last 7 days gamification metrics
             const { data: metrics, error: gError } = await getGamificationMetrics7d();
             if (gError) {
-              console.warn('Gamification metrics failed:', gError.message);
+              logger.warn('Gamification metrics failed:', 'PAGE', gError.message);
               setGamiMetrics(null);
             } else {
               setGamiMetrics(metrics || null);

@@ -10,6 +10,7 @@ import { Button } from '../../ui/Button';
 import { Badge } from '../../ui/Badge';
 import { Card, CardHeader, CardContent, CardTitle } from '../../ui/Card';
 import { formatDate } from '../../../utils/dateUtils';
+import { logger } from '@utils/logging/logger';
 
 interface ConnectionCardProps {
   connection: Connection;
@@ -93,7 +94,7 @@ export const ConnectionCard: React.FC<ConnectionCardProps> = ({
   // Fetch user data when names are missing
   useEffect(() => {
     const fetchMissingUserData = async () => {
-      console.log('🔍 ConnectionCard: Checking if user data fetch needed', {
+      logger.debug('🔍 ConnectionCard: Checking if user data fetch needed', 'COMPONENT', {
         senderName: typedConnection.senderName,
         receiverName: typedConnection.receiverName,
         senderId: typedConnection.senderId,
@@ -113,7 +114,7 @@ export const ConnectionCard: React.FC<ConnectionCardProps> = ({
       const needsSenderData = isNewFormat && !typedConnection.senderName && typedConnection.senderId;
       const needsReceiverData = isNewFormat && !typedConnection.receiverName && typedConnection.receiverId;
 
-      console.log('🔍 ConnectionCard: Fetch requirements', {
+      logger.debug('🔍 ConnectionCard: Fetch requirements', 'COMPONENT', {
         needsOtherUserData,
         needsSenderData,
         needsReceiverData,
@@ -121,17 +122,17 @@ export const ConnectionCard: React.FC<ConnectionCardProps> = ({
       });
 
       if (!needsOtherUserData && !needsSenderData && !needsReceiverData) {
-        console.log('🔍 ConnectionCard: No fetch needed, exiting');
+        logger.debug('🔍 ConnectionCard: No fetch needed, exiting', 'COMPONENT');
         return;
       }
 
       try {
-        console.log('🚀 ConnectionCard: Starting user data fetch...');
+        logger.debug('🚀 ConnectionCard: Starting user data fetch...', 'COMPONENT');
         const fetchPromises: Promise<any>[] = [];
         
         // Handle old format - fetch the other user's data
         if (needsOtherUserData) {
-          console.log('📞 ConnectionCard: Fetching other user data for (old format):', otherUserId);
+          logger.debug('📞 ConnectionCard: Fetching other user data for (old format):', 'COMPONENT', otherUserId);
           fetchPromises.push(
             getUserProfile(otherUserId).then(result => ({
               type: isSender ? 'receiver' : 'sender',
@@ -142,7 +143,7 @@ export const ConnectionCard: React.FC<ConnectionCardProps> = ({
         
         // Handle new format - fetch missing sender/receiver data
         if (needsSenderData) {
-          console.log('📞 ConnectionCard: Fetching sender data for:', typedConnection.senderId);
+          logger.debug('📞 ConnectionCard: Fetching sender data for:', 'COMPONENT', typedConnection.senderId);
           fetchPromises.push(
             getUserProfile(typedConnection.senderId).then(result => ({
               type: 'sender',
@@ -152,7 +153,7 @@ export const ConnectionCard: React.FC<ConnectionCardProps> = ({
         }
 
         if (needsReceiverData) {
-          console.log('📞 ConnectionCard: Fetching receiver data for:', typedConnection.receiverId);
+          logger.debug('📞 ConnectionCard: Fetching receiver data for:', 'COMPONENT', typedConnection.receiverId);
           fetchPromises.push(
             getUserProfile(typedConnection.receiverId).then(result => ({
               type: 'receiver', 
@@ -162,24 +163,24 @@ export const ConnectionCard: React.FC<ConnectionCardProps> = ({
         }
 
         const results = await Promise.all(fetchPromises);
-        console.log('📄 ConnectionCard: Fetch results:', results);
+        logger.debug('📄 ConnectionCard: Fetch results:', 'COMPONENT', results);
         
         const newFallbackData: { senderData?: User; receiverData?: User } = {};
         
         results.forEach(result => {
           if (result.type === 'sender' && result.data) {
-            console.log('✅ ConnectionCard: Got sender data:', result.data);
+            logger.debug('✅ ConnectionCard: Got sender data:', 'COMPONENT', result.data);
             newFallbackData.senderData = result.data;
           } else if (result.type === 'receiver' && result.data) {
-            console.log('✅ ConnectionCard: Got receiver data:', result.data);
+            logger.debug('✅ ConnectionCard: Got receiver data:', 'COMPONENT', result.data);
             newFallbackData.receiverData = result.data;
           }
         });
 
-        console.log('🎯 ConnectionCard: Setting fallback data:', newFallbackData);
+        logger.debug('🎯 ConnectionCard: Setting fallback data:', 'COMPONENT', newFallbackData);
         setFallbackUserData(newFallbackData);
       } catch (error) {
-        console.error('❌ ConnectionCard: Error fetching fallback user data:', error);
+        logger.error('❌ ConnectionCard: Error fetching fallback user data:', 'COMPONENT', {}, error as Error);
       }
     };
 

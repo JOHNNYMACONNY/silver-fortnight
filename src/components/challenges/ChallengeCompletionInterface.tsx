@@ -39,6 +39,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { useAccessibility } from '../../hooks/useAccessibility';
 import { useMobileOptimization } from '../../hooks/useMobileOptimization';
 import { ResponsiveContainer, ResponsiveStack } from '../layout/ResponsiveContainer';
+import { logger } from '@utils/logging/logger';
 
 interface ChallengeCompletionInterfaceProps {
   challenge: Challenge;
@@ -131,7 +132,7 @@ export const ChallengeCompletionInterface: React.FC<ChallengeCompletionInterface
         throw new Error(result.error || 'Failed to complete challenge');
       }
     } catch (error) {
-      console.error('Error completing challenge:', error);
+      logger.error('Error completing challenge:', 'COMPONENT', {}, error as Error);
       // Show error message
     } finally {
       setLoading(false);

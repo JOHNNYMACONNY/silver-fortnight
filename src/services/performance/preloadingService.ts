@@ -11,6 +11,7 @@ import { collection, query, where, orderBy, limit, getDocs } from 'firebase/fire
 import { RUMMetrics, SessionInfo } from './rumService';
 import { PreloadCandidate } from '../../utils/performance/criticalPathAnalyzer';
 import type { ExtendedNavigator, ExtendedHTMLLinkElement } from '../../types/browser';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Network connection information
@@ -194,7 +195,7 @@ export class PreloadingService {
 
       return candidates;
     } catch (error) {
-      console.error('Failed to analyze preload opportunities:', error);
+      logger.error('Failed to analyze preload opportunities:', 'SERVICE', {}, error as Error);
       return [];
     }
   }
@@ -329,7 +330,7 @@ export class PreloadingService {
       
       return predictions;
     } catch (error) {
-      console.error('Failed to predict next resources:', error);
+      logger.error('Failed to predict next resources:', 'SERVICE', {}, error as Error);
       return {
         nextResources: [],
         confidenceScores: [],
@@ -363,9 +364,9 @@ export class PreloadingService {
       // Note: next_page would need to be stored differently in businessMetrics
       // as it's currently typed as number. For now, skip this analysis.
       // TODO: Update RUM service to support page transition tracking
-      console.log(`Skipping journey pattern analysis for ${entries.length} entries`);
+      logger.debug(`Skipping journey pattern analysis for ${entries.length} entries`, 'SERVICE');
     } catch (error) {
-      console.warn('Failed to analyze journey patterns:', error);
+      logger.warn('Failed to analyze journey patterns:', 'SERVICE', error);
     }
 
     return patterns;
@@ -564,7 +565,7 @@ export class PreloadingService {
         this.preloadingMetrics.totalPreloaded++;
         this.preloadingMetrics.bandwidthUsed += estimatedSize;
       } catch (error) {
-        console.warn('Failed to preload resource:', candidate.url, error);
+        logger.warn('Failed to preload resource:', 'SERVICE', { arg0: candidate.url, arg1: error });
       }
     }
   }
@@ -761,7 +762,7 @@ export const initializeIntelligentPreloading = async (
     const opportunities = await service.analyzePreloadOpportunities();
     await service.applyPreloading(opportunities);
   } catch (error) {
-    console.error('Failed to initialize intelligent preloading:', error);
+    logger.error('Failed to initialize intelligent preloading:', 'SERVICE', {}, error as Error);
   }
   
   return service;
@@ -797,7 +798,7 @@ export const preloadForUserJourney = async (
     
     await service.applyPreloading(candidates);
   } catch (error) {
-    console.error('Failed to preload for user journey:', error);
+    logger.error('Failed to preload for user journey:', 'SERVICE', {}, error as Error);
   } finally {
     service.destroy();
   }

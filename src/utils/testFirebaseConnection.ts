@@ -8,6 +8,7 @@
 import { getSyncFirebaseDb } from '../firebase-config';
 import { collection, query, orderBy, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { FirebaseConnectionManager } from './firebaseConnectionManager';
+import { logger } from '@utils/logging/logger';
 
 export interface ConnectionTestResult {
   testName: string;
@@ -24,7 +25,7 @@ export class FirebaseConnectionTester {
    * Run all connection tests
    */
   async runAllTests(): Promise<ConnectionTestResult[]> {
-    console.log('🔍 Starting Firebase connection tests...');
+    logger.debug('🔍 Starting Firebase connection tests...', 'UTILITY');
     this.results = [];
 
     await this.testBasicInitialization();
@@ -34,7 +35,7 @@ export class FirebaseConnectionTester {
     await this.testSpecificConversation();
     await this.testConnectionManager();
 
-    console.log('✅ Firebase connection tests completed');
+    logger.debug('✅ Firebase connection tests completed', 'UTILITY');
     return this.results;
   }
 
@@ -275,12 +276,12 @@ export class FirebaseConnectionTester {
    */
   private addResult(result: ConnectionTestResult): void {
     this.results.push(result);
-    console.log(`${result.success ? '✅' : '❌'} ${result.testName}: ${result.success ? 'PASSED' : 'FAILED'} (${result.duration}ms)`);
+    logger.debug(`${result.success ? '✅' : '❌'} ${result.testName}: ${result.success ? 'PASSED' : 'FAILED'} (${result.duration}ms)`, 'UTILITY');
     if (result.error) {
-      console.log(`   Error: ${result.error}`);
+      logger.debug(`   Error: ${result.error}`, 'UTILITY');
     }
     if (result.recommendations && result.recommendations.length > 0) {
-      console.log(`   Recommendations: ${result.recommendations.join(', ')}`);
+      logger.debug(`   Recommendations: ${result.recommendations.join(', ')}`, 'UTILITY');
     }
   }
 

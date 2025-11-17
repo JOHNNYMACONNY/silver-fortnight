@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Link2, Share2, Twitter, Facebook, Linkedin } from "lucide-react";
 import { logEvent } from "../../../services/analytics";
 import { useToast } from "../../../contexts/ToastContext";
+import { logger } from '@utils/logging/logger';
 
 /**
  * Props for ProfileShareMenu component
@@ -89,7 +90,7 @@ export const ProfileShareMenu: React.FC<ProfileShareMenuProps> = ({
         method: "clipboard",
       });
     } catch (error) {
-      console.error("Failed to copy link:", error);
+      logger.error('Failed to copy link:', 'COMPONENT', {}, error as Error);
       showToast("Failed to copy link", "error");
     }
   };
@@ -113,7 +114,7 @@ export const ProfileShareMenu: React.FC<ProfileShareMenuProps> = ({
         });
       }
     } catch (error) {
-      console.error("Failed to share:", error);
+      logger.error('Failed to share:', 'COMPONENT', {}, error as Error);
     }
   };
 

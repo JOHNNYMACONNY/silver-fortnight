@@ -1,5 +1,6 @@
 import { getSyncFirebaseDb } from '../firebase-config';
 import { doc, getDoc } from 'firebase/firestore';
+import { logger } from '@utils/logging/logger';
 
 // Cache for user data with timestamps to enable expiration
 interface CachedUser {
@@ -27,7 +28,7 @@ export const fetchUserData = async (userId: string) => {
   if (userCache[userId] && (now - userCache[userId].timestamp) < CACHE_EXPIRY_MS) {
     // Only log in development and only once per session per user
     if (isDev && !userCache[userId].data._loggedCacheHit) {
-      console.log(`Using cached data for user: ${userId}`);
+      logger.debug(`Using cached data for user: ${userId}`, 'UTILITY');
       // Mark that we've logged this cache hit
       userCache[userId].data._loggedCacheHit = true;
     }
@@ -44,7 +45,7 @@ export const fetchUserData = async (userId: string) => {
 
       // Only log in development
       if (isDev) {
-        console.log(`User data found for ${userId}`);
+        logger.debug(`User data found for ${userId}`, 'UTILITY');
       }
 
       // Process profile picture URL
@@ -68,7 +69,7 @@ export const fetchUserData = async (userId: string) => {
     } else {
       // Only log in development
       if (isDev) {
-        console.log(`No user found with ID: ${userId}`);
+        logger.debug(`No user found with ID: ${userId}`, 'UTILITY');
       }
 
       // Cache a default value to avoid repeated failed lookups
@@ -87,7 +88,7 @@ export const fetchUserData = async (userId: string) => {
     }
   } catch (error) {
     if (isDev) {
-      console.error('Error fetching user data:', error);
+      logger.error('Error fetching user data:', 'UTILITY', {}, error as Error);
     }
 
     return {

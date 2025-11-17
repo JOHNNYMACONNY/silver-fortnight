@@ -1,5 +1,6 @@
 import { lazy, ComponentType, LazyExoticComponent } from "react";
 import { RouteObject } from "react-router-dom";
+import { logger } from '@utils/logging/logger';
 
 /**
  * Advanced code splitting configuration
@@ -214,11 +215,11 @@ export class AdvancedCodeSplittingService {
             await lazyComponent._payload._result;
           }
         } catch (error) {
-          console.warn(`Failed to prefetch component ${componentName}:`, error);
+          logger.warn(`Failed to prefetch component ${componentName}:`, 'SERVICE', error);
         }
       }
     } catch (error) {
-      console.warn(`Failed to prefetch component ${componentName}:`, error);
+      logger.warn(`Failed to prefetch component ${componentName}:`, 'SERVICE', error);
     } finally {
       this.prefetchQueue.delete(componentName);
     }
@@ -241,7 +242,7 @@ export class AdvancedCodeSplittingService {
         metadata.dependencies.map((dep) => this.prefetchComponent(dep))
       );
     } catch (error) {
-      console.warn(`Failed to prefetch route ${routePath}:`, error);
+      logger.warn('Failed to prefetch route ${routePath}:', 'SERVICE', error);
     }
   }
 
@@ -413,37 +414,35 @@ export class AdvancedCodeSplittingService {
    * Track component loading performance
    */
   private trackComponentLoad(componentName: string, loadTime: number): void {
-    console.debug(
-      `Component ${componentName} loaded in ${loadTime.toFixed(2)}ms`
-    );
+    logger.debug(`Component ${componentName} loaded in ${loadTime.toFixed(2)}ms`, 'SERVICE');
   }
 
   /**
    * Track component loading errors
    */
   private trackComponentError(componentName: string, error: any): void {
-    console.error(`Failed to load component ${componentName}:`, error);
+    logger.error(`Failed to load component ${componentName}:`, 'SERVICE', {}, error as Error);
   }
 
   /**
    * Track route loading performance
    */
   private trackRouteLoad(routePath: string, loadTime: number): void {
-    console.debug(`Route ${routePath} loaded in ${loadTime.toFixed(2)}ms`);
+    logger.debug(`Route ${routePath} loaded in ${loadTime.toFixed(2)}ms`, 'SERVICE');
   }
 
   /**
    * Track route loading errors
    */
   private trackRouteError(routePath: string, error: any): void {
-    console.error(`Failed to load route ${routePath}:`, error);
+    logger.error('Failed to load route ${routePath}:', 'SERVICE', {}, error as Error);
   }
 
   /**
    * Track time spent on pages
    */
   private trackTimeSpent(path: string, timeSpent: number): void {
-    console.debug(`Time spent on ${path}: ${timeSpent}ms`);
+    logger.debug(`Time spent on ${path}: ${timeSpent}ms`, 'SERVICE');
   }
 
   /**
@@ -457,7 +456,7 @@ export class AdvancedCodeSplittingService {
       firstPaint: entry.responseEnd - entry.requestStart,
     };
 
-    console.debug("Navigation performance:", metrics);
+    logger.debug('Navigation performance:', 'SERVICE', metrics);
   }
 
   /**
@@ -531,10 +530,7 @@ export class IntelligentResourcePreloader {
     // Log any failures for debugging but don't throw
     results.forEach((result, index) => {
       if (result.status === "rejected") {
-        console.warn(
-          `Failed to preload critical resource ${criticalResources[index]}:`,
-          result.reason
-        );
+        logger.warn('Failed to preload critical resource ${criticalResources[index]}:', 'SERVICE', result.reason);
       }
     });
   }
@@ -563,9 +559,7 @@ export class IntelligentResourcePreloader {
           resource.includes("/assets/fonts/inter-var.woff2") ||
           resource.includes("/assets/css/critical.css")
         ) {
-          console.warn(
-            `Skipping resource to prevent preload warnings: ${resource}`
-          );
+          logger.warn(`Skipping resource to prevent preload warnings: ${resource}`, 'SERVICE');
           return false;
         }
       }
@@ -592,7 +586,7 @@ export class IntelligentResourcePreloader {
       this.preloadedResources.add(url);
     } catch (error) {
       // Log warning but don't throw - make it resilient
-      console.warn(`Failed to preload resource ${url}:`, error);
+      logger.warn('Failed to preload resource ${url}:', 'SERVICE', error);
     } finally {
       this.preloadQueue.delete(url);
     }
@@ -608,7 +602,7 @@ export class IntelligentResourcePreloader {
         this.checkResourceExists(url)
           .then((exists) => {
             if (!exists) {
-              console.warn(`Resource ${url} not found, skipping preload`);
+              logger.warn(`Resource ${url} not found, skipping preload`, 'SERVICE');
               resolve(); // Resolve instead of reject to be resilient
               return;
             }

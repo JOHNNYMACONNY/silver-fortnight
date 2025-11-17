@@ -19,6 +19,7 @@ import {
 import { Badge } from "../../components/ui/Badge";
 import { Loader2, Trophy, CheckCircle, AlertCircle } from "lucide-react";
 import { Timestamp } from "firebase/firestore";
+import { logger } from '@utils/logging/logger';
 
 const SeedChallengesPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -177,11 +178,11 @@ const SeedChallengesPage: React.FC = () => {
           setSeedResults((prev) => ({ ...prev, success: prev.success + 1 }));
         } else {
           setSeedResults((prev) => ({ ...prev, failed: prev.failed + 1 }));
-          console.error("Failed to create challenge:", result.error);
+          logger.error('Failed to create challenge:', 'PAGE', {}, result.error as Error);
         }
       } catch (error) {
         setSeedResults((prev) => ({ ...prev, failed: prev.failed + 1 }));
-        console.error("Error creating challenge:", error);
+        logger.error('Error creating challenge:', 'PAGE', {}, error as Error);
       }
 
       setSeedProgress(((i + 1) / totalChallenges) * 100);

@@ -39,6 +39,7 @@ import { Button } from '../ui/Button';
 import { GlassmorphicInput } from '../ui/GlassmorphicInput';
 import { Badge } from '../ui/Badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import { logger } from '@utils/logging/logger';
 
 interface ChallengeManagementDashboardProps {
   className?: string;
@@ -83,7 +84,7 @@ export const ChallengeManagementDashboard: React.FC<ChallengeManagementDashboard
           setUserChallenges([]);
         }
       } catch (error) {
-        console.error('Error loading challenges:', error);
+        logger.error('Error loading challenges:', 'COMPONENT', {}, error as Error);
       } finally {
         setLoading(false);
       }
@@ -147,7 +148,7 @@ export const ChallengeManagementDashboard: React.FC<ChallengeManagementDashboard
         throw new Error(response.error || 'Failed to create challenge');
       }
     } catch (error) {
-      console.error('Challenge creation error:', error);
+      logger.error('Challenge creation error:', 'COMPONENT', {}, error as Error);
       throw error;
     }
   };
@@ -460,7 +461,7 @@ export const ChallengeManagementDashboard: React.FC<ChallengeManagementDashboard
             <ChallengeDiscoveryInterface
               userId={currentUser?.uid || ''}
               onChallengeSelect={(challenge) => {
-                console.log('Selected challenge:', challenge);
+                logger.debug('Selected challenge:', 'COMPONENT', challenge);
                 // Could navigate to challenge details or start challenge
               }}
             />

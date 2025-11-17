@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { migrationService, MigrationStatus, MigrationResult, MigrationConfig } from '../services/migration/MigrationService';
+import { logger } from '@utils/logging/logger';
 
 export interface UseMigrationReturn {
   status: MigrationStatus;
@@ -43,13 +44,13 @@ export const useMigration = (): UseMigrationReturn => {
       // Update configuration if provided
       if (config) {
         // Note: In a real implementation, you'd update the service config
-        console.log('Migration config updated:', config);
+        logger.debug('Migration config updated:', 'APP', config);
       }
       
       await migrationService.executeMigration();
     } catch (error) {
       setIsRunning(false);
-      console.error('Migration failed:', error);
+      logger.error('Migration failed:', 'APP', {}, error as Error);
       throw error;
     }
   }, []);
@@ -63,7 +64,7 @@ export const useMigration = (): UseMigrationReturn => {
       }
       return success;
     } catch (error) {
-      console.error('Rollback failed:', error);
+      logger.error('Rollback failed:', 'APP', {}, error as Error);
       return false;
     }
   }, []);

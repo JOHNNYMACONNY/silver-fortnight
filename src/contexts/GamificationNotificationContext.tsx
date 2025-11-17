@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../AuthContext';
+import { logger } from '@utils/logging/logger';
 import {
   GamificationNotification,
   GamificationNotificationPreferences,
@@ -55,7 +56,7 @@ export const GamificationNotificationProvider: React.FC<{ children: React.ReactN
         const parsed = JSON.parse(savedPreferences);
         setPreferences({ ...DEFAULT_GAMIFICATION_PREFERENCES, ...parsed });
       } catch (error) {
-        console.warn('Failed to parse gamification preferences:', error);
+        logger.warn('Failed to parse gamification preferences:', 'CONTEXT', error);
       }
     }
   }, [currentUser]);

@@ -11,6 +11,7 @@ import { collection, addDoc, getDocs, query, limit } from 'firebase/firestore';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/Alert';
+import { logger } from '@utils/logging/logger';
 
 export const TestFirestoreAccess: React.FC = () => {
   const { currentUser } = useAuth();
@@ -32,39 +33,39 @@ export const TestFirestoreAccess: React.FC = () => {
       const db = getSyncFirebaseDb();
       const userId = currentUser.uid;
 
-      console.log('TestFirestoreAccess: Testing Firestore access for user:', userId);
+      logger.debug('TestFirestoreAccess: Testing Firestore access for user:', 'PAGE', userId);
 
       const results: string[] = [];
 
       // Test 1: Try to read from a simple collection
       try {
-        console.log('Test 1: Testing basic read access...');
+        logger.debug('Test 1: Testing basic read access...', 'PAGE');
         const testRef = collection(db, 'test');
         const testQuery = query(testRef, limit(1));
         const testSnapshot = await getDocs(testQuery);
         results.push(`✅ Test 1 PASSED: Basic read access works (found ${testSnapshot.size} documents)`);
-        console.log('Test 1: Basic read access works');
+        logger.debug('Test 1: Basic read access works', 'PAGE');
       } catch (testError: any) {
         results.push(`❌ Test 1 FAILED: Basic read access failed - ${testError.message}`);
-        console.log('Test 1: Basic read access failed:', testError.message);
+        logger.debug('Test 1: Basic read access failed:', 'PAGE', testError.message);
       }
 
       // Test 2: Try to read from conversations collection
       try {
-        console.log('Test 2: Testing conversations read access...');
+        logger.debug('Test 2: Testing conversations read access...', 'PAGE');
         const conversationsRef = collection(db, 'conversations');
         const conversationsQuery = query(conversationsRef, limit(1));
         const conversationsSnapshot = await getDocs(conversationsQuery);
         results.push(`✅ Test 2 PASSED: Conversations read access works (found ${conversationsSnapshot.size} documents)`);
-        console.log('Test 2: Conversations read access works');
+        logger.debug('Test 2: Conversations read access works', 'PAGE');
       } catch (conversationsError: any) {
         results.push(`❌ Test 2 FAILED: Conversations read access failed - ${conversationsError.message}`);
-        console.log('Test 2: Conversations read access failed:', conversationsError.message);
+        logger.debug('Test 2: Conversations read access failed:', 'PAGE', conversationsError.message);
       }
 
       // Test 3: Try to write to a test collection
       try {
-        console.log('Test 3: Testing write access...');
+        logger.debug('Test 3: Testing write access...', 'PAGE');
         const testWriteRef = collection(db, 'test');
         const testDoc = {
           userId: userId,
@@ -73,15 +74,15 @@ export const TestFirestoreAccess: React.FC = () => {
         };
         const docRef = await addDoc(testWriteRef, testDoc);
         results.push(`✅ Test 3 PASSED: Write access works (created document ${docRef.id})`);
-        console.log('Test 3: Write access works, created document:', docRef.id);
+        logger.debug('Test 3: Write access works, created document:', 'PAGE', docRef.id);
       } catch (writeError: any) {
         results.push(`❌ Test 3 FAILED: Write access failed - ${writeError.message}`);
-        console.log('Test 3: Write access failed:', writeError.message);
+        logger.debug('Test 3: Write access failed:', 'PAGE', writeError.message);
       }
 
       // Test 4: Try to write to conversations collection
       try {
-        console.log('Test 4: Testing conversations write access...');
+        logger.debug('Test 4: Testing conversations write access...', 'PAGE');
         const conversationsWriteRef = collection(db, 'conversations');
         const testConversation = {
           participants: [{ id: userId, name: 'Test User' }],
@@ -92,10 +93,10 @@ export const TestFirestoreAccess: React.FC = () => {
         };
         const convDocRef = await addDoc(conversationsWriteRef, testConversation);
         results.push(`✅ Test 4 PASSED: Conversations write access works (created conversation ${convDocRef.id})`);
-        console.log('Test 4: Conversations write access works, created conversation:', convDocRef.id);
+        logger.debug('Test 4: Conversations write access works, created conversation:', 'PAGE', convDocRef.id);
       } catch (conversationsWriteError: any) {
         results.push(`❌ Test 4 FAILED: Conversations write access failed - ${conversationsWriteError.message}`);
-        console.log('Test 4: Conversations write access failed:', conversationsWriteError.message);
+        logger.debug('Test 4: Conversations write access failed:', 'PAGE', conversationsWriteError.message);
       }
 
       setResult(`Firestore Access Test Results:
@@ -112,7 +113,7 @@ ${results.some(r => r.includes('❌')) ?
   '1. The issue is not with Firestore access\n2. Check query structure and data format\n3. Check real-time listener configuration'}`);
 
     } catch (err: any) {
-      console.error('TestFirestoreAccess: Error testing Firestore access:', err);
+      logger.error('TestFirestoreAccess: Error testing Firestore access:', 'PAGE', {}, err as Error);
       setError(`Failed to test Firestore access: ${err.message}`);
     } finally {
       setLoading(false);

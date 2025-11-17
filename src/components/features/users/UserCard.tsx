@@ -9,6 +9,7 @@ import ConnectionButton from '../connections/ConnectionButton';
 import { MapPin } from 'lucide-react';
 import { Badge } from '../../ui/Badge';
 import { cn } from '../../../utils/cn';
+import { logger } from '@utils/logging/logger';
 
 interface UserCardProps {
   user: User;
@@ -139,7 +140,7 @@ const UserCard: React.FC<UserCardProps> = ({
                       </>
                     );
                   } catch (error) {
-                    console.error('Error rendering skills:', error);
+                    logger.error('Error rendering skills:', 'COMPONENT', {}, error as Error);
                     return null;
                   }
                 })()}

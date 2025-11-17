@@ -3,6 +3,7 @@ import { getProfileImageUrl, generateAvatarUrl } from '../../utils/imageUtils';
 import ErrorBoundary from './ErrorBoundary';
 import { useToast } from '../../contexts/ToastContext';
 import LazyImage from './LazyImage';
+import { logger } from '@utils/logging/logger';
 
 export interface ProfileImageProps {
   photoURL?: string | null;
@@ -118,7 +119,7 @@ export const ProfileImage = React.memo<ProfileImageProps>(({
 
     // Only log as error and show toast if it's not a generated avatar
     if (!isGeneratedAvatar) {
-      // console.warn('Failed to load profile image, falling back to avatar');
+      // logger.warn('Failed to load profile image, falling back to avatar', 'COMPONENT');
       // addToast('info', 'Using default avatar');
     }
 

@@ -26,6 +26,7 @@ import {
   isReturningFromRedirect,
 } from "./utils/firebaseGoogleAuth";
 import { refreshOwnSocialStats } from "./services/leaderboards";
+import { logger } from '@utils/logging/logger';
 
 // Admin configuration - can be moved to environment variables later
 const ADMIN_UIDS: string[] = [
@@ -76,18 +77,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const auth = useMemo(() => getAuth(), []);
 
   useEffect(() => {
-    console.log("AuthProvider: Setting up auth state listener");
+    logger.debug("AuthProvider: Setting up auth state listener", 'APP');
 
     // Check for redirect result first
     const checkRedirectResult = async () => {
       if (isReturningFromRedirect()) {
-        console.log(
-          "AuthProvider: Detected return from OAuth redirect, handling result..."
-        );
+        logger.debug("AuthProvider: Detected return from OAuth redirect, handling result...", 'APP');
         try {
           const result = await handleGoogleRedirectResult();
           if (result) {
-            console.log("AuthProvider: Redirect sign-in successful");
+            logger.debug("AuthProvider: Redirect sign-in successful", 'APP');
             setUser(result.user);
             setIsAdmin(checkIsAdmin(result.user));
             const { data: profile } = await getUserProfile(result.user.uid);
@@ -106,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             }
           }
         } catch (error) {
-          console.error("AuthProvider: Error handling redirect result", error);
+          logger.error('AuthProvider: Error handling redirect result', 'APP', {}, error as Error);
           setError(error as Error);
         }
       }
@@ -117,7 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const unsubscribe = onAuthStateChanged(
       auth,
       async (user) => {
-        console.log("AuthProvider: Auth state changed", {
+        logger.debug('AuthProvider: Auth state changed', 'APP', {
           hasUser: !!user,
           uid: user?.uid,
         });
@@ -145,7 +144,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setError(null); // Clear any previous errors on successful state change
       },
       (error) => {
-        console.error("AuthProvider: Auth state change error", error);
+        logger.error('AuthProvider: Auth state change error', 'APP', {}, error as Error);
         setError(error);
         setUser(null);
         setUserProfile(null);
@@ -155,14 +154,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     );
 
     return () => {
-      console.log("AuthProvider: Cleaning up auth state listener");
+      logger.debug("AuthProvider: Cleaning up auth state listener", 'APP');
       unsubscribe();
     };
   }, [auth]); // Include auth in dependency array to fix React Hook Rules violation
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log("AuthProvider: Attempting email sign in");
+      logger.debug("AuthProvider: Attempting email sign in", 'APP');
       setLoading(true);
       setError(null);
       const sanitizedEmail = email
@@ -188,9 +187,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       } catch {
         /* non-blocking */
       }
-      console.log("AuthProvider: Email sign in successful");
+      logger.debug("AuthProvider: Email sign in successful", 'APP');
     } catch (err) {
-      console.error("AuthProvider: Email sign in error", err);
+      logger.error('AuthProvider: Email sign in error', 'APP', {}, err as Error);
       setError(err as Error);
       throw err;
     } finally {
@@ -202,7 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const signUp = async (email: string, password: string) => {
     try {
-      console.log("AuthProvider: Attempting email sign up");
+      logger.debug("AuthProvider: Attempting email sign up", 'APP');
       setLoading(true);
       setError(null);
       const result = await createUserWithEmailAndPassword(
@@ -227,9 +226,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       } catch {
         /* non-blocking */
       }
-      console.log("AuthProvider: Email sign up successful");
+      logger.debug("AuthProvider: Email sign up successful", 'APP');
     } catch (err) {
-      console.error("AuthProvider: Email sign up error", err);
+      logger.error('AuthProvider: Email sign up error', 'APP', {}, err as Error);
       setError(err as Error);
       throw err;
     } finally {
@@ -239,9 +238,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const signInWithGoogle = async () => {
     try {
-      console.log(
-        "AuthProvider: Attempting Google sign in with SIMPLE FIREBASE APPROACH"
-      );
+      logger.debug("AuthProvider: Attempting Google sign in with SIMPLE FIREBASE APPROACH", 'APP');
       setLoading(true);
       setError(null);
 
@@ -267,20 +264,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         } catch {
           /* non-blocking */
         }
-        console.log("AuthProvider: Google sign in successful!");
+        logger.debug("AuthProvider: Google sign in successful!", 'APP');
       } else if (
         result &&
         result.error &&
         result.error.code === "auth/redirect-initiated"
       ) {
         // Redirect was initiated, the user will be redirected
-        console.log(
-          "AuthProvider: Redirect initiated, user will be redirected"
-        );
+        logger.debug("AuthProvider: Redirect initiated, user will be redirected", 'APP');
         return;
       }
     } catch (err: any) {
-      console.error("AuthProvider: Google sign-in failed", err);
+      logger.error('AuthProvider: Google sign-in failed', 'APP', {}, err as Error);
       setError(err as Error);
       throw err;
     } finally {
@@ -290,16 +285,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const handleSignOut = async () => {
     try {
-      console.log("AuthProvider: Attempting sign out");
+      logger.debug("AuthProvider: Attempting sign out", 'APP');
       setLoading(true);
       setError(null);
       await firebaseSignOut(auth);
       setUser(null);
       setUserProfile(null);
       setIsAdmin(false);
-      console.log("AuthProvider: Sign out successful");
+      logger.debug("AuthProvider: Sign out successful", 'APP');
     } catch (err) {
-      console.error("AuthProvider: Sign out error", err);
+      logger.error('AuthProvider: Sign out error', 'APP', {}, err as Error);
       setError(err as Error);
       throw err;
     } finally {
@@ -325,7 +320,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     logout,
   };
 
-  console.log("AuthProvider: Rendering with state", {
+  logger.debug('AuthProvider: Rendering with state', 'APP', {
     hasUser: !!user,
     loading,
     hasError: !!error,

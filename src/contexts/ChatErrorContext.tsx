@@ -11,6 +11,7 @@ import React, {
   ReactNode,
 } from "react";
 import { useToast } from "./ToastContext";
+import { logger } from '@utils/logging/logger';
 
 export interface ChatError {
   id: string;
@@ -132,13 +133,10 @@ export const ChatErrorProvider: React.FC<ChatErrorProviderProps> = ({
       }
 
       // Log error for debugging
-      console.error(
-        `Chat Error [${type}] in ${operation || "unknown operation"}:`,
-        error
-      );
+      logger.error('Chat Error [${type}] in ${operation || "unknown operation"}:', 'CONTEXT', {}, error as Error);
 
       if (context) {
-        console.error("Error context:", context);
+        logger.error('Error context:', 'CONTEXT', context);
       }
     },
     [maxErrors, toastContext]
@@ -228,7 +226,7 @@ export class ChatErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error("Chat Error Boundary caught an error:", error, errorInfo);
+    logger.error('Chat Error Boundary caught an error:', 'CONTEXT', { arg0: error }, errorInfo as Error);
 
     if (this.props.onError) {
       this.props.onError(error, errorInfo);

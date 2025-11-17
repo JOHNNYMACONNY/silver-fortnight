@@ -14,6 +14,7 @@ import { GlassmorphicDropdown, DropdownOption } from '../GlassmorphicDropdown';
 import { MultiStepForm, FormStep } from '../MultiStepForm';
 import { TradeCreationForm } from '../TradeCreationForm';
 import { ProfileCompletionForm } from '../ProfileCompletionForm';
+import { logger } from '@utils/logging/logger';
 
 // Sample data for dropdowns
 const categories: DropdownOption[] = [
@@ -54,7 +55,7 @@ export const BasicFormExample: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    logger.debug('Form submitted:', 'COMPONENT', formData);
     alert('Form submitted successfully!');
   };
 
@@ -428,7 +429,7 @@ export const MultiStepFormExample: React.FC = () => {
   ];
 
   const handleSubmit = async (data: any) => {
-    console.log('Multi-step form submitted:', data);
+    logger.debug('Multi-step form submitted:', 'COMPONENT', data);
     alert('Multi-step form submitted successfully!');
   };
 
@@ -462,13 +463,13 @@ export const PrebuiltFormsExample: React.FC = () => {
   const [activeForm, setActiveForm] = useState<'trade' | 'profile' | null>(null);
 
   const handleTradeSubmit = async (data: any) => {
-    console.log('Trade creation data:', data);
+    logger.debug('Trade creation data:', 'COMPONENT', data);
     alert('Trade listing created successfully!');
     setActiveForm(null);
   };
 
   const handleProfileSubmit = async (data: any) => {
-    console.log('Profile completion data:', data);
+    logger.debug('Profile completion data:', 'COMPONENT', data);
     alert('Profile completed successfully!');
     setActiveForm(null);
   };

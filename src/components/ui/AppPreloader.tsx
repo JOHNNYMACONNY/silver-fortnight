@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { logger } from '@utils/logging/logger';
 import {
   preconnectToCommonDomains,
   preloadFonts,
@@ -60,7 +61,7 @@ const AppPreloader = () => {
         (import.meta.env.DEV || process.env.NODE_ENV === "development")) ||
       process.env.NODE_ENV === "development"
     ) {
-      console.log("[AppPreloader] Preloaded critical application resources");
+      logger.debug("[AppPreloader] Preloaded critical application resources", 'COMPONENT');
     }
   }, []);
 

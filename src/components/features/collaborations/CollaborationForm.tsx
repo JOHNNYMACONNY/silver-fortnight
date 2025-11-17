@@ -17,6 +17,7 @@ import { Textarea } from '../../ui/Textarea';
 import { Label } from '../../ui/Label';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../ui/Card';
 import { Alert, AlertDescription } from '../../ui/Alert';
+import { logger } from '@utils/logging/logger';
 
 type CollaborationFormProps = {
   collaboration?: Collaboration;
@@ -33,7 +34,7 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
 }) => {
   // Add this log to debug the incoming collaboration object
   useEffect(() => {
-    console.log('Collaboration prop:', collaboration);
+    logger.debug('Collaboration prop:', 'COMPONENT', collaboration);
   }, [collaboration]);
 
   const { currentUser } = useAuth();
@@ -57,13 +58,13 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
           const { getUserProfile } = await import('../../../services/firestore');
           const { data, error } = await getUserProfile(currentUser.uid);
           if (error) {
-            console.error('Error fetching user profile:', error);
+            logger.error('Error fetching user profile:', 'COMPONENT', {}, error as Error);
             addToast('error', 'Failed to load user profile');
           } else if (data) {
             setUserProfile(data);
           }
         } catch (err) {
-          console.error('Error loading user profile:', err);
+          logger.error('Error loading user profile:', 'COMPONENT', {}, err as Error);
           addToast('error', 'Failed to load user profile');
         }
       }
@@ -81,11 +82,11 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
           if (Array.isArray(currentRoles)) {
             setRoles(currentRoles);
           } else {
-            console.warn('Received invalid roles data:', currentRoles);
+            logger.warn('Received invalid roles data:', 'COMPONENT', currentRoles);
             setRoles([]);
           }
         } catch (err) {
-          console.error('Error loading roles:', err);
+          logger.error('Error loading roles:', 'COMPONENT', {}, err as Error);
           addToast('error', 'Failed to load roles');
           setRoles([]);
         }
@@ -98,7 +99,7 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
   // Monitor roles updates
   useEffect(() => {
     if (roleUpdateCounter > 0) {
-      console.log('Roles updated:', roles);
+      logger.debug('Roles updated:', 'COMPONENT', roles);
     }
   }, [roles, roleUpdateCounter]);
 
@@ -126,7 +127,7 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
       
       if (!collaboration.id) {
         addToast('error', 'Cannot update collaboration: missing collaboration ID');
-        console.error('Collaboration object has no ID:', collaboration);
+        logger.error('Collaboration object has no ID:', 'COMPONENT', collaboration);
         setError('Collaboration ID is missing. Please try again or reload the page.');
         return;
       }
@@ -235,12 +236,8 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
           } as CollaborationRoleData;
         });
 
-        console.log('Existing roles in Firestore:', 
-          existingRoles.map(r => ({ id: r.id, title: r.title }))
-        );
-        console.log('Current roles in state:', 
-          roles.map(r => ({ id: r.id, title: r.title, isTemp: r.id.startsWith('temp-') }))
-        );
+        logger.debug('Existing roles in Firestore:', 'COMPONENT', existingRoles.map(r => ({ id: r.id, title: r.title })));
+        logger.debug('Current roles in state:', 'COMPONENT', roles.map(r => ({ id: r.id, title: r.title, isTemp: r.id.startsWith('temp-') })));
 
         const collaborationSnapshot = await getDoc(collaborationRef);
         const normalizeTimestampValue = (value?: Timestamp | null): number | null => {
@@ -348,7 +345,7 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
         onSuccess(collaboration.id);
       }
     } catch (error) {
-      console.error('Error with collaboration:', error);
+      logger.error('Error with collaboration:', 'COMPONENT', {}, error as Error);
       const errorMessage = error instanceof Error ? error.message : 'An error occurred';
       
       logTransaction({
@@ -448,11 +445,11 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
         // If editing existing collaboration, create role in Firebase immediately
         if (collaboration?.id && !isCreating) {
           try {
-            console.log('Creating role with collaboration ID:', collaboration.id);
+            logger.debug('Creating role with collaboration ID:', 'COMPONENT', collaboration.id);
             
             // Explicitly using the service with detailed logging
             const roleRef = await collaborationRoleService.createRoleHierarchy([newRole]);
-            console.log('Role created successfully in Firebase with ID:', roleRef);
+            logger.debug('Role created successfully in Firebase with ID:', 'COMPONENT', roleRef);
             
             if (roleRef) {
               // Update local state with real Firebase ID
@@ -461,9 +458,7 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
                   r.id === tempId ? { ...r, id: roleRef } : r
                 ) as CollaborationRoleData[];
                 
-                console.log('Updated roles after Firebase save:', 
-                  updatedRoles.map(r => ({ id: r.id, title: r.title }))
-                );
+                logger.debug('Updated roles after Firebase save:', 'COMPONENT', updatedRoles.map(r => ({ id: r.id, title: r.title })));
                 
                 return updatedRoles;
               });
@@ -477,7 +472,7 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
               });
             }
           } catch (error) {
-            console.error('Error creating role in Firebase:', error);
+            logger.error('Error creating role in Firebase:', 'COMPONENT', {}, error as Error);
             addToast('error', 'Failed to create role in Firebase');
             
             logTransaction({
@@ -496,7 +491,7 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
       // Increment counter to trigger useEffect monitoring
       setRoleUpdateCounter(prev => prev + 1);
     } catch (error: unknown) {
-      console.error('Error creating role:', error);
+      logger.error('Error creating role:', 'COMPONENT', {}, error as Error);
       const errorMessage = error instanceof Error ? error.message : 'An error occurred';
       setError(errorMessage);
       addToast('error', errorMessage);
@@ -529,7 +524,7 @@ const CollaborationForm: React.FC<CollaborationFormProps> = ({
 
         addToast('success', 'Role deleted successfully');
       } catch (error) {
-        console.error('Error deleting role:', error);
+        logger.error('Error deleting role:', 'COMPONENT', {}, error as Error);
         const errorMessage = error instanceof Error ? error.message : 'An error occurred';
         addToast('error', errorMessage);
       }

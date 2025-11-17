@@ -14,6 +14,7 @@ import { CacheManager } from './cacheManager';
 import { CriticalPathAnalyzer } from '../../utils/performance/criticalPathAnalyzer';
 import { multiLevelCache } from '../../utils/performance/advancedCaching';
 import { bundleOptimizer } from '../../utils/performance/bundleOptimizer';
+import { logger } from '@utils/logging/logger';
 import {
   routePreloader,
   adaptiveLoader as enhancedAdaptiveLoader,
@@ -248,10 +249,10 @@ export class SmartOrchestrator {
       // Get initial performance baseline
       this.performanceBaseline = await this.getPerformanceBaseline();
 
-      console.log('Smart Performance Orchestrator initialized successfully');
+      logger.debug('Smart Performance Orchestrator initialized successfully', 'SERVICE');
 
     } catch (error) {
-      console.error('Failed to initialize Smart Performance Orchestrator:', error);
+      logger.error('Failed to initialize Smart Performance Orchestrator:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -288,7 +289,7 @@ export class SmartOrchestrator {
       this.criticalPathAnalyzer = new CriticalPathAnalyzer();
 
     } catch (error) {
-      console.error('Failed to initialize components:', error);
+      logger.error('Failed to initialize components:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -362,7 +363,7 @@ export class SmartOrchestrator {
       }
 
     } catch (error) {
-      console.error('Preloading orchestration failed:', error);
+      logger.error('Preloading orchestration failed:', 'SERVICE', {}, error as Error);
       this.state.componentStatus.preloading = 'error';
     }
   }
@@ -417,7 +418,7 @@ export class SmartOrchestrator {
       }
 
     } catch (error) {
-      console.error('Resource optimization orchestration failed:', error);
+      logger.error('Resource optimization orchestration failed:', 'SERVICE', {}, error as Error);
       this.state.componentStatus.resourceOptimization = 'error';
     }
   }
@@ -455,7 +456,7 @@ export class SmartOrchestrator {
       }
 
     } catch (error) {
-      console.error('Adaptive loading orchestration failed:', error);
+      logger.error('Adaptive loading orchestration failed:', 'SERVICE', {}, error as Error);
       this.state.componentStatus.adaptiveLoading = 'error';
     }
   }
@@ -486,7 +487,7 @@ export class SmartOrchestrator {
       this.state.performanceImpact.memoryUsage = cacheStats.memoryUsage;
 
     } catch (error) {
-      console.error('Caching orchestration failed:', error);
+      logger.error('Caching orchestration failed:', 'SERVICE', {}, error as Error);
       this.state.componentStatus.intelligentCaching = 'error';
     }
   }
@@ -639,7 +640,7 @@ export class SmartOrchestrator {
     // Share performance data between components
     if (this.rumService && this.cacheManager) {
       // This would be implemented as event listeners in a real system
-      console.debug('Data sharing setup completed');
+      logger.debug('Data sharing setup completed', 'SERVICE');
     }
   }
 
@@ -666,7 +667,7 @@ export class SmartOrchestrator {
       }
 
     } catch (error) {
-      console.error('Cache warming failed:', error);
+      logger.error('Cache warming failed:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -698,7 +699,7 @@ export class SmartOrchestrator {
       // For now, return empty array
       return [];
     } catch (error) {
-      console.error('Failed to get RUM metrics:', error);
+      logger.error('Failed to get RUM metrics:', 'SERVICE', {}, error as Error);
       return [];
     }
   }

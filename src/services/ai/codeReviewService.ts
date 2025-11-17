@@ -1,4 +1,5 @@
 import { ServiceResponse } from '../../types/services';
+import { logger } from '@utils/logging/logger';
 
 // AI Code Review Configuration
 export interface AICodeReviewConfig {
@@ -140,7 +141,7 @@ export class AICodeReviewService {
         data: review
       };
     } catch (error) {
-      console.error('AI code review error:', error);
+      logger.error('AI code review error:', 'SERVICE', {}, error as Error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred'
@@ -252,7 +253,7 @@ ${criteriaText}
         data: content
       };
     } catch (error) {
-      console.error('AI service call error:', error);
+      logger.error('AI service call error:', 'SERVICE', {}, error as Error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'AI service call failed'
@@ -287,7 +288,7 @@ ${criteriaText}
         reviewTimeMs: 0 // Will be set by caller
       };
     } catch (error) {
-      console.error('Error parsing AI response:', error);
+      logger.error('Error parsing AI response:', 'SERVICE', {}, error as Error);
       
       // Fallback review if parsing fails
       return {

@@ -59,6 +59,7 @@ import Cluster from "../components/layout/primitives/Cluster";
 import Grid from "../components/layout/primitives/Grid";
 import { motion } from "framer-motion";
 import { EnhancedSearchBar } from "../components/features/search/EnhancedSearchBar";
+import { logger } from '@utils/logging/logger';
 
 export const ChallengesPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -87,7 +88,7 @@ export const ChallengesPage: React.FC = () => {
       return await fn();
     } catch (error) {
       if (retries > 0) {
-        console.log(`Retrying request, ${retries} attempts left...`);
+        logger.debug(`Retrying request, ${retries} attempts left...`, 'PAGE');
         await new Promise((resolve) => setTimeout(resolve, 1000));
         return fetchWithRetry(fn, retries - 1);
       }
@@ -195,10 +196,10 @@ export const ChallengesPage: React.FC = () => {
             );
           } catch {}
         } else {
-          console.log("Failed to load recommendations:", res.error);
+          logger.debug('Failed to load recommendations:', 'PAGE', res.error);
         }
       } catch (e) {
-        console.error("Error loading recommendations:", e);
+        logger.error('Error loading recommendations:', 'PAGE', e);
       }
     })();
   }, [currentUser, track]);
@@ -253,7 +254,7 @@ export const ChallengesPage: React.FC = () => {
         setUserChallenges(userChallengesResult.challenges);
       }
     } catch (err) {
-      console.error("Error fetching user challenges:", err);
+      logger.error('Error fetching user challenges:', 'PAGE', {}, err as Error);
     }
   };
 
@@ -341,7 +342,7 @@ export const ChallengesPage: React.FC = () => {
         day: "numeric",
       });
     } catch (err) {
-      console.error("Error formatting date:", err);
+      logger.error('Error formatting date:', 'PAGE', {}, err as Error);
       return "Invalid Date";
     }
   };

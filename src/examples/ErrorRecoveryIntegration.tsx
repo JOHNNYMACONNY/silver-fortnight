@@ -12,6 +12,7 @@ import { networkResilience, useNetworkStatus } from '../services/networkResilien
 import { gracefulDegradation, useServiceStatus } from '../services/gracefulDegradation';
 import { AppError, ErrorCode, ErrorSeverity } from '../types/errors';
 import { errorService } from '../services/errorService';
+import { logger } from '@utils/logging/logger';
 
 // Example component that demonstrates error recovery integration
 const ErrorRecoveryDemo: React.FC = () => {
@@ -122,7 +123,7 @@ const ErrorRecoveryDemo: React.FC = () => {
   };
 
   const handleRetry = () => {
-    console.log('Retrying operation...');
+    logger.debug('Retrying operation...', 'APP');
     // Simulate successful retry after a delay
     setTimeout(() => {
       setCurrentError(null);
@@ -165,7 +166,7 @@ const ErrorRecoveryDemo: React.FC = () => {
           setLoading(false);
         })
         .catch(error => {
-          console.error('Failed to load users:', error);
+          logger.error('Failed to load users:', 'APP', {}, error as Error);
           setLoading(false);
         });
     }, []);
@@ -182,7 +183,7 @@ const ErrorRecoveryDemo: React.FC = () => {
           estimatedReturn="in a few minutes"
           alternativeAction={{
             label: 'View Cached Users',
-            action: () => console.log('Showing cached users')
+            action: () => logger.debug('Showing cached users', 'APP')
           }}
         />
       );

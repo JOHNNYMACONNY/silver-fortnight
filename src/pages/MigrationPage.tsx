@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import { MigrationStatusComponent } from '../components/migration/MigrationStatus';
 import { useMigration } from '../hooks/useMigration';
+import { logger } from '@utils/logging/logger';
 
 export const MigrationPage: React.FC = () => {
   const { status, results, isRunning, startMigration, rollbackMigration, resetMigration } = useMigration();
@@ -21,12 +22,12 @@ export const MigrationPage: React.FC = () => {
   });
 
   const handleMigrationComplete = (results: any[]) => {
-    console.log('Migration completed:', results);
+    logger.debug('Migration completed:', 'PAGE', results);
     // Show success notification
   };
 
   const handleMigrationError = (error: string) => {
-    console.error('Migration error:', error);
+    logger.error('Migration error:', 'PAGE', {}, error as Error);
     // Show error notification
   };
 
@@ -34,7 +35,7 @@ export const MigrationPage: React.FC = () => {
     try {
       await startMigration(migrationConfig);
     } catch (error) {
-      console.error('Failed to start migration:', error);
+      logger.error('Failed to start migration:', 'PAGE', {}, error as Error);
     }
   };
 
@@ -42,9 +43,9 @@ export const MigrationPage: React.FC = () => {
     if (window.confirm('Are you sure you want to rollback the migration? This action cannot be undone.')) {
       const success = await rollbackMigration();
       if (success) {
-        console.log('Rollback completed successfully');
+        logger.debug('Rollback completed successfully', 'PAGE');
       } else {
-        console.error('Rollback failed');
+        logger.error('Rollback failed', 'PAGE');
       }
     }
   };

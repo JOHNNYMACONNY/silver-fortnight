@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSecureAuth } from '../../auth/SecureAuthProvider';
+import { logger } from '@utils/logging/logger';
 
 interface UserRow {
   id: string;
@@ -44,7 +45,7 @@ const UsersPage: React.FC = () => {
       return;
     }
 
-    console.log(`Performing ${action} on user ${userId}`);
+    logger.debug(`Performing ${action} on user ${userId}`, 'PAGE');
     // Implement user management actions here
   };
 

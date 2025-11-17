@@ -67,6 +67,7 @@ import { Skeleton } from "../../ui/skeletons/Skeleton";
 import { Button } from "../../ui/Button";
 import { ArrowLeft } from "lucide-react";
 import { themeClasses } from "../../../utils/themeUtils";
+import { logger } from '@utils/logging/logger';
 
 export const ChatContainer: React.FC = () => {
   const { conversationId } = useParams<{ conversationId?: string }>();
@@ -75,7 +76,7 @@ export const ChatContainer: React.FC = () => {
   const toastContext = React.useContext(ToastContext);
   // Local error handling functions
   const addError = (error: Error, operation: string, metadata?: any) => {
-    console.error(`Chat error in ${operation}:`, error, metadata);
+    logger.error('Chat error in ${operation}:', 'COMPONENT', { arg0: error, arg1: metadata });
     if (toastContext) {
       toastContext.addToast("error", `Error in ${operation}: ${error.message}`);
     }
@@ -198,10 +199,7 @@ export const ChatContainer: React.FC = () => {
           navigate(`/messages/${convo.id}`, { replace: true });
         } catch {}
       } catch (e) {
-        console.error(
-          "ChatContainer: failed to open deep-linked conversation",
-          e
-        );
+        logger.error('ChatContainer: failed to open deep-linked conversation', 'COMPONENT', e);
       }
     })();
   }, [currentUser, searchParams, navigate]);
@@ -244,7 +242,7 @@ export const ChatContainer: React.FC = () => {
         setLoading(false);
       } catch (err: any) {
         const error = err instanceof Error ? err : new Error(String(err));
-        console.error("Error fetching conversations:", error);
+        logger.error('Error fetching conversations:', 'COMPONENT', {}, error as Error);
 
         // Handle permission errors gracefully - they're expected when user has no conversations
         if (error.message?.includes("Missing or insufficient permissions")) {
@@ -336,10 +334,7 @@ export const ChatContainer: React.FC = () => {
             }
           }
         } catch (err: any) {
-          console.error(
-            "ChatContainer: Error processing real-time messages:",
-            err
-          );
+          logger.error('ChatContainer: Error processing real-time messages:', 'COMPONENT', {}, err as Error);
           setError(err.message || "Failed to process messages");
           setLoading(false);
           messageListenerPerf.trackError(
@@ -349,7 +344,7 @@ export const ChatContainer: React.FC = () => {
       },
       // Add error handler for listener failures
       (error: Error) => {
-        console.error("ChatContainer: Message listener error:", error);
+        logger.error('ChatContainer: Message listener error:', 'COMPONENT', {}, error as Error);
         setError(error.message || "Failed to load messages");
         setLoading(false);
         messageListenerPerf.trackError(error);
@@ -423,7 +418,7 @@ export const ChatContainer: React.FC = () => {
         setUsersData((prevData) => ({ ...prevData, ...newUsers }));
       }
     } catch (error: any) {
-      console.error("Error fetching user data:", error);
+      logger.error('Error fetching user data:', 'COMPONENT', {}, error as Error);
       // Show user-friendly error message for data fetching failures
       if (toastContext) {
         toastContext.addToast("error", "Failed to load user information");
@@ -533,7 +528,7 @@ export const ChatContainer: React.FC = () => {
             type: "text" as "text" | "image" | "file" | "link",
           };
 
-          console.log("Sending message with data:", messageData);
+          logger.debug('Sending message with data:', 'COMPONENT', messageData);
 
           // Call createMessage with conversationId and messageData
           const { error: sendError } = await createMessage(
@@ -569,7 +564,7 @@ export const ChatContainer: React.FC = () => {
       // The messages will be updated by the real-time listener
     } catch (err: any) {
       const error = err instanceof Error ? err : new Error(String(err));
-      console.error("Error sending message:", error);
+      logger.error('Error sending message:', 'COMPONENT', {}, error as Error);
 
       // Use centralized error handling
       addError(error, "sending message", {

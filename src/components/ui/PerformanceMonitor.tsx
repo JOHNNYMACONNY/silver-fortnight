@@ -8,6 +8,7 @@ import {
   logPerformanceMetrics
 } from '../../utils/performanceMetrics';
 import { usePerformance } from '../../contexts/PerformanceContext';
+import { logger } from '@utils/logging/logger';
 
 interface PerformanceMonitorProps {
   pageName: string;
@@ -96,13 +97,13 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
     const now = Date.now();
     if (circuitBreakerRef.current.broken) {
       if (now < circuitBreakerRef.current.resetAt) {
-        console.warn('🔒 PerformanceMonitor: Circuit breaker active, skipping execution');
+        logger.warn('🔒 PerformanceMonitor: Circuit breaker active, skipping execution', 'COMPONENT');
         return;
       } else {
         // Reset circuit breaker after 5 seconds
         circuitBreakerRef.current.broken = false;
         loopDetectionRef.current = 0;
-        console.log('🔓 PerformanceMonitor: Circuit breaker reset, resuming normal operation');
+        logger.debug('🔓 PerformanceMonitor: Circuit breaker reset, resuming normal operation', 'COMPONENT');
       }
     }
 
@@ -111,10 +112,10 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
     // Enhanced loop detection with automatic recovery
     loopDetectionRef.current++;
     if (loopDetectionRef.current > 3) {
-      console.warn('⚠️ PerformanceMonitor: Potential infinite loop detected. Effect has run', loopDetectionRef.current, 'times for page:', pageName);
+      logger.warn('⚠️ PerformanceMonitor: Potential infinite loop detected. Effect has run', 'COMPONENT', { arg0: loopDetectionRef.current, arg1: 'times for page:', arg2: pageName });
       
       if (loopDetectionRef.current > 8) {
-        console.error('🚨 PerformanceMonitor: Infinite loop detected! Activating circuit breaker to prevent browser crash.');
+        logger.error('🚨 PerformanceMonitor: Infinite loop detected! Activating circuit breaker to prevent browser crash.', 'COMPONENT');
         circuitBreakerRef.current.broken = true;
         circuitBreakerRef.current.resetAt = now + 5000; // Reset after 5 seconds
         return;

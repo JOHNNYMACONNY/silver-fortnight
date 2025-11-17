@@ -8,6 +8,7 @@
 import { getSyncFirebaseDb } from '../firebase-config';
 import { collection, query, orderBy, getDocs, doc, getDoc, limit, addDoc } from 'firebase/firestore';
 import { ChatMessage } from '../types/chat';
+import { logger } from '@utils/logging/logger';
 
 export interface OfflineMessageResult {
   success: boolean;
@@ -29,7 +30,7 @@ export const loadMessagesOffline = async (conversationId: string): Promise<Offli
   };
 
   try {
-    console.log(`📱 Loading messages offline for conversation: ${conversationId}`);
+    logger.debug(`📱 Loading messages offline for conversation: ${conversationId}`, 'UTILITY');
     
     const db = getSyncFirebaseDb();
     if (!db) {
@@ -44,7 +45,7 @@ export const loadMessagesOffline = async (conversationId: string): Promise<Offli
       throw new Error('Conversation not found');
     }
 
-    console.log('✅ Conversation exists, loading messages...');
+    logger.debug('✅ Conversation exists, loading messages...', 'UTILITY');
 
     // Load messages using direct query (no real-time listener)
     const messagesRef = collection(db, 'conversations', conversationId, 'messages');
@@ -55,7 +56,7 @@ export const loadMessagesOffline = async (conversationId: string): Promise<Offli
     );
     
     const messagesSnapshot = await getDocs(messagesQuery);
-    console.log(`📊 Found ${messagesSnapshot.size} messages`);
+    logger.debug(`📊 Found ${messagesSnapshot.size} messages`, 'UTILITY');
 
     const messages: ChatMessage[] = [];
     messagesSnapshot.forEach((doc) => {
@@ -69,11 +70,11 @@ export const loadMessagesOffline = async (conversationId: string): Promise<Offli
     result.messages = messages;
     result.success = true;
     
-    console.log(`✅ Successfully loaded ${messages.length} messages offline`);
+    logger.debug(`✅ Successfully loaded ${messages.length} messages offline`, 'UTILITY');
     return result;
 
   } catch (error: any) {
-    console.error('❌ Offline message loading failed:', error);
+    logger.error('❌ Offline message loading failed:', 'UTILITY', {}, error as Error);
     result.error = error.message;
     return result;
   }
@@ -88,7 +89,7 @@ export const loadConversationsOffline = async (userId: string): Promise<{
   error?: string;
 }> => {
   try {
-    console.log(`📱 Loading conversations offline for user: ${userId}`);
+    logger.debug(`📱 Loading conversations offline for user: ${userId}`, 'UTILITY');
     
     const db = getSyncFirebaseDb();
     if (!db) {
@@ -114,7 +115,7 @@ export const loadConversationsOffline = async (userId: string): Promise<{
       }
     }
     
-    console.log(`✅ Loaded ${conversations.length} conversations offline`);
+    logger.debug(`✅ Loaded ${conversations.length} conversations offline`, 'UTILITY');
     
     return {
       success: true,
@@ -122,7 +123,7 @@ export const loadConversationsOffline = async (userId: string): Promise<{
     };
     
   } catch (error: any) {
-    console.error('❌ Offline conversation loading failed:', error);
+    logger.error('❌ Offline conversation loading failed:', 'UTILITY', {}, error as Error);
     return {
       success: false,
       conversations: [],
@@ -143,7 +144,7 @@ export const createMessageOffline = async (
   error?: string;
 }> => {
   try {
-    console.log(`📝 Creating message offline in conversation: ${conversationId}`);
+    logger.debug(`📝 Creating message offline in conversation: ${conversationId}`, 'UTILITY');
     
     const db = getSyncFirebaseDb();
     if (!db) {
@@ -157,7 +158,7 @@ export const createMessageOffline = async (
       readBy: []
     });
     
-    console.log(`✅ Message created offline with ID: ${docRef.id}`);
+    logger.debug(`✅ Message created offline with ID: ${docRef.id}`, 'UTILITY');
     
     return {
       success: true,
@@ -165,7 +166,7 @@ export const createMessageOffline = async (
     };
     
   } catch (error: any) {
-    console.error('❌ Offline message creation failed:', error);
+    logger.error('❌ Offline message creation failed:', 'UTILITY', {}, error as Error);
     return {
       success: false,
       error: error.message

@@ -4,6 +4,7 @@ import { CollaborationService, collaborationService } from '../entities/Collabor
 import { errorService } from '../errorService';
 import { networkResilience } from '../networkResilience';
 import { gracefulDegradation } from '../gracefulDegradation';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Service Registry - Central registry for all application services
@@ -97,9 +98,9 @@ export class ServiceRegistry {
       await Promise.all(initPromises);
       this.initialized = true;
       
-      console.log('Service registry initialized successfully');
+      logger.debug('Service registry initialized successfully', 'SERVICE');
     } catch (error) {
-      console.error('Failed to initialize service registry:', error);
+      logger.error('Failed to initialize service registry:', 'SERVICE', {}, error as Error);
       throw error;
     }
   }
@@ -120,9 +121,9 @@ export class ServiceRegistry {
       await Promise.all(shutdownPromises);
       this.initialized = false;
       
-      console.log('Service registry shutdown successfully');
+      logger.debug('Service registry shutdown successfully', 'SERVICE');
     } catch (error) {
-      console.error('Failed to shutdown service registry:', error);
+      logger.error('Failed to shutdown service registry:', 'SERVICE', {}, error as Error);
       throw error;
     }
   }

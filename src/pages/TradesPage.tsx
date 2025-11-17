@@ -42,6 +42,7 @@ import { classPatterns, animations } from "../utils/designSystem";
 import { semanticClasses } from "../utils/semanticColors";
 import { TopicLink } from "../components/ui/TopicLink";
 import { getQuickTradeAnalytics, TradeAnalytics } from "../services/tradeAnalytics";
+import { logger } from '@utils/logging/logger';
 
 export const TradesPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -115,7 +116,7 @@ export const TradesPage: React.FC = () => {
         averageCompletionTime: undefined
       });
     } catch (error) {
-      console.error('Failed to fetch analytics:', error);
+      logger.error('Failed to fetch analytics:', 'PAGE', {}, error as Error);
       // Set fallback analytics
       setAnalytics({
         totalTrades: 0,
@@ -178,19 +179,19 @@ export const TradesPage: React.FC = () => {
           }
           setLoading(false);
         } catch (err: any) {
-          console.error("Error processing realtime trades:", err);
+          logger.error('Error processing realtime trades:', 'PAGE', {}, err as Error);
           setError(err.message || "Failed to process trades");
           setLoading(false);
         }
           },
           (err) => {
-            console.error("Error subscribing to trades:", err);
+            logger.error('Error subscribing to trades:', 'PAGE', {}, err as Error);
             setError(err.message || "Failed to subscribe to trades");
             setLoading(false);
           }
         );
       } catch (err: any) {
-        console.error("Error initializing trade listener:", err);
+        logger.error('Error initializing trade listener:', 'PAGE', {}, err as Error);
         setError(err.message || "Failed to load trades");
         setLoading(false);
       }

@@ -13,6 +13,7 @@ import { CollaborationService, Collaboration } from "./entities/CollaborationSer
 import { getChallenges } from "./challenges";
 import { ChallengeStatus, ChallengeSortBy, Challenge } from "../types/gamification";
 import { ServiceResponse } from "../types/services";
+import { logger } from '@utils/logging/logger';
 import {
   ActivityFeedItem,
   ChallengeSpotlight,
@@ -154,7 +155,7 @@ export const getGlobalActivityFeed = async (
       data: activities.slice(0, limit),
     };
   } catch (error: any) {
-    console.error("Error fetching global activity feed:", error);
+    logger.error('Error fetching global activity feed:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: error?.message || "Failed to load activity feed",
@@ -203,7 +204,7 @@ export const fetchHomePageData = async (): Promise<
       },
     };
   } catch (error: any) {
-    console.error("Error assembling HomePage data:", error);
+    logger.error('Error assembling HomePage data:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: error?.message || "Failed to load home data",

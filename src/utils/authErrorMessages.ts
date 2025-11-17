@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 /**
  * Firebase Auth Error Message Mapper
  * 
@@ -21,11 +22,11 @@ export const getFriendlyAuthError = (error: any): FriendlyAuthError => {
   const errorMessage = error?.message || String(error);
 
   // Log technical error to console for developers
-  console.error('🔐 Firebase Auth Error:', {
+  logger.error('🔐 Firebase Auth Error:', 'UTILITY', {}, {
     code: errorCode,
     message: errorMessage,
     fullError: error
-  });
+  } as Error);
 
   // Map Firebase error codes to user-friendly messages
   const friendlyMessages: Record<string, string> = {

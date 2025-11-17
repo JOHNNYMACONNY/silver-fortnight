@@ -4,6 +4,7 @@ import { getSyncFirebaseDb } from '../firebase-config';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { Avatar } from '../components/ui/Avatar';
 import { fetchUserData } from '../utils/userUtils';
+import { logger } from '@utils/logging/logger';
 
 export const MessageDisplayTest: React.FC = () => {
   const { currentUser } = useAuth();
@@ -22,14 +23,14 @@ export const MessageDisplayTest: React.FC = () => {
       try {
         // Hardcoded conversation ID
         const conversationId = 'bcB1UuJ2VHwTXsTFG71g';
-        console.log('Directly testing conversation:', conversationId);
+        logger.debug('Directly testing conversation:', 'PAGE', conversationId);
 
         // Create a direct reference to the messages subcollection
         const messagesRef = collection(getSyncFirebaseDb(), 'conversations', conversationId, 'messages');
         const q = query(messagesRef as any, orderBy('createdAt', 'asc'));
         const querySnapshot = await getDocs(q);
 
-        console.log('Found messages:', querySnapshot.size);
+        logger.debug('Found messages:', 'PAGE', querySnapshot.size);
         
         const messagesList: any[] = [];
         querySnapshot.forEach((doc) => {
@@ -38,7 +39,7 @@ export const MessageDisplayTest: React.FC = () => {
             id: doc.id,
             ...(raw && typeof raw === 'object' ? raw : {})
           };
-          console.log('Message data:', messageData);
+          logger.debug('Message data:', 'PAGE', messageData);
           messagesList.push(messageData);
         });
 
@@ -52,19 +53,19 @@ export const MessageDisplayTest: React.FC = () => {
           }
         });
 
-        console.log('Fetching user data for IDs:', Array.from(userIds));
+        logger.debug('Fetching user data for IDs:', 'PAGE', Array.from(userIds));
         
         const userData: Record<string, any> = {};
         for (const userId of userIds) {
           userData[userId] = await fetchUserData(userId);
         }
         
-        console.log('Fetched user data:', userData);
+        logger.debug('Fetched user data:', 'PAGE', userData);
         setUsersData(userData);
         
         setLoading(false);
       } catch (err: any) {
-        console.error('Error fetching messages:', err);
+        logger.error('Error fetching messages:', 'PAGE', {}, err as Error);
         setError(err.message || 'Failed to fetch messages');
         setLoading(false);
       }

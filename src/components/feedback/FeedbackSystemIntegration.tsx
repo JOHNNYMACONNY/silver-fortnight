@@ -15,6 +15,7 @@ import { Badge } from '../ui/Badge';
 import { useToast } from '../../contexts/ToastContext';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { classPatterns } from '../../utils/designSystem';
+import { logger } from '@utils/logging/logger';
 
 // Sample data for demonstration
 const SAMPLE_TOURS = [
@@ -50,7 +51,7 @@ const SAMPLE_TOURS = [
         highlight: true,
         action: {
           label: 'Go to Profile',
-          onClick: () => console.log('Navigate to profile'),
+          onClick: () => logger.debug('Navigate to profile', 'COMPONENT'),
         },
       },
       {
@@ -215,7 +216,7 @@ export const FeedbackSystemIntegration: React.FC<FeedbackSystemIntegrationProps>
   };
 
   const handleFeedbackSubmit = async (feedback: any) => {
-    console.log('Feedback submitted:', feedback);
+    logger.debug('Feedback submitted:', 'COMPONENT', feedback);
     showToast('Thank you for your feedback!', 'success');
   };
 

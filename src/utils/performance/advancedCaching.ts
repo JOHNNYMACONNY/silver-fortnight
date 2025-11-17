@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 /**
  * Advanced caching strategies for optimal performance
  */
@@ -70,10 +71,10 @@ export class MultiLevelCache {
       };
 
       request.onerror = (event) => {
-        console.error('Failed to initialize persistent cache:', event);
+        logger.error('Failed to initialize persistent cache:', 'UTILITY', event);
       };
     } catch (error) {
-      console.error('IndexedDB not available:', error);
+      logger.error('IndexedDB not available:', 'UTILITY', {}, error as Error);
     }
   }
 
@@ -207,7 +208,7 @@ export class MultiLevelCache {
         const data = await loader();
         await this.set(keyPattern, data, { priority, persist: priority === 'critical' });
       } catch (error) {
-        console.error(`Failed to warm cache for pattern ${keyPattern}:`, error);
+        logger.error(`Failed to warm cache for pattern ${keyPattern}:`, 'UTILITY', {}, error as Error);
       }
     });
 
@@ -257,7 +258,7 @@ export class MultiLevelCache {
   private async triggerPreload(key: string): Promise<void> {
     // This would trigger the appropriate loader based on key pattern
     // Implementation depends on specific use case
-    console.log(`Triggering preload for ${key}`);
+    logger.debug(`Triggering preload for ${key}`, 'UTILITY');
   }
 
   private shouldEvict(newEntrySize: number): boolean {
@@ -347,7 +348,7 @@ export class MultiLevelCache {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      console.error('Failed to persist cache entry:', error);
+      logger.error('Failed to persist cache entry:', 'UTILITY', {}, error as Error);
     }
   }
 
@@ -372,7 +373,7 @@ export class MultiLevelCache {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      console.error('Failed to get from persistent cache:', error);
+      logger.error('Failed to get from persistent cache:', 'UTILITY', {}, error as Error);
       return undefined;
     }
   }
@@ -390,7 +391,7 @@ export class MultiLevelCache {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      console.error('Failed to delete from persistent cache:', error);
+      logger.error('Failed to delete from persistent cache:', 'UTILITY', {}, error as Error);
     }
   }
 
@@ -439,7 +440,7 @@ export class ServiceWorkerCache {
       const cache = await caches.open('tradeya-v1');
       await cache.put(request, response.clone());
     } catch (error) {
-      console.error('Failed to cache response:', error);
+      logger.error('Failed to cache response:', 'UTILITY', {}, error as Error);
     }
   }
 
@@ -451,7 +452,7 @@ export class ServiceWorkerCache {
       const match = await cache.match(request);
       return match ?? undefined;
     } catch (error) {
-      console.error('Failed to get cached response:', error);
+      logger.error('Failed to get cached response:', 'UTILITY', {}, error as Error);
       return undefined;
     }
   }
@@ -466,7 +467,7 @@ export class ServiceWorkerCache {
       const keysToDelete = keys.filter(key => key.url.includes(pattern));
       await Promise.all(keysToDelete.map(key => cache.delete(key)));
     } catch (error) {
-      console.error('Failed to invalidate cache:', error);
+      logger.error('Failed to invalidate cache:', 'UTILITY', {}, error as Error);
     }
   }
 }

@@ -6,6 +6,7 @@
  */
 
 import type { LayoutShiftEntry } from '../../types/browser';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Resource information for analysis
@@ -160,7 +161,7 @@ export class CriticalPathAnalyzer {
    */
   private initializeObserver(): void {
     if (typeof window === 'undefined' || !window.PerformanceObserver) {
-      console.warn('PerformanceObserver not supported');
+      logger.warn('PerformanceObserver not supported', 'UTILITY');
       return;
     }
 
@@ -180,7 +181,7 @@ export class CriticalPathAnalyzer {
         entryTypes: ['resource', 'navigation'] 
       });
     } catch (error) {
-      console.error('Failed to initialize resource observer:', error);
+      logger.error('Failed to initialize resource observer:', 'UTILITY', {}, error as Error);
     }
   }
 
@@ -305,7 +306,7 @@ export class CriticalPathAnalyzer {
         }
       }
     } catch (error) {
-      console.warn('Error checking if image is above the fold:', error);
+      logger.warn('Error checking if image is above the fold:', 'UTILITY', error);
     }
     return false;
   }

@@ -6,6 +6,7 @@
  */
 
 import { onCLS, onFCP, onLCP, onTTFB, onINP } from 'web-vitals';
+import { logger } from '@utils/logging/logger';
 
 export interface ProfilePageMetrics {
   scenario: string;
@@ -43,7 +44,7 @@ class ProfilePageProfiler {
     this.startTime = performance.now();
     this.componentMetrics.clear();
     this.reRenderCounts.clear();
-    console.log(`🔍 Starting profiling scenario: ${scenarioName}`);
+    logger.debug(`🔍 Starting profiling scenario: ${scenarioName}`, 'UTILITY');
   }
 
   /**
@@ -147,8 +148,8 @@ class ProfilePageProfiler {
     };
 
     this.metrics.push(metric);
-    console.log(`✅ Completed profiling scenario: ${scenarioName}`);
-    console.log('Metrics:', metric);
+    logger.debug(`✅ Completed profiling scenario: ${scenarioName}`, 'UTILITY');
+    logger.debug('Metrics:', 'UTILITY', metric);
 
     return metric;
   }

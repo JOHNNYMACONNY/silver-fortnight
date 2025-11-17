@@ -14,6 +14,7 @@ import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Textarea } from '../ui/Textarea';
+import { logger } from '@utils/logging/logger';
 import { 
   Target, 
   TrendingUp, 
@@ -61,7 +62,7 @@ export const SkillAssessmentInterface: React.FC<SkillAssessmentInterfaceProps> =
         setShowAnalytics(true);
       }
     } catch (error) {
-      console.error('Error loading analytics:', error);
+      logger.error('Error loading analytics:', 'COMPONENT', {}, error as Error);
     }
   };
 
@@ -88,7 +89,7 @@ export const SkillAssessmentInterface: React.FC<SkillAssessmentInterfaceProps> =
         await loadAnalytics(); // Refresh analytics
       }
     } catch (error) {
-      console.error('Error submitting assessment:', error);
+      logger.error('Error submitting assessment:', 'COMPONENT', {}, error as Error);
     } finally {
       setIsSubmitting(false);
     }

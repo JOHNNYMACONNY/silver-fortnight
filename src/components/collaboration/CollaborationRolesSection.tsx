@@ -15,6 +15,7 @@ import { abandonRole } from '../../services/roleAbandonment';
 import AbandonRoleModal from './AbandonRoleModal';
 import Box from '../layout/primitives/Box';
 import Grid from '../layout/primitives/Grid';
+import { logger } from '@utils/logging/logger';
 
 
 interface CollaborationRolesSectionProps {
@@ -103,7 +104,7 @@ export const CollaborationRolesSection: React.FC<CollaborationRolesSectionProps>
         throw new Error(result.error || 'Failed to submit application');
       }
     } catch (error) {
-      console.error('Error submitting application:', error);
+      logger.error('Error submitting application:', 'COMPONENT', {}, error as Error);
       addToast('error', error instanceof Error ? error.message : 'Failed to submit application');
     }
   };
@@ -127,7 +128,7 @@ export const CollaborationRolesSection: React.FC<CollaborationRolesSectionProps>
         throw new Error(result.error || 'Failed to accept application');
       }
     } catch (error) {
-      console.error('Error accepting application:', error);
+      logger.error('Error accepting application:', 'COMPONENT', {}, error as Error);
       addToast('error', error instanceof Error ? error.message : 'Failed to accept application');
     }
   };
@@ -151,7 +152,7 @@ export const CollaborationRolesSection: React.FC<CollaborationRolesSectionProps>
         throw new Error(result.error || 'Failed to reject application');
       }
     } catch (error) {
-      console.error('Error rejecting application:', error);
+      logger.error('Error rejecting application:', 'COMPONENT', {}, error as Error);
       addToast('error', error instanceof Error ? error.message : 'Failed to reject application');
     }
   };
@@ -178,7 +179,7 @@ export const CollaborationRolesSection: React.FC<CollaborationRolesSectionProps>
         throw new Error(result.error || 'Failed to submit completion request');
       }
     } catch (error) {
-      console.error('Error submitting completion request:', error);
+      logger.error('Error submitting completion request:', 'COMPONENT', {}, error as Error);
       addToast('error', error instanceof Error ? error.message : 'Failed to submit completion request');
     }
   };
@@ -197,7 +198,7 @@ export const CollaborationRolesSection: React.FC<CollaborationRolesSectionProps>
       setShowAbandonModal(false);
       onRolesUpdated(); // Refresh roles data
     } catch (error) {
-      console.error('Error abandoning role:', error);
+      logger.error('Error abandoning role:', 'COMPONENT', {}, error as Error);
       addToast('error', error instanceof Error ? error.message : 'Failed to abandon role');
     }
   };

@@ -7,6 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChatConversation, getUserConversations } from '../services/chat/chatService';
 import { useAuth } from '../AuthContext';
+import { logger } from '@utils/logging/logger';
 
 // Icons
 const SearchIcon = () => (
@@ -144,7 +145,7 @@ export const ChatConversationList: React.FC<ChatConversationListProps> = ({
         return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
       }
     } catch (err) {
-      console.error('Error formatting timestamp:', err);
+      logger.error('Error formatting timestamp:', 'COMPONENT', {}, err as Error);
       return '';
     }
   };

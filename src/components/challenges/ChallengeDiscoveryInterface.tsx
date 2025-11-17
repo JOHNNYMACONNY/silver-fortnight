@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { ChallengeCard } from '../features/challenges/ChallengeCard';
 import { Input } from '../ui/Input';
+import { logger } from '@utils/logging/logger';
 import { 
   Search, 
   Filter, 
@@ -63,7 +64,7 @@ export const ChallengeDiscoveryInterface: React.FC<ChallengeDiscoveryInterfacePr
         setDiscoveryResult(response.data);
       }
     } catch (error) {
-      console.error('Error discovering challenges:', error);
+      logger.error('Error discovering challenges:', 'COMPONENT', {}, error as Error);
     } finally {
       setLoading(false);
     }

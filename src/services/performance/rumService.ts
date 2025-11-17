@@ -11,6 +11,7 @@ import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore
 import { PerformanceMetrics } from '../../utils/performanceMetrics';
 import { performanceLogger } from '../../utils/performance/structuredLogger';
 import type { ExtendedWindow, ExtendedNavigator } from '../../types/browser';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Extended performance metrics for RUM collection
@@ -677,7 +678,7 @@ export class RUMService {
     try {
       await this.sendMetricsBatch(batch);
     } catch (error) {
-      console.error('Failed to send RUM metrics batch:', error);
+      logger.error('Failed to send RUM metrics batch:', 'SERVICE', {}, error as Error);
       
       // Add back to offline queue if network error
       if (!this.isOnline) {

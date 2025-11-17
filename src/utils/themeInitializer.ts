@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 /**
  * Theme Initializer for TradeYa
  * Handles theme detection, initialization, and synchronization with Tailwind CSS v4
@@ -66,7 +67,7 @@ class ThemeInitializer {
         return saved as Theme;
       }
     } catch (error) {
-      console.warn("Failed to read theme from localStorage:", error);
+      logger.warn('Failed to read theme from localStorage:', 'UTILITY', error);
     }
     return null;
   }
@@ -78,7 +79,7 @@ class ThemeInitializer {
     try {
       localStorage.setItem(this.config.storageKey, theme);
     } catch (error) {
-      console.warn("Failed to save theme to localStorage:", error);
+      logger.warn('Failed to save theme to localStorage:', 'UTILITY', error);
     }
   }
 

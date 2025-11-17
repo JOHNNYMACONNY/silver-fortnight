@@ -23,6 +23,7 @@ import {
 } from '../types/gamification';
 import { ServiceResponse } from '../types/services';
 import { awardXP } from './gamification';
+import { logger } from '@utils/logging/logger';
 
 const getDb = () => getSyncFirebaseDb();
 
@@ -72,7 +73,7 @@ export const getUserThreeTierProgress = async (userId: string): Promise<ServiceR
 
     return { success: true, data: progressDoc.data() as ThreeTierProgress };
   } catch (error) {
-    console.error('Error getting three-tier progress:', error);
+    logger.error('Error getting three-tier progress:', 'SERVICE', {}, error as Error);
     return { success: false, error: 'Failed to get progression status' };
   }
 };
@@ -168,7 +169,7 @@ export const updateProgressionOnChallengeCompletion = async (
       return { success: true, data: progress };
     });
   } catch (error) {
-    console.error('Error updating three-tier progression:', error);
+    logger.error('Error updating three-tier progression:', 'SERVICE', {}, error as Error);
     return { success: false, error: 'Failed to update progression' };
   }
 };
@@ -262,7 +263,7 @@ export const getRecommendedChallenges = async (userId: string): Promise<ServiceR
 
     return { success: true, data: recommendations };
   } catch (error) {
-    console.error('Error getting recommended challenges:', error);
+    logger.error('Error getting recommended challenges:', 'SERVICE', {}, error as Error);
     return { success: false, error: 'Failed to get recommendations' };
   }
 };

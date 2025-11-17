@@ -17,6 +17,7 @@ import { EmbeddedEvidence } from '../types/evidence';
 import { ServiceResponse } from '../types/services';
 import { createNotification, NotificationType } from './notifications/unifiedNotificationService';
 import { updateCollaborationRoleCounts } from './collaborationRoles';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Submit an application for a role
@@ -138,7 +139,7 @@ export const submitRoleApplication = async (
 
     return { success: true, data: newApplication };
   } catch (error) {
-    console.error('Error submitting role application:', error);
+    logger.error('Error submitting role application:', 'SERVICE', {}, error as Error);
     return { success: false, error: 'Failed to submit application' };
   }
 };
@@ -161,7 +162,7 @@ export const getRoleApplications = async (
 
     return { success: true, data: applications };
   } catch (error) {
-    console.error('Error getting role applications:', error);
+    logger.error('Error getting role applications:', 'SERVICE', {}, error as Error);
     return { success: false, error: 'Failed to get applications' };
   }
 };
@@ -184,7 +185,7 @@ export const getRoleApplication = async (
 
     return { success: true, data: applicationSnap.data() as RoleApplication };
   } catch (error) {
-    console.error('Error getting role application:', error);
+    logger.error('Error getting role application:', 'SERVICE', {}, error as Error);
     return { success: false, error: 'Failed to get application' };
   }
 };
@@ -365,7 +366,7 @@ export const updateApplicationStatus = async (
       } as RoleApplication
     };
   } catch (error) {
-    console.error('Error updating application status:', error);
+    logger.error('Error updating application status:', 'SERVICE', {}, error as Error);
     return { success: false, error: 'Failed to update application status' };
   }
 };

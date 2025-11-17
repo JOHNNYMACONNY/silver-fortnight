@@ -14,6 +14,7 @@ import {
 } from 'firebase/auth';
 import { Firestore, getFirestore, Timestamp, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage, FirebaseStorage, connectStorageEmulator } from 'firebase/storage';
+import { logger } from '@utils/logging/logger';
 import {
   collection,
   doc,
@@ -63,7 +64,7 @@ const getRequiredEnvVar = (name: string): string => {
     
     if (isPREnvironment) {
       // For PR environments, fallback to staging configuration if PR-specific values aren't set
-      console.log('Firebase: Using PR environment configuration');
+      logger.debug('Firebase: Using PR environment configuration', 'APP');
     }
 
     // Production/Development environment
@@ -90,8 +91,8 @@ const getRequiredEnvVar = (name: string): string => {
     }
 
     if (!value) {
-      console.error(`Missing required environment variable: ${name}`);
-      console.error('Please ensure this variable is set in your .env file.');
+      logger.error(`Missing required environment variable: ${name}`, 'APP');
+      logger.error('Please ensure this variable is set in your .env file.', 'APP');
       throw new Error(
         `Missing required environment variable: ${name}. ` +
         `Please ensure this variable is set in your .env file or environment.`
@@ -100,7 +101,7 @@ const getRequiredEnvVar = (name: string): string => {
 
     return value;
   } catch (error) {
-    console.error(`Environment variable error for ${name}:`, error);
+    logger.error(`Environment variable error for ${name}:`, 'APP', {}, error as Error);
     throw error;
   }
 };
@@ -117,14 +118,14 @@ const getFirebaseConfig = () => {
       appId: getRequiredEnvVar('VITE_FIREBASE_APP_ID')
     };
 
-    console.log('Firebase: Configuration loaded successfully', {
+    logger.debug('Firebase: Configuration loaded successfully', 'APP', {
       projectId: config.projectId,
       authDomain: config.authDomain
     });
 
     return config;
   } catch (error) {
-    console.error('Firebase configuration error:', error);
+    logger.error('Firebase configuration error:', 'APP', {}, error as Error);
     throw new Error(`Firebase configuration failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
@@ -179,21 +180,21 @@ const initializeFirebase = async (): Promise<void> => {
 
   // If already initialized, return immediately
   if (firebaseApp && firebaseAuth && firebaseDb && firebaseStorage) {
-    console.log('Firebase: Already initialized, skipping');
+    logger.debug('Firebase: Already initialized, skipping', 'APP');
     return;
   }
 
   initializationPromise = (async () => {
     try {
-      console.log('Firebase: Starting initialization...');
+      logger.debug('Firebase: Starting initialization...', 'APP');
 
       // Check if Firebase app already exists (prevents duplicate initialization)
       const existingApps = getApps();
       if (existingApps.length > 0) {
-        console.log('Firebase: Using existing app instance');
+        logger.debug('Firebase: Using existing app instance', 'APP');
         firebaseApp = existingApps[0];
       } else {
-        console.log('Firebase: Creating new app instance');
+        logger.debug('Firebase: Creating new app instance', 'APP');
         const config = getFirebaseConfig();
         firebaseApp = initializeApp(config);
       }
@@ -212,15 +213,15 @@ const initializeFirebase = async (): Promise<void> => {
             ignoreUndefinedProperties: true,
             cacheSizeBytes: 40 * 1024 * 1024 // 40MB cache
           });
-          console.log('Firebase: Long polling and enhanced settings enabled');
+          logger.debug('Firebase: Long polling and enhanced settings enabled', 'APP');
         } else {
           // For Firebase v9+, use enableNetwork/disableNetwork approach
-          console.log('Firebase: Using alternative connection method for v9+');
+          logger.debug('Firebase: Using alternative connection method for v9+', 'APP');
           // The long polling will be handled at the query level
         }
       } catch (settingsError) {
-        console.warn('Firebase: Could not enable enhanced settings:', settingsError);
-        console.log('Firebase: Continuing with default connection settings');
+        logger.warn('Firebase: Could not enable enhanced settings:', 'APP', settingsError);
+        logger.debug('Firebase: Continuing with default connection settings', 'APP');
       }
 
       // Connect to emulators in development if they're running
@@ -228,7 +229,7 @@ const initializeFirebase = async (): Promise<void> => {
         try {
           // Only connect to emulators if they haven't been connected already
           if (process.env.VITE_USE_FIREBASE_EMULATORS === 'true') {
-            console.log('Firebase: Connecting to emulators...');
+            logger.debug('Firebase: Connecting to emulators...', 'APP');
 
             // Connect emulators only once
             if (!(firebaseAuth as any)._delegate?._emulator) {
@@ -242,15 +243,15 @@ const initializeFirebase = async (): Promise<void> => {
             }
           }
         } catch (emulatorError) {
-          console.warn('Firebase: Emulator connection failed (this is OK in production):', emulatorError);
+          logger.warn('Firebase: Emulator connection failed (this is OK in production):', 'APP', emulatorError);
         }
       }
 
-      console.log('Firebase: Initialization completed successfully');
+      logger.debug('Firebase: Initialization completed successfully', 'APP');
 
     } catch (error) {
       initializationError = error instanceof Error ? error : new Error('Firebase initialization failed');
-      console.error('Firebase: Initialization failed:', initializationError);
+      logger.error('Firebase: Initialization failed:', 'APP', {}, initializationError as Error);
       throw initializationError;
     }
   })();
@@ -357,7 +358,7 @@ if (typeof window !== 'undefined' && (typeof process === 'undefined' || process.
   initializeFirebase().catch(error => {
     // Non-fatal during build; surface the error in logs for debugging.
     // Do not rethrow to avoid breaking SSR/build steps.
-    console.error('Failed to initialize Firebase on module load:', error);
+    logger.error('Failed to initialize Firebase on module load:', 'APP', {}, error as Error);
   });
 }
 
@@ -437,7 +438,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
   } catch (e) {
     // Non-fatal: ignored in strict ESM environments
-    console.debug('CJS compatibility export failed (non-fatal):', e);
+    logger.debug('CJS compatibility export failed (non-fatal):', 'APP', e);
   }
 }
 
@@ -534,7 +535,7 @@ export const signIn = async (email: string, password: string): Promise<AuthResul
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return { user: userCredential.user, error: null };
   } catch (error: any) {
-    console.error('Sign in error:', error);
+    logger.error('Sign in error:', 'APP', {}, error as Error);
     return {
       user: null,
       error: {
@@ -551,7 +552,7 @@ export const signUp = async (email: string, password: string): Promise<AuthResul
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     return { user: userCredential.user, error: null };
   } catch (error: any) {
-    console.error('Sign up error:', error);
+    logger.error('Sign up error:', 'APP', {}, error as Error);
     return {
       user: null,
       error: {
@@ -568,7 +569,7 @@ export const signOut = async (): Promise<AuthResult<void>> => {
     await firebaseSignOut(auth);
     return { user: null, error: null };
   } catch (error: any) {
-    console.error('Sign out error:', error);
+    logger.error('Sign out error:', 'APP', {}, error as Error);
     return {
       user: null,
       error: {
@@ -602,7 +603,7 @@ export const signInWithGoogle = async (): Promise<AuthResult<User>> => {
       throw popupError;
     }
   } catch (error: any) {
-    console.error('Google sign in error:', error);
+    logger.error('Google sign in error:', 'APP', {}, error as Error);
     return {
       user: null,
       error: {
@@ -622,7 +623,7 @@ export const checkExistingAccount = async (email: string): Promise<{ exists: boo
       methods
     };
   } catch (error) {
-    console.error('Check existing account error:', error);
+    logger.error('Check existing account error:', 'APP', {}, error as Error);
     return {
       exists: false
     };
@@ -670,7 +671,7 @@ export const requireAuth = (): User => {
 // Initialize Firebase immediately in non-test environments
 if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
   initializeFirebase().catch(error => {
-    console.error('Failed to initialize Firebase on module load:', error);
+    logger.error('Failed to initialize Firebase on module load:', 'APP', {}, error as Error);
   });
 }
 
@@ -717,7 +718,7 @@ export const getDocuments = async (
 
     return { data: documents, error: null };
   } catch (error: any) {
-    console.error(`Error getting documents from ${collectionName}:`, error);
+    logger.error(`Error getting documents from ${collectionName}:`, 'APP', {}, error as Error);
     return {
       data: null,
       error: {
@@ -741,7 +742,7 @@ export const addDocument = async (
     const docRef = await addDoc(collectionRef, data);
     return { data: docRef.id, error: null };
   } catch (error: any) {
-    console.error(`Error adding document to ${collectionName}:`, error);
+    logger.error(`Error adding document to ${collectionName}:`, 'APP', {}, error as Error);
     return {
       data: null,
       error: {
@@ -766,7 +767,7 @@ export const updateDocument = async (
     await updateDoc(docRef, updates);
     return { data: null, error: null };
   } catch (error: any) {
-    console.error(`Error updating document ${documentId} in ${collectionName}:`, error);
+    logger.error(`Error updating document ${documentId} in ${collectionName}:`, 'APP', {}, error as Error);
     return {
       data: null,
       error: {

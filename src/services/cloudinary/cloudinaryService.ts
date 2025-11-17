@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 /**
  * Cloudinary Service
  *
@@ -30,14 +31,14 @@ export const UPLOAD_PRESETS = {
 
 // Validate environment variables
 if (!CLOUDINARY_CLOUD_NAME) {
-  console.error('Missing Cloudinary cloud name');
+  logger.error('Missing Cloudinary cloud name', 'SERVICE');
 }
 
 // Safe dev environment check for logging
 const isDev = isDevelopment();
 
 if (isDev) {
-  console.log('Initializing Cloudinary Service with presets:', {
+  logger.debug('Initializing Cloudinary Service with presets:', 'SERVICE', {
     PROFILE: UPLOAD_PRESETS.PROFILE,
     BANNER: UPLOAD_PRESETS.BANNER,
     PORTFOLIO: UPLOAD_PRESETS.PORTFOLIO,
@@ -48,7 +49,7 @@ if (isDev) {
 
 Object.entries(UPLOAD_PRESETS).forEach(([key, value]) => {
   if (!value) {
-    console.error(`Missing Cloudinary upload preset: ${key}`);
+    logger.error(`Missing Cloudinary upload preset: ${key}`, 'SERVICE');
   }
 });
 
@@ -111,7 +112,7 @@ export interface CloudinaryTransformations {
  * Validates a preset name matches expected format
  */
 export const validatePreset = (preset: string): { valid: boolean; error?: string } => {
-  console.log('Validating preset:', {
+  logger.debug('Validating preset:', 'SERVICE', {
     preset,
     availablePresets: UPLOAD_PRESETS,
     environmentValue: CLOUDINARY_BANNER_PRESET || process.env.VITE_CLOUDINARY_BANNER_PRESET
@@ -129,7 +130,7 @@ export const validatePreset = (preset: string): { valid: boolean; error?: string
   // Check if preset exists in our configuration
   const presetValues = Object.values(UPLOAD_PRESETS);
   if (!presetValues.includes(preset)) {
-    console.warn('Preset validation failed:', {
+    logger.warn('Preset validation failed:', 'SERVICE', {
       providedPreset: preset,
       availablePresets: presetValues,
       envValue: CLOUDINARY_BANNER_PRESET || process.env.VITE_CLOUDINARY_BANNER_PRESET
@@ -190,7 +191,7 @@ export const generateCloudinaryUrl = (
   }
 
   // Debug: Log input parameters
-  console.log('Generating Cloudinary URL:', {
+  logger.debug('Generating Cloudinary URL:', 'SERVICE', {
     publicId,
     version,
     transformations,
@@ -266,7 +267,7 @@ export const uploadWithConfig = async (
     }
 
     // Debug: Log FormData contents
-    console.log('Uploading to Cloudinary with configuration:', {
+    logger.debug('Uploading to Cloudinary with configuration:', 'SERVICE', {
       preset: config.preset,
       folder: config.folder,
       filename: file.name,
@@ -290,14 +291,14 @@ export const uploadWithConfig = async (
       const errorData = await response.json().catch(() => null);
 
       // Log detailed error information
-      console.error('Cloudinary Upload Error:', {
+      logger.error('Cloudinary Upload Error:', 'SERVICE', {}, {
         status: response.status,
         statusText: response.statusText,
         cloudinaryError: errorHeader,
         errorData,
         preset: config.preset,
         folder: config.folder
-      });
+      } as Error);
 
       // Provide specific error messages for common cases
       let errorMessage = 'Upload failed';
@@ -337,7 +338,7 @@ export const uploadWithConfig = async (
       uploadedAt
     };
   } catch (err: any) {
-    console.error('Error uploading to Cloudinary:', err);
+    logger.error('Error uploading to Cloudinary:', 'SERVICE', {}, err as Error);
     return {
       baseUrl: '',
       transformedUrl: null,
@@ -370,7 +371,7 @@ export const uploadProfileImage = async (file: File): Promise<CloudinaryUploadRe
  * Uploads a banner image to Cloudinary
  */
 export const uploadBannerImage = async (file: File): Promise<CloudinaryUploadResponse> => {
-  console.log('Starting banner upload with preset:', UPLOAD_PRESETS.BANNER);
+  logger.debug('Starting banner upload with preset:', 'SERVICE', UPLOAD_PRESETS.BANNER);
   try {
     const formData = new FormData();
     formData.append('file', file);
@@ -395,7 +396,7 @@ export const uploadBannerImage = async (file: File): Promise<CloudinaryUploadRes
     const baseUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/${version}/${result.public_id}`;
 
     // Log base URL success
-    console.log('Base URL generated successfully:', baseUrl);
+    logger.debug('Base URL generated successfully:', 'SERVICE', baseUrl);
 
     // Generate transformed URL
     const transformedUrl = generateCloudinaryUrl(result.public_id, version, {
@@ -407,7 +408,7 @@ export const uploadBannerImage = async (file: File): Promise<CloudinaryUploadRes
     });
 
     // Log transformed URL generation
-    console.log('Transformed URL generated:', transformedUrl);
+    logger.debug('Transformed URL generated:', 'SERVICE', transformedUrl);
 
     return {
       baseUrl,
@@ -418,7 +419,7 @@ export const uploadBannerImage = async (file: File): Promise<CloudinaryUploadRes
       uploadedAt: Date.now()
     };
   } catch (err: any) {
-    console.error('Banner upload error:', err);
+    logger.error('Banner upload error:', 'SERVICE', {}, err as Error);
     return {
       baseUrl: '',
       transformedUrl: null,
@@ -439,10 +440,10 @@ export const deleteImage = async (
   publicId: string
 ): Promise<{ success: boolean; error: string | null }> => {
   try {
-    console.log(`Image deletion would be handled server-side for: ${publicId}`);
+    logger.debug(`Image deletion would be handled server-side for: ${publicId}`, 'SERVICE');
     return { success: true, error: null };
   } catch (err: any) {
-    console.error('Error deleting from Cloudinary:', err);
+    logger.error('Error deleting from Cloudinary:', 'SERVICE', {}, err as Error);
     return {
       success: false,
       error: err.message || 'Failed to delete image'

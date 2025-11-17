@@ -9,6 +9,7 @@ import { UserMenu } from './UserMenu';
 import { NotificationBell } from '../features/notifications/NotificationBell';
 import { ThemeToggle } from './ThemeToggle';
 import ErrorBoundary from './ErrorBoundary';
+import { logger } from '@utils/logging/logger';
 
 interface ComponentStatusCheckerProps {
   className?: string;
@@ -24,7 +25,7 @@ export const ComponentStatusChecker: React.FC<ComponentStatusCheckerProps> = ({ 
       setTestResults(prev => ({ ...prev, [name]: result }));
       return result;
     } catch (error) {
-      console.error(`Error testing ${name}:`, error);
+      logger.error('Error testing ${name}:', 'COMPONENT', {}, error as Error);
       setTestResults(prev => ({ ...prev, [name]: false }));
       return false;
     }

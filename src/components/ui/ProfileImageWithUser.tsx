@@ -3,6 +3,7 @@ import { User } from '../../services/firestore-exports';
 import ProfileImage from './ProfileImage';
 import LazyImage from './LazyImage';
 import { fetchUserData } from '../../utils/userUtils';
+import { logger } from '@utils/logging/logger';
 
 interface ProfileImageWithUserProps {
   userId: string;
@@ -93,11 +94,11 @@ const ProfileImageWithUser: React.FC<ProfileImageWithUserProps> = React.memo(({
         // Only log in development mode and only once per component instance
         if (isDev && !hasLoggedUserData.current && renderCounts[userId] === 1) {
           hasLoggedUserData.current = true;
-          console.log(`ProfileImageWithUser - User data loaded for ${userId}`);
+          logger.debug(`ProfileImageWithUser - User data loaded for ${userId}`, 'COMPONENT');
         }
       }
     } catch (err) {
-      console.error('Error fetching user for profile image:', err);
+      logger.error('Error fetching user for profile image:', 'COMPONENT', {}, err as Error);
     } finally {
       setLoading(false);
     }

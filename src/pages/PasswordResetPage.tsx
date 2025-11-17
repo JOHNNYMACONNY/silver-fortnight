@@ -6,6 +6,7 @@ import { GlassmorphicInput } from '../components/ui/GlassmorphicInput';
 import { Button } from '../components/ui/Button';
 import { MailIcon, ArrowLeftIcon } from 'lucide-react';
 import Logo from '../components/ui/Logo';
+import { logger } from '@utils/logging/logger';
 
 export const PasswordResetPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -22,7 +23,7 @@ export const PasswordResetPage: React.FC = () => {
     try {
       // TODO: Implement password reset functionality
       // This would typically call Firebase's sendPasswordResetEmail
-      console.log('Password reset requested for:', email);
+      logger.debug('Password reset requested for:', 'PAGE', email);
       
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));

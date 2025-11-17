@@ -12,6 +12,7 @@ import { useToast } from "../../../contexts/ToastContext";
 import { logEvent } from "../../../services/analytics";
 import type { UserProfile } from "../types";
 import { Copy as CopyIcon } from "lucide-react";
+import { logger } from '@utils/logging/logger';
 
 /**
  * Props for ProfileEditModal component
@@ -164,10 +165,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           targetUserId
         );
         if (availabilityResult.error) {
-          console.warn(
-            "Handle availability check failed",
-            availabilityResult.error
-          );
+          logger.warn('Handle availability check failed', 'COMPONENT', availabilityResult.error);
           // Continue anyway - non-critical error
         } else if (availabilityResult.data === false) {
           setHandleError("This handle is already taken");

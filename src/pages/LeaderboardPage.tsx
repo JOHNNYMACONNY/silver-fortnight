@@ -12,6 +12,7 @@ import type { UserXP } from '../types/gamification';
 import { getLeaderboard } from '../services/leaderboards';
 import Stack from '../components/layout/primitives/Stack';
 import { cn } from '../utils/cn';
+import { logger } from '@utils/logging/logger';
 
 
 const LeaderboardPage: React.FC = () => {
@@ -77,7 +78,7 @@ const LeaderboardPage: React.FC = () => {
           setWeeklyXP(weeklyResult.data.currentUserEntry.value);
         }
       } catch (error) {
-        console.error('Failed to load user stats:', error);
+        logger.error('Failed to load user stats:', 'PAGE', {}, error as Error);
       } finally {
         setStatsLoading(false);
       }

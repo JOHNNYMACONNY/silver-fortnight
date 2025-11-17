@@ -4,6 +4,7 @@ import { generateAsymmetricClasses, ASYMMETRIC_PATTERNS } from '../../utils/asym
 import Box from '../layout/primitives/Box';
 import Grid from '../layout/primitives/Grid';
 import Stack from '../layout/primitives/Stack';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Context to share grid properties with child items.
@@ -145,7 +146,7 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
     
     const patternConfig = ASYMMETRIC_PATTERNS[patternKey];
     if (!patternConfig) {
-      console.warn(`Asymmetric pattern '${patternKey}' not found, falling back to standard`);
+      logger.warn(`Asymmetric pattern '${patternKey}' not found, falling back to standard`, 'COMPONENT');
       return children;
     }
     

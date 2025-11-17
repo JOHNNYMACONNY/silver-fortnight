@@ -44,6 +44,7 @@ import { awardXPWithLeaderboardUpdate } from "./gamification";
 import { updateProgressionOnChallengeCompletion } from "./threeTierProgression";
 import { markChallengeDay } from "./streaks";
 import { addSkillXP } from "./skillXP";
+import { logger } from '@utils/logging/logger';
 
 // Real-time notification support
 let challengeNotificationCallback:
@@ -94,7 +95,7 @@ const triggerChallengeNotification = (notification: ChallengeNotification) => {
       try {
         listener(notification);
       } catch (err) {
-        console.warn("Challenge event listener failed", err);
+        logger.warn('Challenge event listener failed', 'SERVICE', err);
       }
     }
   }
@@ -154,7 +155,7 @@ export const createChallenge = async (
       data: challenge,
     };
   } catch (error) {
-    console.error("Error creating challenge:", error);
+    logger.error('Error creating challenge:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: "Failed to create challenge",
@@ -184,7 +185,7 @@ export const getChallenge = async (
       data: { id: challengeSnap.id, ...challengeSnap.data() } as Challenge,
     };
   } catch (error) {
-    console.error("Error getting challenge:", error);
+    logger.error('Error getting challenge:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: "Failed to get challenge",
@@ -256,7 +257,7 @@ export const getChallenges = async (
       hasMore: challenges.length === limitCount,
     };
   } catch (error) {
-    console.error("Error getting challenges:", error);
+    logger.error('Error getting challenges:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       challenges: [],
@@ -403,7 +404,7 @@ export const joinChallenge = async (
       data: result.userChallenge,
     };
   } catch (error) {
-    console.error("Error joining challenge:", error);
+    logger.error('Error joining challenge:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error:
@@ -528,7 +529,7 @@ export const updateChallengeProgress = async (
       nextMilestone: getNextMilestone(result.progressPercentage),
     };
   } catch (error) {
-    console.error("Error updating challenge progress:", error);
+    logger.error('Error updating challenge progress:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       progressPercentage: 0,
@@ -652,7 +653,7 @@ const handleChallengeCompletion = async (
     };
     triggerChallengeNotification(notification);
   } catch (error) {
-    console.error("Error handling challenge completion:", error);
+    logger.error('Error handling challenge completion:', 'SERVICE', {}, error as Error);
   }
 };
 
@@ -699,7 +700,7 @@ export const submitToChallenge = async (
       data: challengeSubmission,
     };
   } catch (error) {
-    console.error("Error submitting to challenge:", error);
+    logger.error('Error submitting to challenge:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: "Failed to submit to challenge",
@@ -750,7 +751,7 @@ export const getUserChallenges = async (
       hasMore: false,
     };
   } catch (error) {
-    console.error("Error getting user challenges:", error);
+    logger.error('Error getting user challenges:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       challenges: [],
@@ -830,7 +831,7 @@ export const abandonChallenge = async (
       success: true,
     };
   } catch (error) {
-    console.error("Error abandoning challenge:", error);
+    logger.error('Error abandoning challenge:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: "Failed to abandon challenge",
@@ -930,7 +931,7 @@ export const getRecommendedChallenges = async (
     }
     return fallback;
   } catch (error) {
-    console.error("Error getting recommended challenges:", error);
+    logger.error('Error getting recommended challenges:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       challenges: [],
@@ -978,7 +979,7 @@ export const getUserChallengeProgress = async (
       nextMilestone: getNextMilestone(progressPercentage),
     };
   } catch (error) {
-    console.error("Error getting user challenge progress:", error);
+    logger.error('Error getting user challenge progress:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       progressPercentage: 0,
@@ -1015,7 +1016,7 @@ export const startChallenge = async (
       error: result.error || "Failed to start challenge",
     };
   } catch (error) {
-    console.error("Error starting challenge:", error);
+    logger.error('Error starting challenge:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: "Failed to start challenge",
@@ -1047,7 +1048,7 @@ export const getChallengeStats = async (
       completionRate,
     };
   } catch (error) {
-    console.error("Error getting challenge stats:", error);
+    logger.error('Error getting challenge stats:', 'SERVICE', {}, error as Error);
     return {
       totalCompleted: 0,
       totalActive: 0,
@@ -1158,7 +1159,7 @@ export const completeChallenge = async (
       userChallenge: updatedUserChallenge,
     };
   } catch (error) {
-    console.error("Error completing challenge:", error);
+    logger.error('Error completing challenge:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: "Failed to complete challenge",
@@ -1386,7 +1387,7 @@ export const getUserChallengeStats = async (
       streakCount,
     };
   } catch (error) {
-    console.error("Error getting user challenge stats:", error);
+    logger.error('Error getting user challenge stats:', 'SERVICE', {}, error as Error);
     return {
       totalCompleted: 0,
       totalActive: 0,

@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 // Structured Performance Logging System
 // Replaces console usage with structured, environment-aware logging
 
@@ -261,19 +262,19 @@ class StructuredPerformanceLogger {
 
     switch (entry.level) {
       case "debug":
-        console.debug(message, additionalData);
+        logger.debug(message, 'UTILITY', additionalData);
         break;
       case "info":
-        console.info(message, additionalData);
+        logger.info(message, 'UTILITY', additionalData);
         break;
       case "warn":
-        console.warn(message, additionalData);
+        logger.warn(message, 'UTILITY', additionalData);
         break;
       case "error":
         if (entry.error) {
-          console.error(message, entry.error, additionalData);
+          logger.error(message, 'UTILITY', additionalData, entry.error);
         } else {
-          console.error(message, additionalData);
+          logger.error(message, 'UTILITY', additionalData);
         }
         break;
     }
