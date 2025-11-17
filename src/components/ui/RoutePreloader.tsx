@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { prefetchRoutes, preloadImages, prefetchImages } from '../../utils/preloadUtils';
+import { logger } from '@utils/logging/logger';
 
 // Define route-specific resources to preload
 const routeResources: Record<string, {
@@ -150,7 +151,7 @@ const RoutePreloader: React.FC = () => {
 
     // Log preloading activity in development
     if ((typeof import.meta !== 'undefined' && typeof import.meta.env !== 'undefined' && (import.meta.env.DEV || process.env.NODE_ENV === 'development')) || process.env.NODE_ENV === 'development') {
-      console.log(`[RoutePreloader] Preloading resources for route: ${pathname}`);
+      logger.debug(`[RoutePreloader] Preloading resources for route: ${pathname}`, 'COMPONENT');
     }
   }, [pathname]); // Only depend on pathname, not the entire location object
   

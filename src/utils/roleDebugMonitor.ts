@@ -1,6 +1,7 @@
 import { roleMonitor } from './roleOperationsMonitor';
 import { logTransaction } from './transactionLogging';
 import type { ConsoleLog, NetworkLog } from '../types/mcp';
+import { logger } from '@utils/logging/logger';
 
 interface BrowserLog {
   type: 'console' | 'network';
@@ -64,7 +65,7 @@ class RoleDebugMonitor {
       this.handleNetworkLog(networkLogs, collaborationId);
 
     } catch (error) {
-      console.error('Failed to start browser monitoring:', error);
+      logger.error('Failed to start browser monitoring:', 'UTILITY', {}, error as Error);
       this.isMonitoringBrowser = false;
     }
   }
@@ -75,7 +76,7 @@ class RoleDebugMonitor {
       // The real implementation would use the MCP system's tool execution mechanism
       return Promise.resolve({}); // Mock response
     } catch (error) {
-      console.error(`Failed to use MCP tool ${toolName}:`, error);
+      logger.error(`Failed to use MCP tool ${toolName}:`, 'UTILITY', {}, error as Error);
       throw error;
     }
   }

@@ -11,6 +11,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/Alert';
+import { logger } from '@utils/logging/logger';
 
 export const TestMessagesPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -31,62 +32,62 @@ export const TestMessagesPage: React.FC = () => {
       const db = getSyncFirebaseDb();
       const userId = currentUser.uid;
 
-      console.log('TestMessagesPage: Loading conversations for user:', userId);
+      logger.debug('TestMessagesPage: Loading conversations for user:', 'PAGE', userId);
 
       // Try different query approaches
       const conversations: any[] = [];
 
       // Approach 1: participantIds query
       try {
-        console.log('TestMessagesPage: Trying participantIds query...');
+        logger.debug('TestMessagesPage: Trying participantIds query...', 'PAGE');
         const participantQuery = query(
           collection(db, 'conversations'),
           where('participantIds', 'array-contains', userId)
         );
         const participantSnapshot = await getDocs(participantQuery);
-        console.log('TestMessagesPage: participantIds query found', participantSnapshot.size, 'conversations');
+        logger.debug('TestMessagesPage: participantIds query found', 'PAGE', { arg0: participantSnapshot.size, arg1: 'conversations' });
         
         participantSnapshot.forEach((doc) => {
           const data = { id: doc.id, ...(doc.data() as any) };
-          console.log('TestMessagesPage: participantIds conversation:', data);
+          logger.debug('TestMessagesPage: participantIds conversation:', 'PAGE', data);
           conversations.push(data);
         });
       } catch (participantError: any) {
-        console.log('TestMessagesPage: participantIds query failed:', participantError.message);
+        logger.debug('TestMessagesPage: participantIds query failed:', 'PAGE', participantError.message);
       }
 
       // Approach 2: participants array query
       if (conversations.length === 0) {
         try {
-          console.log('TestMessagesPage: Trying participants array query...');
+          logger.debug('TestMessagesPage: Trying participants array query...', 'PAGE');
           const participantsQuery = query(
             collection(db, 'conversations'),
             where('participants', 'array-contains', { id: userId })
           );
           const participantsSnapshot = await getDocs(participantsQuery);
-          console.log('TestMessagesPage: participants query found', participantsSnapshot.size, 'conversations');
+          logger.debug('TestMessagesPage: participants query found', 'PAGE', { arg0: participantsSnapshot.size, arg1: 'conversations' });
           
           participantsSnapshot.forEach((doc) => {
             const data = { id: doc.id, ...(doc.data() as any) };
-            console.log('TestMessagesPage: participants conversation:', data);
+            logger.debug('TestMessagesPage: participants conversation:', 'PAGE', data);
             conversations.push(data);
           });
         } catch (participantsError: any) {
-          console.log('TestMessagesPage: participants query failed:', participantsError.message);
+          logger.debug('TestMessagesPage: participants query failed:', 'PAGE', participantsError.message);
         }
       }
 
       // Approach 3: Get all conversations and filter client-side
       if (conversations.length === 0) {
         try {
-          console.log('TestMessagesPage: Trying all conversations query...');
+          logger.debug('TestMessagesPage: Trying all conversations query...', 'PAGE');
           const allQuery = query(collection(db, 'conversations'));
           const allSnapshot = await getDocs(allQuery);
-          console.log('TestMessagesPage: all conversations query found', allSnapshot.size, 'conversations');
+          logger.debug('TestMessagesPage: all conversations query found', 'PAGE', { arg0: allSnapshot.size, arg1: 'conversations' });
           
           allSnapshot.forEach((doc) => {
             const data = { id: doc.id, ...(doc.data() as any) };
-            console.log('TestMessagesPage: all conversation:', data);
+            logger.debug('TestMessagesPage: all conversation:', 'PAGE', data);
             
             // Check if user is participant
             const isParticipant = 
@@ -94,20 +95,20 @@ export const TestMessagesPage: React.FC = () => {
               (data.participants && data.participants.some((p: any) => p.id === userId));
             
             if (isParticipant) {
-              console.log('TestMessagesPage: User is participant in conversation:', data.id);
+              logger.debug('TestMessagesPage: User is participant in conversation:', 'PAGE', data.id);
               conversations.push(data);
             }
           });
         } catch (allError: any) {
-          console.log('TestMessagesPage: all conversations query failed:', allError.message);
+          logger.debug('TestMessagesPage: all conversations query failed:', 'PAGE', allError.message);
         }
       }
 
-      console.log('TestMessagesPage: Final conversations:', conversations);
+      logger.debug('TestMessagesPage: Final conversations:', 'PAGE', conversations);
       setConversations(conversations);
 
     } catch (err: any) {
-      console.error('TestMessagesPage: Error loading conversations:', err);
+      logger.error('TestMessagesPage: Error loading conversations:', 'PAGE', {}, err as Error);
       setError(`Failed to load conversations: ${err.message}`);
     } finally {
       setLoading(false);

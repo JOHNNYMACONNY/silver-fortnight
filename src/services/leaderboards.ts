@@ -33,6 +33,7 @@ import {
   getMonthStart
 } from './leaderboard-helpers';
 import { globalCache } from '../utils/cache';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Refresh user's own social stats from userFollows collection
@@ -73,7 +74,7 @@ export const refreshOwnSocialStats = async (userId: string): Promise<void> => {
       await setDoc(socialStatsRef, initial as any);
     }
   } catch (err) {
-    console.warn('Failed to refresh social stats for', userId, err);
+    logger.warn('Failed to refresh social stats for', 'SERVICE', { arg0: userId, arg1: err });
   }
 };
 
@@ -135,7 +136,7 @@ export const recomputeUserReputation = async (userId: string): Promise<void> => 
       }
     });
   } catch (err) {
-    console.warn('Failed to recompute reputation for', userId, err);
+    logger.warn('Failed to recompute reputation for', 'SERVICE', { arg0: userId, arg1: err });
   }
 };
 
@@ -207,7 +208,7 @@ export const getLeaderboard = async (
     
     return result;
   } catch (error: any) {
-    console.error('Error getting leaderboard:', error);
+    logger.error('Error getting leaderboard:', 'SERVICE', {}, error as Error);
     return { success: false, error: error.message || 'Failed to get leaderboard' };
   }
 };
@@ -302,7 +303,7 @@ export const getCircleLeaderboard = async (
     };
     return { success: true, data };
   } catch (error: any) {
-    console.error('Error getting circle leaderboard:', error);
+    logger.error('Error getting circle leaderboard:', 'SERVICE', {}, error as Error);
     return { success: false, error: error.message || 'Failed to get circle leaderboard' };
   }
 };
@@ -343,7 +344,7 @@ export const findUserRankInLeaderboard = async (
       isCurrentUser: true
     };
   } catch (error: any) {
-    console.error('Error finding user rank:', error);
+    logger.error('Error finding user rank:', 'SERVICE', {}, error as Error);
     return undefined;
   }
 };
@@ -420,7 +421,7 @@ export const updateLeaderboardStats = async (
 
     return { success: true };
   } catch (error: any) {
-    console.error('Error updating leaderboard stats:', error);
+    logger.error('Error updating leaderboard stats:', 'SERVICE', {}, error as Error);
     return { success: false, error: error.message || 'Failed to update leaderboard stats' };
   }
 };
@@ -451,7 +452,7 @@ export const getMultipleLeaderboards = async (
 
     return { success: true, data: results };
   } catch (error: any) {
-    console.error('Error getting multiple leaderboards:', error);
+    logger.error('Error getting multiple leaderboards:', 'SERVICE', {}, error as Error);
     return { success: false, error: error.message || 'Failed to get leaderboards' };
   }
 };
@@ -522,7 +523,7 @@ export const followUser = async (
 
     return { success: true };
   } catch (error: any) {
-    console.error('Error following user:', error);
+    logger.error('Error following user:', 'SERVICE', {}, error as Error);
     return { success: false, error: error.message || 'Failed to follow user' };
   }
 };
@@ -558,7 +559,7 @@ export const unfollowUser = async (
 
     return { success: true };
   } catch (error: any) {
-    console.error('Error unfollowing user:', error);
+    logger.error('Error unfollowing user:', 'SERVICE', {}, error as Error);
     return { success: false, error: error.message || 'Failed to unfollow user' };
   }
 };
@@ -579,7 +580,7 @@ export const checkIsFollowing = async (followerId: string, followingId: string):
     const snapshot = await getDocs(followQuery);
     return !snapshot.empty;
   } catch (error) {
-    console.error('Error checking follow status:', error);
+    logger.error('Error checking follow status:', 'SERVICE', {}, error as Error);
     return false;
   }
 };
@@ -601,7 +602,7 @@ export const calculateFollowerCount = async (userId: string): Promise<number> =>
     const snapshot = await getDocs(followersQuery);
     return snapshot.size;
   } catch (error) {
-    console.error('Error calculating follower count:', error);
+    logger.error('Error calculating follower count:', 'SERVICE', {}, error as Error);
     return 0;
   }
 };
@@ -621,7 +622,7 @@ export const calculateFollowingCount = async (userId: string): Promise<number> =
     const snapshot = await getDocs(followingQuery);
     return snapshot.size;
   } catch (error) {
-    console.error('Error calculating following count:', error);
+    logger.error('Error calculating following count:', 'SERVICE', {}, error as Error);
     return 0;
   }
 };
@@ -669,7 +670,7 @@ export const getUserSocialStats = async (userId: string): Promise<ServiceRespons
       }
     };
   } catch (error: any) {
-    console.error('Error getting social stats:', error);
+    logger.error('Error getting social stats:', 'SERVICE', {}, error as Error);
     return { success: false, error: error.message || 'Failed to get social stats' };
   }
 };
@@ -719,6 +720,6 @@ export const triggerLeaderboardUpdate = async (userId: string, xpGained: number)
   try {
     await updateLeaderboardStats(userId, xpGained);
   } catch (error) {
-    console.warn('Failed to update leaderboard stats:', error);
+    logger.warn('Failed to update leaderboard stats:', 'SERVICE', error);
   }
 };

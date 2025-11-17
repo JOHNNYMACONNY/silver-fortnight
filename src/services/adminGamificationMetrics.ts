@@ -7,6 +7,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { ServiceResult } from '../types/ServiceError';
+import { logger } from '@utils/logging/logger';
 
 export interface GamificationMetrics7d {
   startDate: Date;
@@ -54,7 +55,7 @@ export const getGamificationMetrics7d = async (): Promise<ServiceResult<Gamifica
         xpAwardsByDate[key] = (xpAwardsByDate[key] || 0) + 1;
       });
     } catch (e) {
-      console.warn('[adminGamificationMetrics] xpTransactions aggregation failed:', e);
+      logger.warn('[adminGamificationMetrics] xpTransactions aggregation failed:', 'SERVICE', e);
     }
 
     // userAchievements
@@ -67,7 +68,7 @@ export const getGamificationMetrics7d = async (): Promise<ServiceResult<Gamifica
         achievementsByDate[key] = (achievementsByDate[key] || 0) + 1;
       });
     } catch (e) {
-      console.warn('[adminGamificationMetrics] userAchievements aggregation failed:', e);
+      logger.warn('[adminGamificationMetrics] userAchievements aggregation failed:', 'SERVICE', e);
     }
 
     // streak milestones via notifications type 'streak_milestone'
@@ -80,7 +81,7 @@ export const getGamificationMetrics7d = async (): Promise<ServiceResult<Gamifica
         streakMilestonesByDate[key] = (streakMilestonesByDate[key] || 0) + 1;
       });
     } catch (e) {
-      console.warn('[adminGamificationMetrics] streak milestones aggregation failed:', e);
+      logger.warn('[adminGamificationMetrics] streak milestones aggregation failed:', 'SERVICE', e);
     }
 
     // Unique XP recipients over 7d (reuse txSnap if available)
@@ -94,7 +95,7 @@ export const getGamificationMetrics7d = async (): Promise<ServiceResult<Gamifica
         if (d.userId) uniqueXpRecipients.add(d.userId);
       });
     } catch (e) {
-      console.warn('[adminGamificationMetrics] unique recipients aggregation failed:', e);
+      logger.warn('[adminGamificationMetrics] unique recipients aggregation failed:', 'SERVICE', e);
     }
 
     // Zero-fill per-day for the 7-day window

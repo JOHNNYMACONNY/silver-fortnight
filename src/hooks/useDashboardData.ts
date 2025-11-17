@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import { getDashboardStats, getRecentActivity, DashboardStats, RecentActivity } from '../services/dashboard';
+import { logger } from '@utils/logging/logger';
 
 export const useDashboardData = () => {
   const { currentUser } = useAuth();
@@ -37,7 +38,7 @@ export const useDashboardData = () => {
         }
 
       } catch (err) {
-        console.error('Error fetching dashboard data:', err);
+        logger.error('Error fetching dashboard data:', 'APP', {}, err as Error);
         setError('Failed to load dashboard data');
       } finally {
         setLoading(false);
@@ -66,7 +67,7 @@ export const useDashboardData = () => {
         setRecentActivity(activityResult.data);
       }
     } catch (err) {
-      console.error('Error refreshing dashboard data:', err);
+      logger.error('Error refreshing dashboard data:', 'APP', {}, err as Error);
       setError('Failed to refresh dashboard data');
     }
   };

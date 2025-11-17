@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { EmbeddedEvidence, EvidenceSubmitterProps } from '../../types/evidence';
 import { createEmbeddedEvidence, detectService, isValidEmbedUrl } from '../../utils/embedUtils';
 import Box from '../layout/primitives/Box';
+import { logger } from '@utils/logging/logger';
 
 const EvidenceSubmitter: React.FC<EvidenceSubmitterProps> = ({
   evidence,
@@ -33,7 +34,7 @@ const EvidenceSubmitter: React.FC<EvidenceSubmitterProps> = ({
       // Check if URL is from a supported service
       if (!isValidEmbedUrl(url)) {
         // If not a supported embed service, show a warning but still allow it
-        console.warn('URL is not from a supported embed service, but will be added as a regular link');
+        logger.warn('URL is not from a supported embed service, but will be added as a regular link', 'COMPONENT');
       }
 
       // Detect service for better type assignment
@@ -76,7 +77,7 @@ const EvidenceSubmitter: React.FC<EvidenceSubmitterProps> = ({
         }
       });
 
-      console.log('Clean evidence object:', cleanEvidence);
+      logger.debug('Clean evidence object:', 'COMPONENT', cleanEvidence);
 
       // Add to evidence array - use the cleaned evidence object
       const updatedEvidence = [...evidence, cleanEvidence];

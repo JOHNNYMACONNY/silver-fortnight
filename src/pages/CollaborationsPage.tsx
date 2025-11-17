@@ -37,6 +37,7 @@ import Box from '../components/layout/primitives/Box';
 import Stack from '../components/layout/primitives/Stack';
 import Cluster from '../components/layout/primitives/Cluster';
 import Grid from '../components/layout/primitives/Grid';
+import { logger } from '@utils/logging/logger';
 
 
 export const CollaborationsPage: React.FC = () => {
@@ -133,17 +134,17 @@ export const CollaborationsPage: React.FC = () => {
             setCollaborations(items);
             setLoading(false);
           } catch (err: any) {
-            console.error('Error processing realtime collaborations:', err);
+            logger.error('Error processing realtime collaborations:', 'PAGE', {}, err as Error);
             setError(err.message || 'Failed to process collaborations');
             setLoading(false);
           }
         }, (err) => {
-          console.error('Error subscribing to collaborations:', err);
+          logger.error('Error subscribing to collaborations:', 'PAGE', {}, err as Error);
           setError(err.message || 'Failed to subscribe to collaborations');
           setLoading(false);
         });
       } catch (err: any) {
-        console.error('Error initializing Firebase for collaborations:', err);
+        logger.error('Error initializing Firebase for collaborations:', 'PAGE', {}, err as Error);
         setError(err.message || 'Failed to initialize data');
         setLoading(false);
       }

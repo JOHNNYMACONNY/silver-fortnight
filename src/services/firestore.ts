@@ -58,6 +58,7 @@ import {
 import { ChatMessage } from "../types/chat";
 import type { BannerData } from "../utils/imageUtils";
 import { MessageType } from "./firestoreConverters";
+import { logger } from '@utils/logging/logger';
 
 const getDbWithInitialization = async (): Promise<Firestore> => {
   try {
@@ -615,7 +616,7 @@ export const createNotification = async (
     
     return { data: result.data, error: null };
   } catch (error: any) {
-    console.error("Error creating notification:", error);
+    logger.error('Error creating notification:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: {
@@ -636,7 +637,7 @@ export const markNotificationAsRead = async (
     });
     return { data: null, error: null };
   } catch (error: any) {
-    console.error("Error marking notification as read:", error);
+    logger.error('Error marking notification as read:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: {
@@ -668,7 +669,7 @@ export const markAllNotificationsAsRead = async (
     await batch.commit();
     return { data: null, error: null };
   } catch (error: any) {
-    console.error("Error marking all notifications as read:", error);
+    logger.error('Error marking all notifications as read:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: {
@@ -697,7 +698,7 @@ export const createUserProfile = async (
     );
     return { data: null, error: null };
   } catch (error: any) {
-    console.error("Error creating user profile:", error);
+    logger.error('Error creating user profile:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: {
@@ -767,7 +768,7 @@ export const getUserProfile = async (
     if (error?.code === "permission-denied") {
       return { data: undefined, error: null };
     }
-    console.error("Error getting user profile:", error);
+    logger.error('Error getting user profile:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: {
@@ -825,7 +826,7 @@ export const getAllUsers = async (
     const hasMore = (pagination?.limit || 0) <= users.length;
     return { data: { items: users, hasMore, lastDoc }, error: null };
   } catch (error) {
-    console.error("Error getting all users:", error);
+    logger.error('Error getting all users:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: {
@@ -845,7 +846,7 @@ export const getAllUsersLegacy = async (): Promise<ServiceResult<User[]>> => {
     const users = querySnapshot.docs.map((doc) => doc.data() as User);
     return { data: users, error: null };
   } catch (error) {
-    console.error("Error getting all users (legacy):", error);
+    logger.error('Error getting all users (legacy):', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: {
@@ -864,7 +865,7 @@ export const deleteUser = async (
     await deleteDoc(doc(db, COLLECTIONS.USERS, userId));
     return { data: null, error: null };
   } catch (error: any) {
-    console.error(`Error deleting user ${userId}:`, error);
+    logger.error('Error deleting user ${userId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: `Failed to delete user ${userId}` },
@@ -882,7 +883,7 @@ export const updateUserRole = async (
     await updateDoc(userRef, { role: role });
     return { data: null, error: null };
   } catch (error: any) {
-    console.error(`Error updating role for user ${userId}:`, error);
+    logger.error('Error updating role for user ${userId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: {
@@ -915,7 +916,7 @@ export const createTrade = async (
     const docRef = await addDoc(tradesCollection, payload);
     return { data: docRef.id, error: null };
   } catch (error) {
-    console.error("Error creating trade:", error);
+    logger.error('Error creating trade:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to create trade" },
@@ -938,7 +939,7 @@ export const getTrade = async (
       error: null,
     };
   } catch (error) {
-    console.error(`Error getting trade ${tradeId}:`, error);
+    logger.error('Error getting trade ${tradeId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to get trade" },
@@ -999,7 +1000,7 @@ export const updateTrade = async (
     await updateDoc(tradeRef, payload);
     return { data: null, error: null };
   } catch (error) {
-    console.error(`Error updating trade ${tradeId}:`, error);
+    logger.error('Error updating trade ${tradeId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to update trade" },
@@ -1015,7 +1016,7 @@ export const deleteTrade = async (
     await deleteDoc(doc(db, COLLECTIONS.TRADES, tradeId));
     return { data: null, error: null };
   } catch (error) {
-    console.error(`Error deleting trade ${tradeId}:`, error);
+    logger.error('Error deleting trade ${tradeId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to delete trade" },
@@ -1060,7 +1061,7 @@ export const getAllTrades = async (
       error: null,
     };
   } catch (error) {
-    console.error("Error getting all trades:", error);
+    logger.error('Error getting all trades:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to get all trades" },
@@ -1090,7 +1091,7 @@ export const getAllTradesLegacy = async (
     const trades = querySnapshot.docs.map((doc) => doc.data() as Trade);
     return { data: trades, error: null };
   } catch (error) {
-    console.error("Error getting all trades by category (legacy):", error);
+    logger.error('Error getting all trades by category (legacy):', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to get trades" },
@@ -1134,7 +1135,7 @@ export const getUserTrades = async (
 
     return { data: [...createdTrades, ...participatingTrades], error: null };
   } catch (error) {
-    console.error("Error getting trades for user %s:", userId, error);
+    logger.error('Error getting trades for user %s:', 'SERVICE', { arg0: userId }, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to get user trades" },
@@ -1177,7 +1178,7 @@ export const getRelatedUserIds = async (
       .filter(Boolean);
     return { data: { ids }, error: null };
   } catch (error: any) {
-    console.error("Error fetching related user ids:", error);
+    logger.error('Error fetching related user ids:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: {
@@ -1217,7 +1218,7 @@ export const getUsersByIds = async (
     for (const u of results) uniqueMap.set(u.id, u);
     return { data: Array.from(uniqueMap.values()), error: null };
   } catch (error: any) {
-    console.error("Error fetching users by ids:", error);
+    logger.error('Error fetching users by ids:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: {
@@ -1314,7 +1315,7 @@ export const requestTradeCompletion = async (
     
     return { data: null, error: null };
   } catch (error) {
-    console.error(`Error requesting completion for trade ${tradeId}:`, error);
+    logger.error('Error requesting completion for trade ${tradeId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to request trade completion" },
@@ -1403,7 +1404,7 @@ export const confirmTradeCompletion = async (
     
     return { data: null, error: null };
   } catch (error) {
-    console.error("Error confirming trade completion:", error);
+    logger.error('Error confirming trade completion:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to confirm trade completion" },
@@ -1432,7 +1433,7 @@ export const requestTradeChanges = async (
     });
     return { data: null, error: null };
   } catch (error: any) {
-    console.error("Error requesting trade changes:", error);
+    logger.error('Error requesting trade changes:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to request trade changes" },
@@ -1457,7 +1458,7 @@ export const createCollaboration = async (
     const docRef = await addDoc(collsCollection, payload);
     return { data: docRef.id, error: null };
   } catch (error) {
-    console.error("Error creating collaboration:", error);
+    logger.error('Error creating collaboration:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to create collaboration" },
@@ -1482,7 +1483,7 @@ export const getCollaboration = async (
       error: null,
     };
   } catch (error) {
-    console.error(`Error getting collaboration ${collaborationId}:`, error);
+    logger.error('Error getting collaboration ${collaborationId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to get collaboration" },
@@ -1599,7 +1600,7 @@ export const getAllCollaborations = async (
       error: null,
     };
   } catch (error) {
-    console.error("Error getting all collaborations:", error);
+    logger.error('Error getting all collaborations:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to get all collaborations" },
@@ -1907,7 +1908,7 @@ export const getAllCollaborationsLegacy = async (
     );
     return { data: collaborations, error: null };
   } catch (error) {
-    console.error("Error getting all collaborations (legacy):", error);
+    logger.error('Error getting all collaborations (legacy):', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to get all collaborations" },
@@ -1925,7 +1926,7 @@ export const updateCollaboration = async (
     await updateDoc(collRef, updates);
     return { data: null, error: null };
   } catch (error) {
-    console.error(`Error updating collaboration ${collaborationId}:`, error);
+    logger.error('Error updating collaboration ${collaborationId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to update collaboration" },
@@ -1941,7 +1942,7 @@ export const deleteCollaboration = async (
     await deleteDoc(doc(db, COLLECTIONS.COLLABORATIONS, collaborationId));
     return { data: null, error: null };
   } catch (error) {
-    console.error(`Error deleting collaboration ${collaborationId}:`, error);
+    logger.error('Error deleting collaboration ${collaborationId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to delete collaboration" },
@@ -1972,10 +1973,7 @@ export const createCollaborationApplication = async (
     );
     return { data: docRef.id, error: null };
   } catch (error) {
-    console.error(
-      `Error creating application for collaboration ${applicationData.collaborationId}:`,
-      error
-    );
+    logger.error('Error creating application for collaboration ${applicationData.collaborationId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to create application" },
@@ -2071,19 +2069,13 @@ export const getCollaborationApplications = async (
       // It's okay if general role doesn't exist - just means no general applications
       // Silently ignore permission errors for non-existent 'general' role
       if (!generalError?.message?.includes("permission")) {
-        console.log(
-          "Note: General applications check skipped:",
-          generalError?.message || "Unknown reason"
-        );
+        logger.debug('Note: General applications check skipped:', 'SERVICE', generalError?.message || "Unknown reason");
       }
     }
 
     return { data: allApplications, error: null };
   } catch (error) {
-    console.error(
-      `Error getting applications for collaboration ${collaborationId}:`,
-      error
-    );
+    logger.error('Error getting applications for collaboration ${collaborationId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to get applications" },
@@ -2182,7 +2174,7 @@ export const updateCollaborationApplication = async (
 
     return { data: null, error: null };
   } catch (error) {
-    console.error(`Error updating application ${applicationId}:`, error);
+    logger.error('Error updating application ${applicationId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to update application" },
@@ -2270,7 +2262,7 @@ export const getCollaborations = async (): Promise<
     );
     return { data: collaborations, error: null };
   } catch (error) {
-    console.error("Error fetching collaborations:", error);
+    logger.error('Error fetching collaborations:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to get collaborations" },
@@ -2311,7 +2303,7 @@ export const createReview = async (reviewData: {
     const docRef = await addDoc(reviewsCollection, review);
     return { data: docRef.id, error: null };
   } catch (error) {
-    console.error("Error creating review:", error);
+    logger.error('Error creating review:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to create review" },
@@ -2333,7 +2325,7 @@ export const getUserReviews = async (
     const reviews = querySnapshot.docs.map((doc) => doc.data() as Review);
     return { data: reviews, error: null };
   } catch (error) {
-    console.error("Error getting reviews for user %s:", userId, error);
+    logger.error('Error getting reviews for user %s:', 'SERVICE', { arg0: userId }, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to get user reviews" },
@@ -2358,10 +2350,7 @@ export const createTradeProposal = async (
     );
     return { data: docRef.id, error: null };
   } catch (error) {
-    console.error(
-      `Error creating proposal for trade ${proposalData.tradeId}:`,
-      error
-    );
+    logger.error('Error creating proposal for trade ${proposalData.tradeId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to create proposal" },
@@ -2386,7 +2375,7 @@ export const getTradeProposals = async (
     );
     return { data: proposals, error: null };
   } catch (error) {
-    console.error(`Error getting proposals for trade ${tradeId}:`, error);
+    logger.error('Error getting proposals for trade ${tradeId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to get trade proposals" },
@@ -2456,10 +2445,7 @@ export const updateTradeProposalStatus = async (
       };
     }
 
-    console.error(
-      `Error updating proposal ${proposalId} for trade ${tradeId}:`,
-      error
-    );
+    logger.error('Error updating proposal ${proposalId} for trade ${tradeId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to update proposal" },
@@ -2507,7 +2493,7 @@ export const createConversation = async (
       return { data: conversation.id || "", error: null };
     }
   } catch (error) {
-    console.error("Error creating conversation:", error);
+    logger.error('Error creating conversation:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to create conversation" },
@@ -2540,10 +2526,7 @@ export const createMessage = async (
     await sendMessage(message);
     return { data: null, error: null };
   } catch (error) {
-    console.error(
-      `Error sending message to conversation ${conversationId}:`,
-      error
-    );
+    logger.error('Error sending message to conversation ${conversationId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to send message" },
@@ -2603,7 +2586,7 @@ export const getUserNotifications = async (
 
     return { data: { items: notifications, hasMore, lastDoc }, error: null };
   } catch (error) {
-    console.error(`Error getting notifications for user ${userId}:`, error);
+    logger.error('Error getting notifications for user ${userId}:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to get user notifications" },
@@ -2628,7 +2611,7 @@ export const getUnreadNotificationCount = async (
     const snapshot = await getDocs(q);
     return { data: snapshot.size, error: null };
   } catch (error) {
-    console.error("Error getting unread notification count:", error);
+    logger.error('Error getting unread notification count:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to get unread count" },
@@ -2650,7 +2633,7 @@ export const bulkMarkNotificationsAsRead = async (
     await batch.commit();
     return { data: null, error: null };
   } catch (error) {
-    console.error("Error bulk marking notifications as read:", error);
+    logger.error('Error bulk marking notifications as read:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to bulk mark notifications" },
@@ -2720,7 +2703,7 @@ export const searchUsers = async (
       error: null,
     };
   } catch (error) {
-    console.error("Error searching users:", error);
+    logger.error('Error searching users:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to search users" },
@@ -3115,7 +3098,7 @@ export const searchTrades = async (
       error: null,
     };
   } catch (error) {
-    console.error("Error searching trades:", error);
+    logger.error('Error searching trades:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: { code: "unknown", message: "Failed to search trades" },

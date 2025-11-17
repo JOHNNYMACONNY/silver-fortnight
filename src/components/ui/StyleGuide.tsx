@@ -35,6 +35,7 @@ import StateTransition from './StateTransition';
 import { Progress, CircularProgress, StepProgress } from './Progress';
 import { progressPresets, progressPatterns, createStepProgress, createLinearProgress } from '../../utils/progressUtils';
 import { ThreeHeaderOverlay } from '../background/ThreeHeaderOverlay';
+import { logger } from '@utils/logging/logger';
 import { 
   CheckCircle, 
   AlertTriangle, 
@@ -940,10 +941,10 @@ export const StyleGuide: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Dismissible Alerts</h3>
                   <div className="space-y-4">
-                    <Alert variant="success" dismissible onDismiss={() => console.log('Success alert dismissed')}>
+                    <Alert variant="success" dismissible onDismiss={() => logger.debug('Success alert dismissed', 'COMPONENT')}>
                       <AlertDescription>This success alert can be dismissed by clicking the X button.</AlertDescription>
                     </Alert>
-                    <Alert variant="trades" dismissible onDismiss={() => console.log('Trade alert dismissed')}>
+                    <Alert variant="trades" dismissible onDismiss={() => logger.debug('Trade alert dismissed', 'COMPONENT')}>
                       <AlertDescription>Trade notification - click X to dismiss when you're done reading.</AlertDescription>
                     </Alert>
                   </div>
@@ -955,8 +956,8 @@ export const StyleGuide: React.FC = () => {
                     <Alert 
                       variant="collaboration" 
                       actions={[
-                        { label: "View Request", onClick: () => console.log('View collaboration request') },
-                        { label: "Decline", variant: "outline", onClick: () => console.log('Decline request') }
+                        { label: "View Request", onClick: () => logger.debug('View collaboration request', 'COMPONENT') },
+                        { label: "Decline", variant: "outline", onClick: () => logger.debug('Decline request', 'COMPONENT') }
                       ]}
                     >
                       <AlertDescription>New collaboration request from Sarah Johnson for "Mobile App Design".</AlertDescription>
@@ -964,8 +965,8 @@ export const StyleGuide: React.FC = () => {
                     <Alert 
                       variant="trades" 
                       actions={[
-                        { label: "View Trade", onClick: () => console.log('View trade details') },
-                        { label: "Rate User", variant: "ghost", onClick: () => console.log('Rate user') }
+                        { label: "View Trade", onClick: () => logger.debug('View trade details', 'COMPONENT') },
+                        { label: "Rate User", variant: "ghost", onClick: () => logger.debug('Rate user', 'COMPONENT') }
                       ]}
                     >
                       <AlertDescription>Your trade with Mike has been completed successfully!</AlertDescription>
@@ -973,8 +974,8 @@ export const StyleGuide: React.FC = () => {
                     <Alert 
                       variant="community" 
                       actions={[
-                        { label: "View Post", onClick: () => console.log('View community post') },
-                        { label: "Reply", variant: "outline", onClick: () => console.log('Reply to post') }
+                        { label: "View Post", onClick: () => logger.debug('View community post', 'COMPONENT') },
+                        { label: "Reply", variant: "outline", onClick: () => logger.debug('Reply to post', 'COMPONENT') }
                       ]}
                     >
                       <AlertDescription>Your community post received 5 new comments!</AlertDescription>
@@ -988,7 +989,7 @@ export const StyleGuide: React.FC = () => {
                     <div>
                       <h4 className="text-sm font-medium text-muted-foreground mb-2">On Premium Card Background</h4>
                       <Card variant="premium" depth="lg" glow="subtle" glowColor="orange" className="p-4">
-                        <Alert variant="glass-success" dismissible onDismiss={() => console.log('Dismissed')}>
+                        <Alert variant="glass-success" dismissible onDismiss={() => logger.debug('Dismissed', 'COMPONENT')}>
                           <AlertDescription>Trade completed successfully! Your items have been exchanged.</AlertDescription>
                         </Alert>
                       </Card>
@@ -999,7 +1000,7 @@ export const StyleGuide: React.FC = () => {
                         <Alert 
                           variant="glass-warning" 
                           actions={[
-                            { label: "Verify Now", onClick: () => console.log('Verify email') }
+                            { label: "Verify Now", onClick: () => logger.debug('Verify email', 'COMPONENT') }
                           ]}
                         >
                           <AlertDescription>Please verify your email address to complete registration.</AlertDescription>
@@ -1013,8 +1014,8 @@ export const StyleGuide: React.FC = () => {
                           variant="glass-destructive" 
                           size="sm"
                           actions={[
-                            { label: "Retry", onClick: () => console.log('Retry request') },
-                            { label: "Contact Support", variant: "outline", onClick: () => console.log('Contact support') }
+                            { label: "Retry", onClick: () => logger.debug('Retry request', 'COMPONENT') },
+                            { label: "Contact Support", variant: "outline", onClick: () => logger.debug('Contact support', 'COMPONENT') }
                           ]}
                         >
                           <AlertDescription>Unable to process your request. Please try again later.</AlertDescription>
@@ -1167,7 +1168,7 @@ export const StyleGuide: React.FC = () => {
                     <div className="flex gap-4 flex-wrap">
                       <button 
                         onClick={() => showToast('File uploaded successfully!', 'success', {
-                          action: { label: 'View File', onClick: () => console.log('View file clicked') }
+                          action: { label: 'View File', onClick: () => logger.debug('View file clicked', 'COMPONENT') }
                         })}
                         className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
                       >
@@ -1175,7 +1176,7 @@ export const StyleGuide: React.FC = () => {
                       </button>
                       <button 
                         onClick={() => showToast('Connection lost. Retry?', 'error', {
-                          action: { label: 'Retry', onClick: () => console.log('Retry clicked') },
+                          action: { label: 'Retry', onClick: () => logger.debug('Retry clicked', 'COMPONENT') },
                           persistent: true
                         })}
                         className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"

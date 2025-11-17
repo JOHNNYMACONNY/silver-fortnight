@@ -8,6 +8,7 @@ import { Card } from "../components/ui/Card";
 import { MailIcon, LockIcon, CheckIcon } from "lucide-react";
 import Logo from "../components/ui/Logo";
 import { Button } from "../components/ui/Button";
+import { logger } from '@utils/logging/logger';
 
 export const SignUpPage: React.FC = () => {
   const { signInWithGoogle, signUp, error, loading, currentUser } = useAuth();
@@ -169,7 +170,7 @@ export const SignUpPage: React.FC = () => {
         navigate("/dashboard");
       }
     } catch (err: any) {
-      console.error("Signup failed:", err);
+      logger.error('Signup failed:', 'PAGE', {}, err as Error);
       setFormError(
         err.message || "Failed to create account. Please try again."
       );
@@ -189,7 +190,7 @@ export const SignUpPage: React.FC = () => {
         setRegistrationSuccess(true);
       }
     } catch (err) {
-      console.error("Google signup failed:", err);
+      logger.error('Google signup failed:', 'PAGE', {}, err as Error);
     }
   };
 

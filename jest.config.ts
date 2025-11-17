@@ -19,6 +19,12 @@ const config = {
     // Map rules unit testing to CJS shim for Jest compatibility
     "^@firebase/rules-unit-testing$": "<rootDir>/src/types/firebase-test.cjs",
     "^@/(.*)$": "<rootDir>/src/$1",
+    "^@utils/(.*)$": "<rootDir>/src/utils/$1",
+    "^@components/(.*)$": "<rootDir>/src/components/$1",
+    "^@services/(.*)$": "<rootDir>/src/services/$1",
+    "^@pages/(.*)$": "<rootDir>/src/pages/$1",
+    "^@hooks/(.*)$": "<rootDir>/src/hooks/$1",
+    "^@contexts/(.*)$": "<rootDir>/src/contexts/$1",
   },
   transform: {
     "^.+\\.(ts|tsx)$": [

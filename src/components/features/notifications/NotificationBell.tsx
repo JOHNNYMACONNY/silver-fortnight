@@ -20,6 +20,7 @@ import {
 import { Badge } from '../../ui/Badge';
 import { cn } from '../../../utils/cn';
 import { formatDistanceToNow } from 'date-fns';
+import { logger } from '@utils/logging/logger';
 
 export const NotificationBell: React.FC = () => {
   const { currentUser } = useAuth();
@@ -40,7 +41,7 @@ export const NotificationBell: React.FC = () => {
         });
         return () => unsubscribe();
       } catch (error) {
-        console.error('Error setting up notifications listener:', error);
+        logger.error('Error setting up notifications listener:', 'COMPONENT', {}, error as Error);
         setLoading(false);
         // Set empty state on error
         setNotifications([]);
@@ -58,7 +59,7 @@ export const NotificationBell: React.FC = () => {
       if (!notificationId) return;
       await markNotificationAsRead(notificationId);
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      logger.error('Error marking notification as read:', 'COMPONENT', {}, error as Error);
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { isOffline, addConnectionListeners } from '../../utils/networkUtils';
+import { logger } from '@utils/logging/logger';
 
 interface Props {
   children: ReactNode;
@@ -35,8 +36,8 @@ const RouteErrorBoundary: React.FC<Props> = (props) => {
 
   const handleError = (error: Error, errorInfo: ErrorInfo) => {
     // Log error to console
-    console.error('Route error:', error);
-    console.error('Error details:', errorInfo);
+    logger.error('Route error:', 'COMPONENT', {}, error as Error);
+    logger.error('Error details:', 'COMPONENT', {}, errorInfo as Error);
   };
 
   const fallback = (
@@ -97,14 +98,14 @@ class ErrorBoundaryComponent extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log error to console with detailed information
-    console.error('ErrorBoundary caught an error:', {
+    logger.error('ErrorBoundary caught an error:', 'COMPONENT', {}, {
       error: {
         name: error.name,
         message: error.message,
         stack: error.stack
       },
       componentStack: errorInfo.componentStack
-    });
+    } as Error);
 
     // Call onError prop if provided
     if (this.props.onError) {

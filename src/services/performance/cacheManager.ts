@@ -7,6 +7,7 @@
 
 import { RUMMetrics, SessionInfo } from './rumService';
 import { NetworkInfo } from './preloadingService';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Cache entry metadata
@@ -206,7 +207,7 @@ export class CacheManager {
       }
 
     } catch (error) {
-      console.error('Failed to initialize cache manager:', error);
+      logger.error('Failed to initialize cache manager:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -319,7 +320,7 @@ export class CacheManager {
       }
 
     } catch (error) {
-      console.error('Failed to set cache entry:', key, error);
+      logger.error('Failed to set cache entry:', 'SERVICE', { arg0: key }, error as Error);
     }
   }
 
@@ -518,7 +519,7 @@ export class CacheManager {
         }
       }
     } catch (error) {
-      console.error('Failed to perform predictive prefetch:', error);
+      logger.error('Failed to perform predictive prefetch:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -686,7 +687,7 @@ export class CacheManager {
 
       this.prefetchQueue.delete(prediction.key);
     } catch (error) {
-      console.error('Failed to execute prefetch:', prediction.key, error);
+      logger.error('Failed to execute prefetch:', 'SERVICE', { arg0: prediction.key }, error as Error);
       this.prefetchQueue.delete(prediction.key);
     }
   }
@@ -707,7 +708,7 @@ export class CacheManager {
         });
       }
     } catch (error) {
-      console.error('Failed to warm cache:', error);
+      logger.error('Failed to warm cache:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -791,7 +792,7 @@ export class CacheManager {
       try {
         listener(event);
       } catch (error) {
-        console.error('Cache event listener error:', error);
+        logger.error('Cache event listener error:', 'SERVICE', {}, error as Error);
       }
     });
 
@@ -846,14 +847,14 @@ export class CacheManager {
         }
       }
     } catch (error) {
-      console.error('Failed to load from localStorage:', error);
+      logger.error('Failed to load from localStorage:', 'SERVICE', {}, error as Error);
     }
   }
 
   private async loadFromIndexedDB(): Promise<void> {
     // Simplified IndexedDB implementation
     // In a real implementation, this would use proper IndexedDB APIs
-    console.debug('IndexedDB loading not implemented in this example');
+    logger.debug('IndexedDB loading not implemented in this example', 'SERVICE');
   }
 
   private async persistEntry(entry: CacheEntry): Promise<void> {

@@ -13,6 +13,7 @@ import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Alert, AlertDescription } from '../components/ui/Alert';
 import { Badge } from '../components/ui/Badge';
+import { logger } from '@utils/logging/logger';
 
 export const DebugMessagesPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -34,7 +35,7 @@ export const DebugMessagesPage: React.FC = () => {
       const db = getSyncFirebaseDb();
       const userId = currentUser.uid;
 
-      console.log(`Running debug check for user: ${userId}`);
+      logger.debug(`Running debug check for user: ${userId}`, 'PAGE');
 
       // Check 1: Get all conversations (without filters)
       const allConversationsRef = collection(db, 'conversations');
@@ -48,10 +49,10 @@ export const DebugMessagesPage: React.FC = () => {
           id: doc.id,
           ...(doc.data() as any)
         }));
-        console.log('All conversations query succeeded, found:', allConversations.length, 'conversations');
+        logger.debug('All conversations query succeeded, found:', 'PAGE', { arg0: allConversations.length, arg1: 'conversations' });
       } catch (err: any) {
         allConversationsError = err;
-        console.log('All conversations query failed:', err.message);
+        logger.debug('All conversations query failed:', 'PAGE', err.message);
       }
 
       // Check 2: Get conversations with participantIds filter
@@ -70,10 +71,10 @@ export const DebugMessagesPage: React.FC = () => {
           id: doc.id,
           ...(doc.data() as any)
         }));
-        console.log('Participant query succeeded, found:', participantConversations.length, 'conversations');
+        logger.debug('Participant query succeeded, found:', 'PAGE', { arg0: participantConversations.length, arg1: 'conversations' });
       } catch (err: any) {
         participantError = err;
-        console.log('Participant query failed:', err.message);
+        logger.debug('Participant query failed:', 'PAGE', err.message);
       }
 
       // Check 3: Get conversations with participants filter (legacy)
@@ -92,7 +93,7 @@ export const DebugMessagesPage: React.FC = () => {
           ...(doc.data() as any)
         }));
       } catch (legacyError: any) {
-        console.log('Legacy query failed:', legacyError.message);
+        logger.debug('Legacy query failed:', 'PAGE', legacyError.message);
       }
 
       // Check 4: Check user's profile
@@ -150,10 +151,10 @@ export const DebugMessagesPage: React.FC = () => {
       };
 
       setDebugInfo(debugData);
-      console.log('Debug check completed:', debugData);
+      logger.debug('Debug check completed:', 'PAGE', debugData);
 
     } catch (err: any) {
-      console.error('❌ Error running debug check:', err);
+      logger.error('❌ Error running debug check:', 'PAGE', {}, err as Error);
       setError(`Failed to run debug check: ${err.message}`);
     } finally {
       setLoading(false);

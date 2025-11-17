@@ -1,6 +1,7 @@
 import React from 'react';
 import { AppError, ErrorCode, ErrorSeverity } from '../types/errors';
 import { errorService } from './errorService';
+import { logger } from '@utils/logging/logger';
 
 interface ServiceStatus {
   name: string;
@@ -66,13 +67,13 @@ class GracefulDegradationService {
       this.fallbackStrategies.set(name, fallbackStrategy);
     }
 
-    console.log(`🔧 Service registered: ${name}`);
+    logger.debug(`🔧 Service registered: ${name}`, 'SERVICE');
   }
 
   public async checkServiceHealth(serviceName: string, healthCheckUrl?: string): Promise<boolean> {
     const service = this.services.get(serviceName);
     if (!service) {
-      console.warn(`Service ${serviceName} not registered`);
+      logger.warn(`Service ${serviceName} not registered`, 'SERVICE');
       return false;
     }
 
@@ -127,7 +128,7 @@ class GracefulDegradationService {
       
       if (service.fallbackMode) {
         service.fallbackMode = false;
-        console.log(`✅ Service ${serviceName} recovered from fallback mode`);
+        logger.debug(`✅ Service ${serviceName} recovered from fallback mode`, 'SERVICE');
       }
     }
   }
@@ -142,7 +143,7 @@ class GracefulDegradationService {
       if (service.errorCount >= this.config.maxErrorThreshold) {
         service.isAvailable = false;
         service.fallbackMode = true;
-        console.warn(`⚠️ Service ${serviceName} entered fallback mode`);
+        logger.warn(`⚠️ Service ${serviceName} entered fallback mode`, 'SERVICE');
       }
     }
   }
@@ -166,7 +167,7 @@ class GracefulDegradationService {
     
     // If service is known to be unavailable, use fallback immediately
     if (service && !service.isAvailable && this.config.enableFallbacks) {
-      console.log(`🔄 Using fallback for ${serviceName} (service unavailable)`);
+      logger.debug(`🔄 Using fallback for ${serviceName} (service unavailable)`, 'SERVICE');
       return this.executeFallback(serviceName, fallbackOperation);
     }
 
@@ -198,7 +199,7 @@ class GracefulDegradationService {
 
       // Try fallback if enabled
       if (this.config.enableFallbacks) {
-        console.log(`🔄 Using fallback for ${serviceName} (primary operation failed)`);
+        logger.debug(`🔄 Using fallback for ${serviceName} (primary operation failed)`, 'SERVICE');
         return this.executeFallback(serviceName, fallbackOperation);
       }
 
@@ -217,7 +218,7 @@ class GracefulDegradationService {
       try {
         return await fallbackOperation();
       } catch (error) {
-        console.error(`Fallback operation failed for ${serviceName}:`, error);
+        logger.error('Fallback operation failed for ${serviceName}:', 'SERVICE', {}, error as Error);
       }
     }
 
@@ -227,7 +228,7 @@ class GracefulDegradationService {
       if (strategy.cacheKey && this.config.enableCaching) {
         const cached = this.getFromCache(strategy.cacheKey);
         if (cached) {
-          console.log(`📦 Using cached data for ${serviceName}`);
+          logger.debug(`📦 Using cached data for ${serviceName}`, 'SERVICE');
           return cached;
         }
       }
@@ -237,7 +238,7 @@ class GracefulDegradationService {
         try {
           return strategy.fallbackFunction();
         } catch (error) {
-          console.error(`Fallback function failed for ${serviceName}:`, error);
+          logger.error('Fallback function failed for ${serviceName}:', 'SERVICE', {}, error as Error);
         }
       }
 

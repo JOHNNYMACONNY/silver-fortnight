@@ -21,6 +21,7 @@ import {
 import { getUserThreeTierProgress } from './threeTierProgression';
 import { getUserSkillAssessments } from './skillAssessment';
 import { SkillLevel } from '../types/gamification';
+import { logger } from '@utils/logging/logger';
 
 const getDb = () => getSyncFirebaseDb();
 
@@ -189,7 +190,7 @@ export const discoverChallenges = async (
       data: result
     };
   } catch (error) {
-    console.error('Error discovering challenges:', error);
+    logger.error('Error discovering challenges:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to discover challenges'
@@ -238,7 +239,7 @@ const buildUserContext = async (userId: string): Promise<UserDiscoveryContext> =
       recentActivity: [] // Would be populated from user activity log
     };
   } catch (error) {
-    console.error('Error building user context:', error);
+    logger.error('Error building user context:', 'SERVICE', {}, error as Error);
     // Return minimal context
     return {
       userId,

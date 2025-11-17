@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 /**
  * Bundle optimization and analysis utilities
  */
@@ -71,7 +72,7 @@ export class BundleOptimizer {
       this.analysisCache.set(cacheKey, analysis);
       return analysis;
     } catch (error) {
-      console.error('Bundle analysis failed:', error);
+      logger.error('Bundle analysis failed:', 'UTILITY', {}, error as Error);
       throw error;
     }
   }
@@ -346,9 +347,9 @@ export class BundleOptimizer {
     for (const recommendation of autoApplicable) {
       try {
         await this.applyOptimization(recommendation);
-        console.log(`Applied optimization: ${recommendation.description}`);
+        logger.debug(`Applied optimization: ${recommendation.description}`, 'UTILITY');
       } catch (error) {
-        console.error(`Failed to apply optimization: ${recommendation.description}`, error);
+        logger.error(`Failed to apply optimization: ${recommendation.description}`, 'UTILITY', {}, error as Error);
       }
     }
   }
@@ -356,7 +357,7 @@ export class BundleOptimizer {
   private async applyOptimization(recommendation: OptimizationRecommendation): Promise<void> {
     // In a real implementation, this would apply the optimization
     // For now, we'll just log the action
-    console.log(`Applying ${recommendation.type} optimization: ${recommendation.implementation}`);
+    logger.debug(`Applying ${recommendation.type} optimization: ${recommendation.implementation}`, 'UTILITY');
   }
 
   private formatBytes(bytes: number): string {

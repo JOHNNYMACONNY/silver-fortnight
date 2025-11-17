@@ -15,6 +15,7 @@ import { Skeleton } from '../ui/skeletons/Skeleton';
 import { EmptyState } from '../ui/EmptyState';
 import { Avatar } from '../ui/Avatar';
 import { Button } from '../ui/Button';
+import { logger } from '@utils/logging/logger';
 
 interface LeaderboardWidgetProps {
   category: LeaderboardCategory;
@@ -56,7 +57,7 @@ export const LeaderboardWidget: React.FC<LeaderboardWidgetProps> = ({
       }
     } catch (err) {
       setError('Failed to load leaderboard');
-      console.error('Leaderboard widget error:', err);
+      logger.error('Leaderboard widget error:', 'COMPONENT', {}, err as Error);
     } finally {
       setLoading(false);
     }

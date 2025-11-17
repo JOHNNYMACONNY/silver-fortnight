@@ -1,6 +1,7 @@
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { getFirebaseInstances } from '../firebase-config';
 import { Trade, TradeStatus } from './firestore';
+import { logger } from '@utils/logging/logger';
 
 export interface TradeAnalytics {
   totalTrades: number;
@@ -115,7 +116,7 @@ export const calculateTradeAnalytics = async (
     };
     
   } catch (error) {
-    console.error('Error calculating trade analytics:', error);
+    logger.error('Error calculating trade analytics:', 'SERVICE', {}, error as Error);
     throw new Error('Failed to calculate trade analytics');
   }
 };
@@ -142,7 +143,7 @@ export const getQuickTradeAnalytics = async (): Promise<{
       successRate: analytics.successRate
     };
   } catch (error) {
-    console.error('Error getting quick trade analytics:', error);
+    logger.error('Error getting quick trade analytics:', 'SERVICE', {}, error as Error);
     // Return fallback values
     return {
       activeTrades: 0,

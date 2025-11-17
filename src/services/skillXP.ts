@@ -5,6 +5,7 @@ import { Timestamp, doc, getDoc, runTransaction, collection } from 'firebase/fir
 import { ServiceResponse } from '../types/services';
 import { UserSkillXP, SkillXPTransaction } from '../types/gamification';
 import { markSkillPracticeDay } from './streaks';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Add skill-specific XP and record a transaction.
@@ -75,7 +76,7 @@ export const addSkillXP = async (
     try { await markSkillPracticeDay(userId); } catch {}
     return { success: true, data: updated };
   } catch (error: any) {
-    console.error('addSkillXP failed', error);
+    logger.error('addSkillXP failed', 'SERVICE', {}, error as Error);
     return { success: false, error: error?.message || 'Failed to add skill XP' };
   }
 };

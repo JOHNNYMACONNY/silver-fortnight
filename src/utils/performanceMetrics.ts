@@ -7,6 +7,7 @@
  */
 
 import type { LayoutShiftEntry, FirstInputEntry } from '../types/browser';
+import { logger } from '@utils/logging/logger';
 
 // Types for performance metrics
 export interface PerformanceMetrics {
@@ -35,20 +36,20 @@ const performanceLogger: PerformanceLogger = {
   warn: (message: string, details?: any) => {
     // In development, log to console for debugging
     if (process.env.NODE_ENV === 'development') {
-      console.warn(`[Performance] ${message}`, details);
+      logger.warn(`[Performance] ${message}`, 'UTILITY', details);
     }
     // In production, this would route to a proper logging service
   },
   
   info: (message: string, details?: any) => {
     if (process.env.NODE_ENV === 'development') {
-      console.info(`[Performance] ${message}`, details);
+      logger.info(`[Performance] ${message}`, 'UTILITY', details);
     }
   },
   
   error: (message: string, details?: any) => {
     if (process.env.NODE_ENV === 'development') {
-      console.error(`[Performance] ${message}`, details);
+      logger.error(`[Performance] ${message}`, 'UTILITY', details);
     }
     // In production, this would route to error tracking service
   }
@@ -149,7 +150,7 @@ export const observeLCP = (callback: (value: number) => void): void => {
  */
 export const observeCLS = (callback: (value: number) => void): void => {
   if (typeof window === 'undefined' || !window.PerformanceObserver) {
-    console.warn('PerformanceObserver not supported');
+    logger.warn('PerformanceObserver not supported', 'UTILITY');
     return;
   }
 

@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 /**
  * Migration Services Index - Phase 2 Enhanced
  *
@@ -50,7 +51,7 @@ export class MigrationCoordinator {
   enableMigrationMode(version: string): void {
     this.isInMigrationMode = true;
     this.currentMigrationVersion = version;
-    console.log(`Migration mode enabled for version: ${version}`);
+    logger.debug(`Migration mode enabled for version: ${version}`, 'SERVICE');
   }
   
   /**
@@ -59,7 +60,7 @@ export class MigrationCoordinator {
   disableMigrationMode(): void {
     this.isInMigrationMode = false;
     this.currentMigrationVersion = undefined;
-    console.log('Migration mode disabled');
+    logger.debug('Migration mode disabled', 'SERVICE');
   }
   
   /**
@@ -120,7 +121,7 @@ export const migrationUtils = {
    * Initialize all migration services for production
    */
   initializeProductionMigration: async () => {
-    console.log('Initializing production migration services...');
+    logger.debug('Initializing production migration services...', 'SERVICE');
     
     // Initialize migration registry
     try {
@@ -130,27 +131,27 @@ export const migrationUtils = {
           registry.initialize(getSyncFirebaseDb());
         }
     } catch (error) {
-      console.error('Failed to initialize migration registry:', error);
+      logger.error('Failed to initialize migration registry:', 'SERVICE', {}, error as Error);
     }
     
     // Enable migration mode
     const coordinator = MigrationCoordinator.getInstance();
     coordinator.enableMigrationMode('2.0');
     
-    console.log('Production migration services initialized');
+    logger.debug('Production migration services initialized', 'SERVICE');
   },
   
   /**
    * Cleanup after migration completion
    */
   cleanupMigration: async () => {
-    console.log('Cleaning up migration services...');
+    logger.debug('Cleaning up migration services...', 'SERVICE');
     
     // Disable migration mode
     const coordinator = MigrationCoordinator.getInstance();
     coordinator.disableMigrationMode();
     
-    console.log('Migration cleanup completed');
+    logger.debug('Migration cleanup completed', 'SERVICE');
   },
   
   /**
@@ -166,7 +167,7 @@ export const migrationUtils = {
           return false;
         }
       } catch (error) {
-        console.error('Service validation failed:', error);
+        logger.error('Service validation failed:', 'SERVICE', {}, error as Error);
         return false;
       }
       
@@ -174,7 +175,7 @@ export const migrationUtils = {
       return true;
       
     } catch (error) {
-      console.error('Migration readiness validation failed:', error);
+      logger.error('Migration readiness validation failed:', 'SERVICE', {}, error as Error);
       return false;
     }
   }

@@ -46,6 +46,7 @@ import { Modal } from '../components/ui/Modal';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+import { logger } from '@utils/logging/logger';
 
 // Additional interface for local state
 // interface LocalState {
@@ -151,7 +152,7 @@ export const TradeDetailPage: React.FC = () => {
         setTradeCreator(data as User);
       }
     } catch (err: any) {
-      console.error('Error fetching trade creator:', err);
+      logger.error('Error fetching trade creator:', 'PAGE', {}, err as Error);
       // We don't set the main error state here to avoid disrupting the page
     } finally {
       setLoadingCreator(false);
@@ -429,7 +430,7 @@ export const TradeDetailPage: React.FC = () => {
       const tradeData = data as Trade;
       setTrade(tradeData);
     } catch (err: any) {
-      console.error('Error refreshing trade data:', err);
+      logger.error('Error refreshing trade data:', 'PAGE', {}, err as Error);
     }
   };
 

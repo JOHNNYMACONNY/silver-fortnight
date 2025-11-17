@@ -11,6 +11,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Alert, AlertDescription } from '../components/ui/Alert';
+import { logger } from '@utils/logging/logger';
 
 export const SimpleConversationTest: React.FC = () => {
   const { currentUser } = useAuth();
@@ -32,10 +33,10 @@ export const SimpleConversationTest: React.FC = () => {
       const db = getSyncFirebaseDb();
       const userId = currentUser.uid;
 
-      console.log(`Testing conversation read for user: ${userId}`);
+      logger.debug(`Testing conversation read for user: ${userId}`, 'PAGE');
 
       // Test 1: Try to read all conversations
-      console.log('Test 1: Reading all conversations...');
+      logger.debug('Test 1: Reading all conversations...', 'PAGE');
       const allConversationsRef = collection(db, 'conversations');
       const allQuery = query(allConversationsRef);
       
@@ -46,14 +47,14 @@ export const SimpleConversationTest: React.FC = () => {
           id: doc.id,
           ...(doc.data() as any)
         }));
-        console.log('✅ All conversations read successfully:', allConversations.length);
+        logger.debug('✅ All conversations read successfully:', 'PAGE', allConversations.length);
       } catch (allError: any) {
-        console.log('❌ All conversations read failed:', allError.message);
+        logger.debug('❌ All conversations read failed:', 'PAGE', allError.message);
         throw allError;
       }
 
       // Test 2: Try to read conversations with participantIds filter
-      console.log('Test 2: Reading conversations with participantIds filter...');
+      logger.debug('Test 2: Reading conversations with participantIds filter...', 'PAGE');
       const participantQuery = query(
         allConversationsRef,
         where('participantIds', 'array-contains', userId)
@@ -66,9 +67,9 @@ export const SimpleConversationTest: React.FC = () => {
           id: doc.id,
           ...(doc.data() as any)
         }));
-        console.log('✅ Participant conversations read successfully:', participantConversations.length);
+        logger.debug('✅ Participant conversations read successfully:', 'PAGE', participantConversations.length);
       } catch (participantError: any) {
-        console.log('❌ Participant conversations read failed:', participantError.message);
+        logger.debug('❌ Participant conversations read failed:', 'PAGE', participantError.message);
         throw participantError;
       }
 
@@ -99,7 +100,7 @@ ${userInConversations.map(conv =>
 ).join('\n')}`);
 
     } catch (err: any) {
-      console.error('❌ Error testing conversation read:', err);
+      logger.error('❌ Error testing conversation read:', 'PAGE', {}, err as Error);
       setError(`Failed to test conversation read: ${err.message}`);
     } finally {
       setLoading(false);

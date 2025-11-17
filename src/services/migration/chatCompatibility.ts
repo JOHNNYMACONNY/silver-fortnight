@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 import {
   doc,
   getDoc,
@@ -181,7 +182,7 @@ export class ChatCompatibilityService {
       } as ChatConversation;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error("Error normalizing conversation data:", error);
+      logger.error('Error normalizing conversation data:', 'SERVICE', {}, error as Error);
       throw new Error(`Failed to normalize conversation data: ${message}`);
     }
   }
@@ -228,7 +229,7 @@ export class ChatCompatibilityService {
       return normalized as ChatMessage;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error("Error normalizing message data:", error);
+      logger.error('Error normalizing message data:', 'SERVICE', {}, error as Error);
       throw new Error(`Failed to normalize message data: ${message}`);
     }
   }
@@ -260,7 +261,7 @@ export class ChatCompatibilityService {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(`Error fetching conversation ${conversationId}:`, error);
+      logger.error('Error fetching conversation ${conversationId}:', 'SERVICE', {}, error as Error);
       throw new Error(`Failed to fetch conversation: ${message}`);
     }
   }
@@ -306,10 +307,7 @@ export class ChatCompatibilityService {
                 ...(doc.data() as Record<string, unknown>),
               });
             } catch (normalizeError) {
-              console.error(
-                `Error normalizing conversation ${doc.id}:`,
-                normalizeError
-              );
+              logger.error('Error normalizing conversation ${doc.id}:', 'SERVICE', {}, normalizeError as Error);
               return null;
             }
           })
@@ -326,7 +324,7 @@ export class ChatCompatibilityService {
           newFormatError instanceof Error
             ? newFormatError.message
             : String(newFormatError);
-        console.log("New format query failed, trying legacy format:", message);
+        logger.debug('New format query failed, trying legacy format:', 'SERVICE', message);
       }
 
       // Try legacy format as fallback if we don't have enough results
@@ -359,10 +357,7 @@ export class ChatCompatibilityService {
                 }
                 return null;
               } catch (normalizeError) {
-                console.error(
-                  `Error normalizing legacy conversation ${doc.id}:`,
-                  normalizeError
-                );
+                logger.error('Error normalizing legacy conversation ${doc.id}:', 'SERVICE', {}, normalizeError as Error);
                 return null;
               }
             })
@@ -382,7 +377,7 @@ export class ChatCompatibilityService {
             legacyError instanceof Error
               ? legacyError.message
               : String(legacyError);
-          console.log("Legacy format query also failed:", message);
+          logger.debug('Legacy format query also failed:', 'SERVICE', message);
         }
       }
 
@@ -398,7 +393,7 @@ export class ChatCompatibilityService {
       return conversations.slice(0, limitCount);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(`Error getting conversations for user ${userId}:`, error);
+      logger.error('Error getting conversations for user ${userId}:', 'SERVICE', {}, error as Error);
       throw new Error(`Failed to get user conversations: ${message}`);
     }
   }
@@ -458,7 +453,7 @@ export class ChatCompatibilityService {
             ...raw,
           });
         } catch (normalizeError) {
-          console.error(`Error normalizing message ${doc.id}:`, normalizeError);
+          logger.error('Error normalizing message ${doc.id}:', 'SERVICE', {}, normalizeError as Error);
           // Return a basic message as fallback
           return {
             id: doc.id,
@@ -475,10 +470,7 @@ export class ChatCompatibilityService {
       return messages.reverse();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(
-        `Error getting messages for conversation ${conversationId}:`,
-        error
-      );
+      logger.error('Error getting messages for conversation ${conversationId}:', 'SERVICE', {}, error as Error);
       throw new Error(`Failed to get messages: ${message}`);
     }
   }
@@ -535,7 +527,7 @@ export class ChatCompatibilityService {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(`Error searching conversations for user ${userId}:`, error);
+      logger.error('Error searching conversations for user ${userId}:', 'SERVICE', {}, error as Error);
       throw new Error(`Failed to search conversations: ${message}`);
     }
   }
@@ -581,20 +573,14 @@ export class ChatCompatibilityService {
             return conversation;
           }
         } catch (normalizeError) {
-          console.error(
-            `Error normalizing conversation ${doc.id}:`,
-            normalizeError
-          );
+          logger.error('Error normalizing conversation ${doc.id}:', 'SERVICE', {}, normalizeError as Error);
         }
       }
 
       return null;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(
-        `Error finding direct conversation between ${userId1} and ${userId2}:`,
-        error
-      );
+      logger.error('Error finding direct conversation between ${userId1} and ${userId2}:', 'SERVICE', {}, error as Error);
       throw new Error(`Failed to find direct conversation: ${message}`);
     }
   }

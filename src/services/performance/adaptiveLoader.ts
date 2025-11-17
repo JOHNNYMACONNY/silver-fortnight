@@ -10,6 +10,7 @@ import { RUMMetrics, SessionInfo } from './rumService';
 import { NetworkInfo } from './preloadingService';
 import { performanceLogger } from '../../utils/performance/structuredLogger';
 import type { ExtendedNavigator, BatteryManager } from '../../types/browser';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Device capability information
@@ -325,7 +326,7 @@ export class AdaptiveLoader {
       this.setupNetworkListener();
       
     } catch (error) {
-      console.error('Failed to initialize adaptive loader:', error);
+      logger.error('Failed to initialize adaptive loader:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -523,7 +524,7 @@ export class AdaptiveLoader {
       return decision;
 
     } catch (error) {
-      console.error('Failed to make loading decision:', error);
+      logger.error('Failed to make loading decision:', 'SERVICE', {}, error as Error);
       return this.getFallbackDecision(resourceType);
     }
   }
@@ -760,7 +761,7 @@ export class AdaptiveLoader {
       this.updateContentAdaptation();
 
     } catch (error) {
-      console.error('Failed to perform adaptation:', error);
+      logger.error('Failed to perform adaptation:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -811,7 +812,7 @@ export class AdaptiveLoader {
   private updateContentAdaptation(): void {
     // This would trigger re-evaluation of content adaptation rules
     // In a real implementation, this might emit events or update a global state
-    console.debug('Content adaptation updated based on current conditions');
+    logger.debug('Content adaptation updated based on current conditions', 'SERVICE');
   }
 
   /**

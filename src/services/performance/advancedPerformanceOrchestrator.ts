@@ -4,6 +4,7 @@ import { SmartOrchestrator } from './smartOrchestrator';
 import RUMService from './rumService';
 import { multiLevelCache } from '../../utils/performance/advancedCaching';
 import { bundleOptimizer } from '../../utils/performance/bundleOptimizer';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Advanced Performance Orchestrator Configuration
@@ -114,7 +115,7 @@ export class AdvancedPerformanceOrchestrator {
       return;
     }
 
-    console.log('Initializing Advanced Performance Orchestrator...');
+    logger.debug('Initializing Advanced Performance Orchestrator...', 'SERVICE');
 
     try {
       // Initialize core performance services
@@ -130,9 +131,9 @@ export class AdvancedPerformanceOrchestrator {
       this.setupPerformanceMonitoring();
 
       this.isInitialized = true;
-      console.log('Advanced Performance Orchestrator initialized successfully');
+      logger.debug('Advanced Performance Orchestrator initialized successfully', 'SERVICE');
     } catch (error) {
-      console.error('Failed to initialize Advanced Performance Orchestrator:', error);
+      logger.error('Failed to initialize Advanced Performance Orchestrator:', 'SERVICE', {}, error as Error);
       throw error;
     }
   }
@@ -148,7 +149,7 @@ export class AdvancedPerformanceOrchestrator {
       this.smartOrchestrator = new SmartOrchestrator();
       // initialize is internal; SmartOrchestrator auto-initializes on construction
     } catch (error) {
-      console.warn('Smart orchestrator initialization failed, continuing without it:', error);
+      logger.warn('Smart orchestrator initialization failed, continuing without it:', 'SERVICE', error);
     }
 
     // Initialize enhanced PWA if enabled
@@ -187,7 +188,7 @@ export class AdvancedPerformanceOrchestrator {
    */
   private setupAdvancedCodeSplitting(): void {
     // Advanced code splitting is handled by the service itself
-    console.log('Advanced code splitting enabled');
+    logger.debug('Advanced code splitting enabled', 'SERVICE');
   }
 
   /**
@@ -197,12 +198,12 @@ export class AdvancedPerformanceOrchestrator {
     try {
       if (multiLevelCache && typeof (multiLevelCache as any).initialize === 'function') {
         await (multiLevelCache as any).initialize();
-        console.log('Intelligent caching initialized');
+        logger.debug('Intelligent caching initialized', 'SERVICE');
       } else {
-        console.log('Multi-level cache not available, skipping initialization');
+        logger.debug('Multi-level cache not available, skipping initialization', 'SERVICE');
       }
     } catch (error) {
-      console.error('Failed to initialize intelligent caching:', error);
+      logger.error('Failed to initialize intelligent caching:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -266,14 +267,14 @@ export class AdvancedPerformanceOrchestrator {
 
     this.currentOptimizations.add('bundle');
     try {
-      console.log('Running bundle optimization...');
+      logger.debug('Running bundle optimization...', 'SERVICE');
       if (bundleOptimizer && typeof (bundleOptimizer as any).optimizeBundles === 'function') {
         await (bundleOptimizer as any).optimizeBundles();
       } else {
-        console.log('Bundle optimizer not available, skipping optimization');
+        logger.debug('Bundle optimizer not available, skipping optimization', 'SERVICE');
       }
     } catch (error) {
-      console.error('Bundle optimization failed:', error);
+      logger.error('Bundle optimization failed:', 'SERVICE', {}, error as Error);
     } finally {
       this.currentOptimizations.delete('bundle');
     }
@@ -287,14 +288,14 @@ export class AdvancedPerformanceOrchestrator {
 
     this.currentOptimizations.add('cache');
     try {
-      console.log('Running cache optimization...');
+      logger.debug('Running cache optimization...', 'SERVICE');
       if (multiLevelCache && typeof (multiLevelCache as any).optimize === 'function') {
         await (multiLevelCache as any).optimize();
       } else {
-        console.log('Cache optimization not available, skipping');
+        logger.debug('Cache optimization not available, skipping', 'SERVICE');
       }
     } catch (error) {
-      console.error('Cache optimization failed:', error);
+      logger.error('Cache optimization failed:', 'SERVICE', {}, error as Error);
     } finally {
       this.currentOptimizations.delete('cache');
     }
@@ -316,7 +317,7 @@ export class AdvancedPerformanceOrchestrator {
       // Check performance budget
       this.checkPerformanceBudget(snapshot);
     } catch (error) {
-      console.error('Performance monitoring failed:', error);
+      logger.error('Performance monitoring failed:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -349,7 +350,7 @@ export class AdvancedPerformanceOrchestrator {
       new PerformanceObserver((list) => {
         const entries = list.getEntries();
       const lastEntry = entries[entries.length - 1] as any;
-      if (lastEntry) console.log('LCP:', lastEntry.startTime);
+      if (lastEntry) logger.debug('LCP:', 'SERVICE', lastEntry.startTime);
       }).observe({ entryTypes: ['largest-contentful-paint'] });
 
       // Monitor FID
@@ -357,7 +358,7 @@ export class AdvancedPerformanceOrchestrator {
         const entries = list.getEntries();
         entries.forEach((entry: any) => {
           if (entry && typeof entry.processingStart === 'number') {
-            console.log('FID:', entry.processingStart - entry.startTime);
+            logger.debug('FID:', 'SERVICE', entry.processingStart - entry.startTime);
           }
         });
       }).observe({ entryTypes: ['first-input'] });
@@ -367,7 +368,7 @@ export class AdvancedPerformanceOrchestrator {
         const entries = list.getEntries();
         entries.forEach((entry: any) => {
           if (entry && !entry.hadRecentInput) {
-            console.log('CLS:', entry.value);
+            logger.debug('CLS:', 'SERVICE', entry.value);
           }
         });
       }).observe({ entryTypes: ['layout-shift'] });
@@ -383,7 +384,7 @@ export class AdvancedPerformanceOrchestrator {
         const entries = list.getEntries();
         entries.forEach((entry) => {
           if (entry.duration > 1000 && process.env.NODE_ENV === 'production') { // Reduce dev noise
-            console.warn('Slow resource:', entry.name, entry.duration);
+            logger.warn('Slow resource:', 'SERVICE', { arg0: entry.name, arg1: entry.duration });
           }
         });
       }).observe({ entryTypes: ['resource'] });
@@ -400,7 +401,7 @@ export class AdvancedPerformanceOrchestrator {
       requestAnimationFrame(() => {
         const responseTime = performance.now() - startTime;
         if (responseTime > 100) {
-          console.warn('Slow click response:', responseTime);
+          logger.warn('Slow click response:', 'SERVICE', responseTime);
         }
       });
     });
@@ -450,7 +451,7 @@ export class AdvancedPerformanceOrchestrator {
     if (snapshot.tti > budget.tti) violations.push(`TTI: ${snapshot.tti}ms > ${budget.tti}ms`);
 
     if (violations.length > 0) {
-      console.warn('Performance budget violations:', violations);
+      logger.warn('Performance budget violations:', 'SERVICE', violations);
       this.triggerPerformanceOptimization();
     }
   }
@@ -459,7 +460,7 @@ export class AdvancedPerformanceOrchestrator {
    * Trigger performance optimization
    */
   private async triggerPerformanceOptimization(): Promise<void> {
-    console.log('Triggering emergency performance optimization...');
+    logger.debug('Triggering emergency performance optimization...', 'SERVICE');
     
     // Run immediate optimizations
     await Promise.all([
@@ -497,21 +498,21 @@ export class AdvancedPerformanceOrchestrator {
    * Enable aggressive optimizations
    */
   private enableAggressiveOptimizations(): void {
-    console.log('Enabling aggressive optimizations for slow network');
+    logger.debug('Enabling aggressive optimizations for slow network', 'SERVICE');
   }
 
   /**
    * Enable normal optimizations
    */
   private enableNormalOptimizations(): void {
-    console.log('Using normal optimization settings');
+    logger.debug('Using normal optimization settings', 'SERVICE');
   }
 
   /**
    * Enable memory optimizations
    */
   private enableMemoryOptimizations(): void {
-    console.log('Enabling memory-conscious optimizations');
+    logger.debug('Enabling memory-conscious optimizations', 'SERVICE');
   }
 
   // Helper methods for performance metrics
@@ -621,7 +622,7 @@ export class AdvancedPerformanceOrchestrator {
     this.optimizationIntervals.clear();
 
     this.isInitialized = false;
-    console.log('Advanced Performance Orchestrator shut down');
+    logger.debug('Advanced Performance Orchestrator shut down', 'SERVICE');
   }
 }
 

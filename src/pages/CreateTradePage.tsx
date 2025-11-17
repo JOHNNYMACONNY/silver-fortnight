@@ -14,6 +14,7 @@ import { GlassmorphicInput } from '../components/ui/GlassmorphicInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/Select';
 import { Textarea } from '../components/ui/Textarea';
 import { X, AlertCircle } from 'lucide-react';
+import { logger } from '@utils/logging/logger';
 
 const CreateTradePage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -162,7 +163,7 @@ const CreateTradePage: React.FC = () => {
       navigate('/trades');
 
     } catch (err) {
-      console.error('Error creating trade:', err);
+      logger.error('Error creating trade:', 'PAGE', {}, err as Error);
       setError((err as Error).message || 'Failed to create trade');
     } finally {
       setIsSubmitting(false);

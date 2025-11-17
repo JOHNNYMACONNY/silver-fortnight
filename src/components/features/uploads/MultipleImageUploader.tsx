@@ -7,6 +7,7 @@ import {
 } from '../../../services/cloudinary/cloudinaryService';
 import { useToast } from '../../../contexts/ToastContext';
 import LazyImage from '../../ui/LazyImage';
+import { logger } from '@utils/logging/logger';
 
 interface MultipleImageUploaderProps {
   onImagesChange: (urls: string[]) => void;
@@ -228,12 +229,12 @@ export const MultipleImageUploader: React.FC<MultipleImageUploaderProps> = ({
       // Then delete from storage (if we have the public ID)
       // For Cloudinary, we would need the public ID to delete
       // Since we're just storing URLs, we'll just log this for now
-      console.log('Would delete image from Cloudinary:', url);
+      logger.debug('Would delete image from Cloudinary:', 'COMPONENT', url);
 
       // In a real implementation, you would extract the public ID from the URL
       // and call deleteImage with it
     } catch (err: any) {
-      console.error('Error removing image:', err);
+      logger.error('Error removing image:', 'COMPONENT', {}, err as Error);
     }
   };
 

@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 export interface TransactionLog {
   operation: string;
   timestamp: number;
@@ -14,14 +15,11 @@ export const logTransaction = (log: TransactionLog): void => {
   
   // Log to console with visual grouping and styling
   console.group(`🔄 Transaction: ${log.operation}`);
-  console.log(
-    `%c${log.status.toUpperCase()}`,
-    `color: ${log.status === 'completed' ? 'green' : log.status === 'failed' ? 'red' : 'blue'}`
-  );
-  console.log('Timestamp:', formattedLog.formattedTimestamp);
-  console.log('Details:', log.details);
+  logger.debug(`%c${log.status.toUpperCase()}`, 'UTILITY', `color: ${log.status === 'completed' ? 'green' : log.status === 'failed' ? 'red' : 'blue'}`);
+  logger.debug('Timestamp:', 'UTILITY', formattedLog.formattedTimestamp);
+  logger.debug('Details:', 'UTILITY', log.details);
   if (log.error) {
-    console.error('Error:', log.error);
+    logger.error('Error:', 'UTILITY', {}, log.error as Error);
   }
   console.groupEnd();
 }

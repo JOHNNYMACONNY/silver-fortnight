@@ -12,6 +12,7 @@ import ErrorBoundary from './ErrorBoundary';
 import ThreeHeaderOverlay, { type EffectsPreset, type EffectsBlendMode } from '../background/ThreeHeaderOverlay';
 import DefaultBanner, { BannerDesign } from './DefaultBanner';
 import BannerSelector from './BannerSelector';
+import { logger } from '@utils/logging/logger';
 
 export interface ProfileBannerProps {
   bannerUrl?: string | BannerData;
@@ -48,7 +49,7 @@ const BannerImage: React.FC<{
 }> = ({ src, className, onError }) => {
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.onerror = null; // Prevent infinite loop
-    console.error('Banner image load error:', {
+    logger.error('Banner image load error:', 'COMPONENT', {
       src: e.currentTarget.src,
       naturalWidth: e.currentTarget.naturalWidth,
       naturalHeight: e.currentTarget.naturalHeight,
@@ -140,7 +141,7 @@ export const ProfileBanner: React.FC<ProfileBannerProps> = ({
 
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('Processing banner input:', {
+      logger.debug('Processing banner input:', 'COMPONENT', {
         input: bannerUrl,
         state: { useFallback, urlError }
       });
@@ -149,7 +150,7 @@ export const ProfileBanner: React.FC<ProfileBannerProps> = ({
     if (!bannerUrl) {
       const fallbackUrl = getBannerImageUrl(null);
       if (process.env.NODE_ENV === 'development') {
-        console.log('No banner data provided, using fallback:', fallbackUrl);
+        logger.debug('No banner data provided, using fallback:', 'COMPONENT', fallbackUrl);
       }
       setProcessedUrl(fallbackUrl);
       setUrlError(false);
@@ -160,7 +161,7 @@ export const ProfileBanner: React.FC<ProfileBannerProps> = ({
     if (typeof bannerUrl === 'object') {
       const url = getBannerImageUrl(bannerUrl);
       if (process.env.NODE_ENV === 'development') {
-        console.log('Processed banner data:', {
+        logger.debug('Processed banner data:', 'COMPONENT', {
           input: bannerUrl,
           output: url
         });
@@ -182,7 +183,7 @@ export const ProfileBanner: React.FC<ProfileBannerProps> = ({
         uploadedAt: new Date().getTime()
       });
       if (process.env.NODE_ENV === 'development') {
-        console.log('Processed legacy URL:', {
+        logger.debug('Processed legacy URL:', 'COMPONENT', {
           input: bannerUrl,
           publicId: publicIdResult,
           version: version,
@@ -192,7 +193,7 @@ export const ProfileBanner: React.FC<ProfileBannerProps> = ({
       setProcessedUrl(url);
       setUrlError(false);
     } else {
-      console.error('Banner URL parsing failed:', publicIdResult);
+      logger.error('Banner URL parsing failed:', 'COMPONENT', publicIdResult);
       setUrlError(true);
       const fallbackUrl = getBannerImageUrl(null);
       setProcessedUrl(fallbackUrl);
@@ -268,7 +269,7 @@ export const ProfileBanner: React.FC<ProfileBannerProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    console.log('Starting banner upload:', {
+    logger.debug('Starting banner upload:', 'COMPONENT', {
       fileName: file.name,
       fileSize: file.size,
       fileType: file.type
@@ -285,7 +286,7 @@ export const ProfileBanner: React.FC<ProfileBannerProps> = ({
         throw new Error(validation.error || 'Invalid file');
       }
 
-      console.log('Uploading banner to Cloudinary...');
+      logger.debug('Uploading banner to Cloudinary...', 'COMPONENT');
       const result = await uploadBannerImage(file);
 
       if (result.error) {
@@ -296,7 +297,7 @@ export const ProfileBanner: React.FC<ProfileBannerProps> = ({
         throw new Error('Invalid upload response');
       }
 
-      console.log('Banner upload successful:', {
+      logger.debug('Banner upload successful:', 'COMPONENT', {
         publicId: result.publicId,
         version: result.version,
         baseUrl: result.baseUrl,
@@ -316,14 +317,14 @@ export const ProfileBanner: React.FC<ProfileBannerProps> = ({
       onUploadComplete?.(true);
 
       // Try loading base URL first
-      console.log('Testing base URL load:', result.baseUrl);
+      logger.debug('Testing base URL load:', 'COMPONENT', result.baseUrl);
       setProcessedUrl(result.baseUrl);
 
       // If transformed URL is available, switch to it after base URL loads successfully
       if (result.transformedUrl) {
         const testImg = new Image();
         testImg.onload = () => {
-          console.log('Base URL loaded successfully, switching to transformed URL');
+          logger.debug('Base URL loaded successfully, switching to transformed URL', 'COMPONENT');
           setProcessedUrl(result.transformedUrl!);
         };
         testImg.src = result.baseUrl;
@@ -332,7 +333,7 @@ export const ProfileBanner: React.FC<ProfileBannerProps> = ({
       addToast('success', 'Banner uploaded successfully');
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to upload banner';
-      console.error('Banner upload error:', errorMessage);
+      logger.error('Banner upload error:', 'COMPONENT', {}, errorMessage as Error);
       setError(errorMessage);
       onUploadComplete?.(false);
       addToast('error', errorMessage);
@@ -346,7 +347,7 @@ export const ProfileBanner: React.FC<ProfileBannerProps> = ({
 
   const handleBannerError = () => {
     if (process.env.NODE_ENV === 'development') {
-      console.error('Banner image load failed:', {
+      logger.error('Banner image load failed:', 'COMPONENT', {}, {
         originalUrl: bannerUrl,
         processedUrl: primaryBannerUrl,
         currentState: {
@@ -355,13 +356,13 @@ export const ProfileBanner: React.FC<ProfileBannerProps> = ({
           isUploading,
           error
         }
-      });
+      } as Error);
     }
 
     // If we have a custom banner design, don't show an error toast
     if (customBannerDesign) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Using custom banner design as fallback:', customBannerDesign);
+        logger.debug('Using custom banner design as fallback:', 'COMPONENT', customBannerDesign);
       }
       setUseFallback(true);
     } else {
@@ -450,7 +451,7 @@ export const ProfileBanner: React.FC<ProfileBannerProps> = ({
             selectedDesign={customBannerDesign}
             onCategoryChange={(category) => {
               // Do nothing when category changes, just log for debugging
-              console.log('Category changed to:', category);
+              logger.debug('Category changed to:', 'COMPONENT', category);
             }}
             onSelect={(design) => {
               // Prevent default behavior and stop propagation

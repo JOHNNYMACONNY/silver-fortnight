@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 /**
  * Enhanced PWA Service with advanced features
  * Provides intelligent caching, background sync, push notifications, and offline capabilities
@@ -76,7 +77,7 @@ export class EnhancedPWAService {
     // Delay service worker registration to avoid blocking initial page load
     setTimeout(() => {
       this.registerServiceWorker().catch((error) => {
-        console.error("Service Worker registration failed:", error);
+        logger.error('Service Worker registration failed:', 'SERVICE', {}, error as Error);
       });
     }, 1000);
 
@@ -92,7 +93,7 @@ export class EnhancedPWAService {
    */
   private async registerServiceWorker(): Promise<void> {
     if (!("serviceWorker" in navigator)) {
-      console.warn("Service Worker not supported");
+      logger.warn("Service Worker not supported", 'SERVICE');
       return;
     }
 
@@ -122,9 +123,9 @@ export class EnhancedPWAService {
       });
 
       this.serviceWorker = registration.active;
-      console.log("Enhanced Service Worker registered successfully");
+      logger.debug("Enhanced Service Worker registered successfully", 'SERVICE');
     } catch (error) {
-      console.error("Service Worker registration failed:", error);
+      logger.error('Service Worker registration failed:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -270,7 +271,7 @@ export class EnhancedPWAService {
 
       return false;
     } catch (error) {
-      console.error("Install prompt failed:", error);
+      logger.error('Install prompt failed:', 'SERVICE', {}, error as Error);
       return false;
     }
   }
@@ -294,7 +295,7 @@ export class EnhancedPWAService {
 
       return false;
     } catch (error) {
-      console.error("Notification permission request failed:", error);
+      logger.error('Notification permission request failed:', 'SERVICE', {}, error as Error);
       return false;
     }
   }
@@ -315,7 +316,7 @@ export class EnhancedPWAService {
       // Send subscription to server
       await this.sendSubscriptionToServer(subscription);
     } catch (error) {
-      console.error("Push subscription failed:", error);
+      logger.error('Push subscription failed:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -353,7 +354,7 @@ export class EnhancedPWAService {
       try {
         await this.processBackgroundSyncTask(task);
       } catch (error) {
-        console.error(`Background sync task ${task.id} failed:`, error);
+        logger.error('Background sync task ${task.id} failed:', 'SERVICE', {}, error as Error);
 
         if (task.retryCount < task.maxRetries) {
           task.retryCount++;
@@ -461,7 +462,7 @@ export class EnhancedPWAService {
     type: "success" | "warning" | "info" | "error"
   ): void {
     // Implementation depends on your notification system
-    console.log(`${type.toUpperCase()}: ${title} - ${message}`);
+    logger.debug(`${type.toUpperCase()}: ${title} - ${message}`, 'SERVICE');
   }
 
   /**
@@ -513,7 +514,7 @@ export class EnhancedPWAService {
         this.backgroundSyncQueue = JSON.parse(stored);
       }
     } catch (error) {
-      console.error("Failed to load background sync queue:", error);
+      logger.error('Failed to load background sync queue:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -527,7 +528,7 @@ export class EnhancedPWAService {
         JSON.stringify(this.backgroundSyncQueue)
       );
     } catch (error) {
-      console.error("Failed to save background sync queue:", error);
+      logger.error('Failed to save background sync queue:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -553,7 +554,7 @@ export class EnhancedPWAService {
     subscription: PushSubscription
   ): Promise<void> {
     // Send subscription to your server
-    console.log("Push subscription:", subscription);
+    logger.debug('Push subscription:', 'SERVICE', subscription);
   }
 
   /**
@@ -561,7 +562,7 @@ export class EnhancedPWAService {
    */
   private async processApiCall(data: any): Promise<void> {
     // Implement API call processing
-    console.log("Processing API call:", data);
+    logger.debug('Processing API call:', 'SERVICE', data);
   }
 
   /**
@@ -569,7 +570,7 @@ export class EnhancedPWAService {
    */
   private async processDataSync(data: any): Promise<void> {
     // Implement data sync processing
-    console.log("Processing data sync:", data);
+    logger.debug('Processing data sync:', 'SERVICE', data);
   }
 
   /**
@@ -577,14 +578,14 @@ export class EnhancedPWAService {
    */
   private async processFileUpload(data: any): Promise<void> {
     // Implement file upload processing
-    console.log("Processing file upload:", data);
+    logger.debug('Processing file upload:', 'SERVICE', data);
   }
 
   /**
    * Track app installation
    */
   private trackInstallation(): void {
-    console.log("App installed successfully");
+    logger.debug("App installed successfully", 'SERVICE');
     // Send analytics event
   }
 

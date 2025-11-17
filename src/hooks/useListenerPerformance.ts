@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useRef, useCallback, useState } from "react";
+import { logger } from '@utils/logging/logger';
 
 interface ListenerMetrics {
   activeListeners: number;
@@ -71,14 +72,12 @@ export const useListenerPerformance = (
       listenerRegistry.set(listenerId, listenerData);
 
       if (opts.enableLogging) {
-        console.log(`📡 Listener registered: ${listenerId}`);
+        logger.debug(`📡 Listener registered: ${listenerId}`, 'APP');
       }
 
       // Check if we're exceeding the listener limit
       if (listenerRegistry.size > opts.maxListeners) {
-        console.warn(
-          `⚠️ Listener limit exceeded: ${listenerRegistry.size}/${opts.maxListeners}`
-        );
+        logger.warn(`⚠️ Listener limit exceeded: ${listenerRegistry.size}/${opts.maxListeners}`, 'APP');
       }
 
       return () => {
@@ -86,7 +85,7 @@ export const useListenerPerformance = (
         cleanup();
 
         if (opts.enableLogging) {
-          console.log(`📡 Listener unregistered: ${listenerId}`);
+          logger.debug(`📡 Listener unregistered: ${listenerId}`, 'APP');
         }
       };
     },
@@ -110,9 +109,7 @@ export const useListenerPerformance = (
 
           // Check if response time exceeds threshold
           if (responseTime > opts.responseTimeThreshold) {
-            console.warn(
-              `⚠️ Slow listener response: ${listenerId} took ${responseTime}ms`
-            );
+            logger.warn(`⚠️ Slow listener response: ${listenerId} took ${responseTime}ms`, 'APP');
           }
         }
       }
@@ -136,7 +133,7 @@ export const useListenerPerformance = (
       }));
 
       if (opts.enableLogging) {
-        console.error(`❌ Listener error: ${listenerId}`, error);
+        logger.error('❌ Listener error: ${listenerId}', 'APP', {}, error as Error);
       }
     },
     [listenerId, opts.enableLogging]
@@ -175,9 +172,7 @@ export const useListenerPerformance = (
 
       // Check memory threshold
       if (memoryUsage > opts.memoryThreshold) {
-        console.warn(
-          `⚠️ Memory usage high: ${memoryUsage}MB (threshold: ${opts.memoryThreshold}MB)`
-        );
+        logger.warn(`⚠️ Memory usage high: ${memoryUsage}MB (threshold: ${opts.memoryThreshold}MB)`, 'APP');
       }
     };
 
@@ -235,12 +230,12 @@ export const getGlobalListenerMetrics = (): ListenerMetrics => {
 
 // Cleanup utility for emergency situations
 export const emergencyCleanupListeners = () => {
-  console.warn("🚨 Emergency cleanup: Removing all active listeners");
+  logger.warn("🚨 Emergency cleanup: Removing all active listeners", 'APP');
   listenerRegistry.forEach((listener) => {
     try {
       listener.cleanup();
     } catch (error) {
-      console.error("Error during emergency cleanup:", error);
+      logger.error('Error during emergency cleanup:', 'APP', {}, error as Error);
     }
   });
   listenerRegistry.clear();

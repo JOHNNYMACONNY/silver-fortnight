@@ -17,6 +17,7 @@ import {
   QueryDocumentSnapshot
 } from 'firebase/firestore';
 import { getSyncFirebaseDb } from '../../firebase-config';
+import { logger } from '@utils/logging/logger';
 
 export type { Notification };
 
@@ -30,7 +31,7 @@ export const deleteNotification = async (notificationId: string): Promise<Servic
     await deleteDoc(doc(db, 'notifications', notificationId));
     return { data: undefined, error: null };
   } catch (error) {
-    console.error('Error deleting notification:', error);
+    logger.error('Error deleting notification:', 'SERVICE', {}, error as Error);
     return { data: null, error: { code: 'unknown', message: 'Failed to delete notification' } };
   }
 };

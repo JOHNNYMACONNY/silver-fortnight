@@ -4,6 +4,7 @@
  */
 
 import { AppError, ErrorCode, ErrorSeverity, ErrorContext, ErrorReporter } from '../types/errors';
+import { logger } from '@utils/logging/logger';
 
 interface ErrorServiceConfig {
   enableReporting: boolean;
@@ -130,7 +131,7 @@ class ErrorService implements ErrorReporter {
       };
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('📊 Error Report:', errorReport);
+        logger.debug('📊 Error Report:', 'SERVICE', errorReport);
       }
 
       // Simulate API call to error tracking service
@@ -141,7 +142,7 @@ class ErrorService implements ErrorReporter {
       // });
 
     } catch (reportingError) {
-      console.error('Failed to report error:', reportingError);
+      logger.error('Failed to report error:', 'SERVICE', {}, reportingError as Error);
       // Add to queue for retry
       this.errorQueue.push(error);
     }
@@ -159,7 +160,7 @@ class ErrorService implements ErrorReporter {
       };
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('⚡ Performance Report:', performanceReport);
+        logger.debug('⚡ Performance Report:', 'SERVICE', performanceReport);
       }
 
       // Simulate API call to performance monitoring service
@@ -170,7 +171,7 @@ class ErrorService implements ErrorReporter {
       // });
 
     } catch (error) {
-      console.error('Failed to report performance issue:', error);
+      logger.error('Failed to report performance issue:', 'SERVICE', {}, error as Error);
     }
   }
 
@@ -203,11 +204,11 @@ class ErrorService implements ErrorReporter {
     const style = this.getSeverityStyle(error.severity);
 
     console.group(`${emoji} ${error.code} - ${error.severity.toUpperCase()}`);
-    console.error('%c' + error.message, style);
-    console.log('Context:', error.context);
-    console.log('User Message:', error.userMessage);
-    console.log('Retryable:', error.isRetryable);
-    console.log('Recovery Actions:', error.recoveryActions);
+    logger.error(`'%c' + error.message`, 'SERVICE', style);
+    logger.debug('Context:', 'SERVICE', error.context);
+    logger.debug('User Message:', 'SERVICE', error.userMessage);
+    logger.debug('Retryable:', 'SERVICE', error.isRetryable);
+    logger.debug('Recovery Actions:', 'SERVICE', error.recoveryActions);
     console.groupEnd();
   }
 
@@ -245,7 +246,7 @@ class ErrorService implements ErrorReporter {
   private notifyUser(error: AppError): void {
     // This would integrate with a toast notification system
     // For now, we'll use a simple console log
-    console.log('🔔 User Notification:', error.userMessage);
+    logger.debug('🔔 User Notification:', 'SERVICE', error.userMessage);
     
     // Example integration with toast system:
     // toast.error(error.userMessage, {

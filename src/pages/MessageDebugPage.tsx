@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { getSyncFirebaseDb } from '../firebase-config';
 import { collection, query, where, orderBy, getDocs, doc, getDoc } from 'firebase/firestore';
+import { logger } from '@utils/logging/logger';
 
 export const MessageDebugPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -31,7 +32,7 @@ export const MessageDebugPage: React.FC = () => {
         };
 
         // 1. Check for all conversations
-        console.log('Checking for all conversations for user:', currentUser.uid);
+        logger.debug('Checking for all conversations for user:', 'PAGE', currentUser.uid);
         const conversationsRef = collection(getSyncFirebaseDb(), 'conversations');
         const conversationsQuery = query(
           conversationsRef as any,
@@ -40,25 +41,25 @@ export const MessageDebugPage: React.FC = () => {
         );
 
         const conversationsSnapshot = await getDocs(conversationsQuery);
-        console.log('Found conversations:', conversationsSnapshot.size);
+        logger.debug('Found conversations:', 'PAGE', conversationsSnapshot.size);
 
           conversationsSnapshot.forEach(doc => {
           const raw = doc.data();
           const data = { id: doc.id, ...(raw && typeof raw === 'object' ? raw : {}) };
-          console.log('Conversation:', doc.id, data);
+          logger.debug('Conversation:', 'PAGE', { arg0: doc.id, arg1: data });
           results.conversations.push(data);
         });
 
         // 2. Check for specific conversation
         const specificConversationId = 'bcB1UuJ2VHwTXsTFG71g';
-        console.log('Checking for specific conversation:', specificConversationId);
+        logger.debug('Checking for specific conversation:', 'PAGE', specificConversationId);
         
         const conversationRef = doc(getSyncFirebaseDb(), 'conversations', specificConversationId);
         const conversationSnap = await getDoc(conversationRef);
         
         if (conversationSnap.exists()) {
           const data = { id: conversationSnap.id, ...conversationSnap.data() };
-          console.log('Found specific conversation:', data);
+          logger.debug('Found specific conversation:', 'PAGE', data);
           results.specificConversation = data;
           
           // 3. Check for nested messages
@@ -66,11 +67,11 @@ export const MessageDebugPage: React.FC = () => {
           const nestedMessagesQuery = query(nestedMessagesRef as any, orderBy('createdAt', 'asc'));
           const nestedMessagesSnap = await getDocs(nestedMessagesQuery);
           
-          console.log('Nested messages count:', nestedMessagesSnap.size);
+          logger.debug('Nested messages count:', 'PAGE', nestedMessagesSnap.size);
           nestedMessagesSnap.forEach(doc => {
             const raw = doc.data();
             const data = { id: doc.id, ...(raw && typeof raw === 'object' ? raw : {}) };
-            console.log('Nested message:', doc.id, data);
+            logger.debug('Nested message:', 'PAGE', { arg0: doc.id, arg1: data });
             results.nestedMessages.push(data);
           });
           
@@ -85,25 +86,25 @@ export const MessageDebugPage: React.FC = () => {
             );
             const flatMessagesSnap = await getDocs(flatMessagesQuery);
             
-            console.log('Flat messages count:', flatMessagesSnap.size);
+            logger.debug('Flat messages count:', 'PAGE', flatMessagesSnap.size);
             flatMessagesSnap.forEach(doc => {
               const raw = doc.data();
               const data = { id: doc.id, ...(raw && typeof raw === 'object' ? raw : {}) };
-              console.log('Flat message:', doc.id, data);
+              logger.debug('Flat message:', 'PAGE', { arg0: doc.id, arg1: data });
               results.flatMessages.push(data);
             });
           } catch (flatError) {
-            console.warn('Flat messages query failed (expected for new installations):', flatError);
+            logger.warn('Flat messages query failed (expected for new installations):', 'PAGE', flatError);
             results.flatMessages = [];
           }
         } else {
-          console.log('Specific conversation not found');
+          logger.debug('Specific conversation not found', 'PAGE');
         }
 
         setDebugInfo(results);
         setLoading(false);
       } catch (err: any) {
-        console.error('Error in debug page:', err);
+        logger.error('Error in debug page:', 'PAGE', {}, err as Error);
         setError(err.message || 'An error occurred');
         setLoading(false);
       }

@@ -24,6 +24,7 @@ import {
 } from "./gamification";
 import { createNotification, NotificationType } from "./notifications/unifiedNotificationService";
 import { removeUndefinedDeep } from "../utils/firestore";
+import { logger } from '@utils/logging/logger';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -164,7 +165,7 @@ export const updateUserStreak = async (
         });
       } catch (e) {
         // Log but do not fail the core update
-        console.warn("Failed to award streak milestone XP", e);
+        logger.warn('Failed to award streak milestone XP', 'SERVICE', e);
       }
     }
 
@@ -173,7 +174,7 @@ export const updateUserStreak = async (
       data: { streak: result, hitMilestone: milestoneHit },
     };
   } catch (error: any) {
-    console.error("updateUserStreak failed", error);
+    logger.error('updateUserStreak failed', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: error?.message || "Failed to update streak",
@@ -217,7 +218,7 @@ export const getUserStreak = async (
     if (!snap.exists()) return { success: true, data: null };
     return { success: true, data: snap.data() as UserStreak };
   } catch (error: any) {
-    console.error("getUserStreak failed", error);
+    logger.error('getUserStreak failed', 'SERVICE', {}, error as Error);
     return { success: false, error: error?.message || "Failed to load streak" };
   }
 };

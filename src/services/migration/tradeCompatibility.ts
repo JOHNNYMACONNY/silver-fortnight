@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 import { 
   doc, 
   getDoc, 
@@ -124,7 +125,7 @@ export class TradeCompatibilityService {
         compatibilityLayerUsed: true
       } as Trade;
     } catch (error) {
-      console.error('Error normalizing trade data:', error);
+      logger.error('Error normalizing trade data:', 'SERVICE', {}, error as Error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       throw new Error(`Failed to normalize trade data: ${errorMessage}`);
     }
@@ -168,7 +169,7 @@ export class TradeCompatibilityService {
           level: 'intermediate' as const
         };
       } catch (error) {
-        console.warn(`Error normalizing skill at index ${index}:`, error);
+        logger.warn('Error normalizing skill at index ${index}:', 'SERVICE', error);
         return {
           id: `error_skill_${index}`,
           name: 'Unknown Skill',
@@ -202,7 +203,7 @@ export class TradeCompatibilityService {
         ...docSnap.data()
       });
     } catch (error) {
-      console.error(`Error fetching trade ${id}:`, error);
+      logger.error('Error fetching trade ${id}:', 'SERVICE', {}, error as Error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       throw new Error(`Failed to fetch trade: ${errorMessage}`);
     }
@@ -249,7 +250,7 @@ export class TradeCompatibilityService {
           }
         });
       } catch (newFormatError) {
-        console.log('New format query failed, trying legacy format:', newFormatError instanceof Error ? newFormatError.message : 'Unknown error');
+        logger.debug('New format query failed, trying legacy format:', 'SERVICE', newFormatError instanceof Error ? newFormatError.message : 'Unknown error');
       }
       
       // Try legacy format as fallback
@@ -276,7 +277,7 @@ export class TradeCompatibilityService {
           }
         });
       } catch (legacyError) {
-        console.log('Legacy format query also failed:', legacyError instanceof Error ? legacyError.message : 'Unknown error');
+        logger.debug('Legacy format query also failed:', 'SERVICE', legacyError instanceof Error ? legacyError.message : 'Unknown error');
       }
       
       // Sort by creation date (newest first)
@@ -288,7 +289,7 @@ export class TradeCompatibilityService {
       
       return allTrades;
     } catch (error) {
-      console.error(`Error getting trades for user ${userId}:`, error);
+      logger.error('Error getting trades for user ${userId}:', 'SERVICE', {}, error as Error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       throw new Error(`Failed to get user trades: ${errorMessage}`);
     }
@@ -304,7 +305,7 @@ export class TradeCompatibilityService {
   async queryTrades(constraints: QueryConstraint[] = [], maxResults?: number): Promise<Trade[]> {
     // Debug log for test diagnosis
      
-    console.log('[TradeCompatibilityService.queryTrades] constraints:', constraints, 'maxResults:', maxResults);
+    logger.debug('[TradeCompatibilityService.queryTrades] constraints:', 'SERVICE', { arg0: constraints, arg1: 'maxResults:', arg2: maxResults });
     try {
       let q = query(collection(this.db, 'trades'), ...constraints);
       
@@ -328,7 +329,7 @@ export class TradeCompatibilityService {
       
       return normalizedTrades;
     } catch (error) {
-      console.error('Error querying trades:', error);
+      logger.error('Error querying trades:', 'SERVICE', {}, error as Error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       throw new Error(`Failed to query trades: ${errorMessage}`);
     }
@@ -370,7 +371,7 @@ export class TradeCompatibilityService {
           }
         });
       } catch (newFormatError) {
-        console.log('New format skill query failed, trying legacy format');
+        logger.debug('New format skill query failed, trying legacy format', 'SERVICE');
       }
       
       // Try legacy format as fallback
@@ -387,12 +388,12 @@ export class TradeCompatibilityService {
           }
         });
       } catch (legacyError) {
-        console.log('Legacy format skill query also failed');
+        logger.debug('Legacy format skill query also failed', 'SERVICE');
       }
       
       return allTrades;
     } catch (error) {
-      console.error(`Error searching trades by skill ${skillName}:`, error);
+      logger.error('Error searching trades by skill ${skillName}:', 'SERVICE', {}, error as Error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       throw new Error(`Failed to search trades by skill: ${errorMessage}`);
     }

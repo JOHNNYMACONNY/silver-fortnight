@@ -12,6 +12,7 @@ import { Button } from './Button';
 import { Card, CardContent, CardHeader, CardTitle } from './Card';
 import { Badge } from './Badge';
 import { cn } from '../../utils/cn';
+import { logger } from '@utils/logging/logger';
 
 interface ErrorDisplayProps {
   error: AppError;
@@ -260,9 +261,9 @@ class EnhancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
     
     // Enhanced error logging
     console.group(`🚨 Error Boundary: ${appError.code}`);
-    console.error('Error:', error);
-    console.error('Error Info:', errorInfo);
-    console.error('App Error:', appError.toJSON());
+    logger.error('Error:', 'COMPONENT', {}, error as Error);
+    logger.error('Error Info:', 'COMPONENT', {}, errorInfo as Error);
+    logger.error('App Error:', 'COMPONENT', {}, appError.toJSON() as Error);
     console.groupEnd();
     
     // Report through error service

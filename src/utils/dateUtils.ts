@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 /**
  * Universal date formatting utilities for Firebase Timestamps and Date objects
  * Handles the inconsistent date formats throughout the codebase
@@ -41,7 +42,7 @@ export const toSafeDate = (date: FirebaseDate): Date | null => {
     
     return null;
   } catch (error) {
-    console.warn('Error converting date:', error);
+    logger.warn('Error converting date:', 'UTILITY', error);
     return null;
   }
 };
@@ -64,7 +65,7 @@ export const formatDate = (
   try {
     return safeDate.toLocaleDateString('en-US', options);
   } catch (error) {
-    console.warn('Error formatting date:', error);
+    logger.warn('Error formatting date:', 'UTILITY', error);
     return fallback;
   }
 };

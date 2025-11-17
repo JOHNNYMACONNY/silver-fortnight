@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 /**
  * Bundle Analyzer Utility
  * 
@@ -50,7 +51,7 @@ export const logBundleInfo = (bundles: BundleInfo[]): void => {
     console.group(`${bundle.name}: ${formatBytes(bundle.size)}`);
     
     if (bundle.gzipSize) {
-      console.log(`Gzipped: ${formatBytes(bundle.gzipSize)}`);
+      logger.debug(`Gzipped: ${formatBytes(bundle.gzipSize)}`, 'UTILITY');
     }
     
     if (bundle.dependencies && bundle.dependencies.length > 0) {
@@ -60,7 +61,7 @@ export const logBundleInfo = (bundles: BundleInfo[]): void => {
       const sortedDeps = [...bundle.dependencies].sort((a, b) => b.size - a.size);
       
       sortedDeps.forEach(dep => {
-        console.log(`${dep.name}: ${formatBytes(dep.size)}`);
+        logger.debug(`${dep.name}: ${formatBytes(dep.size)}`, 'UTILITY');
       });
       
       console.groupEnd();
@@ -138,8 +139,8 @@ export const generateBundleReport = (bundles: BundleInfo[]): string => {
  * @returns Promise resolving to bundle information
  */
 export const analyzeBundles = async (): Promise<BundleInfo[]> => {
-  console.log('Bundle analysis would be implemented here');
-  console.log('In a real application, use webpack-bundle-analyzer or similar tools');
+  logger.debug('Bundle analysis would be implemented here', 'UTILITY');
+  logger.debug('In a real application, use webpack-bundle-analyzer or similar tools', 'UTILITY');
   
   // This is just placeholder data
   return [

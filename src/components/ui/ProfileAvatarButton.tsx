@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, getUserProfile } from '../../services/firestore-exports';
 import { getProfileImageUrl, generateAvatarUrl } from '../../utils/imageUtils';
 import { cn } from '../../utils/cn';
+import { logger } from '@utils/logging/logger';
 
 interface ProfileAvatarButtonProps {
   userId: string;
@@ -36,13 +37,13 @@ export const ProfileAvatarButton: React.FC<ProfileAvatarButtonProps> = ({
         const userResult = await getUserProfile(userId);
         // Proper ServiceResult error handling
         if (userResult.error || !userResult.data) {
-          console.warn(`Failed to fetch user profile for ${userId}:`, userResult.error);
+          logger.warn('Failed to fetch user profile for ${userId}:', 'COMPONENT', userResult.error);
           setUser(null);
         } else {
           setUser(userResult.data);
         }
       } catch (error) {
-        console.error('Error fetching user profile:', error);
+        logger.error('Error fetching user profile:', 'COMPONENT', {}, error as Error);
         setUser(null);
       } finally {
         setLoading(false);

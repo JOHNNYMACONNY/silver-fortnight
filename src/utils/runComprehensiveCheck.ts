@@ -8,85 +8,86 @@
  */
 
 import { comprehensiveAppAudit, quickComponentCheck } from './comprehensiveConsistencyChecker';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Run comprehensive consistency check and log results
  */
 export function runComprehensiveCheck() {
-  console.log('🔍 Starting Comprehensive App Consistency Check...\n');
+  logger.debug('🔍 Starting Comprehensive App Consistency Check...\n', 'UTILITY');
   
   const startTime = performance.now();
   const report = comprehensiveAppAudit();
   const endTime = performance.now();
   
-  console.log('📊 COMPREHENSIVE CONSISTENCY REPORT');
-  console.log('=====================================\n');
+  logger.debug('📊 COMPREHENSIVE CONSISTENCY REPORT', 'UTILITY');
+  logger.debug('=====================================\n', 'UTILITY');
   
   // Overall Score
-  console.log(`🎯 Overall Score: ${report.overallScore}/100`);
-  console.log(`⏱️  Check completed in ${(endTime - startTime).toFixed(2)}ms\n`);
+  logger.debug(`🎯 Overall Score: ${report.overallScore}/100`, 'UTILITY');
+  logger.debug(`⏱️  Check completed in ${(endTime - startTime).toFixed(2)}ms\n`, 'UTILITY');
   
   // Summary
-  console.log('📋 SUMMARY:');
-  console.log(`   Total Issues: ${report.summary.totalIssues}`);
-  console.log(`   Critical: ${report.summary.criticalIssues}`);
-  console.log(`   High Priority: ${report.summary.highPriorityIssues}`);
-  console.log(`   Medium Priority: ${report.summary.mediumPriorityIssues}`);
-  console.log(`   Low Priority: ${report.summary.lowPriorityIssues}\n`);
+  logger.debug('📋 SUMMARY:', 'UTILITY');
+  logger.debug(`   Total Issues: ${report.summary.totalIssues}`, 'UTILITY');
+  logger.debug(`   Critical: ${report.summary.criticalIssues}`, 'UTILITY');
+  logger.debug(`   High Priority: ${report.summary.highPriorityIssues}`, 'UTILITY');
+  logger.debug(`   Medium Priority: ${report.summary.mediumPriorityIssues}`, 'UTILITY');
+  logger.debug(`   Low Priority: ${report.summary.lowPriorityIssues}\n`, 'UTILITY');
   
   // Category Scores
-  console.log('📊 CATEGORY SCORES:');
-  console.log(`   Pages: ${report.categories.pages.score}/100 (${report.categories.pages.totalItems} issues)`);
-  console.log(`   Components: ${report.categories.components.score}/100 (${report.categories.components.totalItems} issues)`);
-  console.log(`   Modals: ${report.categories.modals.score}/100 (${report.categories.modals.totalItems} issues)`);
-  console.log(`   Layout: ${report.categories.layout.score}/100 (${report.categories.layout.totalItems} issues)`);
-  console.log(`   UI: ${report.categories.ui.score}/100 (${report.categories.ui.totalItems} issues)\n`);
+  logger.debug('📊 CATEGORY SCORES:', 'UTILITY');
+  logger.debug(`   Pages: ${report.categories.pages.score}/100 (${report.categories.pages.totalItems} issues)`, 'UTILITY');
+  logger.debug(`   Components: ${report.categories.components.score}/100 (${report.categories.components.totalItems} issues)`, 'UTILITY');
+  logger.debug(`   Modals: ${report.categories.modals.score}/100 (${report.categories.modals.totalItems} issues)`, 'UTILITY');
+  logger.debug(`   Layout: ${report.categories.layout.score}/100 (${report.categories.layout.totalItems} issues)`, 'UTILITY');
+  logger.debug(`   UI: ${report.categories.ui.score}/100 (${report.categories.ui.totalItems} issues)\n`, 'UTILITY');
   
   // Critical Issues
   const criticalIssues = report.issues.filter(issue => issue.severity === 'critical');
   if (criticalIssues.length > 0) {
-    console.log('🚨 CRITICAL ISSUES:');
+    logger.debug('🚨 CRITICAL ISSUES:', 'UTILITY');
     criticalIssues.forEach((issue, index) => {
-      console.log(`   ${index + 1}. ${issue.component} (${issue.category})`);
-      console.log(`      ${issue.description}`);
-      console.log(`      💡 ${issue.suggestion}`);
+      logger.debug(`   ${index + 1}. ${issue.component} (${issue.category})`, 'UTILITY');
+      logger.debug(`      ${issue.description}`, 'UTILITY');
+      logger.debug(`      💡 ${issue.suggestion}`, 'UTILITY');
       if (issue.filePath) {
-        console.log(`      📁 ${issue.filePath}`);
+        logger.debug(`      📁 ${issue.filePath}`, 'UTILITY');
       }
-      console.log('');
+      logger.debug('', 'UTILITY');
     });
   } else {
-    console.log('✅ No critical issues found!\n');
+    logger.debug('✅ No critical issues found!\n', 'UTILITY');
   }
   
   // High Priority Issues
   const highIssues = report.issues.filter(issue => issue.severity === 'high');
   if (highIssues.length > 0) {
-    console.log('⚠️  HIGH PRIORITY ISSUES:');
+    logger.debug('⚠️  HIGH PRIORITY ISSUES:', 'UTILITY');
     highIssues.slice(0, 5).forEach((issue, index) => {
-      console.log(`   ${index + 1}. ${issue.component} (${issue.category})`);
-      console.log(`      ${issue.description}`);
-      console.log(`      💡 ${issue.suggestion}`);
-      console.log('');
+      logger.debug(`   ${index + 1}. ${issue.component} (${issue.category})`, 'UTILITY');
+      logger.debug(`      ${issue.description}`, 'UTILITY');
+      logger.debug(`      💡 ${issue.suggestion}`, 'UTILITY');
+      logger.debug('', 'UTILITY');
     });
     
     if (highIssues.length > 5) {
-      console.log(`   ... and ${highIssues.length - 5} more high priority issues\n`);
+      logger.debug(`   ... and ${highIssues.length - 5} more high priority issues\n`, 'UTILITY');
     }
   }
   
   // Recommendations
-  console.log('💡 RECOMMENDATIONS:');
+  logger.debug('💡 RECOMMENDATIONS:', 'UTILITY');
   if (report.overallScore >= 90) {
-    console.log('   🎉 Excellent consistency! Keep up the great work!');
+    logger.debug('   🎉 Excellent consistency! Keep up the great work!', 'UTILITY');
   } else if (report.overallScore >= 70) {
-    console.log('   👍 Good consistency! Focus on fixing critical and high priority issues.');
+    logger.debug('   👍 Good consistency! Focus on fixing critical and high priority issues.', 'UTILITY');
   } else {
-    console.log('   🔧 Needs attention! Prioritize fixing critical issues first.');
+    logger.debug('   🔧 Needs attention! Prioritize fixing critical issues first.', 'UTILITY');
   }
   
-  console.log('\n📊 Full report available at: /consistency-checker');
-  console.log('🔄 Run this function again to re-check after making changes');
+  logger.debug('\n📊 Full report available at: /consistency-checker', 'UTILITY');
+  logger.debug('🔄 Run this function again to re-check after making changes', 'UTILITY');
   
   return report;
 }
@@ -95,19 +96,19 @@ export function runComprehensiveCheck() {
  * Quick check for a specific component
  */
 export function runQuickCheck(componentName: string, className?: string, props?: any) {
-  console.log(`🔍 Quick Check: ${componentName}`);
-  console.log('=====================================\n');
+  logger.debug(`🔍 Quick Check: ${componentName}`, 'UTILITY');
+  logger.debug('=====================================\n', 'UTILITY');
   
   const issues = quickComponentCheck(componentName, className, props);
   
   if (issues.length === 0) {
-    console.log('✅ No issues found for this component!');
+    logger.debug('✅ No issues found for this component!', 'UTILITY');
   } else {
-    console.log(`⚠️  Found ${issues.length} issue(s):`);
+    logger.debug(`⚠️  Found ${issues.length} issue(s):`, 'UTILITY');
     issues.forEach((issue, index) => {
-      console.log(`   ${index + 1}. [${issue.severity.toUpperCase()}] ${issue.description}`);
-      console.log(`      💡 ${issue.suggestion}`);
-      console.log('');
+      logger.debug(`   ${index + 1}. [${issue.severity.toUpperCase()}] ${issue.description}`, 'UTILITY');
+      logger.debug(`      💡 ${issue.suggestion}`, 'UTILITY');
+      logger.debug('', 'UTILITY');
     });
   }
   
@@ -121,7 +122,7 @@ if (typeof window !== 'undefined') {
   (window as any).runComprehensiveCheck = runComprehensiveCheck;
   (window as any).runQuickCheck = runQuickCheck;
   
-  console.log('🔧 Consistency Checker loaded!');
-  console.log('   Run: runComprehensiveCheck() for full audit');
-  console.log('   Run: runQuickCheck("ComponentName") for specific component');
+  logger.debug('🔧 Consistency Checker loaded!', 'UTILITY');
+  logger.debug('   Run: runComprehensiveCheck() for full audit', 'UTILITY');
+  logger.debug('   Run: runQuickCheck("ComponentName") for specific component', 'UTILITY');
 } 

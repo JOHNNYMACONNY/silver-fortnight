@@ -1,6 +1,7 @@
 import { TradeCompatibilityService } from './tradeCompatibility';
 import { ChatCompatibilityService } from './chatCompatibility';
 import { Firestore } from 'firebase/firestore';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Migration Service Registry
@@ -26,7 +27,7 @@ export class MigrationServiceRegistry {
   private firestoreInstance: Firestore | null = null;
   
   private constructor() {
-    console.log('🔄 MigrationServiceRegistry initialized');
+    logger.debug('🔄 MigrationServiceRegistry initialized', 'SERVICE');
   }
 
   /**
@@ -46,7 +47,7 @@ export class MigrationServiceRegistry {
    */
   public initialize(db: Firestore): void {
     if (this.firestoreInstance) {
-      console.log(' Migration registry already initialized, skipping...');
+      logger.debug(' Migration registry already initialized, skipping...', 'SERVICE');
       return;
     }
 
@@ -54,7 +55,7 @@ export class MigrationServiceRegistry {
     this.tradeService = new TradeCompatibilityService(db);
     this.chatService = new ChatCompatibilityService(db);
     
-    console.log('✅ Migration registry initialized with Firestore instance');
+    logger.debug('✅ Migration registry initialized with Firestore instance', 'SERVICE');
   }
 
   /**
@@ -62,7 +63,7 @@ export class MigrationServiceRegistry {
    */
   public enableMigrationMode(): void {
     this.migrationMode = true;
-    console.log('🔄 Migration mode enabled - using compatibility layers');
+    logger.debug('🔄 Migration mode enabled - using compatibility layers', 'SERVICE');
   }
 
   /**
@@ -70,7 +71,7 @@ export class MigrationServiceRegistry {
    */
   public disableMigrationMode(): void {
     this.migrationMode = false;
-    console.log('✅ Migration mode disabled - using direct schema access');
+    logger.debug('✅ Migration mode disabled - using direct schema access', 'SERVICE');
   }
 
   /**
@@ -142,7 +143,7 @@ export class MigrationServiceRegistry {
     this.tradeService = null;
     this.chatService = null;
     this.firestoreInstance = null;
-    console.log('🔄 Migration registry reset');
+    logger.debug('🔄 Migration registry reset', 'SERVICE');
   }
 
   /**
@@ -268,7 +269,7 @@ export function initializeMigrationRegistry(
     migrationRegistry.disableMigrationMode();
   }
   
-  console.log('🚀 Migration registry setup complete');
+  logger.debug('🚀 Migration registry setup complete', 'SERVICE');
 }
 
 /**

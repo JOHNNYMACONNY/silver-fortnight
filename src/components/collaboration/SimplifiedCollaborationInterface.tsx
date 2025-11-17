@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { GlassmorphicInput } from '../ui/GlassmorphicInput';
 import { ImprovedProjectCreationWizard } from './ImprovedProjectCreationWizard';
+import { logger } from '@utils/logging/logger';
 import {
   Users,
   Plus,
@@ -334,7 +335,7 @@ export const SimplifiedCollaborationInterface: React.FC<SimplifiedCollaborationI
         <div className="max-w-6xl mx-auto">
           <ImprovedProjectCreationWizard
             onComplete={(data) => {
-              console.log('Project created:', data);
+              logger.debug('Project created:', 'COMPONENT', data);
               // TODO: Integrate with backend
               setView('my-projects');
               setShowWizard(false);

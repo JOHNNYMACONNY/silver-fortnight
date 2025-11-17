@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useValidation, ValidationRule, FieldValidationResult } from "./FormValidationSystem";
+import { logger } from '@utils/logging/logger';
 
 // Field Validation Hook Props
 export interface UseFieldValidationProps {
@@ -189,7 +190,7 @@ export const useFormValidation = ({
   const setFieldError = useCallback((fieldName: string, error: string) => {
     // This would typically be handled by the validation system
     // but can be useful for server-side validation errors
-    console.warn('Manual error setting not implemented in current validation system');
+    logger.warn('Manual error setting not implemented in current validation system', 'COMPONENT');
   }, []);
 
   // Validate single field
@@ -256,7 +257,7 @@ export const useFormValidation = ({
         resetForm();
       }
     } catch (error) {
-      console.error('Form submission error:', error);
+      logger.error('Form submission error:', 'COMPONENT', {}, error as Error);
       throw error;
     } finally {
       setIsSubmitting(false);

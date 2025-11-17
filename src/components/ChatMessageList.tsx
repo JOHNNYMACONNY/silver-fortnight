@@ -8,6 +8,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { ChatMessage, ChatConversation, getConversationMessages, markMessagesAsRead } from '../services/chat/chatService';
 import { useAuth } from '../AuthContext';
 import { Timestamp } from 'firebase/firestore';
+import { logger } from '@utils/logging/logger';
 
 interface ChatMessageListProps {
   conversation: ChatConversation;
@@ -41,7 +42,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({ conversation }
 
       // Mark messages as read
       markMessagesAsRead(conversation.id!, currentUser.uid).catch((error: any) => {
-        console.error('Error marking messages as read:', error);
+        logger.error('Error marking messages as read:', 'COMPONENT', {}, error as Error);
       });
 
       // Scroll to bottom
@@ -59,7 +60,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({ conversation }
       const date = isTimestamp(timestamp) ? timestamp.toDate() : new Date(timestamp);
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } catch (err) {
-      console.error('Error formatting timestamp:', err);
+      logger.error('Error formatting timestamp:', 'COMPONENT', {}, err as Error);
       return '';
     }
   }, []);

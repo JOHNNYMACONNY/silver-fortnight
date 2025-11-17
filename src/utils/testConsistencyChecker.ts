@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 /**
  * Test script for Component Consistency Checker
  * 
@@ -12,26 +13,26 @@ import {
 
 // Example 1: Audit our updated components
 export function testUpdatedComponents() {
-  console.log('🔍 Auditing Updated Components...');
+  logger.debug('🔍 Auditing Updated Components...', 'UTILITY');
   
   const report = auditUpdatedComponents();
   
-  console.log(`📊 Overall Score: ${report.overallScore}/100`);
-  console.log(`📋 Total Issues: ${report.summary.totalIssues}`);
-  console.log(`🚨 Critical Issues: ${report.summary.criticalIssues}`);
-  console.log(`⚠️  High Priority Issues: ${report.summary.highPriorityIssues}`);
+  logger.debug(`📊 Overall Score: ${report.overallScore}/100`, 'UTILITY');
+  logger.debug(`📋 Total Issues: ${report.summary.totalIssues}`, 'UTILITY');
+  logger.debug(`🚨 Critical Issues: ${report.summary.criticalIssues}`, 'UTILITY');
+  logger.debug(`⚠️  High Priority Issues: ${report.summary.highPriorityIssues}`, 'UTILITY');
   
   if (report.components.length > 0) {
-    console.log('\n📝 Component Details:');
+    logger.debug('\n📝 Component Details:', 'UTILITY');
     report.components.forEach(component => {
-      console.log(`\n${component.componentName}:`);
-      console.log(`  Score: ${component.score}/100`);
-      console.log(`  Issues: ${component.issues.length}`);
+      logger.debug(`\n${component.componentName}:`, 'UTILITY');
+      logger.debug(`  Score: ${component.score}/100`, 'UTILITY');
+      logger.debug(`  Issues: ${component.issues.length}`, 'UTILITY');
       
       if (component.issues.length > 0) {
         component.issues.forEach(issue => {
-          console.log(`    ${issue.severity.toUpperCase()}: ${issue.description}`);
-          console.log(`    💡 Suggestion: ${issue.suggestion}`);
+          logger.debug(`    ${issue.severity.toUpperCase()}: ${issue.description}`, 'UTILITY');
+          logger.debug(`    💡 Suggestion: ${issue.suggestion}`, 'UTILITY');
         });
       }
     });
@@ -42,7 +43,7 @@ export function testUpdatedComponents() {
 
 // Example 2: Check a new component for consistency
 export function testNewComponent() {
-  console.log('\n🔍 Testing New Component...');
+  logger.debug('\n🔍 Testing New Component...', 'UTILITY');
   
   // Simulate a new component that might not follow our standards
   const newComponentIssues = checkNewComponent(
@@ -55,12 +56,12 @@ export function testNewComponent() {
     }
   );
   
-  console.log(`📋 Found ${newComponentIssues.length} issues:`);
+  logger.debug(`📋 Found ${newComponentIssues.length} issues:`, 'UTILITY');
   
   newComponentIssues.forEach(issue => {
-    console.log(`\n${issue.severity.toUpperCase()} (${issue.type}):`);
-    console.log(`  ${issue.description}`);
-    console.log(`  💡 ${issue.suggestion}`);
+    logger.debug(`\n${issue.severity.toUpperCase()} (${issue.type}):`, 'UTILITY');
+    logger.debug(`  ${issue.description}`, 'UTILITY');
+    logger.debug(`  💡 ${issue.suggestion}`, 'UTILITY');
   });
   
   return newComponentIssues;
@@ -68,7 +69,7 @@ export function testNewComponent() {
 
 // Example 3: Check if a component follows our card standards
 export function testCardStandards() {
-  console.log('\n🎴 Testing Card Standards...');
+  logger.debug('\n🎴 Testing Card Standards...', 'UTILITY');
   
   const testCases = [
     {
@@ -93,15 +94,15 @@ export function testCardStandards() {
   ];
   
   testCases.forEach(testCase => {
-    console.log(`\n📋 Testing ${testCase.name}:`);
+    logger.debug(`\n📋 Testing ${testCase.name}:`, 'UTILITY');
     const issues = checkNewComponent(testCase.name, testCase.className, testCase.props);
     
     if (issues.length === 0) {
-      console.log('  ✅ No issues found - follows standards!');
+      logger.debug('  ✅ No issues found - follows standards!', 'UTILITY');
     } else {
-      console.log(`  ❌ Found ${issues.length} issues:`);
+      logger.debug(`  ❌ Found ${issues.length} issues:`, 'UTILITY');
       issues.forEach(issue => {
-        console.log(`    ${issue.severity.toUpperCase()}: ${issue.description}`);
+        logger.debug(`    ${issue.severity.toUpperCase()}: ${issue.description}`, 'UTILITY');
       });
     }
   });
@@ -109,13 +110,13 @@ export function testCardStandards() {
 
 // Run all tests
 export function runAllTests() {
-  console.log('🚀 Running Component Consistency Tests...\n');
+  logger.debug('🚀 Running Component Consistency Tests...\n', 'UTILITY');
   
   testUpdatedComponents();
   testNewComponent();
   testCardStandards();
   
-  console.log('\n✅ All tests completed!');
+  logger.debug('\n✅ All tests completed!', 'UTILITY');
 }
 
 // Export for use in development

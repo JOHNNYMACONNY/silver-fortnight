@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Activity, Zap, Database, Globe, TrendingUp, AlertTriangle } from 'lucide-react';
 import RUMService, { getRUMService } from '../../services/performance/rumService';
 import SmartOrchestrator, { createSmartOrchestrator } from '../../services/performance/smartOrchestrator';
+import { logger } from '@utils/logging/logger';
 
 interface PerformanceMetrics {
   loadTime: number;
@@ -66,7 +67,7 @@ export const PerformanceDashboard: React.FC = () => {
       // Generate optimization suggestions
       generateOptimizationSuggestions(currentMetrics, orchestratorStats);
     } catch (error) {
-      console.error('Failed to load performance data:', error);
+      logger.error('Failed to load performance data:', 'COMPONENT', {}, error as Error);
     }
   };
 

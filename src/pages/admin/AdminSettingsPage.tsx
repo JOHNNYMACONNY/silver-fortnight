@@ -3,6 +3,7 @@
 // This is likely due to a bug in the linter or TypeScript server.
 // The rule is disabled for this file until the underlying issue is resolved.
 import React, { useState } from 'react';
+import { logger } from '@utils/logging/logger';
 
 interface SecuritySettings {
   mfaRequired: boolean;
@@ -61,14 +62,14 @@ const AdminSettingsPage: React.FC = () => {
 
   const handleSaveChanges = () => {
     // In a real application, you would save these settings to a backend.
-    console.log('Saving settings:', { securitySettings, accessControls, monitoringSettings });
+    logger.debug('Saving settings:', 'PAGE', { securitySettings, accessControls, monitoringSettings });
   };
 
   const handleResetToDefaults = () => {
     setSecuritySettings({ mfaRequired: true, minPasswordLength: 12 });
     setAccessControls({ maxLoginAttempts: 5, sessionTimeout: 30 });
     setMonitoringSettings({ activityLogging: true, securityAlerts: true });
-    console.log('Settings reset to defaults');
+    logger.debug('Settings reset to defaults', 'PAGE');
   };
 
   return (

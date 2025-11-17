@@ -8,6 +8,7 @@
 import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import { usePerformance } from '../contexts/PerformanceContext';
 import { PerformanceMetrics, startComponentRenderTimer, endComponentRenderTimer } from '../utils/performanceMetrics';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Component performance metrics
@@ -124,9 +125,7 @@ export const usePerformanceMonitoring = (options: PerformanceMonitoringOptions =
 
       // Log performance warnings
       if (renderTime > opts.renderThreshold && opts.enableDetailedTiming) {
-        console.warn(
-          `⚠️ Slow render detected in ${opts.componentName}: ${renderTime.toFixed(2)}ms (threshold: ${opts.renderThreshold}ms)`
-        );
+        logger.warn(`⚠️ Slow render detected in ${opts.componentName}: ${renderTime.toFixed(2)}ms (threshold: ${opts.renderThreshold}ms)`, 'APP');
       }
 
       // Sample and report metrics

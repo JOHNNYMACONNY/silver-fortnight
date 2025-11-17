@@ -14,6 +14,7 @@ import { CardSkeleton } from '../components/ui/skeletons/CardSkeleton';
 import { Transition } from '../components/ui/transitions/Transition';
 import SkillSelector from '../components/ui/SkillSelector';
 import { cn } from '../utils/cn';
+import { logger } from '@utils/logging/logger';
 
 const ComponentTestPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -218,7 +219,7 @@ const ComponentTestPage: React.FC = () => {
                   variant="default"
                   size="lg"
                   onClick={() => {
-                    console.log('Opening modal, current state:', !isModalOpen);
+                    logger.debug('Opening modal, current state:', 'PAGE', !isModalOpen);
                     setIsModalOpen(true);
                   }}
                 >
@@ -233,7 +234,7 @@ const ComponentTestPage: React.FC = () => {
               <Modal
                 isOpen={isModalOpen}
                 onClose={() => {
-                  console.log('Closing modal');
+                  logger.debug('Closing modal', 'PAGE');
                   setIsModalOpen(false);
                 }}
                 title="Modal Title"
@@ -274,7 +275,7 @@ const ComponentTestPage: React.FC = () => {
                   variant="secondary"
                   size="lg"
                   onClick={() => {
-                    console.log('Opening simple modal, current state:', !isSimpleModalOpen);
+                    logger.debug('Opening simple modal, current state:', 'PAGE', !isSimpleModalOpen);
                     setIsSimpleModalOpen(true);
                   }}
                 >
@@ -289,7 +290,7 @@ const ComponentTestPage: React.FC = () => {
               <SimpleModal
                 isOpen={isSimpleModalOpen}
                 onClose={() => {
-                  console.log('Closing simple modal');
+                  logger.debug('Closing simple modal', 'PAGE');
                   setIsSimpleModalOpen(false);
                 }}
                 title="Simple Modal Title"

@@ -8,6 +8,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../../utils/cn";
+import { logger } from '@utils/logging/logger';
 
 // Validation Rule Types
 export type ValidationRule = {
@@ -226,7 +227,7 @@ export const ValidationProvider: React.FC<ValidationProviderProps> = ({
           
           resolve(result);
         } catch (error) {
-          console.error('Validation error:', error);
+          logger.error('Validation error:', 'COMPONENT', {}, error as Error);
           const result: FieldValidationResult = {
             isValid: false,
             state: 'invalid',

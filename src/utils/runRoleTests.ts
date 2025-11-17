@@ -1,4 +1,5 @@
 import { roleMonitoringTestRunner, TestResult } from './roleMonitoringTestRunner';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Structured test logger for role management tests
@@ -12,19 +13,19 @@ interface TestLogger {
 const testLogger: TestLogger = {
   info: (message: string, details?: any) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[RoleTest] ${message}`, details || '');
+      logger.debug(`[RoleTest] ${message}`, 'UTILITY', details || '');
     }
   },
   
   success: (message: string, details?: any) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[RoleTest] ✓ ${message}`, details || '');
+      logger.debug(`[RoleTest] ✓ ${message}`, 'UTILITY', details || '');
     }
   },
   
   error: (message: string, details?: any) => {
     if (process.env.NODE_ENV === 'development') {
-      console.error(`[RoleTest] ✗ ${message}`, details || '');
+      logger.error(`[RoleTest] ✗ ${message}`, 'UTILITY', details || '');
     }
   }
 };

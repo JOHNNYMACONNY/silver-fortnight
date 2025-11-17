@@ -7,6 +7,7 @@
 
 import { getSyncFirebaseDb } from '../firebase-config';
 import { collection, query, orderBy, getDocs, doc, getDoc, addDoc } from 'firebase/firestore';
+import { logger } from '@utils/logging/logger';
 
 export interface MessageTestResult {
   conversationExists: boolean;
@@ -28,7 +29,7 @@ export const testMessagesDirectly = async (conversationId: string = 'bcB1UuJ2VHw
   };
 
   try {
-    console.log(`🔍 Testing messages for conversation: ${conversationId}`);
+    logger.debug(`🔍 Testing messages for conversation: ${conversationId}`, 'UTILITY');
     
     const db = getSyncFirebaseDb();
     if (!db) {
@@ -36,27 +37,27 @@ export const testMessagesDirectly = async (conversationId: string = 'bcB1UuJ2VHw
     }
 
     // Test 1: Check if conversation exists
-    console.log('📋 Checking conversation document...');
+    logger.debug('📋 Checking conversation document...', 'UTILITY');
     const conversationRef = doc(db, 'conversations', conversationId);
     const conversationDoc = await getDoc(conversationRef);
     
     if (!conversationDoc.exists()) {
       result.error = 'Conversation document not found';
-      console.error('❌ Conversation not found:', conversationId);
+      logger.error('❌ Conversation not found:', 'UTILITY', conversationId);
       return result;
     }
     
     result.conversationExists = true;
-    console.log('✅ Conversation exists:', conversationDoc.data());
+    logger.debug('✅ Conversation exists:', 'UTILITY', conversationDoc.data());
 
     // Test 2: Query messages subcollection directly
-    console.log('💬 Querying messages subcollection...');
+    logger.debug('💬 Querying messages subcollection...', 'UTILITY');
     const messagesRef = collection(db, 'conversations', conversationId, 'messages');
     const messagesQuery = query(messagesRef, orderBy('createdAt', 'asc'));
     const messagesSnapshot = await getDocs(messagesQuery);
     
     result.messageCount = messagesSnapshot.size;
-    console.log(`📊 Found ${messagesSnapshot.size} messages`);
+    logger.debug(`📊 Found ${messagesSnapshot.size} messages`, 'UTILITY');
     
     // Extract message data
     const messages: any[] = [];
@@ -66,19 +67,19 @@ export const testMessagesDirectly = async (conversationId: string = 'bcB1UuJ2VHw
         ...(doc.data() as any)
       };
       messages.push(messageData);
-      console.log('📝 Message:', messageData);
+      logger.debug('📝 Message:', 'UTILITY', messageData);
     });
     
     result.messages = messages;
     
     if (messages.length === 0) {
-      console.log('⚠️ No messages found in conversation');
+      logger.debug('⚠️ No messages found in conversation', 'UTILITY');
     } else {
-      console.log('✅ Messages loaded successfully');
+      logger.debug('✅ Messages loaded successfully', 'UTILITY');
     }
 
   } catch (error: any) {
-    console.error('❌ Error testing messages:', error);
+    logger.error('❌ Error testing messages:', 'UTILITY', {}, error as Error);
     result.error = error.message;
   }
 
@@ -94,7 +95,7 @@ export const testAllConversations = async (userId: string): Promise<{
   error?: string;
 }> => {
   try {
-    console.log(`🔍 Testing all conversations for user: ${userId}`);
+    logger.debug(`🔍 Testing all conversations for user: ${userId}`, 'UTILITY');
     
     const db = getSyncFirebaseDb();
     if (!db) {
@@ -108,7 +109,7 @@ export const testAllConversations = async (userId: string): Promise<{
     const conversations: any[] = [];
     let totalMessages = 0;
     
-    console.log(`📋 Found ${conversationsSnapshot.size} conversations`);
+    logger.debug(`📋 Found ${conversationsSnapshot.size} conversations`, 'UTILITY');
     
     for (const conversationDoc of conversationsSnapshot.docs) {
       const conversationData = {
@@ -127,14 +128,14 @@ export const testAllConversations = async (userId: string): Promise<{
           const messagesSnapshot = await getDocs(messagesRef);
           totalMessages += messagesSnapshot.size;
           
-          console.log(`💬 Conversation ${conversationDoc.id}: ${messagesSnapshot.size} messages`);
+          logger.debug(`💬 Conversation ${conversationDoc.id}: ${messagesSnapshot.size} messages`, 'UTILITY');
         } catch (messageError) {
-          console.warn(`⚠️ Could not count messages for conversation ${conversationDoc.id}:`, messageError);
+          logger.warn(`⚠️ Could not count messages for conversation ${conversationDoc.id}:`, 'UTILITY', messageError);
         }
       }
     }
     
-    console.log(`✅ Found ${conversations.length} conversations with ${totalMessages} total messages`);
+    logger.debug(`✅ Found ${conversations.length} conversations with ${totalMessages} total messages`, 'UTILITY');
     
     return {
       conversations,
@@ -142,7 +143,7 @@ export const testAllConversations = async (userId: string): Promise<{
     };
     
   } catch (error: any) {
-    console.error('❌ Error testing all conversations:', error);
+    logger.error('❌ Error testing all conversations:', 'UTILITY', {}, error as Error);
     return {
       conversations: [],
       totalMessages: 0,
@@ -160,7 +161,7 @@ export const testMessageCreation = async (conversationId: string, testMessage: a
   error?: string;
 }> => {
   try {
-    console.log(`📝 Testing message creation in conversation: ${conversationId}`);
+    logger.debug(`📝 Testing message creation in conversation: ${conversationId}`, 'UTILITY');
     
     const db = getSyncFirebaseDb();
     if (!db) {
@@ -174,7 +175,7 @@ export const testMessageCreation = async (conversationId: string, testMessage: a
       readBy: []
     });
     
-    console.log(`✅ Message created with ID: ${docRef.id}`);
+    logger.debug(`✅ Message created with ID: ${docRef.id}`, 'UTILITY');
     
     return {
       success: true,
@@ -182,7 +183,7 @@ export const testMessageCreation = async (conversationId: string, testMessage: a
     };
     
   } catch (error: any) {
-    console.error('❌ Error creating test message:', error);
+    logger.error('❌ Error creating test message:', 'UTILITY', {}, error as Error);
     return {
       success: false,
       error: error.message

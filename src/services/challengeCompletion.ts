@@ -23,6 +23,7 @@ import { updateProgressionOnChallengeCompletion } from "./threeTierProgression";
 import { checkAndUnlockAchievements } from "./achievements";
 import { createNotification, NotificationType } from "./notifications/unifiedNotificationService";
 import { removeUndefinedDeep } from "../utils/firestore";
+import { logger } from '@utils/logging/logger';
 
 const getDb = () => getSyncFirebaseDb();
 
@@ -113,18 +114,9 @@ export const completeChallenge = async (
       const userChallenge = userChallengeDoc.data() as UserChallenge;
 
       // Debug: Log the userChallenge object to see what we're working with
-      console.log(
-        "Original userChallenge from Firestore:",
-        JSON.stringify(userChallenge, null, 2)
-      );
-      console.log(
-        "userChallenge has mentorNotes?",
-        "mentorNotes" in userChallenge
-      );
-      console.log(
-        "userChallenge.mentorNotes value:",
-        userChallenge.mentorNotes
-      );
+      logger.debug('Original userChallenge from Firestore:', 'SERVICE', JSON.stringify(userChallenge, null, 2));
+      logger.debug('userChallenge has mentorNotes?', 'SERVICE', "mentorNotes" in userChallenge);
+      logger.debug('userChallenge.mentorNotes value:', 'SERVICE', userChallenge.mentorNotes);
 
       if ((userChallenge.status as any) === ChallengeStatus.COMPLETED) {
         throw new Error("Challenge already completed");
@@ -169,10 +161,7 @@ export const completeChallenge = async (
       const cleanedUserChallenge = removeUndefinedDeep(updatedUserChallenge);
 
       // Debug: Log the object to see what's being sent
-      console.log(
-        "UpdatedUserChallenge after cleaning:",
-        JSON.stringify(cleanedUserChallenge, null, 2)
-      );
+      logger.debug('UpdatedUserChallenge after cleaning:', 'SERVICE', JSON.stringify(cleanedUserChallenge, null, 2));
 
       transaction.set(userChallengeRef, cleanedUserChallenge as any, {
         merge: true,
@@ -273,7 +262,7 @@ export const completeChallenge = async (
       );
     } catch (portfolioError: any) {
       // Log portfolio generation error but don't fail the challenge completion
-      console.warn('Portfolio generation failed for challenge:', portfolioError?.message);
+      logger.warn('Portfolio generation failed for challenge:', 'SERVICE', portfolioError?.message);
     }
 
     return {
@@ -282,7 +271,7 @@ export const completeChallenge = async (
       rewards,
     };
   } catch (error) {
-    console.error("Error completing challenge:", error);
+    logger.error('Error completing challenge:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error:
@@ -491,7 +480,7 @@ export const handlePostCompletionActions = async (
       });
     }
   } catch (error) {
-    console.error("Error handling post-completion actions:", error);
+    logger.error('Error handling post-completion actions:', 'SERVICE', {}, error as Error);
     // Don't throw - these are non-critical actions
   }
 };
@@ -529,7 +518,7 @@ export const getUserCompletionStats = async (
 
     return { success: true, data: stats };
   } catch (error) {
-    console.error("Error getting completion stats:", error);
+    logger.error('Error getting completion stats:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error:

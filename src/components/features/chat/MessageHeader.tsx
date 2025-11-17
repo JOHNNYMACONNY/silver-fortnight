@@ -6,6 +6,7 @@ import { Avatar } from "../../ui/Avatar";
 import { Timestamp } from "firebase/firestore";
 import { themeClasses } from "../../../utils/themeUtils";
 import { getProfileImageUrl } from "../../../utils/imageUtils";
+import { logger } from '@utils/logging/logger';
 
 interface MessageHeaderProps {
   conversation: ChatConversation | null;
@@ -56,18 +57,18 @@ export const MessageHeader: React.FC<MessageHeaderProps> = ({
             (participant: { id: string }) => participant.id !== currentUser.uid
           );
           otherUserId = otherParticipantObj ? otherParticipantObj.id : "";
-          console.log("Found other participant ID:", otherUserId);
+          logger.debug('Found other participant ID:', 'COMPONENT', otherUserId);
         }
 
         if (!otherUserId) {
-          console.log("Could not find other participant ID");
+          logger.debug("Could not find other participant ID", 'COMPONENT');
           setLoading(false);
           return;
         }
 
         // Fetch the other participant's data
         const userData = await fetchUserData(otherUserId);
-        console.log("Fetched other participant data:", userData);
+        logger.debug('Fetched other participant data:', 'COMPONENT', userData);
 
         setOtherParticipant({
           id: otherUserId,
@@ -77,7 +78,7 @@ export const MessageHeader: React.FC<MessageHeaderProps> = ({
           conversationId: conversationId, // Store the conversation ID to prevent unnecessary fetches
         });
       } catch (error) {
-        console.error("Error getting other participant:", error);
+        logger.error('Error getting other participant:', 'COMPONENT', {}, error as Error);
       } finally {
         setLoading(false);
       }

@@ -98,6 +98,7 @@ import { ServiceResponse } from '../types/services';
 import { createNotification, NotificationType } from './notifications/unifiedNotificationService';
 import { updateCollaborationRoleCounts } from './collaborationRoles';
 import { generateCollaborationPortfolioItem } from './portfolio';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Request role completion
@@ -209,7 +210,7 @@ export const requestRoleCompletion = async (
 
     return { success: true, data: newRequest };
   } catch (error) {
-    console.error('Error requesting role completion:', error);
+    logger.error('Error requesting role completion:', 'SERVICE', {}, error as Error);
     return { success: false, error: 'Failed to request completion' };
   }
 };
@@ -325,7 +326,7 @@ export const confirmRoleCompletion = async (
       );
     } catch (portfolioError: any) {
       // Log portfolio generation error but don't fail the role completion
-      console.warn('Portfolio generation failed for collaboration role:', portfolioError.message);
+      logger.warn('Portfolio generation failed for collaboration role:', 'SERVICE', portfolioError.message);
     }
 
     // Award XP for role completion
@@ -338,7 +339,7 @@ export const confirmRoleCompletion = async (
       await awardRoleCompletionXP(request.requesterId, role.id, isComplexRole);
     } catch (gamificationError: any) {
       // Log gamification error but don't fail the role completion
-      console.warn('Gamification XP award failed for role completion:', gamificationError.message);
+      logger.warn('Gamification XP award failed for role completion:', 'SERVICE', gamificationError.message);
     }
 
     return {
@@ -353,7 +354,7 @@ export const confirmRoleCompletion = async (
       } as CollaborationRoleData
     };
   } catch (error) {
-    console.error('Error confirming role completion:', error);
+    logger.error('Error confirming role completion:', 'SERVICE', {}, error as Error);
     return { success: false, error: 'Failed to confirm completion' };
   }
 };
@@ -449,7 +450,7 @@ export const rejectRoleCompletion = async (
       } as CompletionRequest
     };
   } catch (error) {
-    console.error('Error rejecting role completion:', error);
+    logger.error('Error rejecting role completion:', 'SERVICE', {}, error as Error);
     return { success: false, error: 'Failed to reject completion' };
   }
 };
@@ -471,7 +472,7 @@ export const getCompletionRequests = async (
 
     return { success: true, data: requests };
   } catch (error) {
-    console.error('Error getting completion requests:', error);
+    logger.error('Error getting completion requests:', 'SERVICE', {}, error as Error);
     return { success: false, error: 'Failed to get completion requests' };
   }
 };

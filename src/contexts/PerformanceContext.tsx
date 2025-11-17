@@ -10,6 +10,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { RUMService, initializeRUM, getRUMService, RUMConfig, RUMMetrics, SessionInfo } from '../services/performance/rumService';
 import { CriticalPathAnalyzer, CriticalPathAnalysis, CriticalPathConfig, analyzeCriticalPath } from '../utils/performance/criticalPathAnalyzer';
 import { PerformanceMetrics, getBasicPerformanceMetrics } from '../utils/performanceMetrics';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Performance monitoring configuration
@@ -176,7 +177,7 @@ export const PerformanceProvider: React.FC<PerformanceProviderProps> = ({
         }, 2000);
       }
     } catch (err) {
-      console.error('Failed to initialize performance monitoring:', err);
+      logger.error('Failed to initialize performance monitoring:', 'CONTEXT', {}, err as Error);
       setError(err instanceof Error ? err.message : 'Unknown error');
     }
 
@@ -256,7 +257,7 @@ export const PerformanceProvider: React.FC<PerformanceProviderProps> = ({
       // Clear any previous errors
       setError(null);
     } catch (err) {
-      console.error('Failed to collect metrics:', err);
+      logger.error('Failed to collect metrics:', 'CONTEXT', {}, err as Error);
       setError(err instanceof Error ? err.message : 'Failed to collect metrics');
     }
   }, [config.enabled, rumService, userId]);
@@ -286,7 +287,7 @@ export const PerformanceProvider: React.FC<PerformanceProviderProps> = ({
         criticalPathAnalyzer.applyResourceHints();
       }
     } catch (err) {
-      console.error('Failed to analyze critical path:', err);
+      logger.error('Failed to analyze critical path:', 'CONTEXT', {}, err as Error);
       setError(err instanceof Error ? err.message : 'Failed to analyze critical path');
     } finally {
       setIsAnalyzing(false);
@@ -306,7 +307,7 @@ export const PerformanceProvider: React.FC<PerformanceProviderProps> = ({
       const session = rumService.getSessionInfo();
       setSessionInfo(session);
     } catch (err) {
-      console.error('Failed to track journey step:', err);
+      logger.error('Failed to track journey step:', 'CONTEXT', {}, err as Error);
     }
   }, [config.enabled, rumService]);
 
@@ -319,7 +320,7 @@ export const PerformanceProvider: React.FC<PerformanceProviderProps> = ({
     try {
       rumService.addBusinessMetric(key, value);
     } catch (err) {
-      console.error('Failed to add business metric:', err);
+      logger.error('Failed to add business metric:', 'CONTEXT', {}, err as Error);
     }
   }, [config.enabled, rumService]);
 
@@ -361,7 +362,7 @@ export const PerformanceProvider: React.FC<PerformanceProviderProps> = ({
       criticalPathAnalyzer.applyPreloading(criticalPathAnalysis.preloadCandidates);
       criticalPathAnalyzer.applyResourceHints();
     } catch (err) {
-      console.error('Failed to apply optimizations:', err);
+      logger.error('Failed to apply optimizations:', 'CONTEXT', {}, err as Error);
       setError(err instanceof Error ? err.message : 'Failed to apply optimizations');
     }
   }, [config.enabled, criticalPathAnalyzer, criticalPathAnalysis]);

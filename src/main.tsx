@@ -57,7 +57,7 @@ initializeAdvancedFeatures();
 function renderApp() {
   const rootElement = document.getElementById("root");
   if (!rootElement) {
-    console.error("Root element not found");
+    logger.error("Root element not found", 'APP');
     return;
   }
 

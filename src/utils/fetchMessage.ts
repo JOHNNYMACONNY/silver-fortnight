@@ -1,5 +1,6 @@
 import { getSyncFirebaseDb } from '../firebase-config';
 import { doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Utility function to fetch a specific message by its path
@@ -11,14 +12,14 @@ export const fetchSpecificMessage = async (conversationId = 'bcB1UuJ2VHwTXsTFG71
     const messageDoc = await getDoc(messageDocRef);
 
     if (messageDoc.exists()) {
-      console.log('Found message using nested path:', messageDoc.data());
+      logger.debug('Found message using nested path:', 'UTILITY', messageDoc.data());
       return { message: messageDoc.data(), found: true, method: 'nested' };
     } else {
-      console.log('Message not found in nested collection');
+      logger.debug('Message not found in nested collection', 'UTILITY');
       return { found: false };
     }
   } catch (error) {
-    console.error('Error fetching message:', error);
+    logger.error('Error fetching message:', 'UTILITY', {}, error as Error);
     return { error, found: false };
   }
 };
@@ -32,14 +33,14 @@ export const fetchSpecificConversation = async (conversationId = 'bcB1UuJ2VHwTXs
     const conversationDoc = await getDoc(conversationDocRef);
 
     if (conversationDoc.exists()) {
-      console.log('Found conversation:', conversationDoc.data());
+      logger.debug('Found conversation:', 'UTILITY', conversationDoc.data());
       return { conversation: conversationDoc.data(), found: true };
     } else {
-      console.log('Conversation not found');
+      logger.debug('Conversation not found', 'UTILITY');
       return { found: false };
     }
   } catch (error) {
-    console.error('Error fetching conversation:', error);
+    logger.error('Error fetching conversation:', 'UTILITY', {}, error as Error);
     return { error, found: false };
   }
 };
@@ -71,7 +72,7 @@ export const fetchAllMessagesInConversation = async (conversationId = 'bcB1UuJ2V
       found: nestedMessages.length > 0
     };
   } catch (error) {
-    console.error('Error fetching all messages:', error);
+    logger.error('Error fetching all messages:', 'UTILITY', {}, error as Error);
     return { error, found: false };
   }
 };

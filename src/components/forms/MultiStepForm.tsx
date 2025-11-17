@@ -9,6 +9,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../utils/cn";
 import { GlassmorphicForm } from "./GlassmorphicForm";
+import { logger } from '@utils/logging/logger';
 
 // Step Configuration Interface
 export interface FormStep {
@@ -82,7 +83,7 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
           setFormData({ ...initialData, ...parsed });
         }
       } catch (error) {
-        console.warn('Failed to load persisted form data:', error);
+        logger.warn('Failed to load persisted form data:', 'COMPONENT', error);
       }
     }
   }, [persistData, storageKey, initialData]);
@@ -93,7 +94,7 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
       try {
         localStorage.setItem(storageKey, JSON.stringify(formData));
       } catch (error) {
-        console.warn('Failed to persist form data:', error);
+        logger.warn('Failed to persist form data:', 'COMPONENT', error);
       }
     }
   }, [formData, persistData, storageKey]);
@@ -134,7 +135,7 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
       }));
       return isValid;
     } catch (error) {
-      console.error('Step validation error:', error);
+      logger.error('Step validation error:', 'COMPONENT', {}, error as Error);
       return false;
     } finally {
       setIsValidating(false);
@@ -215,7 +216,7 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
         localStorage.removeItem(storageKey);
       }
     } catch (error) {
-      console.error('Form submission error:', error);
+      logger.error('Form submission error:', 'COMPONENT', {}, error as Error);
       // Handle submission errors
     } finally {
       setIsSubmitting(false);

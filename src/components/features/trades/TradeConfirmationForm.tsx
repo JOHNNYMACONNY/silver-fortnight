@@ -4,6 +4,7 @@ import { confirmTradeCompletion, requestTradeChanges, Trade } from '../../../ser
 import { generateTradePortfolioItem } from '../../../services/portfolio';
 import { EvidenceGallery } from '../../features/evidence/EvidenceGallery';
 import { ConfirmationButton, NegotiationResponseButton, AnimatedButton } from '../../animations';
+import { logger } from '@utils/logging/logger';
 
 interface TradeConfirmationFormProps {
   trade: Trade;
@@ -106,14 +107,14 @@ const TradeConfirmationForm: React.FC<TradeConfirmationFormProps> = ({
         }
       } catch (portfolioError: any) {
         // Log portfolio generation error but don't fail the trade confirmation
-        console.warn('Portfolio generation failed:', portfolioError.message);
+        logger.warn('Portfolio generation failed:', 'COMPONENT', portfolioError.message);
       }
 
       // Success! Call the onSuccess callback
       onSuccess();
 
     } catch (err: any) {
-      console.error('Error confirming trade completion:', err);
+      logger.error('Error confirming trade completion:', 'COMPONENT', {}, err as Error);
       setError(err.message || 'Failed to confirm completion');
       setIsSubmitting(false);
     }

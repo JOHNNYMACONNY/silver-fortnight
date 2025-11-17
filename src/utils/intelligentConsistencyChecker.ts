@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 /**
  * Intelligent Consistency Checker - Real File Analysis
  * 
@@ -349,7 +350,7 @@ function auditPagesIntelligently(): IntelligentConsistencyIssue[] {
   // Check container structure - HomePage is CORRECT
   if (analyzer.hasCorrectContainerStructure()) {
     // HomePage correctly implements container structure - no issue
-    console.log('✅ HomePage: Container structure is correct');
+    logger.debug('✅ HomePage: Container structure is correct', 'UTILITY');
   } else {
     issues.push({
       type: 'layout',
@@ -368,7 +369,7 @@ function auditPagesIntelligently(): IntelligentConsistencyIssue[] {
   // Check heading hierarchy - HomePage is CORRECT
   if (analyzer.hasCorrectHeadingHierarchy()) {
     // HomePage correctly implements heading hierarchy - no issue
-    console.log('✅ HomePage: Heading hierarchy is correct');
+    logger.debug('✅ HomePage: Heading hierarchy is correct', 'UTILITY');
   } else {
     issues.push({
       type: 'typography',
@@ -386,7 +387,7 @@ function auditPagesIntelligently(): IntelligentConsistencyIssue[] {
   // Check spacing - HomePage is CORRECT
   if (analyzer.hasCorrectSpacing()) {
     // HomePage correctly implements spacing - no issue
-    console.log('✅ HomePage: Spacing is correct');
+    logger.debug('✅ HomePage: Spacing is correct', 'UTILITY');
   } else {
     issues.push({
       type: 'spacing',
@@ -448,7 +449,7 @@ function auditComponentsIntelligently(): IntelligentConsistencyIssue[] {
   
   // Check premium variant - TradeCard is CORRECT
   if (cardAnalysis.hasPremiumVariant) {
-    console.log('✅ TradeCard: Premium variant is correct');
+    logger.debug('✅ TradeCard: Premium variant is correct', 'UTILITY');
   } else {
     issues.push({
       type: 'styling',
@@ -465,7 +466,7 @@ function auditComponentsIntelligently(): IntelligentConsistencyIssue[] {
   
   // Check 3D tilt effects - TradeCard is CORRECT
   if (cardAnalysis.hasTiltEffects) {
-    console.log('✅ TradeCard: 3D tilt effects are correct');
+    logger.debug('✅ TradeCard: 3D tilt effects are correct', 'UTILITY');
   } else {
     issues.push({
       type: '3d-effects',
@@ -482,7 +483,7 @@ function auditComponentsIntelligently(): IntelligentConsistencyIssue[] {
   
   // Check brand glow colors - TradeCard is CORRECT
   if (cardAnalysis.hasBrandGlow) {
-    console.log('✅ TradeCard: Brand glow color is correct');
+    logger.debug('✅ TradeCard: Brand glow color is correct', 'UTILITY');
   } else {
     issues.push({
       type: 'brand-integration',

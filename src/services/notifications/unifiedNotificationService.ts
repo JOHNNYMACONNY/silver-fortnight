@@ -1,5 +1,6 @@
 import { Timestamp, addDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { getSyncFirebaseDb } from '../../firebase-config';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Complete NotificationType enum with ALL types used across the codebase
@@ -130,7 +131,7 @@ async function checkForDuplicate(
     const snapshot = await getDocs(q);
     return !snapshot.empty;
   } catch (error) {
-    console.error('Error checking for duplicate notification:', error);
+    logger.error('Error checking for duplicate notification:', 'SERVICE', {}, error as Error);
     // On error, allow notification to be created
     return false;
   }
@@ -154,7 +155,7 @@ export async function createNotification(
       );
       
       if (isDuplicate) {
-        console.log('Duplicate notification prevented:', normalized.deduplicationKey);
+        logger.debug('Duplicate notification prevented:', 'SERVICE', normalized.deduplicationKey);
         return { data: null, error: null };
       }
     }
@@ -164,7 +165,7 @@ export async function createNotification(
     
     return { data: docRef.id, error: null };
   } catch (error: any) {
-    console.error('Error creating notification:', error);
+    logger.error('Error creating notification:', 'SERVICE', {}, error as Error);
     return {
       data: null,
       error: {

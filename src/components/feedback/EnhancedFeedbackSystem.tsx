@@ -28,6 +28,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { useMobileOptimization } from '../../hooks/useMobileOptimization';
 import { useAccessibility } from '../../hooks/useAccessibility';
 import { classPatterns } from '../../utils/designSystem';
+import { logger } from '@utils/logging/logger';
 
 // Types
 export interface FeedbackData {
@@ -174,7 +175,7 @@ export const EnhancedFeedbackSystem: React.FC<EnhancedFeedbackSystemProps> = ({
       setIsOpen(false);
 
     } catch (error) {
-      console.error('Failed to submit feedback:', error);
+      logger.error('Failed to submit feedback:', 'COMPONENT', {}, error as Error);
       
       addNotification({
         type: 'error',

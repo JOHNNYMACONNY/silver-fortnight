@@ -10,6 +10,7 @@
 import { getSyncFirebaseDb } from '../firebase-config';
 import { connectFirestoreEmulator, terminate } from 'firebase/firestore';
 import { connectAuthEmulator } from 'firebase/auth';
+import { logger } from '@utils/logging/logger';
 
 export interface ConnectionResetResult {
   success: boolean;
@@ -29,7 +30,7 @@ export const resetFirebaseConnections = async (): Promise<ConnectionResetResult>
   };
 
   try {
-    console.log('🔄 Starting Firebase connection reset...');
+    logger.debug('🔄 Starting Firebase connection reset...', 'UTILITY');
     result.actions.push('Starting reset process');
 
     // Step 1: Terminate all existing connections
@@ -37,11 +38,11 @@ export const resetFirebaseConnections = async (): Promise<ConnectionResetResult>
       const db = getSyncFirebaseDb();
       if (db) {
         await terminate(db);
-        console.log('✅ Terminated Firestore connections');
+        logger.debug('✅ Terminated Firestore connections', 'UTILITY');
         result.actions.push('Terminated Firestore connections');
       }
     } catch (terminateError) {
-      console.warn('⚠️ Could not terminate Firestore:', terminateError);
+      logger.warn('⚠️ Could not terminate Firestore:', 'UTILITY', terminateError);
       result.actions.push('Failed to terminate Firestore (non-critical)');
     }
 
@@ -51,11 +52,11 @@ export const resetFirebaseConnections = async (): Promise<ConnectionResetResult>
       if (typeof window !== 'undefined') {
         // Clear any cached Firebase instances
         (window as any).__firebase_instances__ = [];
-        console.log('✅ Cleared cached Firebase instances');
+        logger.debug('✅ Cleared cached Firebase instances', 'UTILITY');
         result.actions.push('Cleared cached instances');
       }
     } catch (clearError) {
-      console.warn('⚠️ Could not clear cache:', clearError);
+      logger.warn('⚠️ Could not clear cache:', 'UTILITY', clearError);
       result.actions.push('Failed to clear cache (non-critical)');
     }
 
@@ -64,7 +65,7 @@ export const resetFirebaseConnections = async (): Promise<ConnectionResetResult>
     result.actions.push('Waited for cleanup');
 
     // Step 4: Force page reload to completely reset
-    console.log('🔄 Forcing page reload to reset Firebase state...');
+    logger.debug('🔄 Forcing page reload to reset Firebase state...', 'UTILITY');
     result.actions.push('Triggering page reload');
     
     // Store reset flag in session storage
@@ -86,7 +87,7 @@ export const resetFirebaseConnections = async (): Promise<ConnectionResetResult>
     return result;
 
   } catch (error: any) {
-    console.error('❌ Firebase reset failed:', error);
+    logger.error('❌ Firebase reset failed:', 'UTILITY', {}, error as Error);
     result.error = error.message;
     result.actions.push(`Reset failed: ${error.message}`);
     return result;
@@ -128,7 +129,7 @@ export const clearResetFlags = (): void => {
  */
 export const initializeFirebaseSafely = async (): Promise<boolean> => {
   try {
-    console.log('🔧 Initializing Firebase with safe settings...');
+    logger.debug('🔧 Initializing Firebase with safe settings...', 'UTILITY');
     
     // Clear any existing state
     clearResetFlags();
@@ -140,11 +141,11 @@ export const initializeFirebaseSafely = async (): Promise<boolean> => {
       throw new Error('Firebase not properly initialized');
     }
     
-    console.log('✅ Firebase initialized safely');
+    logger.debug('✅ Firebase initialized safely', 'UTILITY');
     return true;
     
   } catch (error: any) {
-    console.error('❌ Safe Firebase initialization failed:', error);
+    logger.error('❌ Safe Firebase initialization failed:', 'UTILITY', {}, error as Error);
     return false;
   }
 };

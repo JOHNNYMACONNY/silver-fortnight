@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './Tabs';
 import { designTokens, classPatterns, componentVariants } from '../../utils/designSystem';
 import { StyleAuditTool } from '../../utils/styleAuditTool';
 import { CheckCircle, AlertTriangle, Info, Palette, Type, Layout, Zap } from 'lucide-react';
+import { logger } from '@utils/logging/logger';
 
 export const EnhancedStyleGuide: React.FC = () => {
   const [auditResult, setAuditResult] = useState<any>(null);
@@ -24,7 +25,7 @@ export const EnhancedStyleGuide: React.FC = () => {
       const result = await auditTool.runAudit();
       setAuditResult(result);
     } catch (error) {
-      console.error('Audit failed:', error);
+      logger.error('Audit failed:', 'COMPONENT', {}, error as Error);
     } finally {
       setIsRunningAudit(false);
     }

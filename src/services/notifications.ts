@@ -1,6 +1,7 @@
 import { collection, addDoc } from 'firebase/firestore';
 import { getSyncFirebaseDb } from '../firebase-config';
 import { CreateNotificationParams } from '../types/services';
+import { logger } from '@utils/logging/logger';
 
 /**
  * @deprecated Use unified notification service instead
@@ -28,7 +29,7 @@ export const createNotification = async (params: CreateNotificationParams): Prom
     });
     return docRef.id;
   } catch (error) {
-    console.error('Error creating notification:', error);
+    logger.error('Error creating notification:', 'SERVICE', {}, error as Error);
     return null;
   }
 };

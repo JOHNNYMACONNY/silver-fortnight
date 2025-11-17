@@ -1,6 +1,7 @@
 import React from 'react';
 import DefaultBanner from '../components/ui/DefaultBanner';
 import BannerSelector from '../components/ui/BannerSelector';
+import { logger } from '@utils/logging/logger';
 
 const BannerTestPage: React.FC = () => {
   return (
@@ -131,7 +132,7 @@ const BannerTestPage: React.FC = () => {
         <div className="mt-12 p-6 border border-border rounded-lg">
           <h2 className="text-xl font-semibold mb-4 text-foreground">Banner Selector Component</h2>
           <BannerSelector
-            onSelect={(design) => console.log('Selected design:', design)}
+            onSelect={(design) => logger.debug('Selected design:', 'PAGE', design)}
           />
         </div>
       </div>

@@ -18,6 +18,7 @@ import {
 } from '../../types/gamification';
 import { Timestamp } from 'firebase/firestore';
 import { Zap, TrendingUp, Users, Calendar, Target, Award } from 'lucide-react';
+import { logger } from '@utils/logging/logger';
 
 // Challenge Creation Data Interface
 export interface ChallengeCreationData {
@@ -197,7 +198,7 @@ export const ChallengeCreationForm: React.FC<ChallengeCreationFormProps> = ({
 
       await onSubmit(cleanedData);
     } catch (error) {
-      console.error('Challenge creation error:', error);
+      logger.error('Challenge creation error:', 'COMPONENT', {}, error as Error);
       setSubmitError(
         error instanceof Error 
           ? error.message 

@@ -12,6 +12,7 @@ import { migrationRegistry, Trade as BaseTrade, TradeSkill } from '../../../serv
 import { formatDate } from '../../../utils/dateUtils';
 import { themeClasses } from '../../../utils/themeUtils';
 import { Button } from '../../ui/Button';
+import { logger } from '@utils/logging/logger';
 
 // Extended Trade interface to include missing fields used in the UI
 export interface ExtendedTrade extends BaseTrade {
@@ -160,7 +161,7 @@ const TradeCard: React.FC<TradeCardProps> = React.memo(({
         }
         setError(null);
       } catch (error) {
-        console.warn('Failed to refresh trade data through migration service:', error);
+        logger.warn('Failed to refresh trade data through migration service:', 'COMPONENT', error);
         // Fallback to original trade data
         setTrade(initialTrade);
         setError('Migration service unavailable');
@@ -186,7 +187,7 @@ const TradeCard: React.FC<TradeCardProps> = React.memo(({
         onInitiateTrade(trade.id);
       }
     } catch (error) {
-      console.error('Error initiating trade:', error);
+      logger.error('Error initiating trade:', 'COMPONENT', {}, error as Error);
       setError('Failed to initiate trade');
     } finally {
       setIsRefreshing(false);

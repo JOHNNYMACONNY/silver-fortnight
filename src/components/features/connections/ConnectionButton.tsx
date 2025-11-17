@@ -6,6 +6,7 @@ import { Modal } from '../../ui/Modal';
 import ConnectionRequestForm from './ConnectionRequestForm';
 import { UserPlus, UserCheck, UserX, Loader2 } from 'lucide-react';
 import { Button } from '../../ui/Button';
+import { logger } from '@utils/logging/logger';
 
 interface ConnectionButtonProps {
   userId: string;
@@ -78,7 +79,7 @@ export const ConnectionButton: React.FC<ConnectionButtonProps> = ({
       }
 
     } catch (err: unknown) {
-      console.error('Error checking connection status:', err);
+      logger.error('Error checking connection status:', 'COMPONENT', {}, err as Error);
       const errorMessage = err instanceof Error ? err.message : 'Failed to check connection status';
       addToast('error', errorMessage);
     } finally {

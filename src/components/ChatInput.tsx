@@ -8,6 +8,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { sendMessage } from '../services/chat/chatService';
 import { useAuth } from '../AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { logger } from '@utils/logging/logger';
 
 // Icons
 const SendIcon = () => (
@@ -63,7 +64,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ conversationId }) => {
         inputRef.current.style.height = 'auto';
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      logger.error('Error sending message:', 'COMPONENT', {}, error as Error);
       addToast('error', 'Failed to send message. Please try again.');
     } finally {
       setSending(false);

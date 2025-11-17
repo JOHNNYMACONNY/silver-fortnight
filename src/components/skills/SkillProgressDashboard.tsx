@@ -12,6 +12,7 @@ import { SkillAssessmentInterface } from './SkillAssessmentInterface';
 import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
+import { logger } from '@utils/logging/logger';
 import { 
   TrendingUp, 
   Target, 
@@ -77,7 +78,7 @@ export const SkillProgressDashboard: React.FC<SkillProgressDashboardProps> = ({
         setSkillGaps(gapsResponse.data);
       }
     } catch (error) {
-      console.error('Error loading skill data:', error);
+      logger.error('Error loading skill data:', 'COMPONENT', {}, error as Error);
     } finally {
       setLoading(false);
     }

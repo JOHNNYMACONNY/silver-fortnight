@@ -3,18 +3,19 @@
  */
 
 // Log environment variables
-console.log('Cloudinary Cloud Name:', import.meta.env?.VITE_CLOUDINARY_CLOUD_NAME ?? process.env.VITE_CLOUDINARY_CLOUD_NAME);
-console.log('Cloudinary Upload Preset:', import.meta.env?.VITE_CLOUDINARY_UPLOAD_PRESET ?? process.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+logger.debug('Cloudinary Cloud Name:', 'APP', import.meta.env?.VITE_CLOUDINARY_CLOUD_NAME ?? process.env.VITE_CLOUDINARY_CLOUD_NAME);
+logger.debug('Cloudinary Upload Preset:', 'APP', import.meta.env?.VITE_CLOUDINARY_UPLOAD_PRESET ?? process.env.VITE_CLOUDINARY_UPLOAD_PRESET);
 
 // Log all environment variables
-console.log('All environment variables:', import.meta.env);
+logger.debug('All environment variables:', 'APP', import.meta.env);
 
 // Import Cloudinary service
 import { uploadImage } from './services/cloudinary/cloudinaryService';
+import { logger } from '@utils/logging/logger';
 
 // Test function
 async function testCloudinaryUpload() {
-  console.log('Testing Cloudinary upload...');
+  logger.debug('Testing Cloudinary upload...', 'APP');
 
   // Create a simple canvas with some content
   const canvas = document.createElement('canvas');
@@ -33,7 +34,7 @@ async function testCloudinaryUpload() {
     // Convert canvas to blob
     canvas.toBlob(async (blob) => {
       if (!blob) {
-        console.error('Failed to create blob');
+        logger.error('Failed to create blob', 'APP');
         reject(new Error('Failed to create blob'));
         return;
       }
@@ -45,7 +46,7 @@ async function testCloudinaryUpload() {
         // Upload to Cloudinary
         const result = await uploadImage(file, 'tradeya/test');
 
-        console.log('Upload result:', {
+        logger.debug('Upload result:', 'APP', {
           baseUrl: result.baseUrl,
           transformedUrl: result.transformedUrl,
           url: result.url,

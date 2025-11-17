@@ -13,6 +13,7 @@ import { motion } from 'framer-motion';
 import { Star, Pin, Eye, EyeOff, Settings, Trash2, Calendar, Users, Award, ExternalLink } from 'lucide-react';
 import { getProfileImageUrl } from '../../../utils/imageUtils';
 import { EvidenceModal } from './EvidenceModal';
+import { logger } from '@utils/logging/logger';
 
 interface PortfolioItemProps {
   item: PortfolioItem;
@@ -52,7 +53,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
       await updatePortfolioItemVisibility(item.userId, item.id, !item.visible);
       onChange && onChange();
     } catch (error) {
-      console.error('Failed to update visibility:', error);
+      logger.error('Failed to update visibility:', 'COMPONENT', {}, error as Error);
     }
     setLoading(false);
   };
@@ -64,7 +65,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
       await updatePortfolioItemFeatured(item.userId, item.id, !item.featured);
       onChange && onChange();
     } catch (error) {
-      console.error('Failed to update featured status:', error);
+      logger.error('Failed to update featured status:', 'COMPONENT', {}, error as Error);
     }
     setLoading(false);
   };
@@ -76,7 +77,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
       await updatePortfolioItemPinned(item.userId, item.id, !item.pinned);
       onChange && onChange();
     } catch (error) {
-      console.error('Failed to update pinned status:', error);
+      logger.error('Failed to update pinned status:', 'COMPONENT', {}, error as Error);
     }
     setLoading(false);
   };
@@ -89,7 +90,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
       setEditingCategory(false);
       onChange && onChange();
     } catch (error) {
-      console.error('Failed to update category:', error);
+      logger.error('Failed to update category:', 'COMPONENT', {}, error as Error);
     }
     setLoading(false);
   };
@@ -104,7 +105,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
       await deletePortfolioItem(item.userId, item.id);
       onChange && onChange();
     } catch (error) {
-      console.error('Failed to delete item:', error);
+      logger.error('Failed to delete item:', 'COMPONENT', {}, error as Error);
     }
     setLoading(false);
   };

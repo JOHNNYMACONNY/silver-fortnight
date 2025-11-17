@@ -32,6 +32,7 @@ import Stack from '../components/layout/primitives/Stack';
 import Cluster from '../components/layout/primitives/Cluster';
 import Grid from '../components/layout/primitives/Grid';
 import { motion } from 'framer-motion';
+import { logger } from '@utils/logging/logger';
 
 export const UserDirectoryPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -111,10 +112,10 @@ export const UserDirectoryPage: React.FC = () => {
       }
 
       // If we get here, skills is some other type
-      console.warn('Unexpected skills type:', typeof skills, skills);
+      logger.warn('Unexpected skills type:', 'PAGE', { arg0: typeof skills, arg1: skills });
       return [];
     } catch (error) {
-      console.error('Error parsing skills:', error);
+      logger.error('Error parsing skills:', 'PAGE', {}, error as Error);
       return [];
     }
   }, []);
@@ -133,7 +134,7 @@ export const UserDirectoryPage: React.FC = () => {
         setRelationUserId(null);
       }
     } catch (e) {
-      console.error('Error processing URL parameters:', e);
+      logger.error('Error processing URL parameters:', 'PAGE', e);
     }
 
     const fetchUsers = async () => {
@@ -170,15 +171,15 @@ export const UserDirectoryPage: React.FC = () => {
           const { data: usersList, error: usersError } = await getAllUsers();
 
           if (usersError) {
-            console.error('[UserDirectoryPage] Error from getAllUsers:', usersError);
+            logger.error('[UserDirectoryPage] Error from getAllUsers:', 'PAGE', {}, usersError as Error);
             setError(usersError.message);
             return;
           }
 
-        console.log('[UserDirectoryPage] getAllUsers result:', { usersList, hasItems: !!usersList?.items });
+        logger.debug('[UserDirectoryPage] getAllUsers result:', 'PAGE', { usersList, hasItems: !!usersList?.items });
 
         if (usersList?.items) {
-          console.log('[UserDirectoryPage] Raw usersList from getAllUsers:', JSON.stringify(usersList.items.map(u => ({ id: u.id, uid: u.uid, displayName: u.displayName }))));
+          logger.debug('[UserDirectoryPage] Raw usersList from getAllUsers:', 'PAGE', JSON.stringify(usersList.items.map(u => ({ id: u.id, uid: u.uid, displayName: u.displayName }))));
 
           // Filter out anonymous users and current user
           const filteredList = usersList.items.filter(user => {
@@ -192,14 +193,14 @@ export const UserDirectoryPage: React.FC = () => {
             return hasValidDisplayName && isNotCurrentUser;
           });
 
-          console.log('[UserDirectoryPage] Filtered list (before dedupe):', JSON.stringify(filteredList.map(u => ({ id: u.id, uid: u.uid, displayName: u.displayName }))));
+          logger.debug('[UserDirectoryPage] Filtered list (before dedupe):', 'PAGE', JSON.stringify(filteredList.map(u => ({ id: u.id, uid: u.uid, displayName: u.displayName }))));
 
           // Deduplicate users by ID to prevent duplicate keys
           const uniqueUsers = filteredList.filter((user, index, self) =>
             index === self.findIndex(u => u.id === user.id)
           );
 
-          console.log('[UserDirectoryPage] Unique users (after dedupe):', JSON.stringify(uniqueUsers.map(u => ({ id: u.id, uid: u.uid, displayName: u.displayName }))));
+          logger.debug('[UserDirectoryPage] Unique users (after dedupe):', 'PAGE', JSON.stringify(uniqueUsers.map(u => ({ id: u.id, uid: u.uid, displayName: u.displayName }))));
 
           setUsers(uniqueUsers);
           setFilteredUsers(uniqueUsers);
@@ -214,7 +215,7 @@ export const UserDirectoryPage: React.FC = () => {
                 const parsedSkills = parseSkills(user.skills);
                 parsedSkills.forEach((skill: { name: string; level?: string }) => skills.add(skill.name));
               } catch (error) {
-                console.error('Error parsing skills for filters:', error);
+                logger.error('Error parsing skills for filters:', 'PAGE', {}, error as Error);
               }
             }
             if (user.location) locations.add(user.location);
@@ -224,14 +225,14 @@ export const UserDirectoryPage: React.FC = () => {
           setAvailableLocations(Array.from(locations).sort());
         }
         else {
-          console.warn('[UserDirectoryPage] No users data received');
+          logger.warn('[UserDirectoryPage] No users data received', 'PAGE');
           setUsers([]);
           setFilteredUsers([]);
         }
         
       }
       } catch (error) {
-        console.error('[UserDirectoryPage] Error in fetchUsers:', error);
+        logger.error('[UserDirectoryPage] Error in fetchUsers:', 'PAGE', {}, error as Error);
         setError(error instanceof Error ? error.message : 'Failed to load users');
       } finally {
         setLoading(false);
@@ -310,7 +311,7 @@ export const UserDirectoryPage: React.FC = () => {
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
-  console.log('[UserDirectoryPage] currentUsers being mapped:', JSON.stringify(currentUsers.map(u => ({ id: u.id, uid: u.uid, displayName: u.displayName }))));
+  logger.debug('[UserDirectoryPage] currentUsers being mapped:', 'PAGE', JSON.stringify(currentUsers.map(u => ({ id: u.id, uid: u.uid, displayName: u.displayName }))));
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 

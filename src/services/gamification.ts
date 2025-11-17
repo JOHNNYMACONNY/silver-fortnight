@@ -29,6 +29,7 @@ import { createNotification, NotificationType } from './notifications/unifiedNot
 import { triggerLeaderboardUpdate, recomputeUserReputation } from './leaderboards';
 
 import { ServiceResult } from '../types/ServiceError';
+import { logger } from '@utils/logging/logger';
 
 // Real-time notification support
 let notificationCallback: ((notification: any) => void) | null = null;
@@ -169,7 +170,7 @@ export const awardXP = async (
           });
         }
       } catch (achievementError: any) {
-        console.warn('Achievement checking failed:', achievementError.message);
+        logger.warn('Achievement checking failed:', 'SERVICE', achievementError.message);
         result.newAchievements = [];
       }
 
@@ -193,7 +194,7 @@ export const awardXP = async (
 
     return result;
   } catch (error: any) {
-    console.error('Error awarding XP:', error);
+    logger.error('Error awarding XP:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       xpAwarded: 0,
@@ -267,7 +268,7 @@ export const getUserXP = async (userId: string): Promise<ServiceResponse<UserXP>
       data: userXPSnap.data() as UserXP
     };
   } catch (error: any) {
-    console.error('Error getting user XP:', error);
+    logger.error('Error getting user XP:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: error.message || 'Failed to get user XP'
@@ -300,7 +301,7 @@ export const getUserXPHistory = async (
       data: transactions
     };
   } catch (error: any) {
-    console.error('Error getting user XP history:', error);
+    logger.error('Error getting user XP history:', 'SERVICE', {}, error as Error);
     return {
       success: false,
       error: error.message || 'Failed to get XP history'
@@ -407,7 +408,7 @@ export const awardXPWithLeaderboardUpdate = async (
       // Also recompute composite reputation since XP changed
       await recomputeUserReputation(userId);
     } catch (error) {
-      console.warn('Failed to update leaderboard stats:', error);
+      logger.warn('Failed to update leaderboard stats:', 'SERVICE', error);
       // Don't fail the main XP award if leaderboard update fails
     }
   }

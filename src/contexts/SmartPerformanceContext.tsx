@@ -15,6 +15,7 @@ import { ResourceOptimizer, OptimizationPlan } from '../utils/performance/resour
 import { AdaptiveLoader, LoadingDecision, UserContext, DeviceCapabilities } from '../services/performance/adaptiveLoader';
 import { CacheManager, CacheStats } from '../services/performance/cacheManager';
 import { RUMMetrics, SessionInfo } from '../services/performance/rumService';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Smart performance configuration
@@ -297,10 +298,10 @@ export const SmartPerformanceProvider: React.FC<SmartPerformanceProviderProps> =
         intelligentCaching: 'active'
       });
 
-      console.log('Smart performance features initialized successfully');
+      logger.debug('Smart performance features initialized successfully', 'CONTEXT');
 
     } catch (error) {
-      console.error('Failed to initialize smart performance features:', error);
+      logger.error('Failed to initialize smart performance features:', 'CONTEXT', {}, error as Error);
       setSmartFeaturesStatus({
         preloading: 'error',
         resourceOptimization: 'error',
@@ -333,7 +334,7 @@ export const SmartPerformanceProvider: React.FC<SmartPerformanceProviderProps> =
       }
 
     } catch (error) {
-      console.error('Intelligent preloading failed:', error);
+      logger.error('Intelligent preloading failed:', 'CONTEXT', {}, error as Error);
       setSmartFeaturesStatus(prev => ({ ...prev, preloading: 'error' }));
     }
   }, [preloadingService]);
@@ -394,7 +395,7 @@ export const SmartPerformanceProvider: React.FC<SmartPerformanceProviderProps> =
       return mockPlan;
 
     } catch (error) {
-      console.error('Resource optimization failed:', error);
+      logger.error('Resource optimization failed:', 'CONTEXT', {}, error as Error);
       setSmartFeaturesStatus(prev => ({ ...prev, resourceOptimization: 'error' }));
       return null;
     }
@@ -441,7 +442,7 @@ export const SmartPerformanceProvider: React.FC<SmartPerformanceProviderProps> =
       return decision;
 
     } catch (error) {
-      console.error('Loading strategy adaptation failed:', error);
+      logger.error('Loading strategy adaptation failed:', 'CONTEXT', {}, error as Error);
       setSmartFeaturesStatus(prev => ({ ...prev, adaptiveLoading: 'error' }));
       throw error;
     }
@@ -470,7 +471,7 @@ export const SmartPerformanceProvider: React.FC<SmartPerformanceProviderProps> =
       setCacheStats(cacheManager.getStats());
 
     } catch (error) {
-      console.error('Cache management failed:', error);
+      logger.error('Cache management failed:', 'CONTEXT', {}, error as Error);
       setSmartFeaturesStatus(prev => ({ ...prev, intelligentCaching: 'error' }));
     }
   }, [cacheManager]);
@@ -484,7 +485,7 @@ export const SmartPerformanceProvider: React.FC<SmartPerformanceProviderProps> =
     try {
       return adaptiveLoader.makeLoadingDecision(resourceType, context);
     } catch (error) {
-      console.error('Failed to get loading recommendation:', error);
+      logger.error('Failed to get loading recommendation:', 'CONTEXT', {}, error as Error);
       return null;
     }
   }, [adaptiveLoader]);
@@ -554,7 +555,7 @@ export const SmartPerformanceProvider: React.FC<SmartPerformanceProviderProps> =
       setOptimizationSummary(orchestrator.getOptimizationSummary());
 
     } catch (error) {
-      console.error('Forced optimization cycle failed:', error);
+      logger.error('Forced optimization cycle failed:', 'CONTEXT', {}, error as Error);
     }
   }, [orchestrator]);
 
@@ -600,7 +601,7 @@ export const SmartPerformanceProvider: React.FC<SmartPerformanceProviderProps> =
         lastPerformanceScore > 0 &&
         independentPerformanceScore < lastPerformanceScore - 10) {
       
-      console.log('SmartPerformance: Performance degradation detected, triggering optimization');
+      logger.debug('SmartPerformance: Performance degradation detected, triggering optimization', 'CONTEXT');
       forceOptimizationCycle();
     }
 

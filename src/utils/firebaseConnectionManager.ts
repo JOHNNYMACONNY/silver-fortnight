@@ -7,6 +7,7 @@
 
 import { getSyncFirebaseDb } from '../firebase-config';
 import { collection, query, orderBy, onSnapshot, getDocs, doc, getDoc } from 'firebase/firestore';
+import { logger } from '@utils/logging/logger';
 
 export interface ConnectionOptions {
   useLongPolling: boolean;
@@ -53,7 +54,7 @@ export class FirebaseConnectionManager {
       this.lastError = null;
       this.connectionAttempts = 0;
       
-      console.log('FirebaseConnectionManager: Connection test successful');
+      logger.debug('FirebaseConnectionManager: Connection test successful', 'UTILITY');
       return true;
 
     } catch (error: any) {
@@ -61,7 +62,7 @@ export class FirebaseConnectionManager {
       this.lastError = error.message;
       this.connectionAttempts++;
       
-      console.error('FirebaseConnectionManager: Connection test failed:', error);
+      logger.error('FirebaseConnectionManager: Connection test failed:', 'UTILITY', {}, error as Error);
       return false;
     }
   }
@@ -89,7 +90,7 @@ export class FirebaseConnectionManager {
     const snapshot = await getDocs(q);
     
     if (snapshot.empty) {
-      console.log('FirebaseConnectionManager: No conversations found (this is OK)');
+      logger.debug('FirebaseConnectionManager: No conversations found (this is OK)', 'UTILITY');
     }
   }
 
@@ -156,12 +157,12 @@ export class FirebaseConnectionManager {
    */
   async attemptReconnection(): Promise<boolean> {
     if (this.connectionAttempts >= this.maxRetries) {
-      console.log('FirebaseConnectionManager: Max retry attempts reached');
+      logger.debug('FirebaseConnectionManager: Max retry attempts reached', 'UTILITY');
       return false;
     }
 
     const delay = this.retryDelay * Math.pow(2, this.connectionAttempts);
-    console.log(`FirebaseConnectionManager: Attempting reconnection in ${delay}ms (attempt ${this.connectionAttempts + 1})`);
+    logger.debug(`FirebaseConnectionManager: Attempting reconnection in ${delay}ms (attempt ${this.connectionAttempts + 1})`, 'UTILITY');
     
     await new Promise(resolve => setTimeout(resolve, delay));
     
@@ -194,7 +195,7 @@ export class FirebaseConnectionManager {
         const isConnected = await this.testConnection();
         if (!isConnected && retryCount < options.retryAttempts) {
           retryCount++;
-          console.log(`FirebaseConnectionManager: Retrying listener setup (attempt ${retryCount})`);
+          logger.debug(`FirebaseConnectionManager: Retrying listener setup (attempt ${retryCount})`, 'UTILITY');
           setTimeout(setupListener, options.retryDelay);
           return;
         }
@@ -210,18 +211,18 @@ export class FirebaseConnectionManager {
             try {
               onNext(snapshot);
             } catch (error) {
-              console.error('FirebaseConnectionManager: Error in onNext callback:', error);
+              logger.error('FirebaseConnectionManager: Error in onNext callback:', 'UTILITY', {}, error as Error);
               onError(error);
             }
           },
           (error: any) => {
-            console.error('FirebaseConnectionManager: Listener error:', error);
+            logger.error('FirebaseConnectionManager: Listener error:', 'UTILITY', {}, error as Error);
             
             // Handle specific error types
             if (error.code === 'unavailable' || error.message?.includes('400')) {
               if (retryCount < options.retryAttempts) {
                 retryCount++;
-                console.log(`FirebaseConnectionManager: Retrying after error (attempt ${retryCount})`);
+                logger.debug(`FirebaseConnectionManager: Retrying after error (attempt ${retryCount})`, 'UTILITY');
                 setTimeout(setupListener, options.retryDelay);
                 return;
               }
@@ -232,7 +233,7 @@ export class FirebaseConnectionManager {
         );
 
       } catch (error) {
-        console.error('FirebaseConnectionManager: Setup error:', error);
+        logger.error('FirebaseConnectionManager: Setup error:', 'UTILITY', {}, error as Error);
         onError(error);
       }
     };

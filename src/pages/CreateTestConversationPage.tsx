@@ -24,6 +24,7 @@ import {
   CardTitle,
 } from "../components/ui/Card";
 import { Alert, AlertDescription } from "../components/ui/Alert";
+import { logger } from '@utils/logging/logger';
 
 export const CreateTestConversationPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -49,14 +50,14 @@ export const CreateTestConversationPage: React.FC = () => {
       const { auth } = await getFirebaseInstances();
       const authUser = auth.currentUser;
 
-      console.log(`Creating test conversation for user: ${userId}`);
-      console.log("Current user details:", {
+      logger.debug(`Creating test conversation for user: ${userId}`, 'PAGE');
+      logger.debug('Current user details:', 'PAGE', {
         uid: currentUser.uid,
         displayName: currentUser.displayName,
         email: currentUser.email,
         photoURL: currentUser.photoURL,
       });
-      console.log("Firebase auth user:", {
+      logger.debug('Firebase auth user:', 'PAGE', {
         uid: authUser?.uid,
         email: authUser?.email,
         emailVerified: authUser?.emailVerified,
@@ -97,17 +98,15 @@ export const CreateTestConversationPage: React.FC = () => {
         },
       };
 
-      console.log("Creating conversation with data:", testConversation);
-      console.log("User ID being used:", userId);
-      console.log("ParticipantIds array:", testConversation.participantIds);
+      logger.debug('Creating conversation with data:', 'PAGE', testConversation);
+      logger.debug('User ID being used:', 'PAGE', userId);
+      logger.debug('ParticipantIds array:', 'PAGE', testConversation.participantIds);
 
       // Add the conversation to Firestore
       const conversationsRef = collection(db, "conversations");
       const docRef = await addDoc(conversationsRef, testConversation);
 
-      console.log(
-        `✅ Test conversation created successfully with ID: ${docRef.id}`
-      );
+      logger.debug(`✅ Test conversation created successfully with ID: ${docRef.id}`, 'PAGE');
 
       // Create a test message
       const testMessage = {
@@ -131,9 +130,7 @@ export const CreateTestConversationPage: React.FC = () => {
       );
       const messageRef = await addDoc(messagesRef, testMessage);
 
-      console.log(
-        `✅ Test message created successfully with ID: ${messageRef.id}`
-      );
+      logger.debug(`✅ Test message created successfully with ID: ${messageRef.id}`, 'PAGE');
 
       // Wait a moment for Firestore eventual consistency
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -145,30 +142,18 @@ export const CreateTestConversationPage: React.FC = () => {
           collection(db, "conversations"),
           where("participantIds", "array-contains", userId)
         );
-        console.log("Verifying conversation with query for user:", userId);
+        logger.debug('Verifying conversation with query for user:', 'PAGE', userId);
         const verifySnapshot = await getDocs(verifyQuery);
         foundConversations = verifySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...(doc.data() as any),
         }));
-        console.log(
-          "Verification query found:",
-          foundConversations.length,
-          "conversations"
-        );
+        logger.debug('Verification query found:', 'PAGE', { arg0: foundConversations.length, arg1: "conversations" });
         foundConversations.forEach((conv) => {
-          console.log(
-            "Found conversation:",
-            conv.id,
-            "participantIds:",
-            conv.participantIds
-          );
+          logger.debug('Found conversation:', 'PAGE', { arg0: conv.id, arg1: "participantIds:", arg2: conv.participantIds });
         });
       } catch (verifyError: any) {
-        console.warn(
-          "Verification query failed (this is expected if user has no other conversations):",
-          verifyError.message
-        );
+        logger.warn('Verification query failed (this is expected if user has no other conversations):', 'PAGE', verifyError.message);
         // Don't throw here - the conversation was created successfully
       }
 
@@ -176,24 +161,13 @@ export const CreateTestConversationPage: React.FC = () => {
       try {
         const allConversationsQuery = query(collection(db, "conversations"));
         const allConversationsSnapshot = await getDocs(allConversationsQuery);
-        console.log(
-          "All conversations query found:",
-          allConversationsSnapshot.size,
-          "conversations"
-        );
+        logger.debug('All conversations query found:', 'PAGE', { arg0: allConversationsSnapshot.size, arg1: "conversations" });
         allConversationsSnapshot.docs.forEach((doc) => {
           const data = doc.data() as any;
-          console.log(
-            "All conversations - ID:",
-            doc.id,
-            "participantIds:",
-            data.participantIds,
-            "participants:",
-            data.participants
-          );
+          logger.debug('All conversations - ID:', 'PAGE', { arg0: doc.id, arg1: "participantIds:", arg2: data.participantIds, arg3: "participants:", arg4: data.participants });
         });
       } catch (allError) {
-        console.log("All conversations query failed:", allError);
+        logger.debug('All conversations query failed:', 'PAGE', allError);
       }
 
       setResult(`✅ Test conversation created successfully!
@@ -209,7 +183,7 @@ ${
 
 You can now go to the messages page to see your conversation.`);
     } catch (err: any) {
-      console.error("❌ Error creating test conversation:", err);
+      logger.error('❌ Error creating test conversation:', 'PAGE', {}, err as Error);
       setError(`Failed to create test conversation: ${err.message}`);
     } finally {
       setLoading(false);

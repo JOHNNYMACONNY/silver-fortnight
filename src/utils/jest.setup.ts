@@ -1,5 +1,6 @@
 import { jest } from "@jest/globals";
 import "@testing-library/jest-dom";
+import { logger } from '@utils/logging/logger';
 
 // Save original console methods
 const originalConsole = {
@@ -154,11 +155,11 @@ afterAll(() => {
 
 // Error handlers
 process.on("unhandledRejection", (error) => {
-  console.error("Unhandled Promise Rejection:", error);
+  logger.error('Unhandled Promise Rejection:', 'UTILITY', {}, error as Error);
 });
 
 process.on("uncaughtException", (error) => {
-  console.error("Uncaught Exception:", error);
+  logger.error('Uncaught Exception:', 'UTILITY', {}, error as Error);
 });
 
 // Custom matchers

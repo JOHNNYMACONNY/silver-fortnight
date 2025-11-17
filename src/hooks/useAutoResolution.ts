@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useAuth } from '../AuthContext';
 import { processAutoResolution, shouldRunAutoResolution, markAutoResolutionRun } from '../services/autoResolution';
+import { logger } from '@utils/logging/logger';
 
 /**
  * Hook to automatically run auto-resolution when users visit the app
@@ -25,18 +26,18 @@ export const useAutoResolution = () => {
 
     const runAutoResolution = async () => {
       try {
-        console.log('AutoResolution: Running auto-resolution check...');
+        logger.debug('AutoResolution: Running auto-resolution check...', 'APP');
         const result = await processAutoResolution();
         
         if (result.remindersProcessed > 0 || result.tradesAutoCompleted > 0) {
-          console.log('AutoResolution: Completed successfully:', {
+          logger.debug('AutoResolution: Completed successfully:', 'APP', {
             remindersProcessed: result.remindersProcessed,
             tradesAutoCompleted: result.tradesAutoCompleted
           });
         }
 
         if (result.errors.length > 0) {
-          console.warn('AutoResolution: Errors encountered:', result.errors);
+          logger.warn('AutoResolution: Errors encountered:', 'APP', result.errors);
         }
 
         // Mark as run to prevent running again too soon
@@ -45,12 +46,12 @@ export const useAutoResolution = () => {
 
       } catch (error) {
         // Enhanced error handling to prevent ErrorBoundary crashes
-        console.error('AutoResolution: Failed with error:', {
+        logger.error('AutoResolution: Failed with error:', 'APP', {}, {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
           currentUser: currentUser?.uid,
           timestamp: new Date().toISOString()
-        });
+        } as Error);
         
         // Don't throw the error - just log it to prevent crashes
         // The robust Firebase configuration should prevent hook.js:608 errors

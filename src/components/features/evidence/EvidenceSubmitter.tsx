@@ -26,6 +26,7 @@ import { GlassmorphicInput } from '../../ui/GlassmorphicInput';
 import { AccessibleFormField } from '../../ui/AccessibleFormField';
 import { useToast } from '../../../contexts/ToastContext';
 import { CheckCircle, Eye, Loader2 } from 'lucide-react';
+import { logger } from '@utils/logging/logger';
 
 interface EvidenceSubmitterProps {
   onSubmit: (evidence: EmbeddedEvidence) => Promise<void>;
@@ -166,7 +167,7 @@ export const EvidenceSubmitter: React.FC<EvidenceSubmitterProps> = ({
 
       addToast('success', 'Evidence submitted successfully');
     } catch (err: any) {
-      console.error('Error submitting evidence:', err);
+      logger.error('Error submitting evidence:', 'COMPONENT', {}, err as Error);
       addToast('error', err.message || 'Failed to submit evidence');
     } finally {
       setIsSubmitting(false);

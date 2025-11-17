@@ -17,6 +17,7 @@ import Box from '../../layout/primitives/Box';
 import Stack from '../../layout/primitives/Stack';
 import Cluster from '../../layout/primitives/Cluster';
 import Grid from '../../layout/primitives/Grid';
+import { logger } from '@utils/logging/logger';
 
 // Align with existing CollaborationFilters interface
 interface AdvancedSearchFilters extends CollaborationFilters {
@@ -326,7 +327,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
           voiceRecognition.abort();
         } catch (error) {
           // Voice recognition might already be stopped/cleaned up
-          console.debug('Voice recognition cleanup:', error);
+          logger.debug('Voice recognition cleanup:', 'COMPONENT', error);
         }
         setVoiceRecognition(null);
         setIsVoiceRecording(false);

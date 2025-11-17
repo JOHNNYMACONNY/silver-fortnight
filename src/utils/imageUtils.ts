@@ -1,3 +1,4 @@
+import { logger } from '@utils/logging/logger';
 import { 
   CLOUDINARY_CLOUD_NAME as ENV_CLOUD_NAME,
   CLOUDINARY_UPLOAD_PRESET as ENV_UPLOAD_PRESET,
@@ -126,13 +127,13 @@ export const uploadImageToCloudinary = async (file: File): Promise<CloudinaryUpl
   if (!response.ok) {
     try {
       const errData = await response.json();
-      console.error('Cloudinary profile upload failed', {
+      logger.error('Cloudinary profile upload failed', 'UTILITY', {}, {
         status: response.status,
         statusText: response.statusText,
         error: errData,
         preset: profilePreset || CLOUDINARY_UPLOAD_PRESET,
         cloudName: CLOUDINARY_CLOUD_NAME
-      });
+      } as Error);
       throw new Error(errData?.error?.message || 'Image upload failed');
     } catch (e) {
       throw new Error('Image upload failed');
@@ -199,7 +200,7 @@ export const pathToPublicId = (url: string): string | undefined => {
     const publicId = publicIdWithExtension.split('/').pop()?.split('.').slice(0, -1).join('.');
     return publicId;
   } catch (error) {
-    console.error('Error extracting public ID:', error);
+    logger.error('Error extracting public ID:', 'UTILITY', {}, error as Error);
     return undefined;
   }
 };
@@ -347,7 +348,7 @@ function parseCloudinaryUrl(url: string): CloudinaryUrlInfo | null {
       version
     };
   } catch (error) {
-    console.error('Error parsing Cloudinary URL:', error);
+    logger.error('Error parsing Cloudinary URL:', 'UTILITY', {}, error as Error);
     return null;
   }
 }
