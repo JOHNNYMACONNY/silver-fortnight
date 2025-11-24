@@ -22,6 +22,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../contexts/ToastContext';
 import { PortfolioItemEditModal } from '../components/features/portfolio/PortfolioItemEditModal';
+import { PortfolioItemAddModal } from '../components/features/portfolio/PortfolioItemAddModal';
 
 const PortfolioPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -38,6 +39,7 @@ const PortfolioPage: React.FC = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<PortfolioItem | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const loadPortfolioItems = async (userId: string) => {
     setLoading(true);
@@ -213,7 +215,9 @@ const PortfolioPage: React.FC = () => {
         className="text-center space-y-4"
       >
         <h1 className="text-4xl font-bold text-foreground">
-          {currentUser ? `${currentUser.displayName}'s Portfolio` : 'Portfolio'}
+          {currentUser 
+            ? `${currentUser.displayName || (currentUser as any)?.name || currentUser?.email || `User ${currentUser?.uid?.substring(0, 5) || 'Unknown'}`}'s Portfolio`
+            : 'Portfolio'}
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Showcase your best work and skills to attract potential <span className="text-accent-500">trading partners</span>
@@ -314,7 +318,7 @@ const PortfolioPage: React.FC = () => {
           </h2>
           <Button 
             variant="glassmorphic"
-            onClick={() => navigate('/portfolio/add')}
+            onClick={() => setIsAddModalOpen(true)}
             aria-label="Add new project to portfolio"
           >
             <Award className="h-4 w-4 mr-2" />
@@ -374,7 +378,7 @@ const PortfolioPage: React.FC = () => {
             {!searchTerm && filter === 'all' && (
               <Button 
                 variant="glassmorphic"
-                onClick={() => navigate('/portfolio/add')}
+                onClick={() => setIsAddModalOpen(true)}
               >
                 <Award className="h-4 w-4 mr-2" />
                 Add Your First Project
@@ -533,7 +537,7 @@ const PortfolioPage: React.FC = () => {
           </div>
           <Button 
             variant="glassmorphic"
-            onClick={() => navigate('/portfolio/add')}
+            onClick={() => setIsAddModalOpen(true)}
           >
             <Award className="h-4 w-4 mr-2" />
             Add Your First Project
@@ -572,6 +576,16 @@ const PortfolioPage: React.FC = () => {
         onSuccess={async () => {
           await refreshPortfolio();
           showToast('Portfolio item updated successfully', 'success');
+        }}
+      />
+
+      {/* Add Modal */}
+      <PortfolioItemAddModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={async () => {
+          await refreshPortfolio();
+          showToast('Portfolio item added successfully', 'success');
         }}
       />
     </div>
