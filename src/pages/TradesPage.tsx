@@ -543,6 +543,7 @@ export const TradesPage: React.FC = () => {
                   brandAccent="orange"
                   icon={<Search className="h-5 w-5" />}
                   className="pr-20 bg-white/10 backdrop-blur-xl w-full"
+                  data-testid="trade-search-input"
                 />
                 <Button
                   onClick={() => setShowFilterPanel(true)}
@@ -700,10 +701,11 @@ export const TradesPage: React.FC = () => {
                         <Tag className="h-4 w-4 sm:h-5 sm:w-5 text-orange-400 flex-shrink-0" />
                         <span className="leading-tight break-words">Category</span>
                       </CardTitle>
-                      <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1">
+                      <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1" data-testid="category-view-toggle">
                         <button
                           type="button"
                           onClick={() => setCategoryViewMode('grid')}
+                          data-testid="category-grid-view"
                           className={cn(
                             "p-1.5 rounded transition-colors",
                             categoryViewMode === 'grid'
@@ -717,6 +719,7 @@ export const TradesPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setCategoryViewMode('dropdown')}
+                          data-testid="category-dropdown-view"
                           className={cn(
                             "p-1.5 rounded transition-colors",
                             categoryViewMode === 'dropdown'
@@ -732,15 +735,17 @@ export const TradesPage: React.FC = () => {
                   </CardHeader>
                   <CardContent className="pt-0">
                     {categoryViewMode === 'grid' ? (
-                      <CategoryGrid
-                        onCategorySelect={(category) => {
-                          const newFilters = { ...filters, category: category === 'all' ? undefined : category };
-                          setFilters(newFilters);
-                          search(searchTerm, newFilters);
-                        }}
-                        selectedCategory={filters.category}
-                        categoryCounts={categoryCounts}
-                      />
+                      <div data-testid="category-grid">
+                        <CategoryGrid
+                          onCategorySelect={(category) => {
+                            const newFilters = { ...filters, category: category === 'all' ? undefined : category };
+                            setFilters(newFilters);
+                            search(searchTerm, newFilters);
+                          }}
+                          selectedCategory={filters.category}
+                          categoryCounts={categoryCounts}
+                        />
+                      </div>
                     ) : (
                       <Select
                         value={filters.category || "all"}
@@ -750,7 +755,7 @@ export const TradesPage: React.FC = () => {
                           search(searchTerm, newFilters);
                         }}
                       >
-                        <SelectTrigger className="glassmorphic border-glass backdrop-blur-sm bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-orange-400/30 transition-all duration-200 h-10 sm:h-11 text-sm sm:text-base">
+                        <SelectTrigger className="glassmorphic border-glass backdrop-blur-sm bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-orange-400/30 transition-all duration-200 h-10 sm:h-11 text-sm sm:text-base" data-testid="category-filter">
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent className="glassmorphic border-glass backdrop-blur-xl bg-white/10">
@@ -830,7 +835,7 @@ export const TradesPage: React.FC = () => {
                         search(searchTerm, newFilters);
                       }}
                     >
-                      <SelectTrigger className="glassmorphic border-glass backdrop-blur-sm bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-orange-400/30 transition-all duration-200 h-10 sm:h-11 text-sm sm:text-base">
+                      <SelectTrigger className="glassmorphic border-glass backdrop-blur-sm bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-orange-400/30 transition-all duration-200 h-10 sm:h-11 text-sm sm:text-base" data-testid="skill-level-filter">
                         <SelectValue placeholder="Select skill level" />
                       </SelectTrigger>
                       <SelectContent className="glassmorphic border-glass backdrop-blur-xl bg-white/10">
@@ -855,6 +860,7 @@ export const TradesPage: React.FC = () => {
               clearSearch();
             }}
                   className="w-full glassmorphic border-glass backdrop-blur-sm bg-white/5 hover:bg-white/10 focus:ring-2 focus:ring-orange-400/30 transition-all duration-300 h-10 sm:h-11 text-sm sm:text-base min-h-[44px]"
+                  data-testid="clear-filters-button"
                 >
                   <X className="h-3 w-3 sm:h-4 sm:w-4 lg:h-4 lg:w-4 mr-1 sm:mr-2" />
                   <span className="break-words">Clear All Filters</span>

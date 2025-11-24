@@ -123,6 +123,7 @@ export const TradeStatusTimeline: React.FC<TradeStatusTimelineProps> = ({
           style={{
             width: `${progressPercentage}%`
           }}
+          data-testid="timeline-progress-bar"
         ></div>
 
         {/* Steps */}
@@ -189,7 +190,7 @@ export const TradeStatusTimeline: React.FC<TradeStatusTimelineProps> = ({
 
       {/* Next Step Callout */}
       {showNextStep && currentStep && status !== 'completed' && (
-        <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
+        <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/20" data-testid="timeline-next-step">
           <div className="flex items-start gap-3">
             <Clock className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
             <div className="flex-1">

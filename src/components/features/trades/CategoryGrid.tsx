@@ -31,6 +31,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
       <motion.button
         type="button"
         onClick={() => onCategorySelect('all')}
+        data-testid="category-all"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         className={cn(
@@ -74,6 +75,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
             key={categoryKey}
             type="button"
             onClick={() => onCategorySelect(categoryKey)}
+            data-testid={`category-${categoryKey}`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className={cn(

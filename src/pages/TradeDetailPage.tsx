@@ -687,7 +687,7 @@ export const TradeDetailPage: React.FC = () => {
           </Card>
 
           {/* Trade Status Timeline - Enhanced */}
-          <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
+          <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5" data-testid="trade-status-timeline">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-semibold">Trade Progress</CardTitle>
             </CardHeader>
@@ -697,7 +697,7 @@ export const TradeDetailPage: React.FC = () => {
                 const nextStep = getNextStepInfo(trade.status);
                 if (nextStep && trade.status !== 'completed' && trade.status !== 'cancelled' && trade.status !== 'disputed') {
                   return (
-                    <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
+                    <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/20" data-testid="timeline-next-step">
                       <div className="flex items-start gap-3">
                         <Clock className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
@@ -790,7 +790,7 @@ export const TradeDetailPage: React.FC = () => {
                   onSuccess={() => {
                     setShowCompletionForm(false);
                     fetchTrade();
-                    addToast('Completion request submitted successfully!', 'success');
+                    addToast('success', 'Completion request submitted successfully!');
                   }}
                   onCancel={() => setShowCompletionForm(false)}
                 />
