@@ -383,7 +383,7 @@ export const updateLeaderboardStats = async (
         transaction.set(weeklyStatsRef, {
           userId,
           userName: userData?.displayName || userData?.name || 'Unknown User',
-          userAvatar: userData?.avatar || userData?.profilePicture,
+          userAvatar: (userData?.profilePicture || userData?.photoURL) ?? null,
           totalXP: xpGained,
           period: 'weekly',
           periodStart: currentWeek,
@@ -409,7 +409,7 @@ export const updateLeaderboardStats = async (
         transaction.set(monthlyStatsRef, {
           userId,
           userName: userData?.displayName || userData?.name || 'Unknown User',
-          userAvatar: userData?.avatar || userData?.profilePicture,
+          userAvatar: (userData?.profilePicture || userData?.photoURL) ?? null,
           totalXP: xpGained,
           period: 'monthly',
           periodStart: currentMonth,

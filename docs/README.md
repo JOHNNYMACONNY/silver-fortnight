@@ -61,8 +61,15 @@ Located in `docs/features/`:
 
 #### Search & Discovery
 - **[ADVANCED_SEARCH_ENHANCEMENT_SUMMARY.md](./features/ADVANCED_SEARCH_ENHANCEMENT_SUMMARY.md)** - Search enhancements
+- **[SEARCH_HISTORY_IMPLEMENTATION.md](./features/SEARCH_HISTORY_IMPLEMENTATION.md)** - Search history hook and integration
 - **[AI_PICKS_FEATURE_AUDIT_REPORT.md](./features/AI_PICKS_FEATURE_AUDIT_REPORT.md)** - AI picks feature
 - **[SEARCH_RESULT_PREVIEWS_IMPLEMENTATION.md](./features/SEARCH_RESULT_PREVIEWS_IMPLEMENTATION.md)** - Search previews
+
+#### User Experience
+- **[USER_PERSONALIZATION.md](./features/USER_PERSONALIZATION.md)** - User personalization hook and UI adaptation
+
+#### User Experience
+- **[USER_PERSONALIZATION.md](./features/USER_PERSONALIZATION.md)** - User personalization hook and UI adaptation
 
 #### Other Features
 - **[LEADERBOARD_DARK_MODE_IMPLEMENTATION.md](./features/LEADERBOARD_DARK_MODE_IMPLEMENTATION.md)** - Dark mode leaderboard

@@ -47,6 +47,8 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { logger } from '@utils/logging/logger';
+import TradeStatusTimeline from '../components/features/trades/TradeStatusTimeline';
+import { Clock, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
 
 // Additional interface for local state
 // interface LocalState {
@@ -437,23 +439,74 @@ export const TradeDetailPage: React.FC = () => {
   // Helper function to convert trade status to step progress format
   const getTradeSteps = (currentStatus: string) => {
     const statusOrder = [
-      { id: 'open', label: 'Open', description: 'Accepting proposals' },
-      { id: 'in-progress', label: 'In Progress', description: 'Trade is active' },
-      { id: 'pending_evidence', label: 'Evidence Pending', description: 'Awaiting proof' },
-      { id: 'pending_confirmation', label: 'Confirmation', description: 'Final approval' },
-      { id: 'completed', label: 'Completed', description: 'Trade finished' }
+      { 
+        id: 'open', 
+        label: 'Open', 
+        description: 'Accepting proposals',
+        nextAction: 'Wait for trade proposals',
+        estimatedTime: '1-3 days',
+        icon: Circle
+      },
+      { 
+        id: 'in-progress', 
+        label: 'In Progress', 
+        description: 'Trade is active',
+        nextAction: 'Complete your part and request completion',
+        estimatedTime: 'Varies by trade',
+        icon: Clock
+      },
+      { 
+        id: 'pending_evidence', 
+        label: 'Evidence Pending', 
+        description: 'Awaiting proof',
+        nextAction: 'Submit evidence of completion',
+        estimatedTime: '1-2 days',
+        icon: AlertCircle
+      },
+      { 
+        id: 'pending_confirmation', 
+        label: 'Confirmation', 
+        description: 'Final approval',
+        nextAction: 'Confirm or request changes',
+        estimatedTime: '1 day',
+        icon: CheckCircle2
+      },
+      { 
+        id: 'completed', 
+        label: 'Completed', 
+        description: 'Trade finished',
+        nextAction: 'Leave a review',
+        estimatedTime: 'Complete',
+        icon: CheckCircle2
+      }
     ];
 
     // Handle special statuses
     if (currentStatus === 'cancelled') {
       return [
-        { label: 'Cancelled', description: 'Trade was cancelled', current: true, error: true }
+        { 
+          label: 'Cancelled', 
+          description: 'Trade was cancelled', 
+          current: true, 
+          error: true,
+          nextAction: 'This trade is no longer active',
+          estimatedTime: 'N/A',
+          icon: AlertCircle
+        }
       ];
     }
     
     if (currentStatus === 'disputed') {
       return [
-        { label: 'Disputed', description: 'Requires resolution', current: true, error: true }
+        { 
+          label: 'Disputed', 
+          description: 'Requires resolution', 
+          current: true, 
+          error: true,
+          nextAction: 'Contact support for resolution',
+          estimatedTime: 'TBD',
+          icon: AlertCircle
+        }
       ];
     }
 
@@ -464,8 +517,21 @@ export const TradeDetailPage: React.FC = () => {
       description: step.description,
       completed: index < currentIndex,
       current: index === currentIndex,
-      error: false
+      error: false,
+      nextAction: step.nextAction,
+      estimatedTime: step.estimatedTime,
+      icon: step.icon
     }));
+  };
+
+  // Get next step information for current status
+  const getNextStepInfo = (currentStatus: string) => {
+    const steps = getTradeSteps(currentStatus);
+    const currentStep = steps.find(s => s.current);
+    return currentStep ? {
+      action: currentStep.nextAction,
+      time: currentStep.estimatedTime
+    } : null;
   };
 
   if (loading) {
@@ -620,6 +686,37 @@ export const TradeDetailPage: React.FC = () => {
             </CardContent>
           </Card>
 
+          {/* Trade Status Timeline - Enhanced */}
+          <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5" data-testid="trade-status-timeline">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-semibold">Trade Progress</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <TradeStatusTimeline status={trade.status as any} />
+              {(() => {
+                const nextStep = getNextStepInfo(trade.status);
+                if (nextStep && trade.status !== 'completed' && trade.status !== 'cancelled' && trade.status !== 'disputed') {
+                  return (
+                    <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/20" data-testid="timeline-next-step">
+                      <div className="flex items-start gap-3">
+                        <Clock className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-foreground mb-1">Next Step</p>
+                          <p className="text-sm text-muted-foreground">{nextStep.action}</p>
+                          {nextStep.time && (
+                            <p className="text-xs text-muted-foreground mt-2">
+                              Estimated time: {nextStep.time}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+            </CardContent>
+          </Card>
 
           {/* Confirmation Form Card */}
           {(() => {
@@ -693,7 +790,7 @@ export const TradeDetailPage: React.FC = () => {
                   onSuccess={() => {
                     setShowCompletionForm(false);
                     fetchTrade();
-                    addToast('Completion request submitted successfully!', 'success');
+                    addToast('success', 'Completion request submitted successfully!');
                   }}
                   onCancel={() => setShowCompletionForm(false)}
                 />

@@ -4,14 +4,22 @@ This document details the enhancements made to the TradeStatusTimeline component
 
 ## Overview
 
-The TradeStatusTimeline component visually represents the current status of a trade in the lifecycle process. It shows progression through four key stages:
+The TradeStatusTimeline component visually represents the current status of a trade in the lifecycle process. It shows progression through five key stages:
 
 1. Open
 2. In Progress
-3. Pending Confirmation
-4. Completed
+3. Evidence Pending
+4. Pending Confirmation
+5. Completed
 
 The component also handles special cases like cancelled or disputed trades.
+
+**Latest Enhancements (November 2025):**
+- Status-specific icons for each stage
+- Progress percentage calculation and display
+- "Next Step" callout with actionable guidance
+- Time-in-status calculation and display
+- Enhanced visual feedback with icons and animations
 
 ## Enhancement Goals
 
@@ -31,14 +39,54 @@ The enhanced component uses a more structured data model:
 
 ```tsx
 const statusSteps = [
-  { id: 'open', label: 'Open' },
-  { id: 'in-progress', label: 'In Progress' },
-  { id: 'pending_confirmation', label: 'Pending Confirmation' },
-  { id: 'completed', label: 'Completed' }
+  { 
+    id: 'open', 
+    label: 'Open',
+    icon: Circle,
+    description: 'Accepting proposals',
+    nextAction: 'Wait for trade proposals',
+    estimatedTime: '1-3 days'
+  },
+  { 
+    id: 'in-progress', 
+    label: 'In Progress',
+    icon: Clock,
+    description: 'Trade is active',
+    nextAction: 'Complete your part and request completion',
+    estimatedTime: 'Varies by trade'
+  },
+  { 
+    id: 'pending_evidence', 
+    label: 'Evidence Pending',
+    icon: FileText,
+    description: 'Awaiting proof',
+    nextAction: 'Submit evidence of completion',
+    estimatedTime: '1-2 days'
+  },
+  { 
+    id: 'pending_confirmation', 
+    label: 'Pending Confirmation',
+    icon: Handshake,
+    description: 'Final approval',
+    nextAction: 'Confirm completion or request changes',
+    estimatedTime: '1-2 days'
+  },
+  { 
+    id: 'completed', 
+    label: 'Completed',
+    icon: CheckCircle2,
+    description: 'Trade finished',
+    nextAction: 'Trade successfully concluded.',
+    estimatedTime: null
+  }
 ];
 ```
 
-This approach improves maintainability and makes the code more readable.
+This approach improves maintainability and makes the code more readable. Each step now includes:
+- **Icon**: Visual representation using Lucide React icons
+- **Description**: Brief status description
+- **Next Action**: Actionable guidance for the user
+- **Estimated Time**: Expected duration for the current stage
 
 ### Visual Enhancements
 
@@ -155,21 +203,86 @@ The enhanced TradeStatusTimeline component provides several benefits:
 5. **Visual Hierarchy**: Current step is clearly highlighted with multiple visual cues
 6. **Smooth Transitions**: Animated effects for a more polished experience
 
+## Enhanced Features (November 2025)
+
+### Status Icons
+Each status now has a dedicated icon for better visual recognition:
+- **Open**: Circle icon
+- **In Progress**: Clock icon
+- **Evidence Pending**: FileText icon
+- **Pending Confirmation**: Handshake icon
+- **Completed**: CheckCircle2 icon
+- **Cancelled**: XCircle icon
+- **Disputed**: AlertTriangle icon
+
+### Progress Percentage
+The component calculates and displays progress as a percentage:
+```tsx
+const progressPercentage = currentIndex >= 0
+  ? (currentIndex / (statusSteps.length - 1)) * 100
+  : 0;
+```
+
+The progress bar visually fills based on the current status position.
+
+### Next Step Callout
+A prominent callout displays the next actionable step for the user:
+```tsx
+<div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
+  <div className="flex items-start gap-3">
+    <Clock className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+    <div className="flex-1">
+      <p className="text-sm font-medium text-foreground mb-1">Next Step</p>
+      <p className="text-sm text-muted-foreground">{nextStep.action}</p>
+      {nextStep.time && (
+        <p className="text-xs text-muted-foreground mt-2">
+          Estimated time: {nextStep.time}
+        </p>
+      )}
+    </div>
+  </div>
+</div>
+```
+
+### Time in Status
+The component can display how long a trade has been in its current status:
+```tsx
+const calculateTimeInStatus = (currentStatus: string) => {
+  if (!createdAt || !updatedAt) return null;
+  const now = new Date();
+  const lastUpdate = updatedAt;
+  const diffMs = now.getTime() - lastUpdate.getTime();
+  // Calculate and format time difference
+  // Returns: "X days", "X hours", "X minutes", or "just now"
+};
+```
+
 ## Usage
 
 The component is used in the TradeDetailPage to show the current status of a trade:
 
 ```tsx
-<TradeStatusTimeline status={trade.status} />
+<TradeStatusTimeline 
+  status={trade.status} 
+  createdAt={trade.createdAt}
+  updatedAt={trade.updatedAt}
+/>
 ```
+
+### Props
+- `status`: Trade status ('open' | 'in-progress' | 'pending_evidence' | 'pending_confirmation' | 'completed' | 'cancelled' | 'disputed')
+- `createdAt` (optional): Date when trade was created
+- `updatedAt` (optional): Date when trade was last updated
+- `showProgress` (optional): Whether to show progress percentage (default: true)
+- `showNextStep` (optional): Whether to show next step callout (default: true)
 
 ## Future Improvements
 
 Potential future improvements for the TradeStatusTimeline component:
 
-1. Add tooltips for each step with more detailed information
-2. Implement micro-animations when the status changes
-3. Add optional timestamps for each status change
+1. ~~Add tooltips for each step with more detailed information~~ ✅ **Completed** - Next step callout provides detailed information
+2. ~~Implement micro-animations when the status changes~~ ✅ **Completed** - Smooth transitions and animations implemented
+3. ~~Add optional timestamps for each status change~~ ✅ **Completed** - Time-in-status calculation added
 4. Create a vertical variant for mobile-first layouts
 5. Add support for custom status steps for different trade types
 

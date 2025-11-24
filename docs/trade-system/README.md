@@ -25,7 +25,10 @@ This directory contains all documentation related to the TradeYa trade lifecycle
 
 ### Evidence & Timeline
 - **[TRADE_EVIDENCE_IMPLEMENTATION_PROGRESS.md](./TRADE_EVIDENCE_IMPLEMENTATION_PROGRESS.md)** - Evidence implementation
-- **[TRADE_STATUS_TIMELINE_ENHANCEMENTS.md](./TRADE_STATUS_TIMELINE_ENHANCEMENTS.md)** - Timeline enhancements
+- **[TRADE_STATUS_TIMELINE_ENHANCEMENTS.md](./TRADE_STATUS_TIMELINE_ENHANCEMENTS.md)** - Timeline enhancements with icons, progress, and next steps
+
+### UI Components
+- **[../components/CATEGORY_GRID.md](../components/CATEGORY_GRID.md)** - Category grid component for visual trade browsing
 
 ## Trade States
 
@@ -44,7 +47,8 @@ The trade system supports the following states:
 - Evidence submission and gallery
 - Auto-resolution after timeout
 - Dispute resolution workflow
-- Status timeline visualization
+- Enhanced status timeline visualization with icons, progress, and next steps
+- Category grid view for visual trade browsing
 - Real-time updates via Firestore listeners
 
 ## Recent Updates

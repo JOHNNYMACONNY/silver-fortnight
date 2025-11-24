@@ -36,12 +36,16 @@ This directory contains documentation for all major features of the TradeYa plat
 
 ### Search & Discovery
 - **[ADVANCED_SEARCH_ENHANCEMENT_SUMMARY.md](./ADVANCED_SEARCH_ENHANCEMENT_SUMMARY.md)** - Search enhancements
+- **[SEARCH_HISTORY_IMPLEMENTATION.md](./SEARCH_HISTORY_IMPLEMENTATION.md)** - Search history hook and integration
 - **[AI_PICKS_FEATURE_AUDIT_REPORT.md](./AI_PICKS_FEATURE_AUDIT_REPORT.md)** - AI picks
 - **[SEARCH_RESULT_PREVIEWS_IMPLEMENTATION.md](./SEARCH_RESULT_PREVIEWS_IMPLEMENTATION.md)** - Search previews
 
 ### Connections
 - **[CONNECTION_SYSTEM_FIXES.md](./CONNECTION_SYSTEM_FIXES.md)** - Connection system
 - **[BIDIRECTIONAL_CONNECTION_TROUBLESHOOTING.md](./BIDIRECTIONAL_CONNECTION_TROUBLESHOOTING.md)** - Troubleshooting
+
+### User Experience
+- **[USER_PERSONALIZATION.md](./USER_PERSONALIZATION.md)** - User personalization hook and UI adaptation
 
 ### Other Features
 - **[LEADERBOARD_DARK_MODE_IMPLEMENTATION.md](./LEADERBOARD_DARK_MODE_IMPLEMENTATION.md)** - Dark mode

@@ -1,5 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useMobileOptimization } from "../../hooks/useMobileOptimization";
+import { cn } from "../../utils/cn";
 
 interface LogoProps {
   size?: "small" | "medium" | "large";
@@ -16,6 +18,8 @@ const Logo: React.FC<LogoProps> = ({
   linkTo = "/",
   alt = "TradeYa Logo",
 }) => {
+  const { isMobile } = useMobileOptimization();
+  
   const sizeClasses = {
     small: "h-8 w-auto",
     medium: "h-10 w-auto",
@@ -47,7 +51,13 @@ const Logo: React.FC<LogoProps> = ({
 
   if (linkTo !== null && linkTo !== undefined) {
     return (
-      <Link to={linkTo} className="flex-shrink-0">
+      <Link 
+        to={linkTo} 
+        className={cn(
+          "flex-shrink-0 flex items-center",
+          isMobile && "min-h-[44px]" // Mobile optimization: Ensure minimum 44px height on mobile for touch targets
+        )}
+      >
         {logoElement}
       </Link>
     );

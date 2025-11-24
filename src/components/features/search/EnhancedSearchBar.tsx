@@ -8,6 +8,8 @@ import {
   TrendingUp,
   Clock,
   Users,
+  History,
+  Trash2,
 } from "lucide-react";
 import { Input } from "../../ui/Input";
 import { Button } from "../../ui/Button";
@@ -15,6 +17,7 @@ import { Badge } from "../../ui/Badge";
 import { cn } from "../../../utils/cn";
 import { classPatterns } from "../../../utils/designSystem";
 import { semanticClasses } from "../../../utils/semanticColors";
+import { useSearchHistory } from "../../../hooks/useSearchHistory";
 
 interface EnhancedSearchBarProps {
   searchTerm: string;
@@ -28,6 +31,8 @@ interface EnhancedSearchBarProps {
   placeholder?: string;
   className?: string;
   topic?: "trades" | "collaboration" | "community" | "success";
+  enableSearchHistory?: boolean;
+  onSearchHistoryClear?: () => void;
 }
 
 export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
@@ -42,6 +47,8 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
   placeholder = "Search collaborations by title, description, or participants...",
   className,
   topic = "trades",
+  enableSearchHistory = true,
+  onSearchHistoryClear,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -50,7 +57,10 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
   // Get semantic colors for the topic
   const semanticClassesData = semanticClasses(topic);
 
-  // Popular search suggestions
+  // Search history hook
+  const { history, addToHistory, clearHistory } = useSearchHistory(10);
+
+  // Popular search suggestions (fallback when no history)
   const suggestions = [
     "React Development",
     "UI/UX Design",
@@ -60,18 +70,35 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
     "Data Analysis",
   ];
 
+  // Determine which suggestions to show
+  const hasHistory = enableSearchHistory && history.length > 0;
+  const displaySuggestions = hasHistory ? history : suggestions;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Let page-level debounced effects react to searchTerm changes.
     if (searchTerm.trim()) {
+      if (enableSearchHistory) {
+        addToHistory(searchTerm);
+      }
       setShowSuggestions(false);
     }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
     onSearchChange(suggestion);
+    if (enableSearchHistory) {
+      addToHistory(suggestion);
+    }
     setShowSuggestions(false);
     inputRef.current?.blur();
+  };
+
+  const handleClearHistory = () => {
+    clearHistory();
+    if (onSearchHistoryClear) {
+      onSearchHistoryClear();
+    }
   };
 
   const clearSearch = () => {
@@ -202,34 +229,75 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
 
       {/* Search Suggestions */}
       <AnimatePresence>
-        {showSuggestions && isFocused && searchTerm.trim().length > 0 && (
+        {showSuggestions && isFocused && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="w-full glassmorphic rounded-xl shadow-lg p-4"
           >
-            <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className={cn("h-4 w-4", semanticClassesData.text)} />
-              <span className="text-sm font-medium text-foreground">
-                Popular searches
-              </span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {suggestions.map((suggestion, index) => (
-                <motion.button
-                  key={suggestion}
-                  type="button"
-                  onClick={() => handleSuggestionClick(suggestion)}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="text-left p-2 rounded-md hover:bg-muted/20 transition-colors text-sm text-muted-foreground hover:text-foreground"
-                >
-                  {suggestion}
-                </motion.button>
-              ))}
-            </div>
+            {hasHistory ? (
+              <>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <History className={cn("h-4 w-4", semanticClassesData.text)} />
+                    <span className="text-sm font-medium text-foreground">
+                      Recent searches
+                    </span>
+                  </div>
+                  {enableSearchHistory && history.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleClearHistory}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                      title="Clear search history"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {displaySuggestions.map((suggestion, index) => (
+                    <motion.button
+                      key={`${suggestion}-${index}`}
+                      type="button"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="text-left p-2 rounded-md hover:bg-muted/20 transition-colors text-sm text-muted-foreground hover:text-foreground"
+                    >
+                      {suggestion}
+                    </motion.button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingUp className={cn("h-4 w-4", semanticClassesData.text)} />
+                  <span className="text-sm font-medium text-foreground">
+                    Popular searches
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {displaySuggestions.map((suggestion, index) => (
+                    <motion.button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="text-left p-2 rounded-md hover:bg-muted/20 transition-colors text-sm text-muted-foreground hover:text-foreground"
+                    >
+                      {suggestion}
+                    </motion.button>
+                  ))}
+                </div>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

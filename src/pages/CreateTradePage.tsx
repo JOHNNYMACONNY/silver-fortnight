@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from '../components/ui/Textarea';
 import { X, AlertCircle } from 'lucide-react';
 import { logger } from '@utils/logging/logger';
+import { Slider } from '../components/ui/Slider';
 
 const CreateTradePage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -36,6 +37,23 @@ const CreateTradePage: React.FC = () => {
   const [newOfferedSkillLevel, setNewOfferedSkillLevel] = useState<'beginner' | 'intermediate' | 'expert'>('intermediate');
   const [newRequestedSkill, setNewRequestedSkill] = useState('');
   const [newRequestedSkillLevel, setNewRequestedSkillLevel] = useState<'beginner' | 'intermediate' | 'expert'>('intermediate');
+  
+  // Feature flag for slider inputs (can be toggled for gradual rollout)
+  const USE_SLIDER_INPUTS = true;
+  
+  // Helper to convert slider value (0-2) to skill level
+  const sliderToLevel = (value: number): 'beginner' | 'intermediate' | 'expert' => {
+    if (value === 0) return 'beginner';
+    if (value === 1) return 'intermediate';
+    return 'expert';
+  };
+  
+  // Helper to convert skill level to slider value (0-2)
+  const levelToSlider = (level: 'beginner' | 'intermediate' | 'expert'): number => {
+    if (level === 'beginner') return 0;
+    if (level === 'intermediate') return 1;
+    return 2;
+  };
 
   useEffect(() => {
     if (currentUser) {
@@ -139,7 +157,7 @@ const CreateTradePage: React.FC = () => {
         requestedSkills: requestedSkills,
         creatorId: currentUser.uid,
         creatorName: userProfile?.displayName || currentUser.displayName || 'Anonymous',
-        creatorPhotoURL: userProfile?.profilePicture || userProfile?.photoURL || currentUser.photoURL || undefined,
+        creatorPhotoURL: (userProfile?.profilePicture || userProfile?.photoURL || currentUser.photoURL) ?? null,
         status: 'open' as const,
         interestedUsers: [],
         createdAt: Timestamp.now(),
@@ -253,36 +271,52 @@ const CreateTradePage: React.FC = () => {
             </label>
             
             {/* Add skill form */}
-            <div className="flex gap-2 mb-3">
-              <GlassmorphicInput
-                type="text"
-                inputMode="text"
-                autoComplete="off"
-                value={newOfferedSkill}
-                onChange={(e) => setNewOfferedSkill(e.target.value)}
-                placeholder="Enter a skill you can offer"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addOfferedSkill())}
-                variant="glass"
-                size="md"
-                animatedLabel
-                realTimeValidation
-              />
-               <Select value={newOfferedSkillLevel} onValueChange={(value) => setNewOfferedSkillLevel(value as 'beginner' | 'intermediate' | 'expert')}>
-                 <SelectTrigger className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
-                   <SelectValue />
-                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="beginner">Beginner</SelectItem>
-                  <SelectItem value="intermediate">Intermediate</SelectItem>
-                  <SelectItem value="expert">Expert</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                type="button"
-                onClick={addOfferedSkill}
-              >
-                Add Skill
-              </Button>
+            <div className="space-y-3 mb-3">
+              <div className="flex gap-2">
+                <GlassmorphicInput
+                  type="text"
+                  inputMode="text"
+                  autoComplete="off"
+                  value={newOfferedSkill}
+                  onChange={(e) => setNewOfferedSkill(e.target.value)}
+                  placeholder="Enter a skill you can offer"
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addOfferedSkill())}
+                  variant="glass"
+                  size="md"
+                  animatedLabel
+                  realTimeValidation
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  onClick={addOfferedSkill}
+                >
+                  Add Skill
+                </Button>
+              </div>
+              {USE_SLIDER_INPUTS ? (
+                <Slider
+                  label="Skill Level"
+                  value={levelToSlider(newOfferedSkillLevel)}
+                  onValueChange={(value) => setNewOfferedSkillLevel(sliderToLevel(value))}
+                  min={0}
+                  max={2}
+                  step={1}
+                  valueLabels={['Beginner', 'Intermediate', 'Expert']}
+                  className="px-2"
+                />
+              ) : (
+                <Select value={newOfferedSkillLevel} onValueChange={(value) => setNewOfferedSkillLevel(value as 'beginner' | 'intermediate' | 'expert')}>
+                  <SelectTrigger className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="beginner">Beginner</SelectItem>
+                    <SelectItem value="intermediate">Intermediate</SelectItem>
+                    <SelectItem value="expert">Expert</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             
             {/* Offered skills list */}
@@ -305,36 +339,52 @@ const CreateTradePage: React.FC = () => {
             </label>
             
             {/* Add skill form */}
-            <div className="flex gap-2 mb-3">
-              <GlassmorphicInput
-                type="text"
-                inputMode="text"
-                autoComplete="off"
-                value={newRequestedSkill}
-                onChange={(e) => setNewRequestedSkill(e.target.value)}
-                placeholder="Enter a skill you are looking for"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addRequestedSkill())}
-                variant="glass"
-                size="md"
-                animatedLabel
-                realTimeValidation
-              />
-               <Select value={newRequestedSkillLevel} onValueChange={(value) => setNewRequestedSkillLevel(value as 'beginner' | 'intermediate' | 'expert')}>
-                 <SelectTrigger className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
-                   <SelectValue />
-                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="beginner">Beginner</SelectItem>
-                  <SelectItem value="intermediate">Intermediate</SelectItem>
-                  <SelectItem value="expert">Expert</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                type="button"
-                onClick={addRequestedSkill}
-              >
-                Add Skill
-              </Button>
+            <div className="space-y-3 mb-3">
+              <div className="flex gap-2">
+                <GlassmorphicInput
+                  type="text"
+                  inputMode="text"
+                  autoComplete="off"
+                  value={newRequestedSkill}
+                  onChange={(e) => setNewRequestedSkill(e.target.value)}
+                  placeholder="Enter a skill you are looking for"
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addRequestedSkill())}
+                  variant="glass"
+                  size="md"
+                  animatedLabel
+                  realTimeValidation
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  onClick={addRequestedSkill}
+                >
+                  Add Skill
+                </Button>
+              </div>
+              {USE_SLIDER_INPUTS ? (
+                <Slider
+                  label="Skill Level"
+                  value={levelToSlider(newRequestedSkillLevel)}
+                  onValueChange={(value) => setNewRequestedSkillLevel(sliderToLevel(value))}
+                  min={0}
+                  max={2}
+                  step={1}
+                  valueLabels={['Beginner', 'Intermediate', 'Expert']}
+                  className="px-2"
+                />
+              ) : (
+                <Select value={newRequestedSkillLevel} onValueChange={(value) => setNewRequestedSkillLevel(value as 'beginner' | 'intermediate' | 'expert')}>
+                  <SelectTrigger className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="beginner">Beginner</SelectItem>
+                    <SelectItem value="intermediate">Intermediate</SelectItem>
+                    <SelectItem value="expert">Expert</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             
             {/* Requested skills list */}

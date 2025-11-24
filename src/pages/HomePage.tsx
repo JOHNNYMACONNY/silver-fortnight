@@ -126,11 +126,11 @@ const HomePageContent: React.FC = () => {
                   Get started quickly with our most popular features.
                 </p>
                 <div className="space-y-2">
-                  <Link to="/trades" className={`flex items-center justify-between p-2 ${semanticClasses('trades').bgSubtle} rounded-lg hover:bg-primary/15 transition-colors`}>
+                  <Link to="/trades" className={`flex items-center justify-between p-2 min-h-[44px] ${semanticClasses('trades').bgSubtle} rounded-lg hover:bg-primary/15 transition-colors`}>
                     <span className={`text-body-small font-medium ${semanticClasses('trades').text}`}>Browse Trades</span>
                     <span className={semanticClasses('trades').text}>→</span>
                   </Link>
-                  <Link to="/collaborations" className={`flex items-center justify-between p-2 ${semanticClasses('collaboration').bgSubtle} rounded-lg hover:bg-purple-100 dark:hover:bg-purple-950/30 transition-colors shadow-sm`}> 
+                  <Link to="/collaborations" className={`flex items-center justify-between p-2 min-h-[44px] ${semanticClasses('collaboration').bgSubtle} rounded-lg hover:bg-purple-100 dark:hover:bg-purple-950/30 transition-colors shadow-sm`}> 
                     <span className={`text-body-small font-medium ${semanticClasses('collaboration').text}`}>Find Collaborations</span>
                     <span className={semanticClasses('collaboration').text}>→</span>
                   </Link>
