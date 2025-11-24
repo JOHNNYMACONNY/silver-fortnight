@@ -25,6 +25,7 @@ import ProfileImageWithUser from '../components/ui/ProfileImageWithUser';
 import { getTradeStatusClasses, formatStatus } from '../utils/statusUtils';
 // Make sure we're using the correct getTradeActions function
 import { getTradeActions } from '../utils/tradeActionUtils';
+import { hasUserSubmittedEvidence, getAllTradeEvidence } from '../utils/tradeUtils';
 import { ReviewForm } from '../components/features/reviews/ReviewForm';
 import PerformanceMonitor from '../components/ui/PerformanceMonitor';
 
@@ -777,7 +778,10 @@ export const TradeDetailPage: React.FC = () => {
           })()}
 
           {/* Completion Form Card */}
-          {showCompletionForm && currentUser && trade.status === 'in-progress' &&
+          {showCompletionForm && currentUser && 
+            (trade.status === 'in-progress' || 
+             (trade.status === 'pending_confirmation' && 
+              !hasUserSubmittedEvidence(trade, currentUser.uid))) &&
             (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid) && (
             <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5 mb-6" data-completion-form>
               <CardHeader className="pb-2">
@@ -836,7 +840,9 @@ export const TradeDetailPage: React.FC = () => {
               </Card>
 
               {/* Next Steps - Request Completion */}
-              {trade.status === 'in-progress' && currentUser &&
+              {((trade.status === 'in-progress') || 
+                (trade.status === 'pending_confirmation' && currentUser && !hasUserSubmittedEvidence(trade, currentUser.uid))) && 
+                currentUser &&
                 (trade.creatorId === currentUser.uid || trade.participantId === currentUser.uid) && (
                 <Card variant="glass" className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
                   <CardHeader className="pb-2">
@@ -974,20 +980,23 @@ export const TradeDetailPage: React.FC = () => {
                       )}
 
                       {/* Compact evidence display */}
-                      {trade.completionEvidence && trade.completionEvidence.length > 0 ? (
-                        <div className="space-y-3">
-                          <div className="text-xs">
-                            <p className="font-medium text-foreground mb-1">Evidence Submitted</p>
-                            <EvidenceGallery
-                              evidence={trade.completionEvidence}
-                              title=""
-                              emptyMessage="No evidence provided"
-                            />
+                      {(() => {
+                        const allEvidence = getAllTradeEvidence(trade);
+                        return allEvidence.length > 0 ? (
+                          <div className="space-y-3">
+                            <div className="text-xs">
+                              <p className="font-medium text-foreground mb-1">Evidence Submitted</p>
+                              <EvidenceGallery
+                                evidence={allEvidence}
+                                title=""
+                                emptyMessage="No evidence provided"
+                              />
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <p className="text-xs text-muted-foreground italic">No evidence submitted yet</p>
-                      )}
+                        ) : (
+                          <p className="text-xs text-muted-foreground italic">No evidence submitted yet</p>
+                        );
+                      })()}
                     </CardContent>
                   )}
                 </Card>
