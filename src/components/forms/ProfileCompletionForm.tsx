@@ -8,6 +8,7 @@
 import React, { useState, useCallback } from "react";
 import { MultiStepForm, FormStep } from "./MultiStepForm";
 import { logger } from '@utils/logging/logger';
+import { Button } from "../ui/Button";
 import {
   BasicInfoStep,
   AvatarBioStep,
@@ -253,14 +254,14 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
       {/* Skip Option */}
       {showSkipOption && onSkip && (
         <div className="mt-8 text-center">
-          <button
-            type="button"
+          <Button
+            variant="ghost"
             onClick={onSkip}
             disabled={isSubmitting}
-            className="px-6 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors duration-200 disabled:opacity-50"
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
           >
             Skip for now and complete later
-          </button>
+          </Button>
         </div>
       )}
 

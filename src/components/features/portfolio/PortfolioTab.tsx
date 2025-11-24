@@ -100,8 +100,8 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
       <div className="w-full">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-accent/10 text-accent p-2 shrink-0">
-              <Star className="w-5 h-5" />
+            <div className="rounded-lg bg-accent/10 text-accent-500 p-2 shrink-0">
+              <Star className="w-5 h-5 fill-current text-warning-500" />
             </div>
             <div>
               <h2
@@ -124,7 +124,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
               <button
                 type="button"
                 onClick={() => setSkillFilter(null)}
-                className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-3 py-1 text-sm hover:bg-muted"
+                className="inline-flex items-center gap-1 rounded-full glassmorphic border-glass px-3 py-1 text-sm hover:bg-white/20 transition-all duration-200"
                 aria-label={`Clear skill filter ${skillFilter}`}
                 title="Clear skill filter"
               >
@@ -134,13 +134,13 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
               </button>
             )}
             {/* View Mode Toggle */}
-            <div className="glassmorphic flex items-center p-1 rounded-lg">
+            <div className="glassmorphic border-glass flex items-center p-1 rounded-lg">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded-md transition-all duration-200 ${
                   viewMode === 'grid'
                     ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'text-text-secondary hover:text-text-primary'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-white/10'
                 }`}
                 title="Grid view"
                 aria-label="Grid view"
@@ -152,7 +152,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
                 className={`p-2 rounded-md transition-all duration-200 ${
                   viewMode === 'list'
                     ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'text-text-secondary hover:text-text-primary'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-white/10'
                 }`}
                 title="List view"
                 aria-label="List view"
@@ -166,7 +166,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
               <select
                 value={filter}
                 onChange={e => setFilter(e.target.value as 'all' | 'trades' | 'collaborations' | 'challenges' | 'featured')}
-                className="appearance-none glassmorphic rounded-lg text-sm text-text-primary outline-hidden focus:ring-2 focus:ring-primary/50 transition-all duration-200 py-2 pl-3 pr-8 w-full sm:w-auto"
+                className="appearance-none glassmorphic border-glass rounded-lg text-sm text-text-primary outline-hidden focus:ring-2 focus:ring-primary/50 transition-all duration-200 py-2 pl-3 pr-8 w-full sm:w-auto"
                 aria-label="Filter portfolio items"
               >
                 <option value="all">All Items</option>
@@ -184,8 +184,8 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
                 onClick={() => setIsManaging(v => !v)}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isManaging
-                    ? 'bg-secondary text-secondary-foreground shadow-md hover:bg-secondary/90'
-                    : 'glassmorphic text-text-secondary hover:bg-background-secondary'
+                    ? 'bg-primary text-primary-foreground shadow-md hover:bg-primary/90'
+                    : 'glassmorphic border-glass text-text-secondary hover:bg-white/20'
                 }`}
                 title={isManaging ? 'Exit management mode' : 'Manage portfolio'}
               >
@@ -206,7 +206,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
             </Cluster>
           </motion.div>
          ) : filteredItems.length === 0 ? (
-           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="glassmorphic text-center p-12">
+           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="glassmorphic border-glass text-center p-12">
             <Stack gap="lg" align="center">
               <Box className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center">
                 <Star className="w-8 h-8 text-primary" />
@@ -225,7 +225,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
               {isOwnProfile && (
                 <button
                   onClick={() => navigate('/portfolio')}
-                  className="inline-flex items-center rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 px-4 py-2"
+                  className="inline-flex items-center rounded-lg text-sm font-medium glassmorphic border-glass hover:bg-white/20 transition-all duration-200 px-4 py-2"
                 >
                   Add project
                 </button>
@@ -233,7 +233,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
               {filter !== 'all' && (
                 <button
                   onClick={() => setFilter('all')}
-                  className="inline-flex items-center rounded-lg text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-all duration-200 px-4 py-2"
+                  className="inline-flex items-center rounded-lg text-sm font-medium glassmorphic border-glass hover:bg-white/20 transition-all duration-200 px-4 py-2"
                 >
                   View all items
                 </button>
@@ -245,7 +245,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ userId, isOwnProfile
             {/* Pinned row */}
             {pinnedItems.length > 0 && (
               <Stack gap="sm" className="mb-4">
-                <div className="text-sm font-medium text-text-secondary">Pinned</div>
+                <div className="text-sm font-medium text-accent-500">Pinned</div>
                 <Grid columns={viewMode === 'list' ? { base: 1 } : { base: 1, md: 2, xl: 3 }} gap="md">
                   {pinnedItems.map((item, index) => (
                     <motion.div key={`pinned-${item.id}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, delay: index * 0.06 }}>

@@ -24,6 +24,11 @@ Located in root `docs/` directory:
 - **[IMPLEMENTATION_REALITY_DOCUMENT.md](./IMPLEMENTATION_REALITY_DOCUMENT.md)** - Actual vs. planned implementation status
 - **[TASKS.md](./TASKS.md)** - Current task list
 - **[COMPLETE_SYSTEM_INTEGRATION_DIAGRAM.md](./COMPLETE_SYSTEM_INTEGRATION_DIAGRAM.md)** - System architecture overview
+- **[FEATURE_SPEC_TEMPLATE.md](./FEATURE_SPEC_TEMPLATE.md)** - Template for creating detailed feature specifications
+- **[QUICK_START_SPEC_TEMPLATE.md](./QUICK_START_SPEC_TEMPLATE.md)** - Quick start guide for using the spec template
+- **[IMPROVEMENT_IDEAS_FROM_CURSOR_TALK.md](./IMPROVEMENT_IDEAS_FROM_CURSOR_TALK.md)** - Actionable improvements based on Cursor design team insights
+- **[INSIGHTS_FROM_CURSOR_DESIGN_TALK.md](./INSIGHTS_FROM_CURSOR_DESIGN_TALK.md)** - Analysis of valuable insights from Cursor design talk
+- **[AI_PROMPT_GUIDELINES.md](./AI_PROMPT_GUIDELINES.md)** - Guidelines for writing effective AI prompts for TradeYa development
 
 ### 🎮 Features
 Located in `docs/features/`:
@@ -126,6 +131,17 @@ Located in `docs/design/`:
 - **[MODAL_RESPONSIVE_PATTERNS.md](./design/MODAL_RESPONSIVE_PATTERNS.md)** - Modal patterns
 - **[STORYBOOK_USAGE.md](./design/STORYBOOK_USAGE.md)** - Storybook setup
 - **[UI_ENHANCEMENT_TRENDS_2024.md](./design/UI_ENHANCEMENT_TRENDS_2024.md)** - UI trends
+
+**Component Library Evaluation:**
+- **[SHADCN_MIGRATION_EVALUATION.md](./SHADCN_MIGRATION_EVALUATION.md)** - Evaluation plan for adopting Shadcn UI patterns
+- **[SHADCN_MIGRATION_TEST_GUIDE.md](./SHADCN_MIGRATION_TEST_GUIDE.md)** - Step-by-step guide to test Shadcn migration
+- **[SHADCN_TEST_SETUP_COMPLETE.md](./SHADCN_TEST_SETUP_COMPLETE.md)** - Test setup complete, ready for testing
+- **[SHADCN_MIGRATION_TEST_RESULTS.md](./SHADCN_MIGRATION_TEST_RESULTS.md)** - ✅ Complete test results - All tests passed (with gaps identified)
+- **[SHADCN_MIGRATION_GAPS.md](./SHADCN_MIGRATION_GAPS.md)** - ✅ Missing variants identified (now completed)
+- **[SHADCN_MIGRATION_COMPLETED.md](./SHADCN_MIGRATION_COMPLETED.md)** - ✅ All variants added, ready for final testing
+- **[SHADCN_MIGRATION_COLOR_ANALYSIS.md](./SHADCN_MIGRATION_COLOR_ANALYSIS.md)** - ✅ Color system analysis - No color changes expected
+- **[SHADCN_MIGRATION_COMPLETE.md](./SHADCN_MIGRATION_COMPLETE.md)** - ✅ **MIGRATION COMPLETE** - Button component successfully migrated
+- **[NEXT_STEPS_AFTER_SETUP.md](./NEXT_STEPS_AFTER_SETUP.md)** - Quick reference for next steps
 
 ### 🚀 Deployment
 Located in `docs/deployment/`:
@@ -247,6 +263,8 @@ Deprecated and consolidated documents are preserved here for historical referenc
 - **Deployment**: `docs/deployment/QUICK_DEPLOY_INSTRUCTIONS.md`
 - **Firebase**: `docs/firebase/FIREBASE_SECURITY_CONSOLIDATED.md`
 - **Design System**: `docs/design/TRADEYA_DESIGN_SYSTEM_IMPLEMENTATION_GUIDE.md`
+- **Feature Planning**: `docs/FEATURE_SPEC_TEMPLATE.md`
+- **Component Migration**: `docs/SHADCN_MIGRATION_EVALUATION.md`
 
 ### By Task
 - **New Developer Onboarding**: Start with `IMPLEMENTATION_MASTER_PLAN.md`
@@ -269,6 +287,18 @@ When updating documentation:
 8. ✅ Link to related documentation
 
 ## 🚀 Recent Updates
+
+### December 2024 - Development Workflow Improvements
+- ✅ **Created** [FEATURE_SPEC_TEMPLATE.md](./FEATURE_SPEC_TEMPLATE.md) - Structured template for feature planning
+- ✅ **Created** [QUICK_START_SPEC_TEMPLATE.md](./QUICK_START_SPEC_TEMPLATE.md) - Quick start guide for spec template
+- ✅ **Created** [SHADCN_MIGRATION_EVALUATION.md](./SHADCN_MIGRATION_EVALUATION.md) - Evaluation plan for Shadcn UI adoption
+- ✅ **Created** [SHADCN_MIGRATION_TEST_GUIDE.md](./SHADCN_MIGRATION_TEST_GUIDE.md) - Step-by-step test guide for Shadcn migration
+- ✅ **Created** [IMPROVEMENT_IDEAS_FROM_CURSOR_TALK.md](./IMPROVEMENT_IDEAS_FROM_CURSOR_TALK.md) - Actionable improvements based on Cursor insights
+- ✅ **Created** [INSIGHTS_FROM_CURSOR_DESIGN_TALK.md](./INSIGHTS_FROM_CURSOR_DESIGN_TALK.md) - Analysis of valuable insights
+- ✅ **Created** [AI_PROMPT_GUIDELINES.md](./AI_PROMPT_GUIDELINES.md) - Guidelines for effective AI prompts
+- ✅ **Created** [.cursor/rules/design-system.mdc](../.cursor/rules/design-system.mdc) - Cursor rules for design system compliance
+- ✅ **Set up** Shadcn test environment (components.json, test component, test page at `/shadcn-test`)
+- ✅ **Created** [WORKFLOW_IMPROVEMENTS_SUMMARY.md](./WORKFLOW_IMPROVEMENTS_SUMMARY.md) - Complete summary of improvements
 
 ### November 6, 2025 - Documentation Reorganization & Aggressive Cleanup
 - ✅ **Reorganized** all documentation into logical category directories

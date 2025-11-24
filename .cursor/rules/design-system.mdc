@@ -1,0 +1,202 @@
+---
+description: TradeYa Design System Guidelines - Always follow these patterns when creating or modifying UI components
+alwaysApply: true
+---
+
+# TradeYa Design System Guidelines
+
+When creating or modifying UI components, ALWAYS follow these TradeYa design system patterns to avoid "AI slop" and maintain consistency.
+
+## Color System
+
+**ALWAYS use TradeYa color tokens, never hardcode colors:**
+
+- **Primary (Orange):** `primary-500` (#f97316), `primary-600`, `primary-400`, etc.
+- **Secondary (Blue):** `secondary-500` (#0ea5e9), `secondary-600`, `secondary-400`, etc.
+- **Semantic Colors:**
+  - Success: `success-500` (#22c55e)
+  - Warning: `warning-500` (#f59e0b)
+  - Error: `error-500` (#ef4444)
+- **Neutral:** `neutral-50` through `neutral-950`
+
+**DO:**
+```tsx
+<Button className="bg-primary-500 hover:bg-primary-600 text-white">
+```
+
+**DON'T:**
+```tsx
+<Button className="bg-orange-500 hover:bg-orange-600"> // ❌ Hardcoded color
+```
+
+## Theme-Aware Classes
+
+**ALWAYS use theme-aware classes for dark mode support:**
+
+**DO:**
+```tsx
+<div className="bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100">
+```
+
+**DON'T:**
+```tsx
+<div className="bg-white text-black"> // ❌ No dark mode support
+```
+
+## Spacing Scale
+
+**ALWAYS use the 4px base spacing scale:**
+- `p-1` = 4px
+- `p-2` = 8px
+- `p-4` = 16px
+- `p-6` = 24px
+- `p-8` = 32px
+
+**DO:**
+```tsx
+<div className="p-4 space-y-4">
+```
+
+**DON'T:**
+```tsx
+<div className="p-5 space-y-3"> // ❌ Not on spacing scale
+```
+
+## Component Patterns
+
+### Buttons
+**ALWAYS use the Button component with proper variants:**
+```tsx
+import { Button } from '@/components/ui/Button';
+
+<Button variant="default">Default</Button>
+<Button variant="glassmorphic">Glassmorphic</Button>
+<Button variant="premium">Premium</Button>
+```
+
+### Cards
+**ALWAYS use the Card component:**
+```tsx
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+
+<Card variant="glass" hover>
+  <CardHeader>
+    <CardTitle>Title</CardTitle>
+  </CardHeader>
+  <CardContent>Content</CardContent>
+</Card>
+```
+
+### Inputs
+**ALWAYS use theme-aware Input component:**
+```tsx
+import { Input } from '@/components/ui/Input';
+
+<Input 
+  className="border-glass glassmorphic backdrop-blur-xl"
+  placeholder="Enter text"
+/>
+```
+
+## Glassmorphism Pattern
+
+**For glassmorphic effects, ALWAYS use:**
+```tsx
+className="glassmorphic border-glass bg-white/5 backdrop-blur-sm"
+```
+
+**DO NOT create custom glassmorphism - use the utility class.**
+
+## Accessibility Requirements
+
+**ALWAYS include:**
+- Keyboard navigation support
+- ARIA labels where needed
+- Focus management
+- Screen reader support
+- Reduced motion support
+
+**Example:**
+```tsx
+<button
+  aria-label="Close dialog"
+  aria-busy={isLoading}
+  onKeyDown={(e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      handleClick();
+    }
+  }}
+>
+```
+
+## Component Structure
+
+**ALWAYS follow this pattern:**
+1. Import from `@/components/ui/[ComponentName]`
+2. Use TypeScript interfaces for props
+3. Use `cn()` utility for className merging
+4. Include proper TypeScript types
+5. Export with proper displayName
+
+**Example:**
+```tsx
+import { cn } from '@/utils/cn';
+import { Button } from '@/components/ui/Button';
+
+interface MyComponentProps {
+  className?: string;
+  variant?: 'default' | 'custom';
+}
+
+export const MyComponent: React.FC<MyComponentProps> = ({ 
+  className, 
+  variant = 'default' 
+}) => {
+  return (
+    <div className={cn(
+      'base-classes',
+      variant === 'custom' && 'custom-classes',
+      className
+    )}>
+      Content
+    </div>
+  );
+};
+```
+
+## Existing Component Reference
+
+**Before creating new components, check if these exist:**
+- `Button` - src/components/ui/Button.tsx
+- `Card` - src/components/ui/Card.tsx
+- `Input` - src/components/ui/Input.tsx
+- `Select` - src/components/ui/Select.tsx
+- `Modal` - src/components/ui/Modal.tsx
+- `Badge` - src/components/ui/Badge.tsx
+- `Toast` - src/components/ui/Toast.tsx
+
+**Reference the design system documentation:**
+- `docs/design/TRADEYA_LAYOUT_SYSTEM_ARCHITECTURE.md`
+- `src/components/ui/DESIGN_SYSTEM_DOCUMENTATION.md`
+
+## Common Mistakes to Avoid
+
+1. ❌ **Hardcoding colors** - Always use design tokens
+2. ❌ **Missing dark mode** - Always include `dark:` variants
+3. ❌ **Inconsistent spacing** - Use 4px base scale
+4. ❌ **Creating duplicate components** - Check existing components first
+5. ❌ **Missing accessibility** - Always include ARIA and keyboard support
+6. ❌ **Custom glassmorphism** - Use the `glassmorphic` utility class
+7. ❌ **Not using cn()** - Always use `cn()` for className merging
+
+## Quick Checklist
+
+Before submitting code, verify:
+- [ ] Uses TradeYa color tokens (primary-500, secondary-500, etc.)
+- [ ] Includes dark mode variants (dark:bg-...)
+- [ ] Uses 4px spacing scale
+- [ ] Follows existing component patterns
+- [ ] Includes accessibility attributes
+- [ ] Uses `cn()` for className merging
+- [ ] Proper TypeScript types
+- [ ] References existing components before creating new ones

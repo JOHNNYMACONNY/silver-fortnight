@@ -180,6 +180,126 @@ export async function updatePortfolioItemCategory(
 }
 
 /**
+ * Update portfolio item general fields (title, description, skills, role, customOrder)
+ * Note: Cannot update sourceId, sourceType, userId, completedAt, evidence, or collaborators
+ */
+export async function updatePortfolioItem(
+  userId: string,
+  portfolioItemId: string,
+  updates: {
+    title?: string;
+    description?: string;
+    skills?: string[];
+    role?: string;
+    customOrder?: number;
+  }
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    if (updates.title !== undefined && !updates.title.trim()) {
+      return { success: false, error: 'Title cannot be empty' };
+    }
+    if (updates.description !== undefined && !updates.description.trim()) {
+      return { success: false, error: 'Description cannot be empty' };
+    }
+    if (updates.skills !== undefined && !Array.isArray(updates.skills)) {
+      return { success: false, error: 'Skills must be an array' };
+    }
+
+    const db = getSyncFirebaseDb();
+    const itemRef = doc(db, 'users', userId, 'portfolio', portfolioItemId);
+
+    const updateData: Record<string, unknown> = {};
+    if (updates.title !== undefined) {
+      updateData.title = updates.title.trim();
+    }
+    if (updates.description !== undefined) {
+      updateData.description = updates.description.trim();
+    }
+    if (updates.skills !== undefined) {
+      updateData.skills = updates.skills;
+    }
+    if (updates.role !== undefined) {
+      updateData.role = updates.role;
+    }
+    if (updates.customOrder !== undefined) {
+      updateData.customOrder = updates.customOrder;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return { success: false, error: 'No updates provided' };
+    }
+
+    await updateDoc(itemRef, updateData);
+    return { success: true, error: null };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Unknown error' };
+  }
+}
+
+/**
+ * Generate a shareable link for a portfolio item using profile hash navigation
+ */
+export function getPortfolioItemShareLink(
+  userId: string,
+  portfolioItemId: string,
+  baseUrl?: string
+): string {
+  const origin = baseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+  return `${origin}/profile/${userId}#portfolio`;
+}
+
+/**
+ * Copy/share portfolio item link with navigator.share fallback
+ */
+export async function copyPortfolioItemLink(
+  userId: string,
+  portfolioItemId: string
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    if (typeof navigator === 'undefined') {
+      return { success: false, error: 'Sharing is not available in this environment' };
+    }
+
+    const shareLink = getPortfolioItemShareLink(userId, portfolioItemId);
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Portfolio Item',
+          text: 'Check out this portfolio item',
+          url: shareLink
+        });
+        return { success: true, error: null };
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          return { success: false, error: 'Share cancelled' };
+        }
+      }
+    }
+
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(shareLink);
+      return { success: true, error: null };
+    }
+
+    const textArea = document.createElement('textarea');
+    textArea.value = shareLink;
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      return { success: true, error: null };
+    } finally {
+      document.body.removeChild(textArea);
+    }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to copy link' };
+  }
+}
+
+/**
  * Delete a portfolio item
  */
 export async function deletePortfolioItem(
