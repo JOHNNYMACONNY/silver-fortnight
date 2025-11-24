@@ -1,7 +1,7 @@
 // src/services/portfolio.ts
 
 import { PortfolioItem } from '../types/portfolio';
-import { collection, query, where, orderBy, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, addDoc, doc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
 import { getSyncFirebaseDb } from '../firebase-config';
 
 interface GetUserPortfolioItemsOptions {
@@ -40,8 +40,25 @@ export async function getUserPortfolioItems(
       const data = doc.data();
       return { id: doc.id, ...(data && typeof data === 'object' ? data : {}) } as PortfolioItem;
     });
-  } catch (err) {
-    // Optionally log error
+  } catch (err: any) {
+    // Log error for debugging
+    console.error('Error fetching portfolio items:', err);
+    // If it's an index error, try a simpler query without orderBy
+    if (err?.code === 'failed-precondition' || err?.message?.includes('index')) {
+      try {
+        const db = getSyncFirebaseDb();
+        const portfolioRef = collection(db, 'users', userId, 'portfolio');
+        const simpleQuery = query(portfolioRef, orderBy('completedAt', 'desc'));
+        const snapshot = await getDocs(simpleQuery);
+        return snapshot.docs.map(doc => {
+          const data = doc.data();
+          return { id: doc.id, ...(data && typeof data === 'object' ? data : {}) } as PortfolioItem;
+        });
+      } catch (fallbackErr) {
+        console.error('Fallback query also failed:', fallbackErr);
+        return [];
+      }
+    }
     return [];
   }
 }
@@ -310,6 +327,63 @@ export async function deletePortfolioItem(
     const db = getSyncFirebaseDb();
     const itemRef = doc(db, 'users', userId, 'portfolio', portfolioItemId);
     await deleteDoc(itemRef);
+    return { success: true, error: null };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Unknown error' };
+  }
+}
+
+/**
+ * Create a new portfolio item manually
+ * @param userId - The user ID for whom to create the portfolio item
+ * @param data - The portfolio item data
+ * @returns Promise with success and error fields
+ */
+export async function createPortfolioItem(
+  userId: string,
+  data: {
+    title: string;
+    description: string;
+    skills?: string[];
+    role?: string;
+  }
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    // Validate required fields
+    if (!data.title || !data.title.trim()) {
+      return { success: false, error: 'Title cannot be empty' };
+    }
+    if (!data.description || !data.description.trim()) {
+      return { success: false, error: 'Description cannot be empty' };
+    }
+    if (data.description.trim().length < 10) {
+      return { success: false, error: 'Description must be at least 10 characters' };
+    }
+
+    // Generate unique sourceId for manually created items
+    const sourceId = `manual_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+    // Create PortfolioItem object
+    const portfolioItem: PortfolioItem = {
+      id: '', // Firestore will generate the ID
+      userId,
+      sourceId,
+      sourceType: 'trade', // Use 'trade' as default for manually created items
+      title: data.title.trim(),
+      description: data.description.trim(),
+      skills: data.skills || [],
+      role: data.role?.trim() || undefined,
+      completedAt: Timestamp.now(),
+      visible: true,
+      featured: false,
+      pinned: false,
+      evidence: [],
+      collaborators: []
+    };
+
+    const db = getSyncFirebaseDb();
+    const portfolioRef = collection(db, 'users', userId, 'portfolio');
+    await addDoc(portfolioRef, portfolioItem);
     return { success: true, error: null };
   } catch (err: any) {
     return { success: false, error: err?.message || 'Unknown error' };

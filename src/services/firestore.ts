@@ -1418,11 +1418,12 @@ export const confirmTradeCompletion = async (
     const creatorHasEvidence = !!(tradeData.creatorEvidence && tradeData.creatorEvidence.length > 0);
     const participantHasEvidence = !!(tradeData.participantEvidence && tradeData.participantEvidence.length > 0);
     
-    // Fallback to legacy completionEvidence if role-specific fields don't exist
-    const hasLegacyEvidence = !!(tradeData.completionEvidence && tradeData.completionEvidence.length > 0);
+    // Check if this is truly legacy (no role-specific fields) vs new system (has role-specific fields)
+    const hasRoleSpecificFields = !!(tradeData.creatorEvidence || tradeData.participantEvidence);
+    const hasLegacyEvidence = !hasRoleSpecificFields && !!(tradeData.completionEvidence && tradeData.completionEvidence.length > 0);
     
-    // For backward compatibility, if using legacy completionEvidence, allow confirmation
-    // Otherwise, require both participants to have submitted evidence
+    // For backward compatibility, if using legacy completionEvidence (no role-specific fields), allow confirmation
+    // Otherwise (new system with role-specific fields), require both participants to have submitted evidence
     if (!hasLegacyEvidence && (!creatorHasEvidence || !participantHasEvidence)) {
       return {
         data: null,
