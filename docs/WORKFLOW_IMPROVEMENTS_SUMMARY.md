@@ -58,6 +58,15 @@ Based on insights from the Cursor design team interview, we've implemented a com
 - Code quality requirements
 - Common mistakes to avoid
 
+#### [CODE_REVIEW_CHECKLIST.md](./CODE_REVIEW_CHECKLIST.md)
+- Comprehensive code review checklist
+- Design system compliance checks
+- Accessibility verification
+- Performance and security checks
+- TradeYa-specific pattern validation
+- AI-generated code special attention guide
+- Quick checklist for PR comments
+
 #### [.cursor/rules/design-system.mdc](../.cursor/rules/design-system.mdc)
 - Cursor rules file for automatic design system compliance
 - Always-applied rules for AI-generated code
@@ -179,6 +188,7 @@ Based on insights from the Cursor design team interview, we've implemented a com
 - [Feature Spec Template](./FEATURE_SPEC_TEMPLATE.md)
 - [Shadcn Migration Evaluation](./SHADCN_MIGRATION_EVALUATION.md)
 - [AI Prompt Guidelines](./AI_PROMPT_GUIDELINES.md)
+- [Code Review Checklist](./CODE_REVIEW_CHECKLIST.md)
 - [Design System Documentation](./design/TRADEYA_LAYOUT_SYSTEM_ARCHITECTURE.md)
 - [Cursor Design System Rules](../.cursor/rules/design-system.mdc)
 
@@ -195,6 +205,7 @@ Based on insights from the Cursor design team interview, we've implemented a com
 - [x] Improvement ideas documented
 - [x] Insights analysis complete
 - [x] Documentation updated
+- [x] Code review checklist created
 - [ ] Shadcn migration tested (next step)
 - [ ] Spec-first workflow implemented (next step)
 

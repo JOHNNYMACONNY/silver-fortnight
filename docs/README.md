@@ -29,6 +29,7 @@ Located in root `docs/` directory:
 - **[IMPROVEMENT_IDEAS_FROM_CURSOR_TALK.md](./IMPROVEMENT_IDEAS_FROM_CURSOR_TALK.md)** - Actionable improvements based on Cursor design team insights
 - **[INSIGHTS_FROM_CURSOR_DESIGN_TALK.md](./INSIGHTS_FROM_CURSOR_DESIGN_TALK.md)** - Analysis of valuable insights from Cursor design talk
 - **[AI_PROMPT_GUIDELINES.md](./AI_PROMPT_GUIDELINES.md)** - Guidelines for writing effective AI prompts for TradeYa development
+- **[CODE_REVIEW_CHECKLIST.md](./CODE_REVIEW_CHECKLIST.md)** - Comprehensive code review checklist for design system compliance, accessibility, and code quality
 
 ### 🎮 Features
 Located in `docs/features/`:
