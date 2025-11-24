@@ -41,6 +41,7 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 const ProfileComponentsDemo = lazy(
   () => import("./pages/ProfileComponentsDemo")
 );
+const UXEnhancementsDemo = lazy(() => import("./pages/UXEnhancementsDemoPage"));
 const CollaborationsPage = lazy(() => import("./pages/CollaborationsPage"));
 const CreateCollaborationPage = lazy(
   () => import("./pages/CreateCollaborationPage")
@@ -536,6 +537,14 @@ function App() {
                       element={
                         <RouteErrorBoundary>
                           <StyleGuide />
+                        </RouteErrorBoundary>
+                      }
+                    />
+                    <Route
+                      path="/ux-enhancements-demo"
+                      element={
+                        <RouteErrorBoundary>
+                          <UXEnhancementsDemo />
                         </RouteErrorBoundary>
                       }
                     />
