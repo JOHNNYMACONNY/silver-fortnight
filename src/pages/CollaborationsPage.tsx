@@ -5,7 +5,6 @@ import { PlusCircle, Search, Filter, X, ChevronUp, ChevronDown } from 'lucide-re
 import PerformanceMonitor from '../components/ui/PerformanceMonitor';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { GlassmorphicInput } from "../components/ui/GlassmorphicInput";
 // Import the enhanced CollaborationCard component
 import { CollaborationCard } from '../components/features/collaborations/CollaborationCard';
 import { SearchResultPreview } from '../components/features/search/SearchResultPreview';
@@ -299,29 +298,25 @@ export const CollaborationsPage: React.FC = () => {
           </CardHeader>
           <CardContent className={classPatterns.homepageCardContent}>
             <div className="space-y-md w-full">
-              {/* Enhanced Search Input with Design System */}
-              <Box className="relative w-full">
-                <GlassmorphicInput
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search collaborations by skill, category, or description..."
-                  variant="glass"
-                  size="lg"
-                  brandAccent="purple"
-                  icon={<Search className="h-5 w-5" />}
-                  className="pr-20 bg-white/10 backdrop-blur-xl w-full"
-                />
-                <Button
-                  onClick={() => setShowFilterPanel(true)}
-                  variant="glassmorphic"
-                  size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 min-h-[44px] min-w-[44px]"
-                  topic="collaboration"
-                >
-                  <Filter className="h-4 w-4" />
-                  Filters
-                </Button>
-              </Box>
+              {/* Enhanced Search Bar */}
+              <EnhancedSearchBar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                onSearch={(term) => search(term, filters)}
+                onToggleFilters={() => setShowFilterPanel(true)}
+                hasActiveFilters={hasActiveFilters}
+                activeFiltersCount={Object.keys(filters).filter(k => {
+                  const value = filters[k];
+                  if (value === undefined || value === null || value === "") return false;
+                  if (Array.isArray(value)) return value.length > 0;
+                  return true;
+                }).length}
+                resultsCount={displayCollaborations.length}
+                isLoading={loading || searchLoading}
+                placeholder="Search collaborations by skill, category, or description..."
+                topic="collaboration"
+                enableSearchHistory={true}
+              />
 
               {/* Active Filters Display - Always show when filters are active */}
               {hasActiveFilters && (

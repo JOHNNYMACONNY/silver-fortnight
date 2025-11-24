@@ -8,6 +8,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../utils/cn";
+import { Button } from "../ui/Button";
 import { GlassmorphicForm } from "./GlassmorphicForm";
 import { logger } from '@utils/logging/logger';
 
@@ -317,52 +318,31 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
 
         {/* Navigation Buttons */}
         <div className="flex justify-between items-center mt-8 pt-6 border-t border-border">
-          <button
-            type="button"
+          <Button
+            variant="glassmorphic"
             onClick={goToPreviousStep}
             disabled={isFirstStep || isSubmitting}
-            className={cn(
-              'px-6 py-3 rounded-xl font-medium transition-all duration-200',
-              'glassmorphic',
-              isFirstStep || isSubmitting
-                ? 'opacity-60 cursor-not-allowed'
-                : ''
-            )}
           >
             Previous
-          </button>
+          </Button>
 
           <div className="flex space-x-4">
             {!isLastStep ? (
-              <button
-                type="button"
+              <Button
                 onClick={goToNextStep}
                 disabled={validateOnStepChange && !currentStepValid || isValidating || isSubmitting}
-                className={cn(
-                  'px-8 py-3 rounded-xl font-medium transition-all duration-200',
-                  'bg-gradient-to-r from-orange-500 to-blue-500 text-white',
-                  'hover:from-orange-600 hover:to-blue-600',
-                  'disabled:opacity-50 disabled:cursor-not-allowed',
-                  'shadow-lg hover:shadow-xl'
-                )}
+                className="bg-gradient-to-r from-orange-500 to-blue-500 text-white hover:from-orange-600 hover:to-blue-600 shadow-lg hover:shadow-xl"
               >
                 {isValidating ? 'Validating...' : 'Next Step'}
-              </button>
+              </Button>
             ) : (
-              <button
-                type="button"
+              <Button
                 onClick={handleSubmit}
                 disabled={isSubmitting || (validateOnStepChange && !currentStepValid)}
-                className={cn(
-                  'px-8 py-3 rounded-xl font-medium transition-all duration-200',
-                  'bg-gradient-to-r from-green-500 to-emerald-500 text-white',
-                  'hover:from-green-600 hover:to-emerald-600',
-                  'disabled:opacity-50 disabled:cursor-not-allowed',
-                  'shadow-lg hover:shadow-xl'
-                )}
+                className="bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 shadow-lg hover:shadow-xl"
               >
                 {isSubmitting ? 'Submitting...' : 'Complete'}
-              </button>
+              </Button>
             )}
           </div>
         </div>

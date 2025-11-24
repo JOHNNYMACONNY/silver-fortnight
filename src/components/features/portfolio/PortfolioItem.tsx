@@ -136,7 +136,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
       <div className="absolute top-4 left-4 flex gap-2 z-10">
         {item.featured && (
           <span className="inline-flex items-center gap-1 bg-gradient-to-r from-accent/10 to-accent/20 text-accent-foreground text-xs font-medium px-3 py-1.5 rounded-full border border-accent/50">
-            <Star className="w-3 h-3" />
+            <Star className="w-3 h-3 fill-current text-warning-500" />
             Featured
           </span>
         )}
@@ -157,14 +157,14 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
       {/* Management Controls */}
       {isOwnProfile && isManaging && (
         <div className="absolute top-3 right-3 flex gap-1">
-          <div className="bg-background-primary rounded-lg shadow-lg border border-border p-2">
+          <div className="glassmorphic border-glass rounded-lg shadow-lg p-2">
             <div className="flex flex-col gap-1">
               <button
-                className={`text-xs px-2 py-1 rounded transition-colors ${
+                className={`text-xs px-2 py-1 rounded transition-colors glassmorphic border-glass ${
                   item.visible 
-                    ? 'bg-success/10 text-success' 
-                    : 'bg-muted/20 text-muted-foreground'
-                } hover:bg-muted/30 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    ? 'bg-success/20 text-success border-success/30' 
+                    : 'bg-white/5 text-muted-foreground'
+                } hover:bg-white/20 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={handleToggleVisibility}
                 disabled={loading}
                 title={item.visible ? 'Hide from profile' : 'Show on profile'}
@@ -172,11 +172,11 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
                 {item.visible ? '👁️ Visible' : '👁️‍🗨️ Hidden'}
               </button>
               <button
-                className={`text-xs px-2 py-1 rounded transition-colors ${
+                className={`text-xs px-2 py-1 rounded transition-colors glassmorphic border-glass ${
                   item.featured 
-                    ? 'bg-accent/10 text-accent' 
-                    : 'bg-muted/20 text-muted-foreground'
-                } hover:bg-muted/30 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    ? 'bg-accent/20 text-accent border-accent/30' 
+                    : 'bg-white/5 text-muted-foreground'
+                } hover:bg-white/20 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={handleToggleFeatured}
                 disabled={loading}
                 title={item.featured ? 'Remove from featured' : 'Mark as featured'}
@@ -184,11 +184,11 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
                 {item.featured ? '⭐ Featured' : '⭐ Feature'}
               </button>
               <button
-                className={`text-xs px-2 py-1 rounded transition-colors ${
+                className={`text-xs px-2 py-1 rounded transition-colors glassmorphic border-glass ${
                   item.pinned 
-                    ? 'bg-secondary/10 text-secondary' 
-                    : 'bg-muted/20 text-muted-foreground'
-                } hover:bg-muted/30 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    ? 'bg-secondary/20 text-secondary border-secondary/30' 
+                    : 'bg-white/5 text-muted-foreground'
+                } hover:bg-white/20 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={handleTogglePinned}
                 disabled={loading}
                 title={item.pinned ? 'Unpin from top' : 'Pin to top'}
@@ -196,7 +196,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
                 {item.pinned ? '📌 Pinned' : '📌 Pin'}
               </button>
               <button
-                className="text-xs px-2 py-1 rounded bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                className="text-xs px-2 py-1 rounded glassmorphic border-glass bg-destructive/20 text-destructive border-destructive/30 hover:bg-destructive/30 transition-colors"
                 onClick={handleDelete}
                 disabled={loading}
                 title="Delete portfolio item"
@@ -227,7 +227,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
                 {item.category && (
                   <>
                     <span>•</span>
-                    <span className="bg-background-secondary px-2 py-1 rounded text-xs">
+                    <span className="glassmorphic border-glass px-2 py-1 rounded text-xs text-accent-500">
                       {item.category}
                     </span>
                   </>
@@ -238,12 +238,12 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
 
           {/* Category Editing */}
           {isOwnProfile && isManaging && editingCategory && (
-            <div className="mb-4 p-3 bg-background-secondary rounded-lg">
+            <div className="mb-4 p-3 glassmorphic border-glass rounded-lg">
               <label className="block text-sm font-medium text-text-primary mb-2">
                 Category
               </label>
               <select
-                className="w-full px-3 py-2 border border-border rounded-md focus:ring-ring focus:border-ring bg-input text-text-primary"
+                className="w-full px-3 py-2 glassmorphic border-glass rounded-md focus:ring-ring focus:border-ring text-text-primary"
                 value={item.category || 'Other'}
                 onChange={(e) => handleCategoryChange(e.target.value)}
                 disabled={loading}
@@ -254,7 +254,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
               </select>
               <div className="flex gap-2 mt-2">
                 <button
-                  className="text-xs px-3 py-1 bg-background-secondary text-text-primary rounded hover:bg-background-secondary/80"
+                  className="text-xs px-3 py-1 glassmorphic border-glass text-text-primary rounded hover:bg-white/20 transition-all duration-200"
                   onClick={() => setEditingCategory(false)}
                 >
                   Cancel
@@ -274,7 +274,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
           )}
         </div>
         {item.description && item.description.length > 150 && (
-          <button onClick={() => setExpanded(!expanded)} className="text-xs text-primary mt-2">
+          <button onClick={() => setExpanded(!expanded)} className="text-xs text-primary mt-2 glassmorphic border-glass px-2 py-1 rounded hover:bg-white/20 transition-all duration-200">
             {expanded ? 'Show Less' : 'Show More'}
           </button>
         )}
@@ -304,7 +304,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
               {item.collaborators.map((collaborator, index) => (
                 <div
                   key={collaborator.id || index}
-                  className="flex items-center gap-2 bg-background-secondary px-3 py-2 rounded-lg"
+                  className="flex items-center gap-2 glassmorphic border-glass px-3 py-2 rounded-lg"
                 >
                   {collaborator.photoURL && (
                     <img
@@ -331,7 +331,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-sm font-medium text-text-primary">Evidence</h4>
               <button
-                className="text-accent hover:text-accent-foreground text-sm transition-colors"
+                className="text-accent hover:text-accent-foreground text-sm transition-colors glassmorphic border-glass px-3 py-1 rounded-lg hover:bg-white/20"
                 onClick={() => {
                   setEvidenceStartIndex(0);
                   setShowEvidenceModal(true);
@@ -349,7 +349,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
                     setEvidenceStartIndex(index);
                     setShowEvidenceModal(true);
                   }}
-                  className="flex-shrink-0 w-20 h-20 bg-background-secondary rounded-lg flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-primary transition-all duration-200 cursor-pointer group"
+                  className="flex-shrink-0 w-20 h-20 glassmorphic border-glass rounded-lg flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-primary transition-all duration-200 cursor-pointer group"
                   title="Click to view"
                 >
                   {evidence.type === 'image' || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(evidence.url) ? (
@@ -379,7 +379,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
                     setEvidenceStartIndex(3);
                     setShowEvidenceModal(true);
                   }}
-                  className="flex-shrink-0 w-20 h-20 bg-background-secondary rounded-lg flex items-center justify-center hover:bg-background-tertiary transition-colors cursor-pointer"
+                  className="flex-shrink-0 w-20 h-20 glassmorphic border-glass rounded-lg flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer"
                   title="View more"
                 >
                   <div className="text-center">
@@ -398,7 +398,7 @@ export const PortfolioItemComponent: React.FC<PortfolioItemProps> = ({
         {isOwnProfile && isManaging && !editingCategory && (
           <div className="flex gap-2 pt-4 border-t border-border">
             <button
-              className="text-sm px-3 py-1 bg-background-secondary text-text-primary rounded hover:bg-background-secondary/80"
+              className="text-sm px-3 py-1 glassmorphic border-glass text-text-primary rounded hover:bg-white/20 transition-all duration-200"
               onClick={() => setEditingCategory(true)}
             >
               Edit Category

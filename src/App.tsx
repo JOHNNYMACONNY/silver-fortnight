@@ -23,6 +23,7 @@ import { GamificationNotificationProvider } from "./contexts/GamificationNotific
 import ConsistencyCheckerPage from "./pages/ConsistencyCheckerPage";
 import DevDashboard from "./components/development/DevDashboard";
 import { StyleGuide } from "./components/ui/StyleGuide";
+import ShadcnTestPage from "./pages/ShadcnTestPage";
 import { logger } from "./utils/logging/logger";
 import Spinner from "./components/ui/Spinner";
 import AppPreloader from "./components/ui/AppPreloader";
@@ -537,6 +538,14 @@ function App() {
                       element={
                         <RouteErrorBoundary>
                           <StyleGuide />
+                        </RouteErrorBoundary>
+                      }
+                    />
+                    <Route
+                      path="/shadcn-test"
+                      element={
+                        <RouteErrorBoundary>
+                          <ShadcnTestPage />
                         </RouteErrorBoundary>
                       }
                     />

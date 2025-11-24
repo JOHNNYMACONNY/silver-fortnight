@@ -10,20 +10,18 @@ import { semanticClasses, type Topic } from "../../utils/semanticColors"
 const buttonVariantsConfig = {
   variants: {
     variant: {
+      // Shadcn standard variants adapted for TradeYa (using CSS variables)
       default: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl backdrop-blur-sm border border-primary/20 shadow-md",
-      destructive:
-        "bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl backdrop-blur-sm border border-destructive/20 shadow-md",
-      outline:
-        "border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-xl backdrop-blur-sm shadow-sm",
-      secondary:
-        "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl backdrop-blur-sm border border-secondary/20 shadow-md",
+      destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl backdrop-blur-sm border border-destructive/20 shadow-md",
+      outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-xl backdrop-blur-sm shadow-sm",
+      secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl backdrop-blur-sm border border-secondary/20 shadow-md",
       ghost: "hover:bg-accent hover:text-accent-foreground rounded-xl backdrop-blur-sm",
       link: "text-primary underline-offset-4 hover:underline",
+      // TradeYa custom variants (preserved)
       success: "bg-success-500 text-white hover:bg-success-600 rounded-xl backdrop-blur-sm border border-success-500/20 shadow-md",
       warning: "bg-warning-500 text-white hover:bg-warning-600 rounded-xl backdrop-blur-sm border border-warning-500/20 shadow-md",
       glassmorphic: "glassmorphic text-white font-medium hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-200",
-      "glass-toggle":
-        "glassmorphic text-white/80 font-medium transition-colors duration-200 border border-white/10 hover:text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/30 data-[active=true]:text-white data-[active=true]:bg-white/20 data-[active=true]:border-white/20 data-[active=true]:shadow-lg",
+      "glass-toggle": "glassmorphic text-white/80 font-medium transition-colors duration-200 border border-white/10 hover:text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/30 data-[active=true]:text-white data-[active=true]:bg-white/20 data-[active=true]:border-white/20 data-[active=true]:shadow-lg",
       premium: "bg-gradient-to-r from-primary to-primary/80 text-gray-900 font-semibold shadow-lg hover:shadow-xl hover:from-primary/90 hover:to-primary/70 transition-all duration-300 transform hover:scale-105 border border-primary/20 backdrop-blur-sm rounded-xl",
       "premium-outline": "border border-primary/30 text-white font-semibold bg-transparent hover:bg-primary/10 hover:text-white transition-all duration-300 transform hover:scale-105 backdrop-blur-sm rounded-xl shadow-sm",
       interactive: "bg-gradient-to-r from-primary/90 to-primary/70 text-gray-900 font-medium shadow-md hover:shadow-lg hover:from-primary hover:to-primary/80 transition-all duration-200 transform hover:scale-102 border border-primary/20 backdrop-blur-sm rounded-xl",
@@ -42,7 +40,6 @@ const buttonVariantsConfig = {
       sm: "h-9 rounded-xl px-3",
       lg: "h-11 rounded-xl px-8",
       icon: "h-10 w-10",
-      // Aliases
       xs: "h-8 rounded-xl px-3",
       md: "h-10 px-4 py-2",
       xl: "h-12 rounded-xl px-8",
@@ -72,16 +69,28 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, isLoading = false, fullWidth = false, rounded = false, leftIcon, rightIcon, children, topic, ...props }, ref) => {
+  ({ 
+    className, 
+    variant, 
+    size, 
+    asChild = false, 
+    isLoading = false, 
+    fullWidth = false, 
+    rounded = false,
+    leftIcon,
+    rightIcon,
+    children,
+    topic,
+    ...props 
+  }, ref) => {
     const Comp = asChild ? Slot : "button"
     
     // Mobile optimization: Ensure minimum 44px height on mobile for touch targets
-    // Check if we're on mobile (viewport < 768px) and size is default/sm/xs
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
     const needsMobileOverride = isMobile && (!size || size === 'default' || size === 'sm' || size === 'xs');
     const mobileHeightClass = needsMobileOverride ? 'min-h-[44px]' : '';
 
-    // Topic-aware class additions depending on variant
+    // Topic-aware class additions depending on variant (matching current Button.tsx)
     const topicClasses = topic
       ? (
           !variant || variant === 'default' || variant === 'primary' || variant === 'brand'
@@ -92,9 +101,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )
       : ''
 
-    // When using `asChild`, Radix Slot requires exactly one React element child.
-    // To satisfy this constraint, we intentionally render ONLY `children` here.
-    // If you need icons with `asChild`, include them inside the single child element.
     if (asChild) {
       return (
         <Comp

@@ -11,10 +11,11 @@ import TradeCard, {
   ExtendedTrade,
 } from "../components/features/trades/TradeCard";
 import { motion } from "framer-motion";
-import { GlassmorphicInput } from "../components/ui/GlassmorphicInput";
 import { TradeListSkeleton } from "../components/ui/skeletons/TradeCardSkeleton";
 import { useToast } from "../contexts/ToastContext";
 import { Button } from "../components/ui/Button";
+import { EnhancedSearchBar } from "../components/features/search/EnhancedSearchBar";
+import { SearchEmptyState } from "../components/features/search/SearchEmptyState";
 import { PlusCircle, Search, Filter, X, Target, Tag, Clock, Star, SortAsc, Grid as GridIcon, List, ChevronDown, ChevronUp } from "lucide-react";
 import Box from "../components/layout/primitives/Box";
 import Stack from "../components/layout/primitives/Stack";
@@ -532,30 +533,25 @@ export const TradesPage: React.FC = () => {
           </CardHeader>
           <CardContent className={classPatterns.homepageCardContent}>
             <div className="space-y-md w-full">
-              {/* Enhanced Search Input with Design System */}
-              <Box className="relative w-full">
-                <GlassmorphicInput
-                  value={searchTerm}
-                  onChange={(e) => handleSearchTermChange(e.target.value)}
-                  placeholder="Search trades by skill, category, or description..."
-                  variant="glass"
-                  size="lg"
-                  brandAccent="orange"
-                  icon={<Search className="h-5 w-5" />}
-                  className="pr-20 bg-white/10 backdrop-blur-xl w-full"
-                  data-testid="trade-search-input"
-                />
-                <Button
-                  onClick={() => setShowFilterPanel(true)}
-                  variant="glassmorphic"
-                  size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 min-h-[44px] min-w-[44px]"
-                  topic="trades"
-                >
-                  <Filter className="h-4 w-4" />
-                  Filters
-                </Button>
-              </Box>
+              {/* Enhanced Search Bar */}
+              <EnhancedSearchBar
+                searchTerm={searchTerm}
+                onSearchChange={handleSearchTermChange}
+                onSearch={(term) => handleSearch(term, {})}
+                onToggleFilters={() => setShowFilterPanel(true)}
+                hasActiveFilters={hasActiveFilters}
+                activeFiltersCount={Object.keys(filters).filter(k => {
+                  const value = filters[k];
+                  if (value === undefined || value === null || value === "") return false;
+                  if (Array.isArray(value)) return value.length > 0;
+                  return true;
+                }).length}
+                resultsCount={enhancedTrades.length}
+                isLoading={loading || searchLoading}
+                placeholder="Search trades by skill, category, or description..."
+                topic="trades"
+                enableSearchHistory={true}
+              />
 
               {/* Active Filters Display - Always show when filters are active */}
               {hasActiveFilters && (
@@ -1024,28 +1020,25 @@ export const TradesPage: React.FC = () => {
               </Button>
             </CardContent>
           </Card>
-        ) : enhancedTrades.length === 0 ? (
-          <Card variant="glass" className="text-center p-6">
-            <CardHeader>
-              <CardTitle className="text-subsection-heading text-foreground">
-                No Trades Found
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                No trades match your search criteria. Try a different search term
-                or create a new trade!
-              </p>
-              <Button
-                onClick={() => navigate("/trades/new")}
-                variant="glassmorphic"
-                topic="trades"
-              >
-                <PlusCircle className="me-2 h-4 w-4" />
-                Create New Trade
-              </Button>
-            </CardContent>
-          </Card>
+        ) : !loading && !searchLoading && enhancedTrades.length === 0 ? (
+          <SearchEmptyState
+            searchTerm={searchTerm}
+            hasActiveFilters={hasActiveFilters}
+            onClearSearch={() => {
+              setSearchTerm('');
+              clearSearch();
+            }}
+            onClearFilters={() => {
+              setFilters({});
+              clearSearch();
+            }}
+            suggestions={[
+              'Try searching for "design" or "development"',
+              'Filter by category',
+              'Browse all trades',
+              'Create your own trade'
+            ]}
+          />
         ) : (
           <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="lg">
             {enhancedTrades.map((trade, index) => (
