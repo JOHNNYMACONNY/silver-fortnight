@@ -1,4 +1,24 @@
-# TypeScript Integration Fixes
+# Pull Request
+
+## Code Review Checklist
+
+**Full Checklist:** See [CODE_REVIEW_CHECKLIST.md](./CODE_REVIEW_CHECKLIST.md)
+
+### Quick Checks
+- [ ] Design system compliance (color tokens, dark mode, spacing)
+- [ ] Accessibility (ARIA labels, keyboard navigation, focus states)
+- [ ] TypeScript types (no `any`, proper interfaces)
+- [ ] Performance (no unnecessary re-renders, memoization)
+- [ ] Security (input validation, auth checks)
+- [ ] TradeYa patterns (semantic classes, ServiceResult, loading/error states)
+- [ ] Uses existing components where possible
+- [ ] All tests passing
+
+**Note:** Pay special attention to AI-generated code - verify design system compliance and component reuse.
+
+---
+
+## TypeScript Integration Fixes
 
 ## Changes Overview
 
