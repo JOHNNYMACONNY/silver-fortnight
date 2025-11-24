@@ -43,6 +43,7 @@ import {
 
   // Status icons
   Check,
+  CheckCircle,
   AlertCircle,
   Info,
   AlertTriangle,
@@ -53,6 +54,12 @@ import {
   FileText,
   Upload,
   Download,
+  Video,
+  PenTool,
+  Layers,
+  Sparkles,
+  Book,
+  Car,
 
   // Commerce icons
   ShoppingBag,
@@ -138,6 +145,7 @@ export {
 
   // Status icons
   Check,
+  CheckCircle,
   AlertCircle,
   Info,
   AlertTriangle,
@@ -148,6 +156,12 @@ export {
   FileText,
   Upload,
   Download,
+  Video,
+  PenTool,
+  Layers,
+  Sparkles,
+  Book,
+  Car,
 
   // Commerce icons
   ShoppingBag,

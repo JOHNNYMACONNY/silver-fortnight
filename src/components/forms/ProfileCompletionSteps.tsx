@@ -12,6 +12,9 @@ import { GlassmorphicTextarea } from "./GlassmorphicTextarea";
 import { GlassmorphicDropdown, DropdownOption } from "./GlassmorphicDropdown";
 import { motion } from "framer-motion";
 import { cn } from "../../utils/cn";
+import { VisualSelectionGroup } from "../ui/VisualSelectionGroup";
+import { getTradingInterestIcon, getExperienceLevelIcon } from "../../utils/iconMappings";
+import { isVisualSelectionEnabled } from "../../utils/featureFlags";
 
 // Location Options (US States + Major Cities)
 const LOCATION_OPTIONS: DropdownOption[] = [
@@ -433,6 +436,7 @@ export const TradingPreferencesStep: React.FC<StepComponentProps> = ({
   errors,
 }) => {
   const [isValid, setIsValid] = useState(false);
+  const useVisualSelection = isVisualSelectionEnabled();
 
   // Validation logic
   useEffect(() => {
@@ -464,33 +468,91 @@ export const TradingPreferencesStep: React.FC<StepComponentProps> = ({
         </p>
       </div>
 
-      <GlassmorphicDropdown
-        label="Trading Interests"
-        placeholder="Select categories you're interested in"
-        options={TRADING_INTERESTS}
-        value={data.tradingInterests || []}
-        onChange={(value) => onChange("tradingInterests", value)}
-        variant="glass"
-        brandAccent="orange"
-        multiSelect
-        searchable
-        error={errors?.tradingInterests}
-        hint="Choose all categories that interest you"
-        required
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {useVisualSelection ? (
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            Trading Interests <span className="text-destructive">*</span>
+          </label>
+          <VisualSelectionGroup
+            options={TRADING_INTERESTS.map(interest => {
+              const Icon = getTradingInterestIcon(interest.value);
+              return {
+                value: interest.value,
+                label: interest.label,
+                description: interest.description,
+                icon: Icon ? <Icon className="w-6 h-6" /> : undefined
+              };
+            })}
+            value={data.tradingInterests || []}
+            onChange={(value) => {
+              // Handle both single string and string[] from VisualSelectionGroup
+              const newValue = Array.isArray(value) ? value : [value];
+              onChange("tradingInterests", newValue);
+            }}
+            multiple={true}
+            topic="trades"
+            columns={4}
+          />
+          {errors?.tradingInterests && (
+            <p className="text-sm text-destructive mt-1">{errors.tradingInterests}</p>
+          )}
+        </div>
+      ) : (
         <GlassmorphicDropdown
-          label="Experience Level"
-          placeholder="Select your trading experience"
-          options={EXPERIENCE_LEVELS}
-          value={data.experienceLevel || ""}
-          onChange={(value) => onChange("experienceLevel", value)}
+          label="Trading Interests"
+          placeholder="Select categories you're interested in"
+          options={TRADING_INTERESTS}
+          value={data.tradingInterests || []}
+          onChange={(value) => onChange("tradingInterests", value)}
           variant="glass"
-          brandAccent="blue"
-          error={errors?.experienceLevel}
+          brandAccent="orange"
+          multiSelect
+          searchable
+          error={errors?.tradingInterests}
+          hint="Choose all categories that interest you"
           required
         />
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {useVisualSelection ? (
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Experience Level <span className="text-destructive">*</span>
+            </label>
+            <VisualSelectionGroup
+              options={EXPERIENCE_LEVELS.map(level => {
+                const Icon = getExperienceLevelIcon(level.value);
+                return {
+                  value: level.value,
+                  label: level.label,
+                  description: level.description,
+                  icon: Icon ? <Icon className="w-6 h-6" /> : undefined
+                };
+              })}
+              value={data.experienceLevel || ""}
+              onChange={(value) => onChange("experienceLevel", typeof value === 'string' ? value : value[0] || '')}
+              multiple={false}
+              topic="community"
+              columns={4}
+            />
+            {errors?.experienceLevel && (
+              <p className="text-sm text-destructive mt-1">{errors.experienceLevel}</p>
+            )}
+          </div>
+        ) : (
+          <GlassmorphicDropdown
+            label="Experience Level"
+            placeholder="Select your trading experience"
+            options={EXPERIENCE_LEVELS}
+            value={data.experienceLevel || ""}
+            onChange={(value) => onChange("experienceLevel", value)}
+            variant="glass"
+            brandAccent="blue"
+            error={errors?.experienceLevel}
+            required
+          />
+        )}
 
         <GlassmorphicDropdown
           label="Preferred Trade Method"

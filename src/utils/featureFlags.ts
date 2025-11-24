@@ -25,34 +25,43 @@ const normalizeFlagValue = (raw: unknown): boolean | null => {
   return true;
 };
 
-const readEnvValue = (): unknown => {
+// Generic helper that accepts env var name
+const readEnvValueGeneric = (envVarName: string): unknown => {
+  // In Vite, environment variables are exposed via import.meta.env
   try {
-    if (
-      typeof process !== "undefined" &&
-      (process.env as any)?.VITE_THEME_TOGGLE_ENABLED !== undefined
-    ) {
-      return (process.env as any).VITE_THEME_TOGGLE_ENABLED;
+    // @ts-ignore - import.meta.env is available in Vite
+    if (typeof import.meta !== "undefined" && import.meta.env?.[envVarName] !== undefined) {
+      // @ts-ignore
+      return import.meta.env[envVarName];
     }
   } catch {
     // ignore and try next source
   }
 
-  const importMetaEnv = (globalThis as any)?.import?.meta?.env;
-  if (importMetaEnv?.VITE_THEME_TOGGLE_ENABLED !== undefined) {
-    return importMetaEnv.VITE_THEME_TOGGLE_ENABLED;
+  try {
+    if (typeof process !== "undefined" && (process.env as any)?.[envVarName] !== undefined) {
+      return (process.env as any)[envVarName];
+    }
+  } catch {
+    // ignore and try next source
   }
 
   const globalEnv = (globalThis as any) || {};
 
-  if (globalEnv.__VITE_ENV__?.VITE_THEME_TOGGLE_ENABLED !== undefined) {
-    return globalEnv.__VITE_ENV__.VITE_THEME_TOGGLE_ENABLED;
+  if (globalEnv.__VITE_ENV__?.[envVarName] !== undefined) {
+    return globalEnv.__VITE_ENV__[envVarName];
   }
 
-  if (globalEnv.VITE_THEME_TOGGLE_ENABLED !== undefined) {
-    return globalEnv.VITE_THEME_TOGGLE_ENABLED;
+  if (globalEnv[envVarName] !== undefined) {
+    return globalEnv[envVarName];
   }
 
   return undefined;
+};
+
+// Keep existing readEnvValue for backward compatibility with isThemeToggleEnabled
+const readEnvValue = (): unknown => {
+  return readEnvValueGeneric('VITE_THEME_TOGGLE_ENABLED');
 };
 
 export const isThemeToggleEnabled = (): boolean => {
@@ -65,4 +74,23 @@ export const isThemeToggleEnabled = (): boolean => {
 
   // Theme toggle is disabled by default
   return false;
+};
+
+// New flag functions using generic helper
+export const isVisualSelectionEnabled = (): boolean => {
+  const rawValue = readEnvValueGeneric('VITE_VISUAL_SELECTION_ENABLED');
+  const normalized = normalizeFlagValue(rawValue);
+  return normalized ?? false; // Default: false
+};
+
+export const isConversationalLabelsEnabled = (): boolean => {
+  const rawValue = readEnvValueGeneric('VITE_CONVERSATIONAL_LABELS_ENABLED');
+  const normalized = normalizeFlagValue(rawValue);
+  return normalized ?? true; // Default: true (safe, text-only)
+};
+
+export const isDynamicFeedbackEnabled = (): boolean => {
+  const rawValue = readEnvValueGeneric('VITE_DYNAMIC_FEEDBACK_ENABLED');
+  const normalized = normalizeFlagValue(rawValue);
+  return normalized ?? true; // Default: true (safe, additive)
 };

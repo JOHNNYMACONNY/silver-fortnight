@@ -16,6 +16,11 @@ import { Textarea } from '../components/ui/Textarea';
 import { X, AlertCircle } from 'lucide-react';
 import { logger } from '@utils/logging/logger';
 import { Slider } from '../components/ui/Slider';
+import { VisualSelectionGroup } from '../components/ui/VisualSelectionGroup';
+import { SkillLevelSelector } from '../components/ui/SkillLevelSelector';
+import { getCategoryIcon } from '../utils/iconMappings';
+import { isVisualSelectionEnabled, isConversationalLabelsEnabled } from '../utils/featureFlags';
+import { getLabel } from '../utils/conversationalLabels';
 
 const CreateTradePage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -40,6 +45,10 @@ const CreateTradePage: React.FC = () => {
   
   // Feature flag for slider inputs (can be toggled for gradual rollout)
   const USE_SLIDER_INPUTS = true;
+  
+  // Feature flags for UX enhancements
+  const useVisualSelection = isVisualSelectionEnabled();
+  const useConversationalLabels = isConversationalLabelsEnabled();
   
   // Helper to convert slider value (0-2) to skill level
   const sliderToLevel = (value: number): 'beginner' | 'intermediate' | 'expert' => {
@@ -231,21 +240,44 @@ const CreateTradePage: React.FC = () => {
               />
             </div>
 
-            <div>
-              <label htmlFor="category" className="block text-sm font-medium text-muted-foreground mb-1">
-                Category <span className="text-destructive">*</span>
-              </label>
-               <Select value={category} onValueChange={setCategory}>
-                 <SelectTrigger id="category" className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
-                   <SelectValue placeholder="Select a category" />
-                 </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {useVisualSelection ? (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  {useConversationalLabels ? getLabel('category', true) : 'Category'} 
+                  <span className="text-destructive">*</span>
+                </label>
+                <VisualSelectionGroup
+                  options={categories.map(cat => {
+                    const Icon = getCategoryIcon(cat);
+                    return {
+                      value: cat,
+                      label: cat,
+                      icon: Icon ? <Icon className="w-6 h-6" /> : undefined
+                    };
+                  })}
+                  value={category}
+                  onChange={(value) => setCategory(typeof value === 'string' ? value : value[0] || '')}
+                  topic="trades"
+                  columns={4}
+                />
+              </div>
+            ) : (
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-muted-foreground mb-1">
+                  Category <span className="text-destructive">*</span>
+                </label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger id="category" className="glassmorphic border-glass backdrop-blur-xl bg-white/5">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="md:col-span-2">
               <label htmlFor="description" className="block text-sm font-medium text-muted-foreground mb-1">
@@ -294,7 +326,13 @@ const CreateTradePage: React.FC = () => {
                   Add Skill
                 </Button>
               </div>
-              {USE_SLIDER_INPUTS ? (
+              {useVisualSelection ? (
+                <SkillLevelSelector
+                  value={newOfferedSkillLevel}
+                  onChange={setNewOfferedSkillLevel}
+                  topic="trades"
+                />
+              ) : USE_SLIDER_INPUTS ? (
                 <Slider
                   label="Skill Level"
                   value={levelToSlider(newOfferedSkillLevel)}
@@ -362,7 +400,13 @@ const CreateTradePage: React.FC = () => {
                   Add Skill
                 </Button>
               </div>
-              {USE_SLIDER_INPUTS ? (
+              {useVisualSelection ? (
+                <SkillLevelSelector
+                  value={newRequestedSkillLevel}
+                  onChange={setNewRequestedSkillLevel}
+                  topic="trades"
+                />
+              ) : USE_SLIDER_INPUTS ? (
                 <Slider
                   label="Skill Level"
                   value={levelToSlider(newRequestedSkillLevel)}
