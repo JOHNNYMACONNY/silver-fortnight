@@ -15,7 +15,7 @@ import { GlassmorphicInput } from "../components/ui/GlassmorphicInput";
 import { TradeListSkeleton } from "../components/ui/skeletons/TradeCardSkeleton";
 import { useToast } from "../contexts/ToastContext";
 import { Button } from "../components/ui/Button";
-import { PlusCircle, Search, Filter, X, Target, Tag, Clock, Star, SortAsc, Grid as GridIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { PlusCircle, Search, Filter, X, Target, Tag, Clock, Star, SortAsc, Grid as GridIcon, List, ChevronDown, ChevronUp } from "lucide-react";
 import Box from "../components/layout/primitives/Box";
 import Stack from "../components/layout/primitives/Stack";
 import Cluster from "../components/layout/primitives/Cluster";
@@ -42,12 +42,18 @@ import { classPatterns, animations } from "../utils/designSystem";
 import { semanticClasses } from "../utils/semanticColors";
 import { TopicLink } from "../components/ui/TopicLink";
 import { getQuickTradeAnalytics, TradeAnalytics } from "../services/tradeAnalytics";
+import { useMobileOptimization } from "../hooks/useMobileOptimization";
+import { cn } from "../utils/cn";
 import { logger } from '@utils/logging/logger';
+import { CategoryGrid } from "../components/features/trades/CategoryGrid";
+import { SkillCategory } from "../utils/skillMapping";
+import { useUserPersonalization } from "../hooks/useUserPersonalization";
 
 export const TradesPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
+  const { isMobile } = useMobileOptimization();
   const [trades, setTrades] = useState<ExtendedTrade[]>([]);
   const [tradeCreators, setTradeCreators] = useState<{ [key: string]: User }>(
     {}
@@ -59,6 +65,10 @@ export const TradesPage: React.FC = () => {
   const [showStats, setShowStats] = useState(false);
   const [analytics, setAnalytics] = useState<TradeAnalytics | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [categoryViewMode, setCategoryViewMode] = useState<'grid' | 'dropdown'>('grid');
+  
+  // User personalization
+  const { userType, tradeCount, profileCompleteness } = useUserPersonalization();
 
   const {
     searchTerm,
@@ -283,6 +293,35 @@ export const TradesPage: React.FC = () => {
     []
   );
 
+  // Check if filters are active (must be defined before categoryCounts uses it)
+  const hasActiveFilters = useMemo(() => {
+    return Object.values(filters).some((value) => {
+      if (value === undefined || value === null || value === "") return false;
+      if (Array.isArray(value)) return value.length > 0;
+      if (
+        typeof value === "object" &&
+        value &&
+        "start" in value &&
+        "end" in value
+      ) {
+        return value.start != null || value.end != null;
+      }
+      return true;
+    });
+  }, [filters]);
+
+  // Calculate category counts from trades
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const allTrades = searchTerm || hasActiveFilters ? searchedTrades : trades;
+    allTrades.forEach(trade => {
+      if (trade.category) {
+        counts[trade.category] = (counts[trade.category] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [trades, searchedTrades, searchTerm, hasActiveFilters]);
+
   // Choose backend results when searching/filters are active; apply client-only filters afterward
   const filteredTrades = useMemo(() => {
     const hasFiltersActive = Object.values(filters).some(
@@ -372,22 +411,6 @@ export const TradesPage: React.FC = () => {
       .slice(0, 50);
   }, [trades, filteredTrades, getTradeSkills]);
 
-  const hasActiveFilters = useMemo(() => {
-    return Object.values(filters).some((value) => {
-      if (value === undefined || value === null || value === "") return false;
-      if (Array.isArray(value)) return value.length > 0;
-      if (
-        typeof value === "object" &&
-        value &&
-        "start" in value &&
-        "end" in value
-      ) {
-        return value.start != null || value.end != null;
-      }
-      return true;
-    });
-  }, [filters]);
-
   // Debounced search when term or filters change (MVP: 300ms)
   useEffect(() => {
     const handle = setTimeout(() => {
@@ -453,10 +476,18 @@ export const TradesPage: React.FC = () => {
               animation="kinetic" 
               className={`text-display-large md:text-5xl ${semanticClasses('trades').gradientText} mb-4`}
             >
-              Available Trades
+              {userType === 'new' ? 'Welcome to TradeYa!' : 
+               userType === 'regular' ? 'Available Trades' : 
+               'Trade Dashboard'}
             </AnimatedHeading>
             <p className="text-body-large text-muted-foreground max-w-2xl animate-fadeIn mb-6">
-              Discover skill exchanges and connect with talented individuals ready to trade expertise.
+              {userType === 'new' ? (
+                <>Welcome! Start by exploring available trades or create your first trade to exchange skills with the community.</>
+              ) : userType === 'regular' ? (
+                <>Discover skill exchanges and connect with talented individuals ready to trade expertise.</>
+              ) : (
+                <>Advanced trading tools and analytics to optimize your skill exchange experience.</>
+              )}
             </p>
             <Cluster gap="sm" align="center">
               <Button
@@ -599,6 +630,7 @@ export const TradesPage: React.FC = () => {
             )}
             </div>
           </CardContent>
+        </Card>
 
           {/* Enhanced Filter Panel with Modal Component */}
         <Modal
@@ -663,33 +695,75 @@ export const TradesPage: React.FC = () => {
                   hover={true}
                 >
                   <CardHeader className="pb-3 sm:pb-4">
-                    <CardTitle className="text-sm sm:text-base lg:text-lg font-medium flex items-center gap-2 sm:gap-3 text-white/95">
-                      <Tag className="h-4 w-4 sm:h-5 sm:w-5 text-orange-400 flex-shrink-0" />
-                      <span className="leading-tight break-words">Category</span>
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm sm:text-base lg:text-lg font-medium flex items-center gap-2 sm:gap-3 text-white/95">
+                        <Tag className="h-4 w-4 sm:h-5 sm:w-5 text-orange-400 flex-shrink-0" />
+                        <span className="leading-tight break-words">Category</span>
+                      </CardTitle>
+                      <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1">
+                        <button
+                          type="button"
+                          onClick={() => setCategoryViewMode('grid')}
+                          className={cn(
+                            "p-1.5 rounded transition-colors",
+                            categoryViewMode === 'grid'
+                              ? "bg-primary/20 text-primary"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                          title="Grid view"
+                        >
+                          <GridIcon className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCategoryViewMode('dropdown')}
+                          className={cn(
+                            "p-1.5 rounded transition-colors",
+                            categoryViewMode === 'dropdown'
+                              ? "bg-primary/20 text-primary"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                          title="Dropdown view"
+                        >
+                          <List className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <Select
-                      value={filters.category || "all"}
-                      onValueChange={(value) => {
-                        const newFilters = { ...filters, category: value === "all" ? undefined : value };
-                        setFilters(newFilters);
-                        search(searchTerm, newFilters);
-                      }}
-                    >
-                      <SelectTrigger className="glassmorphic border-glass backdrop-blur-sm bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-orange-400/30 transition-all duration-200 h-10 sm:h-11 text-sm sm:text-base">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent className="glassmorphic border-glass backdrop-blur-xl bg-white/10">
-                        <SelectItem value="all">All Categories</SelectItem>
-                        <SelectItem value="tech">Technology</SelectItem>
-                        <SelectItem value="design">Design</SelectItem>
-                        <SelectItem value="marketing">Marketing</SelectItem>
-                        <SelectItem value="writing">Writing</SelectItem>
-                        <SelectItem value="business">Business</SelectItem>
-                        <SelectItem value="creative">Creative</SelectItem>
+                    {categoryViewMode === 'grid' ? (
+                      <CategoryGrid
+                        onCategorySelect={(category) => {
+                          const newFilters = { ...filters, category: category === 'all' ? undefined : category };
+                          setFilters(newFilters);
+                          search(searchTerm, newFilters);
+                        }}
+                        selectedCategory={filters.category}
+                        categoryCounts={categoryCounts}
+                      />
+                    ) : (
+                      <Select
+                        value={filters.category || "all"}
+                        onValueChange={(value) => {
+                          const newFilters = { ...filters, category: value === "all" ? undefined : value };
+                          setFilters(newFilters);
+                          search(searchTerm, newFilters);
+                        }}
+                      >
+                        <SelectTrigger className="glassmorphic border-glass backdrop-blur-sm bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-orange-400/30 transition-all duration-200 h-10 sm:h-11 text-sm sm:text-base">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent className="glassmorphic border-glass backdrop-blur-xl bg-white/10">
+                          <SelectItem value="all">All Categories</SelectItem>
+                          <SelectItem value="tech">Technology</SelectItem>
+                          <SelectItem value="design">Design</SelectItem>
+                          <SelectItem value="marketing">Marketing</SelectItem>
+                          <SelectItem value="writing">Writing</SelectItem>
+                          <SelectItem value="business">Business</SelectItem>
+                          <SelectItem value="creative">Creative</SelectItem>
                       </SelectContent>
                     </Select>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -788,7 +862,6 @@ export const TradesPage: React.FC = () => {
               </div>
             </div>
           </Modal>
-        </Card>
 
         {/* Enhanced Results Display */}
         <Card variant="glass" className="p-4 mb-6">
@@ -825,7 +898,10 @@ export const TradesPage: React.FC = () => {
                   fetchAnalytics();
                 }
               }}
-              className="text-foreground hover:text-foreground/80 transition-all duration-200 flex items-center gap-2 group"
+              className={cn(
+                "text-foreground hover:text-foreground/80 transition-all duration-200 flex items-center gap-2 group",
+                isMobile && "min-h-[44px]" // Mobile optimization: Ensure minimum 44px height on mobile for touch targets
+              )}
             >
               <AnimatedHeading as="h2" animation="slide" className="text-section-heading md:text-3xl">
                 Trade Analytics

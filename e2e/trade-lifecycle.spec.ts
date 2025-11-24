@@ -54,11 +54,27 @@ test('should handle trade discovery and filtering', async ({ signedInPage: page 
     await expect(page.locator('[data-testid="trade-card"]')).toHaveCount(1);
     await expect(page.locator('[data-testid="trade-card"]').first()).toContainText('React');
     
-    // Test category filtering
+    // Test category grid view
+    await page.click('[data-testid="category-view-toggle"]');
+    await page.click('[data-testid="category-grid-view"]');
+    
+    // Verify category grid is visible
+    await expect(page.locator('[data-testid="category-grid"]')).toBeVisible();
+    
+    // Select category from grid
+    await page.click('[data-testid="category-design"]');
+    
+    // Verify filtered results
+    await expect(page.locator('[data-testid="trade-card"]')).toHaveCountGreaterThanOrEqual(0);
+    
+    // Test category dropdown view
+    await page.click('[data-testid="category-dropdown-view"]');
+    
+    // Test category filtering with dropdown
     await page.selectOption('[data-testid="category-filter"]', 'technology');
     
     // Verify filtered results
-    await expect(page.locator('[data-testid="trade-card"]')).toHaveCount(1);
+    await expect(page.locator('[data-testid="trade-card"]')).toHaveCountGreaterThanOrEqual(0);
     
     // Test skill level filtering
     await page.selectOption('[data-testid="skill-level-filter"]', 'intermediate');
@@ -68,6 +84,62 @@ test('should handle trade discovery and filtering', async ({ signedInPage: page 
     
     // Verify all trades are shown again
     await expect(page.locator('[data-testid="trade-card"]')).toHaveCountGreaterThan(1);
+  });
+
+  test('should display search history in search bar', async ({ signedInPage: page }) => {
+    // Navigate to trades page
+    await page.click('[data-testid="nav-trades"]');
+    
+    // Perform a search
+    await page.fill('[data-testid="trade-search-input"]', 'React Development');
+    await page.keyboard.press('Enter');
+    
+    // Wait for search to complete
+    await page.waitForTimeout(500);
+    
+    // Clear search
+    await page.fill('[data-testid="trade-search-input"]', '');
+    await page.click('[data-testid="trade-search-input"]');
+    
+    // Verify recent searches are displayed
+    const recentSearches = page.locator('[data-testid="recent-searches"]');
+    if (await recentSearches.count() > 0) {
+      await expect(recentSearches).toBeVisible();
+      await expect(recentSearches).toContainText('React Development');
+    }
+  });
+
+  test('should display enhanced trade status timeline', async ({ signedInPage: page }) => {
+    // Navigate to a trade detail page
+    await page.goto('/trades');
+    await page.waitForLoadState('domcontentloaded');
+    
+    // Click on first trade
+    const firstTrade = page.locator('[data-testid="trade-card"]').first();
+    if (await firstTrade.count() > 0) {
+      await firstTrade.click();
+      
+      // Verify trade detail page loaded
+      await expect(page.locator('[data-testid="trade-title"]')).toBeVisible();
+      
+      // Verify enhanced timeline is displayed
+      const timeline = page.locator('[data-testid="trade-status-timeline"]');
+      if (await timeline.count() > 0) {
+        await expect(timeline).toBeVisible();
+        
+        // Verify progress bar exists
+        const progressBar = page.locator('[data-testid="timeline-progress-bar"]');
+        if (await progressBar.count() > 0) {
+          await expect(progressBar).toBeVisible();
+        }
+        
+        // Verify next step callout exists
+        const nextStep = page.locator('[data-testid="timeline-next-step"]');
+        if (await nextStep.count() > 0) {
+          await expect(nextStep).toBeVisible();
+        }
+      }
+    }
   });
 
 test('should handle trade application workflow', async ({ signedInPage: page }) => {

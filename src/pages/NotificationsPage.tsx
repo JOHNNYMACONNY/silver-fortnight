@@ -16,6 +16,7 @@ import {
 import { useAuth } from '../AuthContext';
 import { Button } from '../components/ui/Button';
 import { cn } from '../utils/cn';
+import { useMobileOptimization } from '../hooks/useMobileOptimization';
 import { logger } from '@utils/logging/logger';
 
 
@@ -65,6 +66,7 @@ const CheckIcon = () => (
 export const NotificationsPage: React.FC = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+  const { isMobile } = useMobileOptimization();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
@@ -389,6 +391,7 @@ export const NotificationsPage: React.FC = () => {
               onClick={() => setFilter(f)}
               className={cn(
                 "px-4 py-2 text-sm font-medium focus:outline-none whitespace-nowrap rounded-lg transition-all duration-200",
+                isMobile && "min-h-[44px]", // Mobile optimization: Ensure minimum 44px height on mobile for touch targets
                 filter === f
                   ? "bg-primary/20 text-primary border border-primary/30"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent/50"

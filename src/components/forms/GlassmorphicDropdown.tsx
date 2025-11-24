@@ -8,6 +8,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../utils/cn";
+import { useMobileOptimization } from "../../hooks/useMobileOptimization";
 import { 
   ChevronDownIcon, 
   CheckIcon, 
@@ -73,6 +74,7 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   
+  const { isMobile } = useMobileOptimization();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -227,6 +229,7 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
           'flex items-center justify-between',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           'focus:outline-none',
+          isMobile && 'min-h-[44px]', // Mobile optimization: Ensure minimum 44px height on mobile for touch targets
           triggerVariants[variant],
           !error && brandAccentClasses[brandAccent],
            error && 'ring-2 ring-error-500/30 border-error-500/50'

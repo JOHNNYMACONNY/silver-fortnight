@@ -6,6 +6,7 @@ import { LeaderboardWidget } from '../components/features/LeaderboardWidget';
 
 import { useDashboardData } from '../hooks/useDashboardData';
 import { useAuth } from '../AuthContext';
+import { useUserPersonalization } from '../hooks/useUserPersonalization';
 import Box from '../components/layout/primitives/Box';
 import Stack from '../components/layout/primitives/Stack';
 import Cluster from '../components/layout/primitives/Cluster';
@@ -19,6 +20,7 @@ const DashboardPage: React.FC = () => {
   const { stats, recentActivity, loading, error, refreshData } = useDashboardData();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { userType, tradeCount, profileCompleteness } = useUserPersonalization();
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -80,7 +82,20 @@ const DashboardPage: React.FC = () => {
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
                 {getGreeting()}, {getFirstName()}!
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground">Welcome back to your trading dashboard</p>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                {userType === 'new' ? (
+                  <>Welcome! Complete your profile to get started with trading.</>
+                ) : userType === 'regular' ? (
+                  <>Welcome back to your trading dashboard</>
+                ) : (
+                  <>Advanced dashboard with analytics and insights</>
+                )}
+              </p>
+              {userType === 'new' && profileCompleteness < 50 && (
+                <p className="text-xs text-primary">
+                  Profile: {profileCompleteness}% complete - Complete your profile to unlock more features
+                </p>
+              )}
             </Stack>
             <Cluster gap="sm" className="w-full md:w-auto sm:gap-3 md:gap-4">
               <Button 

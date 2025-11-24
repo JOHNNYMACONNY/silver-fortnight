@@ -74,6 +74,12 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, isLoading = false, fullWidth = false, rounded = false, leftIcon, rightIcon, children, topic, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
+    
+    // Mobile optimization: Ensure minimum 44px height on mobile for touch targets
+    // Check if we're on mobile (viewport < 768px) and size is default/sm/xs
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const needsMobileOverride = isMobile && (!size || size === 'default' || size === 'sm' || size === 'xs');
+    const mobileHeightClass = needsMobileOverride ? 'min-h-[44px]' : '';
 
     // Topic-aware class additions depending on variant
     const topicClasses = topic
@@ -94,6 +100,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         <Comp
           className={cn(
             buttonVariants({ variant, size }),
+            mobileHeightClass,
             className,
             fullWidth && "w-full",
             rounded && "rounded-full",
@@ -111,6 +118,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Comp
         className={cn(
           buttonVariants({ variant, size }),
+          mobileHeightClass,
           className,
           fullWidth && "w-full",
           rounded && "rounded-full",

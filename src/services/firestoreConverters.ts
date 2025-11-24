@@ -35,7 +35,15 @@ export const userConverter = {
 export const tradeConverter = {
   toFirestore: (trade: Trade): DocumentData => {
     const { id, ...data } = trade as any;
-    return { ...data, createdAt: (trade as any).createdAt || serverTimestamp(), updatedAt: serverTimestamp() };
+    // Filter out undefined values - Firebase doesn't accept them
+    const cleanData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== undefined)
+    );
+    return { 
+      ...cleanData, 
+      createdAt: (trade as any).createdAt || serverTimestamp(), 
+      updatedAt: serverTimestamp() 
+    };
   },
   fromFirestore: (snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Trade => {
     const data = snapshot.data(options) as DocumentData;

@@ -8,6 +8,7 @@ import {
   type ServiceResult,
   type PaginatedResult,
 } from '../services/firestore-exports';
+import { useSearchHistory } from './useSearchHistory';
 
 export interface UseTradeSearchOptions {
   enablePersistence?: boolean;
@@ -39,6 +40,9 @@ export function useTradeSearch(options: UseTradeSearchOptions = {}): UseTradeSea
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const requestIdRef = useRef(0);
+  
+  // Search history tracking
+  const { addToHistory } = useSearchHistory(10);
 
   const hasActiveFilters = useMemo(() => {
     return Object.values(filters).some(value => {
@@ -115,6 +119,11 @@ export function useTradeSearch(options: UseTradeSearchOptions = {}): UseTradeSea
         const data = result.data;
         setResults(data?.items ?? []);
         setTotalCount(data?.totalCount ?? 0);
+        
+        // Add to search history on successful search
+        if (term.trim() && data && data.items && data.items.length > 0) {
+          addToHistory(term);
+        }
       } catch (err) {
         if (id !== requestIdRef.current) return;
         const message = err instanceof Error ? err.message : 'Failed to search trades';
@@ -125,7 +134,7 @@ export function useTradeSearch(options: UseTradeSearchOptions = {}): UseTradeSea
         if (id === requestIdRef.current) setLoading(false);
       }
     },
-    [pagination]
+    [pagination, addToHistory]
   );
 
   const debouncedSearch = useMemo(() => debounce(executeSearch, 300), [executeSearch]);
