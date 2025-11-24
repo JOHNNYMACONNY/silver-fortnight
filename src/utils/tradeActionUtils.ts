@@ -1,4 +1,5 @@
 import { Trade } from '../services/firestore';
+import { hasUserSubmittedEvidence } from './tradeUtils';
 
 interface TradeActions {
   primaryAction: string;
@@ -70,18 +71,46 @@ export const getTradeActions = (trade: Trade, userId: string | null): TradeActio
       case 'pending_confirmation': {
         // Check if the user is the one who requested completion
         if (trade.completionRequestedBy === userId) {
-          return {
-            primaryAction: 'Awaiting Confirmation',
-            primaryDisabled: true
-          };
+          // Check if the other participant has submitted evidence
+          const otherUserHasSubmitted = hasUserSubmittedEvidence(
+            trade,
+            trade.creatorId === userId ? (trade.participantId || '') : trade.creatorId
+          );
+          
+          if (otherUserHasSubmitted) {
+            return {
+              primaryAction: 'Awaiting Confirmation',
+              primaryDisabled: true
+            };
+          } else {
+            // Other participant hasn't submitted evidence yet
+            return {
+              primaryAction: 'Awaiting Evidence',
+              primaryDisabled: true
+            };
+          }
         } else {
-          // The user is not the one who requested completion, so they should be able to confirm
-          return {
-            primaryAction: 'Confirm Completion',
-            primaryDisabled: false,
-            secondaryAction: 'Request Changes',
-            secondaryDisabled: false
-          };
+          // The user is not the one who requested completion
+          // Check if they have submitted evidence
+          const userHasSubmitted = hasUserSubmittedEvidence(trade, userId);
+          
+          if (!userHasSubmitted) {
+            // User needs to submit evidence first
+            return {
+              primaryAction: 'Submit Evidence',
+              primaryDisabled: false,
+              secondaryAction: 'Request Changes',
+              secondaryDisabled: false
+            };
+          } else {
+            // User has submitted evidence, they can confirm
+            return {
+              primaryAction: 'Confirm Completion',
+              primaryDisabled: false,
+              secondaryAction: 'Request Changes',
+              secondaryDisabled: false
+            };
+          }
         }
       }
 

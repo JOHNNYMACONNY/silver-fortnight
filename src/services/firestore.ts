@@ -529,7 +529,11 @@ export interface Trade {
   completionRequestedBy?: string;
   completionConfirmedAt?: Timestamp;
   completionNotes?: string;
-  completionEvidence?: EmbeddedEvidence[];
+  completionEvidence?: EmbeddedEvidence[]; // Legacy field, kept for backward compatibility
+  creatorEvidence?: EmbeddedEvidence[]; // Evidence submitted by creator
+  participantEvidence?: EmbeddedEvidence[]; // Evidence submitted by participant
+  creatorCompletionNotes?: string; // Notes from creator
+  participantCompletionNotes?: string; // Notes from participant
   autoCompleted?: boolean;
   autoCompletionReason?: string;
   autoCompletionCountdown?: number;
@@ -1262,9 +1266,19 @@ export const requestTradeCompletion = async (
       };
     }
 
+    // Check if user has already submitted evidence
+    const isCreator = tradeData.creatorId === userId;
+    const hasSubmittedEvidence = isCreator
+      ? !!(tradeData.creatorEvidence && tradeData.creatorEvidence.length > 0)
+      : !!(tradeData.participantEvidence && tradeData.participantEvidence.length > 0);
+
+    // Allow submission if:
+    // 1. Trade is in-progress or pending_evidence (normal flow)
+    // 2. Trade is pending_confirmation AND user hasn't submitted evidence yet
     if (
       tradeData.status !== "in-progress" &&
-      tradeData.status !== "pending_evidence"
+      tradeData.status !== "pending_evidence" &&
+      !(tradeData.status === "pending_confirmation" && !hasSubmittedEvidence)
     ) {
       return {
         data: null,
@@ -1275,25 +1289,46 @@ export const requestTradeCompletion = async (
       };
     }
 
-    if (
-      tradeData.completionRequestedBy &&
-      tradeData.completionRequestedBy !== userId
-    ) {
-      // The other party already requested completion, so this becomes a confirmation.
-      return confirmTradeCompletion(tradeId, userId);
+    // CRITICAL FIX: Remove auto-confirmation logic
+    // Previously, if the other party requested completion, this would auto-confirm
+    // This prevented the second participant from submitting evidence
+    // Now, we allow both participants to submit evidence independently
+
+    const updateData: Partial<Trade> = {};
+    
+    // Only update status if not already pending_confirmation
+    if (tradeData.status !== "pending_confirmation") {
+      updateData.status = "pending_confirmation";
+      updateData.completionRequestedAt = Timestamp.now();
+      updateData.completionRequestedBy = userId;
     }
 
-    const updateData: Partial<Trade> = {
-      status: "pending_confirmation",
-      completionRequestedAt: Timestamp.now(),
-      completionRequestedBy: userId,
-    };
-
-    if (notes) {
-      updateData.completionNotes = notes;
-    }
+    // Store evidence in role-specific fields
     if (evidence) {
-      updateData.completionEvidence = evidence;
+      if (isCreator) {
+        updateData.creatorEvidence = evidence;
+        if (notes) {
+          updateData.creatorCompletionNotes = notes;
+        }
+      } else {
+        updateData.participantEvidence = evidence;
+        if (notes) {
+          updateData.participantCompletionNotes = notes;
+        }
+      }
+      
+      // Also update completionEvidence by merging both arrays for backward compatibility
+      const existingCreatorEvidence = tradeData.creatorEvidence || [];
+      const existingParticipantEvidence = tradeData.participantEvidence || [];
+      const mergedEvidence = isCreator
+        ? [...evidence, ...existingParticipantEvidence]
+        : [...existingCreatorEvidence, ...evidence];
+      updateData.completionEvidence = mergedEvidence;
+    }
+    
+    // Store notes in legacy field if not using role-specific fields
+    if (notes && !evidence) {
+      updateData.completionNotes = notes;
     }
 
     await updateDoc(doc(db, COLLECTIONS.TRADES, tradeId), updateData);
@@ -1375,6 +1410,25 @@ export const confirmTradeCompletion = async (
         error: {
           code: "permission-denied",
           message: "User is not part of this trade",
+        },
+      };
+    }
+
+    // Validate that both participants have submitted evidence
+    const creatorHasEvidence = !!(tradeData.creatorEvidence && tradeData.creatorEvidence.length > 0);
+    const participantHasEvidence = !!(tradeData.participantEvidence && tradeData.participantEvidence.length > 0);
+    
+    // Fallback to legacy completionEvidence if role-specific fields don't exist
+    const hasLegacyEvidence = !!(tradeData.completionEvidence && tradeData.completionEvidence.length > 0);
+    
+    // For backward compatibility, if using legacy completionEvidence, allow confirmation
+    // Otherwise, require both participants to have submitted evidence
+    if (!hasLegacyEvidence && (!creatorHasEvidence || !participantHasEvidence)) {
+      return {
+        data: null,
+        error: {
+          code: "missing-evidence",
+          message: "Both participants must submit evidence before the trade can be completed",
         },
       };
     }

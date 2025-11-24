@@ -5,6 +5,7 @@ import { generateTradePortfolioItem } from '../../../services/portfolio';
 import { EvidenceGallery } from '../../features/evidence/EvidenceGallery';
 import { ConfirmationButton, NegotiationResponseButton, AnimatedButton } from '../../animations';
 import { logger } from '@utils/logging/logger';
+import { getAllTradeEvidence } from '../../../utils/tradeUtils';
 
 interface TradeConfirmationFormProps {
   trade: Trade;
@@ -58,6 +59,9 @@ const TradeConfirmationForm: React.FC<TradeConfirmationFormProps> = ({
       // Generate portfolio items for both participants
       // Note: We continue even if portfolio generation fails to avoid blocking trade completion
       try {
+        // Get merged evidence from both participants
+        const allEvidence = getAllTradeEvidence(trade);
+        
         // Generate portfolio item for the trade creator
         if (trade.creatorId) {
           await generateTradePortfolioItem(
@@ -69,7 +73,7 @@ const TradeConfirmationForm: React.FC<TradeConfirmationFormProps> = ({
               requestedSkills: trade.requestedSkills?.map(skill => typeof skill === 'string' ? skill : skill.name) || [],
               completionConfirmedAt: trade.completionConfirmedAt,
               updatedAt: trade.updatedAt,
-              completionEvidence: trade.completionEvidence,
+              completionEvidence: allEvidence, // Use merged evidence
               creatorId: trade.creatorId,
               participantId: trade.participantId || '',
               creatorName: trade.creatorName,
@@ -93,7 +97,7 @@ const TradeConfirmationForm: React.FC<TradeConfirmationFormProps> = ({
               requestedSkills: trade.requestedSkills?.map(skill => typeof skill === 'string' ? skill : skill.name) || [],
               completionConfirmedAt: trade.completionConfirmedAt,
               updatedAt: trade.updatedAt,
-              completionEvidence: trade.completionEvidence,
+              completionEvidence: allEvidence, // Use merged evidence
               creatorId: trade.creatorId,
               participantId: trade.participantId,
               creatorName: trade.creatorName,
@@ -205,17 +209,27 @@ const TradeConfirmationForm: React.FC<TradeConfirmationFormProps> = ({
           <div className="mb-6">
             <h3 className="text-lg font-medium text-foreground mb-2">Completion Evidence</h3>
 
-            {((trade.completionEvidence && trade.completionEvidence.length > 0) || (trade.evidence && trade.evidence.length > 0)) ? (
-              <EvidenceGallery
-                evidence={trade.completionEvidence && trade.completionEvidence.length > 0 ? trade.completionEvidence : (trade.evidence || [])}
-                title=""
-                emptyMessage="No evidence has been provided."
-              />
-            ) : (
-              <div className="glassmorphic border-glass bg-muted/30 backdrop-blur-sm p-4 rounded-lg">
-                <p className="text-muted-foreground italic">No evidence has been provided.</p>
-              </div>
-            )}
+            {(() => {
+              const allEvidence = getAllTradeEvidence(trade);
+              const legacyEvidence = trade.evidence || [];
+              const hasEvidence = allEvidence.length > 0 || legacyEvidence.length > 0;
+              
+              if (hasEvidence) {
+                return (
+                  <EvidenceGallery
+                    evidence={allEvidence.length > 0 ? allEvidence : legacyEvidence}
+                    title=""
+                    emptyMessage="No evidence has been provided."
+                  />
+                );
+              } else {
+                return (
+                  <div className="glassmorphic border-glass bg-muted/30 backdrop-blur-sm p-4 rounded-lg">
+                    <p className="text-muted-foreground italic">No evidence has been provided.</p>
+                  </div>
+                );
+              }
+            })()}
           </div>
 
           {/* Action Buttons */}

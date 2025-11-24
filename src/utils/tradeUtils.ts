@@ -3,6 +3,7 @@
  */
 
 import { Trade, TradeSkill } from '../services/firestore';
+import { EmbeddedEvidence } from '../types/evidence';
 
 /**
  * Check if a user is a participant in a trade
@@ -168,6 +169,41 @@ export const calculateSkillMatch = (
 
   // Calculate percentage
   return Math.round((matches / normalizedTradeSkills.length) * 100);
+};
+
+/**
+ * Check if a user has submitted evidence for a trade
+ *
+ * @param trade Trade object
+ * @param userId User ID to check
+ * @returns Boolean indicating if the user has submitted evidence
+ */
+export const hasUserSubmittedEvidence = (trade: Trade, userId: string): boolean => {
+  if (trade.creatorId === userId) {
+    return !!(trade.creatorEvidence && trade.creatorEvidence.length > 0);
+  } else if (trade.participantId === userId) {
+    return !!(trade.participantEvidence && trade.participantEvidence.length > 0);
+  }
+  return false;
+};
+
+/**
+ * Get all evidence from both participants in a trade
+ * Merges creatorEvidence and participantEvidence, with fallback to completionEvidence for backward compatibility
+ *
+ * @param trade Trade object
+ * @returns Array of all evidence from both participants
+ */
+export const getAllTradeEvidence = (trade: Trade): EmbeddedEvidence[] => {
+  // If role-specific fields exist, merge them
+  if (trade.creatorEvidence || trade.participantEvidence) {
+    return [
+      ...(trade.creatorEvidence || []),
+      ...(trade.participantEvidence || [])
+    ];
+  }
+  // Fallback to legacy completionEvidence for backward compatibility
+  return trade.completionEvidence || [];
 };
 
 /**
