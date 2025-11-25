@@ -43,13 +43,32 @@ export async function getUserPortfolioItems(
   } catch (err: any) {
     // Log error for debugging
     console.error('Error fetching portfolio items:', err);
-    // If it's an index error, try a simpler query without orderBy
+    // If it's an index error, try a simpler query without the pinned orderBy
+    // but preserve all filters to maintain security (e.g., onlyVisible)
     if (err?.code === 'failed-precondition' || err?.message?.includes('index')) {
       try {
         const db = getSyncFirebaseDb();
         const portfolioRef = collection(db, 'users', userId, 'portfolio');
-        const simpleQuery = query(portfolioRef, orderBy('completedAt', 'desc'));
-        const snapshot = await getDocs(simpleQuery);
+        let fallbackQuery: any = query(portfolioRef);
+
+        // Preserve all filters from options
+        if (options?.onlyVisible) {
+          fallbackQuery = query(fallbackQuery, where('visible', '==', true));
+        }
+        if (options?.type) {
+          fallbackQuery = query(fallbackQuery, where('sourceType', '==', options.type));
+        }
+        if (options?.featured) {
+          fallbackQuery = query(fallbackQuery, where('featured', '==', true));
+        }
+        if (options?.category) {
+          fallbackQuery = query(fallbackQuery, where('category', '==', options.category));
+        }
+
+        // Use only completedAt orderBy (simpler, doesn't require composite index)
+        fallbackQuery = query(fallbackQuery, orderBy('completedAt', 'desc'));
+
+        const snapshot = await getDocs(fallbackQuery);
         return snapshot.docs.map(doc => {
           const data = doc.data();
           return { id: doc.id, ...(data && typeof data === 'object' ? data : {}) } as PortfolioItem;
