@@ -75,7 +75,7 @@ export const updateUserStreak = async (
         const diffDays = Math.floor(
           (activityTime.setHours(0, 0, 0, 0) -
             new Date(last).setHours(0, 0, 0, 0)) /
-            ONE_DAY_MS
+          ONE_DAY_MS
         );
 
         let nextCurrent = existing.currentStreak;
@@ -144,7 +144,7 @@ export const updateUserStreak = async (
         await createNotification({
           recipientId: userId,
           type: NotificationType.STREAK_MILESTONE,
-          title: "🔥 Streak Milestone Reached!",
+          title: "Streak Milestone Reached!",
           message: `You hit a ${milestoneHit}-day ${type.replace(
             "_",
             " "

@@ -8,7 +8,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../utils/cn";
-import { ExclamationCircleIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { AlertCircle, CheckCircle } from "lucide-react";
 
 // Textarea Props Interface
 export interface GlassmorphicTextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'size'> {
@@ -77,7 +77,7 @@ export const GlassmorphicTextarea: React.FC<GlassmorphicTextareaProps> = ({
   // Size classes
   const sizeClasses = {
     sm: 'px-3 py-2 text-sm rounded-lg',
-    md: 'px-4 py-3 text-base rounded-xl', 
+    md: 'px-4 py-3 text-base rounded-xl',
     lg: 'px-6 py-4 text-lg rounded-2xl'
   };
 
@@ -108,10 +108,10 @@ export const GlassmorphicTextarea: React.FC<GlassmorphicTextareaProps> = ({
 
     // Reset height to auto to get the correct scrollHeight
     textarea.style.height = 'auto';
-    
+
     // Calculate new height
     const newHeight = Math.min(Math.max(textarea.scrollHeight, minHeight), maxHeight);
-    
+
     // Set the new height
     textarea.style.height = `${newHeight}px`;
   };
@@ -121,12 +121,12 @@ export const GlassmorphicTextarea: React.FC<GlassmorphicTextareaProps> = ({
     const value = e.target.value;
     setHasValue(!!value);
     setCharacterCount(value.length);
-    
+
     // Trigger auto-resize
     if (autoResize) {
       setTimeout(adjustHeight, 0);
     }
-    
+
     props.onChange?.(e);
   };
 
@@ -156,7 +156,7 @@ export const GlassmorphicTextarea: React.FC<GlassmorphicTextareaProps> = ({
   // Character count color based on usage
   const getCharacterCountColor = () => {
     if (!maxLength) return 'text-gray-500 dark:text-gray-400';
-    
+
     const percentage = (characterCount / maxLength) * 100;
     if (percentage >= 100) return 'text-red-500';
     if (percentage >= 90) return 'text-yellow-500';
@@ -168,12 +168,12 @@ export const GlassmorphicTextarea: React.FC<GlassmorphicTextareaProps> = ({
     <div className="space-y-2">
       {/* Label */}
       {label && (
-        <label 
+        <label
           htmlFor={props.id}
           className={cn(
             "block text-sm font-medium transition-colors duration-200",
-            isFocused || hasValue 
-              ? "text-gray-900 dark:text-white" 
+            isFocused || hasValue
+              ? "text-gray-900 dark:text-white"
               : "text-gray-600 dark:text-gray-300"
           )}
         >
@@ -183,7 +183,7 @@ export const GlassmorphicTextarea: React.FC<GlassmorphicTextareaProps> = ({
           )}
         </label>
       )}
-      
+
       {/* Textarea Container */}
       <div className="relative">
         <textarea
@@ -198,22 +198,22 @@ export const GlassmorphicTextarea: React.FC<GlassmorphicTextareaProps> = ({
             'text-gray-900 dark:text-white',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             'focus:outline-none',
-            
+
             // Variant styles
             textareaVariants[variant],
-            
+
             // Size styles
             sizeClasses[size],
-            
+
             // Brand accent styles
             actualValidationState === 'default' && brandAccentClasses[brandAccent],
-            
+
             // Validation styles
             validationClasses[actualValidationState],
-            
+
             // Auto-resize styles
             autoResize && 'overflow-hidden',
-            
+
             // Custom className
             className
           )}
@@ -226,9 +226,9 @@ export const GlassmorphicTextarea: React.FC<GlassmorphicTextareaProps> = ({
         {(actualValidationState === 'error' || actualValidationState === 'success') && (
           <div className="absolute top-3 right-3">
             {actualValidationState === 'error' ? (
-              <ExclamationCircleIcon className="h-5 w-5 text-red-500" data-testid="validation-icon-exclamation" />
+              <AlertCircle className="h-5 w-5 text-red-500" data-testid="validation-icon-exclamation" />
             ) : (
-              <CheckCircleIcon className="h-5 w-5 text-green-500" data-testid="validation-icon-check" />
+              <CheckCircle className="h-5 w-5 text-green-500" data-testid="validation-icon-check" />
             )}
           </div>
         )}
@@ -256,7 +256,7 @@ export const GlassmorphicTextarea: React.FC<GlassmorphicTextareaProps> = ({
             transition={{ duration: 0.2 }}
             className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1"
           >
-            <ExclamationCircleIcon className="h-4 w-4 flex-shrink-0" data-testid="error-message-icon" />
+            <AlertCircle className="h-4 w-4 flex-shrink-0" data-testid="error-message-icon" />
             {error}
           </motion.p>
         )}
@@ -268,7 +268,7 @@ export const GlassmorphicTextarea: React.FC<GlassmorphicTextareaProps> = ({
             transition={{ duration: 0.2 }}
             className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1"
           >
-            <CheckCircleIcon className="h-4 w-4 flex-shrink-0" data-testid="success-message-icon" />
+            <CheckCircle className="h-4 w-4 flex-shrink-0" data-testid="success-message-icon" />
             {success}
           </motion.p>
         )}

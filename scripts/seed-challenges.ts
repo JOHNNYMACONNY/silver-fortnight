@@ -1,6 +1,8 @@
+import 'dotenv/config';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword, signInAnonymously, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, Timestamp, connectFirestoreEmulator } from 'firebase/firestore';
+import { demoSoloChallenges, demoTradeChallenges, demoCollaborationChallenges } from '../src/data/demoTierChallenges';
 
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY,
@@ -25,9 +27,9 @@ if (process.env.VITE_USE_FIREBASE_EMULATORS === 'true') {
   }
 }
 
-const categories = ['design','development','audio','video','writing','photography','3d','mixed_media','trading','collaboration','community'] as const;
-const difficulties = ['beginner','intermediate','advanced','expert'] as const;
-const types = ['solo','trade','collaboration'] as const;
+const categories = ['design', 'development', 'audio', 'video', 'writing', 'photography', '3d', 'mixed_media', 'trading', 'collaboration', 'community'] as const;
+const difficulties = ['beginner', 'intermediate', 'advanced', 'expert'] as const;
+const types = ['solo', 'trade', 'collaboration'] as const;
 
 function pick<T>(arr: readonly T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
 
@@ -58,39 +60,55 @@ async function ensureAuth(): Promise<void> {
   }
 }
 
-async function seedChallenges(total = 24) {
+async function seedChallenges() {
   const colRef = collection(db, 'challenges');
-  for (let i = 0; i < total; i++) {
-    const id = doc(colRef).id;
-    const category = pick(categories);
-    const difficulty = pick(difficulties);
-    const type = pick(types);
-    const endInDays = 3 + Math.floor(Math.random() * 21); // 3–24 days
-    const rewardsXp = difficulty === 'beginner' ? 100 : difficulty === 'intermediate' ? 200 : difficulty === 'advanced' ? 350 : 500;
-    const challenge = {
+  const allChallenges = [
+    ...demoSoloChallenges,
+    ...demoTradeChallenges,
+    ...demoCollaborationChallenges
+  ];
+
+  console.log(`[seed] Starting to seed ${allChallenges.length} challenges...`);
+
+  for (const challengeData of allChallenges) {
+    // challenges in demo data already have IDs, but we can potentially overwrite or let firestore gen if needed.
+    // The demo data has 'id' property. Let's use it to ensure idempotency if possible, or generate new ones.
+    // Force new IDs to bypass permission lock on old docs (version 2)
+    const id = (challengeData.id ? `${challengeData.id}_v2` : doc(colRef).id);
+
+    // Map demo data to Firestore schema
+    // Note: demo data keys might slightly differ or need defaults.
+    // The demo data has 'duration' string, 'estimatedHours' number, etc.
+    // It has 'coverImage' which is what we want.
+
+    const firestoreChallenge = {
+      ...challengeData,
       id,
-      title: `${category.toUpperCase()} ${type.toUpperCase()} Challenge #${i + 1}`,
-      description: `A ${difficulty} ${type} challenge in ${category}.` ,
-      type,
-      category,
-      difficulty,
-      requirements: [],
-      rewards: { xp: rewardsXp },
+      creatorId: auth.currentUser?.uid, // Essential for permissions!
       startDate: Timestamp.now(),
-      endDate: daysFromNow(endInDays),
+      endDate: daysFromNow(30), // Default to 30 days out
       status: 'active',
-      participantCount: Math.floor(Math.random() * 15),
-      completionCount: Math.floor(Math.random() * 10),
-      instructions: [],
-      objectives: [],
-      tags: [category, type, difficulty],
-      createdBy: 'seed-script',
+      participantCount: Math.floor(Math.random() * 50),
+      completionCount: Math.floor(Math.random() * 20),
       createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now()
-    } as any;
-    await setDoc(doc(db, 'challenges', id), challenge);
+      updatedAt: Timestamp.now(),
+      // Ensure specific fields key for the UI
+      coverImage: (challengeData as any).coverImage || null,
+      rewards: (challengeData as any).rewards || { xp: 100 },
+      tags: (challengeData as any).tags || [],
+      instructions: (challengeData as any).instructions || [],
+      objectives: (challengeData as any).objectives || [],
+      category: (challengeData as any).category || 'development',
+    };
+
+    // Clean up undefineds if any
+    Object.keys(firestoreChallenge).forEach(key =>
+      (firestoreChallenge as any)[key] === undefined && delete (firestoreChallenge as any)[key]
+    );
+
+    await setDoc(doc(db, 'challenges', id), firestoreChallenge);
     // eslint-disable-next-line no-console
-    console.log(`Seeded challenge ${id} (${challenge.title})`);
+    console.log(`Seeded challenge ${id} (${challengeData.title})`);
   }
 }
 

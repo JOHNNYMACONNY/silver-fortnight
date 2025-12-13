@@ -79,6 +79,7 @@ graph TD
 |-----------|-----------|----------------|
 | **MainLayout** | [`src/components/layout/MainLayout.tsx`](src/components/layout/MainLayout.tsx) | Basic three-section layout wrapper |
 | **Navbar** | [`src/components/layout/Navbar.tsx`](src/components/layout/Navbar.tsx) | Top navigation with responsive design |
+| **BottomNavigation** | [`src/components/layout/BottomNavigation.tsx`](src/components/layout/BottomNavigation.tsx) | Mobile bottom navigation bar (mobile only) |
 | **Footer** | [`src/components/layout/Footer.tsx`](src/components/layout/Footer.tsx) | Bottom site footer |
 | **NavItem** | [`src/components/ui/NavItem.tsx`](src/components/ui/NavItem.tsx) | Individual navigation items |
 | **MobileMenu** | [`src/components/ui/MobileMenu.tsx`](src/components/ui/MobileMenu.tsx) | Mobile-specific navigation |

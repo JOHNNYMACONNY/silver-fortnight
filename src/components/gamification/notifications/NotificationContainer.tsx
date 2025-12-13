@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useGamificationNotifications } from '../../../contexts/GamificationNotificationContext';
 import XPGainToast from './XPGainToast';
-import { Flame } from 'lucide-react';
+import { Flame, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../AuthContext';
 import LevelUpModal from './LevelUpModal';
@@ -12,28 +12,28 @@ import { cn } from '../../../utils/cn';
 export const NotificationContainer: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const { 
-    notifications, 
-    removeNotification, 
-    isReducedMotion 
+  const {
+    notifications,
+    removeNotification,
+    isReducedMotion
   } = useGamificationNotifications();
-  
+
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
   // Separate notifications by type
-  const xpGainNotifications = notifications.filter(item => 
+  const xpGainNotifications = notifications.filter(item =>
     item.notification.type === 'xp_gain'
   );
-  
-  const levelUpNotifications = notifications.filter(item => 
+
+  const levelUpNotifications = notifications.filter(item =>
     item.notification.type === 'level_up'
   );
-  
-  const achievementNotifications = notifications.filter(item => 
+
+  const achievementNotifications = notifications.filter(item =>
     item.notification.type === 'achievement_unlock'
   );
 
-  const streakMilestoneToasts = notifications.filter(item => 
+  const streakMilestoneToasts = notifications.filter(item =>
     item.notification.type === 'streak_milestone'
   );
 
@@ -75,9 +75,9 @@ export const NotificationContainer: React.FC = () => {
               initial={{ opacity: 0, x: 300, scale: 0.8 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 300, scale: 0.8 }}
-              transition={{ 
-                type: 'spring', 
-                stiffness: 300, 
+              transition={{
+                type: 'spring',
+                stiffness: 300,
                 damping: 25,
                 layout: { duration: 0.2 }
               }}
@@ -105,11 +105,11 @@ export const NotificationContainer: React.FC = () => {
               exit={{ opacity: 0, x: 300, scale: 0.8 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25, layout: { duration: 0.2 } }}
             >
-              <div className="bg-card/90 backdrop-blur-md border border-border rounded-lg shadow-lg p-3 flex items-center gap-3">
-                <Flame className="w-5 h-5 text-primary" />
+              <div className="relative bg-neutral-900/80 backdrop-blur-md border border-white/5 rounded-lg shadow-lg p-3 flex items-center gap-3 overflow-hidden">
+                <Flame className="w-5 h-5 text-amber-500 opacity-90" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-card-foreground">Streak Milestone Reached!</div>
-                  <div className="text-xs text-muted-foreground truncate">
+                  <div className="text-sm font-semibold text-white mb-0.5">Streak Milestone</div>
+                  <div className="text-xs text-white/50 truncate">
                     {(item.notification as any).message || 'Great job keeping your streak alive!'}
                   </div>
                 </div>
@@ -119,16 +119,17 @@ export const NotificationContainer: React.FC = () => {
                       removeNotification(item.id);
                       navigate(`/profile/${currentUser.uid}?tab=gamification`);
                     }}
-                    className="text-xs text-primary hover:underline mr-2"
+                    className="text-xs font-medium text-amber-500 hover:text-amber-400 hover:underline mr-2 transition-colors"
                   >
                     View
                   </button>
                 )}
                 <button
                   onClick={() => removeNotification(item.id)}
-                  className="text-xs text-muted-foreground hover:text-foreground"
+                  className="p-1 rounded-full hover:bg-white/10 text-white/40 hover:text-white transition-colors"
                 >
-                  Dismiss
+                  <span className="sr-only">Dismiss</span>
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </motion.div>

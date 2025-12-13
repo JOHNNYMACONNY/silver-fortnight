@@ -36,9 +36,9 @@ export interface AchievementUnlockNotification {
   userId: string;
 }
 
-export type GamificationNotification = 
-  | XPGainNotification 
-  | LevelUpNotification 
+export type GamificationNotification =
+  | XPGainNotification
+  | LevelUpNotification
   | AchievementUnlockNotification
   | { type: 'streak_milestone'; message: string; timestamp: Date; userId: string };
 
@@ -82,91 +82,111 @@ export interface NotificationQueueItem {
   createdAt: Date;
 }
 
+import type { LucideIcon } from 'lucide-react';
+import {
+  Handshake,
+  Users,
+  Target,
+  Paperclip,
+  Trophy,
+  User,
+  Zap,
+  PartyPopper,
+  Flame,
+  Rocket,
+  BarChart,
+  Flag,
+  Timer,
+  Gem,
+  PenTool,
+  TrendingUp
+} from 'lucide-react';
+
 /**
  * XP source display configuration for notifications
  */
 export const XP_SOURCE_DISPLAY_CONFIG: Record<XPSource, {
-  icon: string;
+  icon: LucideIcon;
   color: string;
   displayName: string;
 }> = {
   [XPSource.TRADE_COMPLETION]: {
-    icon: '🤝',
+    icon: Handshake,
     color: 'text-green-500',
     displayName: 'Trade Completion'
   },
   [XPSource.ROLE_COMPLETION]: {
-    icon: '👥',
+    icon: Users,
     color: 'text-blue-500',
     displayName: 'Role Completion'
   },
   [XPSource.COLLABORATION_COMPLETION]: {
-    icon: '🎯',
+    icon: Target,
     color: 'text-purple-500',
     displayName: 'Collaboration'
   },
   [XPSource.EVIDENCE_SUBMISSION]: {
-    icon: '📎',
+    icon: Paperclip,
     color: 'text-primary',
     displayName: 'Evidence Submission'
   },
   [XPSource.ACHIEVEMENT_UNLOCK]: {
-    icon: '🏆',
+    icon: Trophy,
     color: 'text-yellow-500',
     displayName: 'Achievement'
   },
   [XPSource.PROFILE_COMPLETION]: {
-    icon: '👤',
+    icon: User,
     color: 'text-indigo-500',
     displayName: 'Profile Update'
   },
   [XPSource.QUICK_RESPONSE]: {
-    icon: '⚡',
+    icon: Zap,
     color: 'text-yellow-500',
     displayName: 'Quick Response'
   },
   [XPSource.FIRST_TIME_BONUS]: {
-    icon: '🎉',
+    icon: PartyPopper,
     color: 'text-pink-500',
     displayName: 'First Time Bonus'
   },
   [XPSource.STREAK_BONUS]: {
-    icon: '🔥',
+    icon: Flame,
     color: 'text-red-500',
     displayName: 'Streak Bonus'
   },
   [XPSource.CHALLENGE_JOIN]: {
-    icon: '🚀',
+    icon: Rocket,
     color: 'text-teal-500',
     displayName: 'Challenge Joined'
   },
   [XPSource.CHALLENGE_PROGRESS]: {
-    icon: '📊',
+    icon: BarChart,
     color: 'text-cyan-500',
     displayName: 'Challenge Progress'
   },
   [XPSource.CHALLENGE_COMPLETION]: {
-    icon: '🏁',
+    icon: Flag,
     color: 'text-green-500',
     displayName: 'Challenge Complete'
   },
   [XPSource.CHALLENGE_EARLY_COMPLETION]: {
-    icon: '⏳',
+    icon: Timer,
     color: 'text-lime-500',
     displayName: 'Early Completion'
   },
   [XPSource.CHALLENGE_QUALITY_BONUS]: {
-    icon: '💎',
+    icon: Gem,
     color: 'text-emerald-500',
     displayName: 'Quality Bonus'
   },
   [XPSource.CHALLENGE_FEEDBACK]: {
-    icon: '✍️',
+    icon: PenTool,
     color: 'text-sky-500',
     displayName: 'Challenge Feedback'
   },
   [XPSource.CHALLENGE_STREAK]: {
-    icon: '📈',
+    icon: TrendingUp,
     color: 'text-amber-500',
     displayName: 'Challenge Streak'
   }

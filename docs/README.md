@@ -1,6 +1,6 @@
 # TradeYa Documentation
 
-**Last Updated**: November 6, 2025
+**Last Updated**: December 2025
 
 Welcome to the TradeYa documentation. This comprehensive collection of documents covers all aspects of the TradeYa platform, from implementation guides to testing strategies.
 
@@ -53,6 +53,7 @@ Located in `docs/features/`:
 - **[PORTFOLIO_SYSTEM.md](./features/PORTFOLIO_SYSTEM.md)** - Portfolio management system
 - **[EVIDENCE_EMBED_SYSTEM_CONSOLIDATED.md](./features/EVIDENCE_EMBED_SYSTEM_CONSOLIDATED.md)** - Evidence embedding system
 - **[PORTFOLIO_SYSTEM_CHANGELOG.md](./features/PORTFOLIO_SYSTEM_CHANGELOG.md)** - Portfolio system changelog
+- **Portfolio Implementation Docs**: See `features/portfolio/` directory for backend integration plans and validation reports
 
 #### User Profiles
 - **[PROFILE_PICTURES.md](./features/PROFILE_PICTURES.md)** - Profile picture handling
@@ -134,15 +135,8 @@ Located in `docs/design/`:
 - **[UI_ENHANCEMENT_TRENDS_2024.md](./design/UI_ENHANCEMENT_TRENDS_2024.md)** - UI trends
 
 **Component Library Evaluation:**
-- **[SHADCN_MIGRATION_EVALUATION.md](./SHADCN_MIGRATION_EVALUATION.md)** - Evaluation plan for adopting Shadcn UI patterns
-- **[SHADCN_MIGRATION_TEST_GUIDE.md](./SHADCN_MIGRATION_TEST_GUIDE.md)** - Step-by-step guide to test Shadcn migration
-- **[SHADCN_TEST_SETUP_COMPLETE.md](./SHADCN_TEST_SETUP_COMPLETE.md)** - Test setup complete, ready for testing
-- **[SHADCN_MIGRATION_TEST_RESULTS.md](./SHADCN_MIGRATION_TEST_RESULTS.md)** - ✅ Complete test results - All tests passed (with gaps identified)
-- **[SHADCN_MIGRATION_GAPS.md](./SHADCN_MIGRATION_GAPS.md)** - ✅ Missing variants identified (now completed)
-- **[SHADCN_MIGRATION_COMPLETED.md](./SHADCN_MIGRATION_COMPLETED.md)** - ✅ All variants added, ready for final testing
-- **[SHADCN_MIGRATION_COLOR_ANALYSIS.md](./SHADCN_MIGRATION_COLOR_ANALYSIS.md)** - ✅ Color system analysis - No color changes expected
-- **[SHADCN_MIGRATION_COMPLETE.md](./SHADCN_MIGRATION_COMPLETE.md)** - ✅ **MIGRATION COMPLETE** - Button component successfully migrated
-- **[NEXT_STEPS_AFTER_SETUP.md](./NEXT_STEPS_AFTER_SETUP.md)** - Quick reference for next steps
+- SHADCN migration completed - See `testing/SHADCN_MIGRATION_TEST_GUIDE.md` and `testing/SHADCN_MIGRATION_TEST_RESULTS.md`
+- Historical migration docs archived in `archived/migration-shadcn-2024-12/`
 
 ### 🚀 Deployment
 Located in `docs/deployment/`:
@@ -178,6 +172,8 @@ Located in `docs/testing/`:
 - **[JEST_CONFIGURATION_RESOLUTION.md](./testing/JEST_CONFIGURATION_RESOLUTION.md)** - Jest/Vitest configuration
 - **[CI_AND_TESTING_STRATEGY.md](./testing/CI_AND_TESTING_STRATEGY.md)** - CI/CD testing strategy
 - **[TEST_COVERAGE_IMPROVEMENT_PLAN.md](./testing/TEST_COVERAGE_IMPROVEMENT_PLAN.md)** - Coverage improvements
+- **[SHADCN_MIGRATION_TEST_GUIDE.md](./testing/SHADCN_MIGRATION_TEST_GUIDE.md)** - SHADCN migration testing guide
+- **[SHADCN_MIGRATION_TEST_RESULTS.md](./testing/SHADCN_MIGRATION_TEST_RESULTS.md)** - SHADCN migration test results
 
 ### 🔄 Migration
 Located in `docs/migration/`:
@@ -240,6 +236,7 @@ Located in `docs/summaries/`:
 - **[NOTIFICATION_SYSTEM_EXECUTIVE_SUMMARY.md](./summaries/NOTIFICATION_SYSTEM_EXECUTIVE_SUMMARY.md)** - Notification system
 - **[TEST_AUDIT_REPORT.md](./summaries/TEST_AUDIT_REPORT.md)** - Test audit
 - **[VALIDATION_SUMMARY.md](./summaries/VALIDATION_SUMMARY.md)** - Validation summary
+- **Verification Reports**: All implementation verification, bug fix summaries, and testing reports are located here
 
 ### 📋 Documentation Maintenance
 Located in root `docs/` directory:
@@ -253,7 +250,10 @@ Located in root `docs/` directory:
 ### 🗂️ Archived Documentation
 Located in `docs/archived/`:
 
-Deprecated and consolidated documents are preserved here for historical reference.
+Deprecated and consolidated documents are preserved here for historical reference:
+- **cleanup-logs-2025-11/** - Previous cleanup and reorganization logs
+- **migration-shadcn-2024-12/** - Historical SHADCN migration documentation (migration complete)
+- **next-steps/** - Historical next steps planning documents
 
 ## 🔍 Finding Documentation
 
@@ -265,7 +265,7 @@ Deprecated and consolidated documents are preserved here for historical referenc
 - **Firebase**: `docs/firebase/FIREBASE_SECURITY_CONSOLIDATED.md`
 - **Design System**: `docs/design/TRADEYA_DESIGN_SYSTEM_IMPLEMENTATION_GUIDE.md`
 - **Feature Planning**: `docs/FEATURE_SPEC_TEMPLATE.md`
-- **Component Migration**: `docs/SHADCN_MIGRATION_EVALUATION.md`
+- **Component Migration**: `docs/testing/SHADCN_MIGRATION_TEST_GUIDE.md` (completed - see archived for historical docs)
 
 ### By Task
 - **New Developer Onboarding**: Start with `IMPLEMENTATION_MASTER_PLAN.md`
@@ -301,6 +301,17 @@ When updating documentation:
 - ✅ **Set up** Shadcn test environment (components.json, test component, test page at `/shadcn-test`)
 - ✅ **Created** [WORKFLOW_IMPROVEMENTS_SUMMARY.md](./WORKFLOW_IMPROVEMENTS_SUMMARY.md) - Complete summary of improvements
 
+### December 2025 - Documentation Cleanup
+- ✅ **Moved** 43 root-level files to appropriate documentation directories
+- ✅ **Organized** verification/report files to `docs/summaries/` (19 files)
+- ✅ **Organized** portfolio documentation to `docs/features/portfolio/` (7 files)
+- ✅ **Archived** completed SHADCN migration docs to `docs/archived/migration-shadcn-2024-12/`
+- ✅ **Moved** SHADCN test files to `docs/testing/`
+- ✅ **Archived** historical cleanup logs and consolidation plans
+- ✅ **Cleaned** root directory to 5 essential files only (~83% reduction)
+- ✅ **Updated** this README with current structure
+- ✅ See [DOCUMENTATION_CLEANUP_2025_12.md](./DOCUMENTATION_CLEANUP_2025_12.md) for full details
+
 ### November 6, 2025 - Documentation Reorganization & Aggressive Cleanup
 - ✅ **Reorganized** all documentation into logical category directories
 - ✅ **Moved** 45+ root-level markdown files into appropriate subdirectories
@@ -309,8 +320,7 @@ When updating documentation:
 - ✅ **Cleaned** summaries (71% reduction), performance (77% reduction), migration (47% reduction)
 - ✅ **Removed** conflicting "reality check" documents
 - ✅ **Eliminated** redundant status trackers (kept only one)
-- ✅ **Updated** this README with comprehensive index
-- ✅ See [AGGRESSIVE_CLEANUP_LOG_2025_11_06.md](./AGGRESSIVE_CLEANUP_LOG_2025_11_06.md) for full details
+- ✅ See archived logs in `docs/archived/cleanup-logs-2025-11/` for full details
 
 ### Previous Updates
 - **May 28, 2025**: Jest configuration resolution documented

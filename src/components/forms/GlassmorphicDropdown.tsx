@@ -9,13 +9,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../utils/cn";
 import { useMobileOptimization } from "../../hooks/useMobileOptimization";
-import { 
-  ChevronDownIcon, 
-  CheckIcon, 
-  ExclamationCircleIcon,
-  MagnifyingGlassIcon,
-  XMarkIcon
-} from "@heroicons/react/24/outline";
+import {
+  ChevronDown,
+  Check,
+  AlertCircle,
+  Search,
+  X
+} from "lucide-react";
 
 // Option Interface
 export interface DropdownOption {
@@ -73,7 +73,7 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isFocused, setIsFocused] = useState(false);
-  
+
   const { isMobile } = useMobileOptimization();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -106,12 +106,12 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
   }, [isOpen, searchable]);
 
   // Filter options based on search term
-  const filteredOptions = searchable 
-    ? options.filter(option => 
-        option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        option.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        option.group?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+  const filteredOptions = searchable
+    ? options.filter(option =>
+      option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      option.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      option.group?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
     : options;
 
   // Group options if they have groups
@@ -147,7 +147,7 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
   // Brand accent classes
   const brandAccentClasses = {
     orange: 'focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500/50',
-    blue: 'focus:ring-2 focus:ring-secondary-500/30 focus:border-secondary-500/50', 
+    blue: 'focus:ring-2 focus:ring-secondary-500/30 focus:border-secondary-500/50',
     purple: 'focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500/50',
     gradient: `
       focus:ring-2 focus:ring-gradient-to-r 
@@ -178,14 +178,14 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
   // Get display text for selected values
   const getDisplayText = () => {
     if (!hasValue) return placeholder;
-    
+
     if (multiSelect) {
       if (selectedValues.length === 1) {
         return options.find(opt => opt.value === selectedValues[0])?.label || selectedValues[0];
       }
       return `${selectedValues.length} selected`;
     }
-    
+
     return options.find(opt => opt.value === selectedValues[0])?.label || selectedValues[0];
   };
 
@@ -193,12 +193,12 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
     <div className={cn("relative", className)} ref={dropdownRef}>
       {/* Label */}
       {label && (
-        <label 
+        <label
           htmlFor={id}
           className={cn(
             "block text-sm font-medium mb-2 transition-colors duration-200",
-            isFocused || hasValue 
-              ? "text-gray-900 dark:text-white" 
+            isFocused || hasValue
+              ? "text-gray-900 dark:text-white"
               : "text-gray-600 dark:text-gray-300"
           )}
         >
@@ -208,7 +208,7 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
           )}
         </label>
       )}
-      
+
       {/* Dropdown Trigger */}
       <button
         type="button"
@@ -232,7 +232,7 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
           isMobile && 'min-h-[44px]', // Mobile optimization: Ensure minimum 44px height on mobile for touch targets
           triggerVariants[variant],
           !error && brandAccentClasses[brandAccent],
-           error && 'ring-2 ring-error-500/30 border-error-500/50'
+          error && 'ring-2 ring-error-500/30 border-error-500/50'
         )}
       >
         <span className={cn(
@@ -241,7 +241,7 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
         )}>
           {getDisplayText()}
         </span>
-        
+
         <div className="flex items-center gap-2">
           {clearable && hasValue && !disabled && (
             <button
@@ -249,11 +249,11 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
               onClick={handleClear}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
-              <XMarkIcon className="h-4 w-4" data-testid="x-mark-icon" />
+              <X className="h-4 w-4" data-testid="x-mark-icon" />
             </button>
           )}
-          
-          <ChevronDownIcon
+
+          <ChevronDown
             className={cn(
               'h-5 w-5 text-gray-400 transition-transform duration-200',
               isOpen && 'transform rotate-180'
@@ -282,7 +282,7 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
             {searchable && (
               <div className="px-3 pb-2 border-b border-border">
                 <div className="relative">
-                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" data-testid="search-icon" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" data-testid="search-icon" />
                   <input
                     ref={searchInputRef}
                     type="text"
@@ -311,8 +311,8 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
                 Object.entries(groupedOptions).map(([groupName, groupOptions]) => (
                   <div key={groupName}>
                     {groupName !== 'default' && (
-                        <div
-                          className="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-divider"
+                      <div
+                        className="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-divider"
                         data-testid={`group-header-${groupName.toLowerCase().replace(/\s+/g, '-')}`}
                       >
                         {groupName}
@@ -332,7 +332,7 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
                           'hover:bg-white/10 dark:hover:bg-neutral-700/20',
                           'transition-colors duration-150',
                           'disabled:opacity-50 disabled:cursor-not-allowed',
-                           selectedValues.includes(option.value) && 'bg-secondary-500/10 text-secondary-600 dark:text-secondary-400'
+                          selectedValues.includes(option.value) && 'bg-secondary-500/10 text-secondary-600 dark:text-secondary-400'
                         )}
                       >
                         {option.icon && (
@@ -340,7 +340,7 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
                             {option.icon}
                           </span>
                         )}
-                        
+
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
                             {option.label}
@@ -353,7 +353,7 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
                         </div>
 
                         {selectedValues.includes(option.value) && (
-                          <CheckIcon className="h-4 w-4 text-secondary-600 dark:text-secondary-400 flex-shrink-0" data-testid="check-icon" />
+                          <Check className="h-4 w-4 text-secondary-600 dark:text-secondary-400 flex-shrink-0" data-testid="check-icon" />
                         )}
                       </motion.button>
                     ))}
@@ -372,7 +372,7 @@ export const GlassmorphicDropdown: React.FC<GlassmorphicDropdownProps> = ({
           animate={{ opacity: 1, y: 0 }}
           className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1"
         >
-          <ExclamationCircleIcon className="h-4 w-4" data-testid="exclamation-icon" />
+          <AlertCircle className="h-4 w-4" data-testid="exclamation-icon" />
           {error}
         </motion.p>
       )}

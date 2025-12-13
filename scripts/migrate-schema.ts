@@ -36,6 +36,44 @@ import { ChatCompatibilityService } from '../src/services/migration/chatCompatib
 import { fileURLToPath } from 'url';
 
 /**
+ * Safety Harness for Migrations
+ * Ensures critical safety checks are passed before execution
+ */
+export class MigrationSafetyHarness {
+  constructor(private projectId: string, private isDryRun: boolean) {}
+
+  async validateSafetyConstraints(options: { requireBackup: boolean }): Promise<void> {
+    console.log('\n🦺 Running Migration Safety Checks...');
+    
+    // 1. Environment Verification
+    if (this.projectId.includes('production') && !process.env.FORCE_PRODUCTION_MIGRATION && !this.isDryRun) {
+       throw new Error('❌ Production migration requires FORCE_PRODUCTION_MIGRATION env var');
+    }
+
+    // 2. Backup Verification
+    if (options.requireBackup && !this.isDryRun) {
+      const confirmed = await this.verifyBackupExists();
+      if (!confirmed) {
+        throw new Error('❌ Pre-migration backup is mandatory for execution mode. Set MIGRATION_BACKUP_CONFIRMED=true');
+      }
+    }
+
+    console.log('✅ Safety checks passed');
+  }
+
+  private async verifyBackupExists(): Promise<boolean> {
+     // Logic to verify backup existence
+     // For this iteration, we rely on manual confirmation via env var
+     if (process.env.MIGRATION_BACKUP_CONFIRMED !== 'true') {
+        console.error('⚠️  Missing MIGRATION_BACKUP_CONFIRMED=true environment variable');
+        console.error('   Please run: gcloud firestore export gs://your-backup-bucket');
+        return false;
+     }
+     return true;
+  }
+}
+
+/**
  * Migration result interface for tracking progress
  */
 interface MigrationResult {
@@ -126,6 +164,10 @@ export class SchemaMigrationService {
     let success = false;
     
     try {
+      // Phase 0: Safety Checks
+      const safetyHarness = new MigrationSafetyHarness(this.projectId, this.isDryRun);
+      await safetyHarness.validateSafetyConstraints({ requireBackup: true });
+
       // Phase 1: Pre-migration validation
       await this.updateMigrationStatus('validation', 5, 'Running pre-migration validation...');
       await this.validateMigrationReadiness();

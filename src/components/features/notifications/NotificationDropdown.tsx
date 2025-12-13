@@ -7,51 +7,27 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Timestamp } from 'firebase/firestore';
-import { 
-  Notification, 
-  getUserNotifications, 
-  markNotificationAsRead, 
-  markAllNotificationsAsRead 
+import {
+  Notification,
+  getUserNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead
 } from '../../../services/notifications/notificationService';
 import { useAuth } from '../../../AuthContext';
 import { logger } from '@utils/logging/logger';
+import {
+  Bell,
+  Handshake,
+  Users,
+  Trophy,
+  MessageSquare,
+  Info,
+  Flame,
+  TrendingUp,
+  Award
+} from 'lucide-react';
 
-// Icons
-const BellIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-  </svg>
-);
 
-const TradeIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-  </svg>
-);
-
-const CollaborationIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.25-1.26-.698-1.724M7 16a4 4 0 11-8 0 4 4 0 018 0zM7 16v-2a4 4 0 00-4-4H2" />
-  </svg>
-)
-
-const ChallengeIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-  </svg>
-);
-
-const MessageIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-  </svg>
-);
-
-const SystemIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
 
 export const NotificationDropdown: React.FC = () => {
   const { currentUser } = useAuth();
@@ -60,7 +36,7 @@ export const NotificationDropdown: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -68,34 +44,34 @@ export const NotificationDropdown: React.FC = () => {
         setIsOpen(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-  
+
   // Get notifications
   useEffect(() => {
     if (!currentUser) return;
-    
+
     setLoading(true);
-    
+
     const unsubscribe = getUserNotifications(currentUser.uid, (fetchedNotifications) => {
       setNotifications(fetchedNotifications);
       setLoading(false);
     });
-    
+
     return () => unsubscribe();
   }, [currentUser]);
-  
+
   // Get unread count
   const unreadCount = notifications.filter(notification => !notification.read).length;
-  
+
   // Format timestamp
   const formatTimestamp = (timestamp: Timestamp) => {
     if (!timestamp) return '';
-    
+
     try {
       const date = timestamp.toDate();
       const now = new Date();
@@ -104,7 +80,7 @@ export const NotificationDropdown: React.FC = () => {
       const diffMins = Math.floor(diffSecs / 60);
       const diffHours = Math.floor(diffMins / 60);
       const diffDays = Math.floor(diffHours / 24);
-      
+
       if (diffSecs < 60) {
         return 'just now';
       } else if (diffMins < 60) {
@@ -119,42 +95,53 @@ export const NotificationDropdown: React.FC = () => {
         return date.toLocaleDateString();
       }
     } catch (err) {
-      logger.error('Error formatting timestamp:', 'COMPONENT', {}, err as Error);
+      logger.error('Error formatting timestamp:', 'COMPONENT', {}, {
+        name: 'TimestampFormatError',
+        message: (err as Error).message || String(err),
+        cause: err
+      } as Error);
       return '';
     }
   };
-  
+
   // Get notification icon
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'trade':
-        return <TradeIcon />;
+        return <Handshake className="h-5 w-5" />;
       case 'collaboration':
-        return <CollaborationIcon />;
+        return <Users className="h-5 w-5" />;
       case 'challenge':
-        return <ChallengeIcon />;
+        return <Trophy className="h-5 w-5" />;
       case 'message':
-        return <MessageIcon />;
+        return <MessageSquare className="h-5 w-5" />;
       case 'system':
-        return <SystemIcon />;
+        return <Info className="h-5 w-5" />;
+      // Gamification types
+      case 'streak_milestone':
+        return <Flame className="h-5 w-5 text-orange-500" />;
+      case 'level_up':
+        return <TrendingUp className="h-5 w-5 text-green-500" />;
+      case 'achievement_unlocked':
+        return <Award className="h-5 w-5 text-yellow-500" />;
       default:
-        return <SystemIcon />;
+        return <Info className="h-5 w-5" />;
     }
   };
-  
+
   // Handle notification click
   const handleNotificationClick = async (notification: Notification) => {
     // Mark as read
     if (!notification.read && notification.id) {
       await markNotificationAsRead(notification.id);
     }
-    
+
     // Navigate based on notification type
     if (notification.data) {
       // Trade notifications
       if (['trade', 'trade_interest', 'trade_completed', 'trade_reminder'].includes(notification.type) && notification.data.tradeId) {
         navigate(`/trades/${notification.data.tradeId}`);
-      } 
+      }
       // Collaboration notifications
       else if ([
         'collaboration',
@@ -188,35 +175,39 @@ export const NotificationDropdown: React.FC = () => {
         window.open(notification.data.url, '_blank');
       }
     }
-    
+
     setIsOpen(false);
   };
-  
+
   // Handle mark all as read
   const handleMarkAllAsRead = async () => {
     if (!currentUser) return;
-    
+
     try {
       await markAllNotificationsAsRead(currentUser.uid);
-      
+
       // Update local state
-      setNotifications(prevNotifications => 
+      setNotifications(prevNotifications =>
         prevNotifications.map(notification => ({
           ...notification,
           read: true
         }))
       );
     } catch (error) {
-      logger.error('Error marking all notifications as read:', 'COMPONENT', {}, error as Error);
+      logger.error('Error marking all notifications as read:', 'COMPONENT', {}, {
+        name: 'MarkAllReadError',
+        message: (error as Error).message || String(error),
+        cause: error
+      } as Error);
     }
   };
-  
+
   // View all notifications
   const viewAllNotifications = () => {
     navigate('/notifications');
     setIsOpen(false);
   };
-  
+
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Notification bell */}
@@ -225,8 +216,8 @@ export const NotificationDropdown: React.FC = () => {
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className="sr-only">View notifications</span>
-        <BellIcon />
-        
+        <Bell className="h-6 w-6" />
+
         {/* Notification badge */}
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 block h-4 w-4 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
@@ -234,19 +225,19 @@ export const NotificationDropdown: React.FC = () => {
           </span>
         )}
       </button>
-      
+
       {/* Dropdown */}
-        {isOpen && (
-          <div
-            className={
-              "origin-top-right absolute right-0 mt-2 w-80 rounded-md focus:outline-none z-popover " +
-              // Glassmorphic surface aligned with navbar
-              "bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md navbar-gradient-border " +
-              // Enhanced shadow to match mobile menu aesthetic
-              "shadow-glass-lg"
-            }
-          >
-            <div className="py-1">
+      {isOpen && (
+        <div
+          className={
+            "origin-top-right absolute right-0 mt-2 w-80 rounded-md focus:outline-none z-popover " +
+            // Glassmorphic surface aligned with navbar
+            "bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md navbar-gradient-border " +
+            // Enhanced shadow to match mobile menu aesthetic
+            "shadow-glass-lg"
+          }
+        >
+          <div className="py-1">
             {/* Header */}
             <div className="px-4 py-2 border-b border-border">
               <div className="flex justify-between items-center">
@@ -261,9 +252,9 @@ export const NotificationDropdown: React.FC = () => {
                 )}
               </div>
             </div>
-            
+
             {/* Notification list */}
-              <div className="max-h-96 overflow-y-auto divide-y divide-border/60">
+            <div className="max-h-96 overflow-y-auto divide-y divide-border/60">
               {loading ? (
                 <div className="px-4 py-6 text-center">
                   <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary mb-2"></div>
@@ -276,30 +267,29 @@ export const NotificationDropdown: React.FC = () => {
               ) : (
                 <div>
                   {notifications.slice(0, 5).map((notification) => (
-                      <div
+                    <div
                       key={notification.id}
-                        className={`px-4 py-3.5 hover:bg-accent/50 cursor-pointer ${
-                        !notification.read ? 'bg-primary/10' : ''
-                      }`}
+                      className={`px-4 py-3.5 hover:bg-accent/50 cursor-pointer ${!notification.read ? 'bg-primary/10' : ''
+                        }`}
                       onClick={() => handleNotificationClick(notification)}
                     >
-                        <div className="grid grid-cols-[auto,1fr,auto] gap-x-3 gap-y-1 items-start">
-                          <div className="text-muted-foreground mt-1">{getNotificationIcon(notification.type)}</div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium leading-6 text-foreground whitespace-normal break-words">{notification.title ?? 'Notification'}</p>
-                            {Boolean(notification.content || notification.message) && (
-                              <p className="text-sm leading-6 text-muted-foreground whitespace-normal break-words">{notification.content || notification.message}</p>
-                            )}
-                          </div>
-                          <div className="text-xs text-muted-foreground text-right">{formatTimestamp(notification.createdAt)}</div>
-                          {!notification.read && <div className="col-start-2 w-2 h-2 rounded-full bg-primary" />}
+                      <div className="grid grid-cols-[auto,1fr,auto] gap-x-3 gap-y-1 items-start">
+                        <div className="text-muted-foreground mt-1">{getNotificationIcon(notification.type)}</div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium leading-6 text-foreground whitespace-normal break-words">{(notification.title ?? 'Notification').replace('🔥 ', '')}</p>
+                          {Boolean(notification.content || notification.message) && (
+                            <p className="text-sm leading-6 text-muted-foreground whitespace-normal break-words">{notification.content || notification.message}</p>
+                          )}
                         </div>
+                        <div className="text-xs text-muted-foreground text-right">{formatTimestamp(notification.createdAt)}</div>
+                        {!notification.read && <div className="col-start-2 w-2 h-2 rounded-full bg-primary" />}
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-            
+
             {/* Footer */}
             <div className="px-4 py-2 border-t border-border">
               <button

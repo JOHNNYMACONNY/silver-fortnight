@@ -19,6 +19,11 @@ import {
 import { Badge } from "../../components/ui/Badge";
 import { Loader2, Trophy, CheckCircle, AlertCircle } from "lucide-react";
 import { Timestamp } from "firebase/firestore";
+import {
+  demoSoloChallenges,
+  demoTradeChallenges,
+  demoCollaborationChallenges
+} from "../../data/demoTierChallenges";
 import { logger } from '@utils/logging/logger';
 
 const SeedChallengesPage: React.FC = () => {
@@ -43,79 +48,11 @@ const SeedChallengesPage: React.FC = () => {
     return Timestamp.fromDate(d);
   };
 
+  // Combine all demo challenges
   const sampleChallenges = [
-    {
-      title: "Design a Modern Logo",
-      description:
-        "Create a modern, minimalist logo for a tech startup. Focus on clean lines and memorable design.",
-      category: ChallengeCategory.DESIGN,
-      difficulty: ChallengeDifficulty.INTERMEDIATE,
-      type: ChallengeType.SOLO,
-      xp: 200,
-    },
-    {
-      title: "Build a React Component Library",
-      description:
-        "Develop a reusable React component library with TypeScript and Storybook documentation.",
-      category: ChallengeCategory.DEVELOPMENT,
-      difficulty: ChallengeDifficulty.ADVANCED,
-      type: ChallengeType.SOLO,
-      xp: 350,
-    },
-    {
-      title: "Create a Podcast Intro",
-      description:
-        "Compose and produce a 30-second podcast intro with music and voice-over.",
-      category: ChallengeCategory.AUDIO,
-      difficulty: ChallengeDifficulty.BEGINNER,
-      type: ChallengeType.SOLO,
-      xp: 100,
-    },
-    {
-      title: "Collaborative Trading Strategy",
-      description:
-        "Work with a partner to develop and test a trading strategy using historical data.",
-      category: ChallengeCategory.TRADING,
-      difficulty: ChallengeDifficulty.EXPERT,
-      type: ChallengeType.COLLABORATION,
-      xp: 500,
-    },
-    {
-      title: "Write a Technical Blog Post",
-      description:
-        "Write a comprehensive blog post about a recent technology trend or tutorial.",
-      category: ChallengeCategory.WRITING,
-      difficulty: ChallengeDifficulty.INTERMEDIATE,
-      type: ChallengeType.SOLO,
-      xp: 200,
-    },
-    {
-      title: "Photography Portfolio Review",
-      description:
-        "Create a portfolio of 10 photos showcasing different photography techniques.",
-      category: ChallengeCategory.PHOTOGRAPHY,
-      difficulty: ChallengeDifficulty.INTERMEDIATE,
-      type: ChallengeType.SOLO,
-      xp: 200,
-    },
-    {
-      title: "3D Model a Game Asset",
-      description:
-        "Create a detailed 3D model of a game asset with proper texturing and lighting.",
-      category: ChallengeCategory.THREE_D,
-      difficulty: ChallengeDifficulty.ADVANCED,
-      type: ChallengeType.SOLO,
-      xp: 350,
-    },
-    {
-      title: "Community Event Planning",
-      description:
-        "Organize and plan a virtual community event with activities and engagement.",
-      category: ChallengeCategory.COMMUNITY,
-      difficulty: ChallengeDifficulty.BEGINNER,
-      type: ChallengeType.COLLABORATION,
-      xp: 150,
-    },
+    ...demoSoloChallenges,
+    ...demoTradeChallenges,
+    ...demoCollaborationChallenges
   ];
 
   const seedChallenges = async () => {
@@ -138,24 +75,18 @@ const SeedChallengesPage: React.FC = () => {
         const challengeData: Partial<Challenge> = {
           title: sample.title,
           description: sample.description,
-          category: sample.category,
-          difficulty: sample.difficulty,
-          type: sample.type,
+          category: (sample as any).category || ChallengeCategory.DEVELOPMENT, // Fallback as demo data might use strings
+          difficulty: sample.difficulty as ChallengeDifficulty,
+          type: sample.type as ChallengeType,
           status: ChallengeStatus.ACTIVE,
           requirements: [],
-          rewards: { xp: sample.xp },
+          rewards: { xp: sample.rewards?.xp || 100 },
           startDate: Timestamp.now(),
           endDate: daysFromNow(endInDays),
+          coverImage: (sample as any).coverImage,
           maxParticipants:
             sample.type === ChallengeType.COLLABORATION ? 50 : 100,
-          timeEstimate:
-            sample.difficulty === ChallengeDifficulty.BEGINNER
-              ? "2-4 hours"
-              : sample.difficulty === ChallengeDifficulty.INTERMEDIATE
-              ? "4-8 hours"
-              : sample.difficulty === ChallengeDifficulty.ADVANCED
-              ? "8-16 hours"
-              : "16+ hours",
+          timeEstimate: (sample as any).estimatedHours ? `${(sample as any).estimatedHours} hours` : "4-8 hours",
           instructions: [
             "Read the challenge description carefully",
             "Plan your approach and timeline",
@@ -168,7 +99,7 @@ const SeedChallengesPage: React.FC = () => {
             "Submit on time",
             "Follow best practices",
           ],
-          tags: [sample.category, sample.type, sample.difficulty],
+          tags: (sample as any).skills || [],
           createdBy: currentUser.uid,
         };
 
@@ -287,9 +218,9 @@ const SeedChallengesPage: React.FC = () => {
                       {challenge.description}
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary">{challenge.category}</Badge>
+                      <Badge variant="secondary">{(challenge as any).category || 'Development'}</Badge>
                       <Badge variant="outline">{challenge.difficulty}</Badge>
-                      <Badge variant="default">{challenge.xp} XP</Badge>
+                      <Badge variant="default">{(challenge as any).rewards?.xp || 100} XP</Badge>
                     </div>
                   </CardContent>
                 </Card>

@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import BottomNavigation from './BottomNavigation';
 import { cn } from '../../utils/cn';
 import { DynamicBackground } from '../background/DynamicBackground';
 import { useMobileOptimization } from '../../hooks/useMobileOptimization';
@@ -52,9 +53,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       <Navbar />
       <Box
         className={cn(
-          'flex-grow app-content',
+          'grow app-content',
           // Responsive padding
           isMobile ? 'py-4' : isTablet ? 'py-6' : 'py-8',
+          // Add bottom padding on mobile to account for bottom navigation
+          isMobile && 'pb-20',
           containerized ? (
             isMobile
               ? 'container mx-auto px-3'
@@ -66,6 +69,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         {children}
       </Box>
       <Footer />
+      {/* Bottom Navigation - Mobile Only */}
+      <BottomNavigation />
     </Box>
   );
 };

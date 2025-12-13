@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { SparklesIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+
 import { Calendar } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 import { Card, CardHeader, CardContent, CardTitle } from '../../ui/Card';
@@ -148,7 +148,7 @@ const TradeCard: React.FC<TradeCardProps> = React.memo(({
       try {
         const tradeService = migrationRegistry.trades;
         const refreshedTrade = await tradeService.getTrade(initialTrade.id);
-        
+
         if (refreshedTrade) {
           // Merge refreshed data with existing extended properties
           setTrade({
@@ -174,9 +174,9 @@ const TradeCard: React.FC<TradeCardProps> = React.memo(({
 
   const handleInitiateTrade = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click when button is clicked
-    
+
     if (!trade.id) return;
-    
+
     setIsRefreshing(true);
     try {
       // Use migration-aware trade operations if available
@@ -206,25 +206,25 @@ const TradeCard: React.FC<TradeCardProps> = React.memo(({
       navigate(`/trades/${trade.id}`);
     }
   };
-  
+
   // Determine creator name with migration-aware fallback
   const getCreatorInfo = () => {
     // Try new format first
     if (trade.participants?.creator) {
       return {
         id: trade.participants.creator,
-        name: trade.creatorName || `User ${trade.participants.creator.substring(0,6)}...`
+        name: trade.creatorName || `User ${trade.participants.creator.substring(0, 6)}...`
       };
     }
-    
+
     // Fallback to legacy format
     if (trade.creatorId) {
       return {
         id: trade.creatorId,
-        name: trade.creatorName || `User ${trade.creatorId.substring(0,6)}...`
+        name: trade.creatorName || `User ${trade.creatorId.substring(0, 6)}...`
       };
     }
-    
+
     // Ultimate fallback
     return {
       id: 'unknown',
@@ -329,7 +329,7 @@ const TradeCard: React.FC<TradeCardProps> = React.memo(({
                 </div>
               </div>
             </div>
-            
+
             {/* Description Preview - Takes remaining space */}
             {trade.description && (
               <div className="flex-1 min-h-0 mb-3">
@@ -351,7 +351,7 @@ const TradeCard: React.FC<TradeCardProps> = React.memo(({
                 </Button>
               </div>
             )}
-            
+
             {/* Info Section - Pinned to bottom */}
             <div className={cn('flex items-center gap-2 sm:gap-3 mt-auto flex-shrink-0', themeClasses.caption)}>
               <div className="flex items-center min-w-0 flex-shrink-0">
@@ -360,7 +360,7 @@ const TradeCard: React.FC<TradeCardProps> = React.memo(({
               </div>
               {/* Chevron icon for interactivity */}
               <span className="ml-auto flex items-center opacity-60 group-hover:opacity-100 group-focus:opacity-100 transition-opacity flex-shrink-0">
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
               </span>
             </div>
           </CardContent>
