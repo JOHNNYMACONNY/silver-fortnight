@@ -5,7 +5,16 @@ import {
   Zap,
   Award,
   Handshake,
-  Sparkles
+  Sparkles,
+  Sprout,
+  Compass,
+  Star,
+  Crown,
+  Flame,
+  Medal,
+  Target,
+  Gem,
+  Infinity as InfinityIcon
 } from 'lucide-react';
 
 /**
@@ -60,7 +69,7 @@ export interface LevelTier {
   minXP: number;
   maxXP: number;
   color: string;
-  icon: string;
+  icon: LucideIcon;
   benefits: string[];
 }
 
@@ -71,7 +80,7 @@ export const LEVEL_TIERS: LevelTier[] = [
     minXP: 0,
     maxXP: 100,
     color: '#94a3b8',
-    icon: '🌱',
+    icon: Sprout,
     benefits: ['Basic platform access', 'Profile creation']
   },
   {
@@ -80,7 +89,7 @@ export const LEVEL_TIERS: LevelTier[] = [
     minXP: 101,
     maxXP: 250,
     color: '#60a5fa',
-    icon: '🔍',
+    icon: Compass,
     benefits: ['Trade creation', 'Basic collaboration access']
   },
   {
@@ -89,7 +98,7 @@ export const LEVEL_TIERS: LevelTier[] = [
     minXP: 251,
     maxXP: 500,
     color: '#34d399',
-    icon: '🤝',
+    icon: Handshake,
     benefits: ['Enhanced profile features', 'Priority support']
   },
   {
@@ -98,7 +107,7 @@ export const LEVEL_TIERS: LevelTier[] = [
     minXP: 501,
     maxXP: 1000,
     color: '#fbbf24',
-    icon: '⭐',
+    icon: Star,
     benefits: ['Advanced collaboration tools', 'Featured listings']
   },
   {
@@ -107,7 +116,7 @@ export const LEVEL_TIERS: LevelTier[] = [
     minXP: 1001,
     maxXP: 2000,
     color: '#f97316',
-    icon: '🏆',
+    icon: Trophy,
     benefits: ['Premium features', 'Mentorship opportunities']
   },
   {
@@ -116,7 +125,7 @@ export const LEVEL_TIERS: LevelTier[] = [
     minXP: 2001,
     maxXP: 5000,
     color: '#8b5cf6',
-    icon: '👑',
+    icon: Crown,
     benefits: ['Elite status', 'Custom features', 'Beta access']
   },
   {
@@ -125,7 +134,7 @@ export const LEVEL_TIERS: LevelTier[] = [
     minXP: 5001,
     maxXP: 10000,
     color: '#ef4444',
-    icon: '🔥',
+    icon: Flame,
     benefits: ['Legendary status', 'All features unlocked', 'Platform influence']
   },
   {
@@ -134,7 +143,7 @@ export const LEVEL_TIERS: LevelTier[] = [
     minXP: 10001,
     maxXP: 20000,
     color: '#ec4899',
-    icon: '💪',
+    icon: Medal,
     benefits: ['Champion status', 'Exclusive events', 'Priority matching']
   },
   {
@@ -143,7 +152,7 @@ export const LEVEL_TIERS: LevelTier[] = [
     minXP: 20001,
     maxXP: 35000,
     color: '#06b6d4',
-    icon: '🎯',
+    icon: Target,
     benefits: ['Virtuoso recognition', 'Premium networking', 'Special badges']
   },
   {
@@ -152,7 +161,7 @@ export const LEVEL_TIERS: LevelTier[] = [
     minXP: 35001,
     maxXP: 50000,
     color: '#10b981',
-    icon: '💎',
+    icon: Gem,
     benefits: ['Elite tier access', 'VIP support', 'Revenue share opportunities']
   },
   {
@@ -161,7 +170,7 @@ export const LEVEL_TIERS: LevelTier[] = [
     minXP: 50001,
     maxXP: 75000,
     color: '#a855f7',
-    icon: '🌟',
+    icon: Sparkles,
     benefits: ['Mythic status', 'Platform governance', 'Special projects access']
   },
   {
@@ -170,7 +179,7 @@ export const LEVEL_TIERS: LevelTier[] = [
     minXP: 75001,
     maxXP: Infinity,
     color: '#f59e0b',
-    icon: '👑',
+    icon: InfinityIcon,
     benefits: ['Immortal legacy', 'Hall of fame', 'Lifetime benefits', 'Platform partnership']
   }
 ];
@@ -567,6 +576,8 @@ export interface Challenge {
   timeEstimate?: string;
   tags?: string[];
   createdBy: string;
+  coverImage?: string;
+  prerequisites?: string[]; // Array of Challenge IDs that must be completed first
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -582,6 +593,7 @@ export interface UserChallenge {
   completedAt?: Timestamp;
   lastActivityAt: Timestamp;
   submissions?: ChallengeSubmission[];
+  metadata?: Record<string, any>; // For trade sides, team roles, etc.
   notes?: string;
   abandonedAt?: Timestamp;
   completionTimeMinutes?: number;

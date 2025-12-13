@@ -16,6 +16,13 @@ const config = {
       pattern: /row-span-(1|2|3|4|5|6)/,
       variants: ['sm', 'md', 'lg', 'xl', '2xl'],
     },
+    // Responsive display utilities for micro-hero cards
+    // Note: Tailwind v4 auto-detects classes from content, but safelist ensures
+    // dynamic classes are included. The max-lg: modifier is auto-detected.
+    {
+      pattern: /(flex|hidden)/,
+      variants: ['md', 'lg'],
+    },
     // Container query classes (if using @container/@md: etc.)
     {
       pattern: /@container/,

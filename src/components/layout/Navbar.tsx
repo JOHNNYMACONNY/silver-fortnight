@@ -9,7 +9,7 @@ import { NotificationBell } from "../features/notifications/NotificationBell";
 import { useAuth } from "../../AuthContext";
 import { UserMenu } from "../ui/UserMenu";
 import { Button } from "../ui/Button";
-import { Menu, Command } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { useNavigation } from "../../hooks/useNavigation";
 import { useMobileOptimization } from "../../hooks/useMobileOptimization";
 import { CommandPalette } from "../ui/CommandPalette";
@@ -25,16 +25,23 @@ const mainNavItems = [
   { to: "/leaderboard", label: "Leaderboard" },
 ];
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/DropdownMenu";
+import { ChevronDown } from "lucide-react";
+
 // Define which items to hide on smaller screens
-const getVisibleNavItems = (viewportWidth: number) => {
-  if (viewportWidth >= 1200) {
-    return mainNavItems; // Show all items on large screens
-  } else if (viewportWidth >= 1000) {
-    return mainNavItems.slice(0, 5); // Hide leaderboard on medium screens
-  } else if (viewportWidth >= 900) {
-    return mainNavItems.slice(0, 4); // Hide portfolio and leaderboard on smaller screens
+// Define which items to hide on smaller screens
+const getNavItemsLayout = (viewportWidth: number) => {
+  if (viewportWidth >= 1440) {
+    return { visible: mainNavItems, more: [] }; // Show all items on extra large screens (1440px+)
+  } else if (viewportWidth >= 1024) {
+    return { visible: mainNavItems.slice(0, 4), more: mainNavItems.slice(4) }; // Show 4 items + More on large screens (1024-1439px)
   } else {
-    return mainNavItems.slice(0, 3); // Show only first 3 items on very small screens
+    return { visible: [], more: [] }; // Handled by mobile menu on smaller screens
   }
 };
 
@@ -59,7 +66,7 @@ const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const visibleNavItems = getVisibleNavItems(viewportWidth);
+  const { visible: visibleNavItems, more: moreNavItems } = getNavItemsLayout(viewportWidth);
 
   // Phase 4.1: Use centralized navigation state
   const {
@@ -113,7 +120,7 @@ const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
         >
           <div
             className={cn(
-              "flex justify-between items-center",
+              "flex justify-between items-center gap-4 sm:gap-6",
               // Responsive height with safe area support
               isMobile ? "h-14" : "h-16"
             )}
@@ -122,13 +129,13 @@ const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
             }}
           >
             {/* Left side: Logo and main navigation */}
-            <div className="flex items-center min-w-0 flex-1">
+            <div className="flex items-center min-w-0 flex-1 gap-4 md:gap-8">
               <Logo data-testid="navbar-logo" size="medium" showText={true} />
 
               {/* Desktop navigation */}
               <div
                 data-testid="nav-links"
-                className="hidden md:ml-6 md:flex md:space-x-2 lg:space-x-4 xl:space-x-6 min-w-0 overflow-hidden flex-1"
+                className="hidden lg:ml-8 lg:flex lg:space-x-4 xl:space-x-6 min-w-0 overflow-hidden flex-1"
               >
                 {visibleNavItems.map((item) => (
                   <NavItem
@@ -138,26 +145,57 @@ const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
                     isActive={activePath.startsWith(item.to)}
                   />
                 ))}
+
+                {/* More Menu Dropdown */}
+                {moreNavItems.length > 0 && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="focus:outline-none">
+                      <div className={cn(
+                        "group inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 border-transparent transition-colors duration-200",
+                        "text-muted-foreground hover:text-foreground hover:border-border"
+                      )}>
+                        <span>More</span>
+                        <ChevronDown className="ml-1 h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                      </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 bg-navbar-glass dark:bg-navbar-glass-dark backdrop-blur-md navbar-gradient-border shadow-glass-lg">
+                      {moreNavItems.map((item) => (
+                        <DropdownMenuItem key={item.to} asChild>
+                          <a
+                            href={item.to}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigate(item.to);
+                            }}
+                            className={cn(
+                              "w-full cursor-pointer",
+                              activePath.startsWith(item.to) && "bg-accent text-accent-foreground"
+                            )}
+                          >
+                            {item.label}
+                          </a>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
 
             {/* Right side: Actions and user menu */}
-            <div className="hidden md:flex items-center space-x-4 flex-shrink-0 ml-4">
+            <div className="hidden lg:flex items-center gap-4 flex-shrink-0 ml-6">
               {/* Command Palette trigger button */}
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={toggleCommandPalette}
                 className={cn(
                   "text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-foreground",
                   "transition-colors duration-200"
                 )}
+                aria-label="Search"
               >
-                <Command className="h-4 w-4 mr-2" />
-                <span className="text-sm">Search</span>
-                <kbd className="hidden lg:inline-flex items-center gap-1 ml-2 px-1.5 py-0.5 text-xs font-mono bg-muted dark:bg-muted rounded border border-border">
-                  ⌘K
-                </kbd>
+                <Search className="h-5 w-5" />
               </Button>
 
               <div className="border-l border-border h-6" />
@@ -174,7 +212,7 @@ const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
                   <Button variant="ghost" onClick={() => navigate("/login")}>
                     Log In
                   </Button>
-                  <Button 
+                  <Button
                     onClick={() => navigate("/signup")}
                     className={cn(
                       "bg-white/10 dark:bg-white/10 backdrop-blur-md",
@@ -194,7 +232,7 @@ const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
             </div>
 
             {/* Mobile menu button */}
-            <div className="md:hidden flex items-center space-x-1">
+            <div className="lg:hidden flex items-center space-x-1">
               {/* Mobile command palette button */}
               <Button
                 variant="ghost"
@@ -209,7 +247,7 @@ const Navbar: React.FC<NavbarProps> = ({ showThemeToggle }) => {
                 onTouchStart={(e) => handleTouchFeedback(e.currentTarget)}
                 aria-label="Open command palette"
               >
-                <Command className="h-5 w-5" />
+                <Search className="h-5 w-5" />
                 <span className="sr-only">Open command palette</span>
               </Button>
 

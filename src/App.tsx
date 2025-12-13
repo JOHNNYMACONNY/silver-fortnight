@@ -24,6 +24,7 @@ import ConsistencyCheckerPage from "./pages/ConsistencyCheckerPage";
 import DevDashboard from "./components/development/DevDashboard";
 import { StyleGuide } from "./components/ui/StyleGuide";
 import ShadcnTestPage from "./pages/ShadcnTestPage";
+const ResponsiveCardTestPage = lazy(() => import("./pages/ResponsiveCardTestPage"));
 import { logger } from "./utils/logging/logger";
 import Spinner from "./components/ui/Spinner";
 import AppPreloader from "./components/ui/AppPreloader";
@@ -32,6 +33,8 @@ import { LoadingFallback } from "./components/fallbacks/FallbackUISystem";
 
 // Import consistency checker for development
 import "./utils/runComprehensiveCheck";
+
+import { MotionProvider } from "./components/ui/MotionProvider";
 
 // Import development tools
 import "./utils/development/enhancedDevConsole";
@@ -99,6 +102,7 @@ const AsymmetricHomePageLayout = lazy(
   () => import("./pages/AsymmetricHomePageLayout")
 );
 const HelpReputation = lazy(() => import("./pages/HelpReputation"));
+const UXComponentsTestPage = lazy(() => import("./pages/UXComponentsTestPage").then(module => ({ default: module.UXComponentsTestPage })));
 
 // Import pages that we've created
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
@@ -190,6 +194,7 @@ function App() {
 
   return (
     <EnhancedErrorBoundary>
+      <MotionProvider>
       <ToastProvider>
         <NotificationsProvider>
           <GamificationNotificationProvider>
@@ -295,6 +300,14 @@ function App() {
                   element={
                     <RouteErrorBoundary>
                       <HelpReputation />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/test/ux-components"
+                  element={
+                    <RouteErrorBoundary>
+                      <UXComponentsTestPage />
                     </RouteErrorBoundary>
                   }
                 />
@@ -550,6 +563,14 @@ function App() {
                       }
                     />
                     <Route
+                      path="/responsive-card-test"
+                      element={
+                        <RouteErrorBoundary>
+                          <ResponsiveCardTestPage />
+                        </RouteErrorBoundary>
+                      }
+                    />
+                    <Route
                       path="/ux-enhancements-demo"
                       element={
                         <RouteErrorBoundary>
@@ -605,10 +626,11 @@ function App() {
             {/* Development Dashboard - only in development */}
             <DevDashboard />
           </MainLayout>
-        </GamificationNotificationProvider>
-      </NotificationsProvider>
-    </ToastProvider>
-  </EnhancedErrorBoundary>
+          </GamificationNotificationProvider>
+        </NotificationsProvider>
+      </ToastProvider>
+      </MotionProvider>
+    </EnhancedErrorBoundary>
   );
 }
 

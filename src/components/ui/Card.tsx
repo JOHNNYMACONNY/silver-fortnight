@@ -18,27 +18,27 @@ import { cn } from '../../utils/cn';
 export interface CardProps {
   children: React.ReactNode;
   className?: string;
-  
+
   // Enhanced Visual Variants
   variant?: 'default' | 'glass' | 'elevated' | 'premium';
-  
+
   // 3D Effects
   tilt?: boolean;
   tiltIntensity?: number;
-  
+
   // Depth and Shadows
   depth?: 'sm' | 'md' | 'lg' | 'xl';
-  
+
   // Brand-colored Glows
   glow?: 'none' | 'subtle' | 'strong';
-  glowColor?: 'orange' | 'blue' | 'purple' | 'auto';
-  
+  glowColor?: 'orange' | 'blue' | 'purple' | 'green' | 'auto';
+
   // Interaction
   hover?: boolean;
   reducedHover?: boolean; // Disables movement effects but keeps visual feedback
   interactive?: boolean;
   onClick?: () => void;
-  
+
   // Performance & Accessibility
   reducedMotion?: boolean;
   disabled?: boolean;
@@ -48,8 +48,9 @@ export interface CardProps {
 const brandEffects = {
   shadows: {
     orange: 'rgba(249, 115, 22, 0.25)',
-    blue: 'rgba(14, 165, 233, 0.2)', 
+    blue: 'rgba(14, 165, 233, 0.2)',
     purple: 'rgba(139, 92, 246, 0.2)',
+    green: 'rgba(34, 197, 94, 0.2)', // Added green support
     auto: 'rgba(249, 115, 22, 0.15)' // Default to orange
   },
   glows: {
@@ -57,12 +58,14 @@ const brandEffects = {
       orange: '0 0 20px rgba(249, 115, 22, 0.1)',
       blue: '0 0 20px rgba(14, 165, 233, 0.1)',
       purple: '0 0 20px rgba(139, 92, 246, 0.1)',
+      green: '0 0 20px rgba(34, 197, 94, 0.1)', // Emerald glow
       auto: '0 0 20px rgba(249, 115, 22, 0.1)'
     },
     strong: {
       orange: '0 0 30px rgba(249, 115, 22, 0.2), 0 0 60px rgba(249, 115, 22, 0.1)',
       blue: '0 0 30px rgba(14, 165, 233, 0.2), 0 0 60px rgba(14, 165, 233, 0.1)',
       purple: '0 0 30px rgba(139, 92, 246, 0.2), 0 0 60px rgba(139, 92, 246, 0.1)',
+      green: '0 0 30px rgba(34, 197, 94, 0.2), 0 0 60px rgba(34, 197, 94, 0.1)', // Emerald strong
       auto: '0 0 30px rgba(249, 115, 22, 0.2), 0 0 60px rgba(249, 115, 22, 0.1)'
     }
   }
@@ -70,8 +73,8 @@ const brandEffects = {
 
 // Depth configurations
 const depthStyles = {
-  sm: 'shadow-sm hover:shadow-md',
-  md: 'shadow-md hover:shadow-lg', 
+  sm: 'shadow-xs hover:shadow-sm',
+  md: 'shadow-md hover:shadow-lg',
   lg: 'shadow-lg hover:shadow-xl',
   xl: 'shadow-xl hover:shadow-2xl'
 };
@@ -87,7 +90,7 @@ const variantStyles = {
 // Browser compatibility check
 const supportsTransform3D = () => {
   if (typeof window === 'undefined') return false;
-  
+
   const testEl = document.createElement('div');
   testEl.style.transformStyle = 'preserve-3d';
   return testEl.style.transformStyle === 'preserve-3d';
@@ -126,18 +129,18 @@ export const Card: React.FC<CardProps> = ({
   const [rotateY, setRotateY] = useState(0);
   const [glarePosition, setGlarePosition] = useState({ x: 50, y: 50 });
   const cardRef = useRef<HTMLDivElement>(null);
-  
+
   // Feature detection and accessibility
   const [canUse3D, setCanUse3D] = useState(false);
   const [shouldReduceMotion, setShouldReduceMotion] = useState(true);
   const [isTouch, setIsTouch] = useState(false);
-  
+
   useEffect(() => {
     setCanUse3D(supportsTransform3D());
     setShouldReduceMotion(reducedMotion ?? prefersReducedMotion());
     setIsTouch(isTouchDevice());
   }, [reducedMotion]);
-  
+
   // Determine if 3D effects should be active
   const use3D = tilt && canUse3D && !shouldReduceMotion && !isTouch && !disabled && !reducedHover;
 
@@ -147,20 +150,20 @@ export const Card: React.FC<CardProps> = ({
 
     const card = cardRef.current;
     const rect = card.getBoundingClientRect();
-    
+
     // Calculate mouse position relative to card center
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     const mouseX = e.clientX - centerX;
     const mouseY = e.clientY - centerY;
-    
+
     // Calculate rotation based on mouse position and intensity
     const rotateYValue = (mouseX / (rect.width / 2)) * tiltIntensity;
     const rotateXValue = -(mouseY / (rect.height / 2)) * tiltIntensity;
-    
+
     setRotateX(rotateXValue);
     setRotateY(rotateYValue);
-    
+
     // Calculate glare position for premium variants
     if (variant === 'premium' || variant === 'glass') {
       const glareX = ((e.clientX - rect.left) / rect.width) * 100;
@@ -179,11 +182,11 @@ export const Card: React.FC<CardProps> = ({
 
   // Build dynamic styles
   const baseStyles = 'rounded-lg transition-all duration-300 ease-out relative overflow-hidden';
-  
+
   const interactionStyles = cn(
     hover && !reducedHover && 'hover:shadow-lg hover:scale-[1.02] transform cursor-pointer',
     reducedHover && 'hover:shadow-lg cursor-pointer transition-shadow',
-    interactive && 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2',
+    interactive && 'cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-primary/50 focus:ring-offset-2',
     onClick && !reducedHover && 'cursor-pointer hover:shadow-md transition-shadow',
     onClick && reducedHover && 'cursor-pointer transition-shadow'
   );
@@ -193,13 +196,33 @@ export const Card: React.FC<CardProps> = ({
     boxShadow: brandEffects.glows[glow][glowColor]
   } : {};
 
-  // Animation configuration
+  // Enhanced animation configuration with better spring physics
   const animationConfig = {
     type: 'spring' as const,
     stiffness: 300,
     damping: 30,
     mass: 0.5,
   };
+
+  // Enhanced hover animation for framer-motion
+  const hoverAnimation = hover && !reducedHover && !shouldReduceMotion ? {
+    y: -4,
+    scale: 1.02,
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 20
+    } as any
+  } : undefined;
+
+  const tapAnimation = onClick && !shouldReduceMotion ? {
+    scale: 0.98,
+    transition: {
+      type: "spring",
+      stiffness: 400,
+      damping: 17
+    } as any
+  } : undefined;
 
   // Compose final className
   const cardClassName = cn(
@@ -227,6 +250,8 @@ export const Card: React.FC<CardProps> = ({
           rotateX: rotateX,
           rotateY: rotateY,
         }}
+        whileHover={hoverAnimation}
+        whileTap={tapAnimation}
         transition={animationConfig}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -258,7 +283,39 @@ export const Card: React.FC<CardProps> = ({
     );
   }
 
-  // Non-3D fallback
+  // Non-3D fallback - still use motion.div for hover/tap animations if enabled
+  if (hover && !reducedHover && !shouldReduceMotion) {
+    return (
+      <motion.div
+        ref={cardRef}
+        style={{ containerType: 'inline-size', ...glowEffect }}
+        className={cn(
+          'card',
+          baseStyles,
+          variantStyles[variant],
+          depthStyles[depth],
+          interactionStyles,
+          className
+        )}
+        whileHover={hoverAnimation}
+        whileTap={tapAnimation}
+        onClick={onClick}
+        role={onClick ? "button" : undefined}
+        tabIndex={onClick ? 0 : undefined}
+        onKeyDown={(e) => {
+          if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            onClick();
+          }
+        }}
+        aria-disabled={disabled}
+      >
+        {children}
+      </motion.div>
+    );
+  }
+
+  // Static fallback (no animations)
   return (
     <div
       ref={cardRef}
@@ -280,6 +337,7 @@ export const Card: React.FC<CardProps> = ({
           onClick();
         }
       }}
+      aria-disabled={disabled}
     >
       {children}
     </div>

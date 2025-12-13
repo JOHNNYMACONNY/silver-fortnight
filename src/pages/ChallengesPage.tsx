@@ -5,9 +5,6 @@ import {
   joinChallenge,
   getUserChallenges,
   onActiveChallenges,
-  getRecommendedChallenges,
-  getFeaturedDaily,
-  getFeaturedWeekly,
 } from "../services/challenges";
 import {
   Challenge,
@@ -74,9 +71,6 @@ export const ChallengesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [liveCount, setLiveCount] = useState<number | null>(null);
-  const [recommended, setRecommended] = useState<Challenge[]>([]);
-  const [featuredDaily, setFeaturedDaily] = useState<Challenge | null>(null);
-  const [featuredWeekly, setFeaturedWeekly] = useState<Challenge | null>(null);
   const [practicedToday, setPracticedToday] = useState<boolean>(false);
 
   // Retry logic for failed requests
@@ -108,7 +102,6 @@ export const ChallengesPage: React.FC = () => {
     ""
   );
   const [selectedType, setSelectedType] = useState<ChallengeType | "">("");
-  const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "active" | "mine">("all");
 
   // EnhancedSearchBar state
@@ -147,19 +140,9 @@ export const ChallengesPage: React.FC = () => {
       try {
         const practiced = await hasPracticedToday(currentUser.uid);
         setPracticedToday(practiced);
-      } catch {}
+      } catch { }
     })();
-    // Load featured challenges (non-blocking)
-    (async () => {
-      try {
-        const [d, w] = await Promise.all([
-          getFeaturedDaily(),
-          getFeaturedWeekly(),
-        ]);
-        setFeaturedDaily(d);
-        setFeaturedWeekly(w);
-      } catch {}
-    })();
+
     // Subscribe to live updates of active challenges
     const unsubscribe = onActiveChallenges((live) => {
       setLiveCount(live.length);
@@ -180,29 +163,6 @@ export const ChallengesPage: React.FC = () => {
       setSelectedType(typeParam as ChallengeType);
     }
   }, [location.search]);
-
-  useEffect(() => {
-    // Fetch recommended challenges (non-blocking)
-    (async () => {
-      try {
-        const res = await getRecommendedChallenges(currentUser?.uid || "");
-        if (res.success && res.challenges) {
-          setRecommended(res.challenges.slice(0, 6)); // Show 6 instead of 3
-          // Track impressions for recommendations
-          try {
-            track(
-              "challenge_recommendation_impressions",
-              res.challenges.length
-            );
-          } catch {}
-        } else {
-          logger.debug('Failed to load recommendations:', 'PAGE', res.error);
-        }
-      } catch (e) {
-        logger.error('Error loading recommendations:', 'PAGE', e);
-      }
-    })();
-  }, [currentUser, track]);
 
   useEffect(() => {
     applyFilters();
@@ -316,7 +276,7 @@ export const ChallengesPage: React.FC = () => {
       if (result.length === 0) {
         track("challenge_filters_zero_results", 1);
       }
-    } catch {}
+    } catch { }
   };
 
   const resetFilters = () => {
@@ -327,7 +287,7 @@ export const ChallengesPage: React.FC = () => {
     setSelectedType("");
     try {
       track("challenge_filters_cleared", 1);
-    } catch {}
+    } catch { }
   };
 
   // Format date
@@ -360,10 +320,7 @@ export const ChallengesPage: React.FC = () => {
         // Track join event
         try {
           track("challenge_joins", 1);
-          if (recommended.some((c) => c.id === challengeId)) {
-            track("challenge_recommendation_joins", 1);
-          }
-        } catch {}
+        } catch { }
         fetchChallenges();
         fetchUserChallenges();
       } else {
@@ -374,6 +331,42 @@ export const ChallengesPage: React.FC = () => {
     }
   };
 
+  // Tier-Coded Hero Logic
+  const [heroColors, setHeroColors] = useState<string[]>([]);
+
+  useEffect(() => {
+    const determineHeroColors = async () => {
+      if (!currentUser?.uid) {
+        // Default / Guest: Cool Blues (Neutral)
+        setHeroColors(['rgba(14, 165, 233, 0.15)', 'rgba(56, 189, 248, 0.15)', 'rgba(2, 132, 199, 0.15)']);
+        return;
+      }
+
+      // Check access levels (Highest wins)
+      // We could use getUserThreeTierProgress but simple canAccessTier checks work if ordered correctly.
+      // Order: Collaboration > Trade > Solo
+
+      // Note: In a real app we'd fetch the progress object once to save reads, but for now:
+      const { getUserThreeTierProgress } = await import("../services/threeTierProgression");
+      const progress = await getUserThreeTierProgress(currentUser.uid);
+
+      if (progress.success && progress.data) {
+        const tiers = progress.data.unlockedTiers;
+        if (tiers.includes('COLLABORATION')) {
+          // Indigo/Rose (Complex)
+          setHeroColors(['rgba(139, 92, 246, 0.2)', 'rgba(244, 63, 94, 0.15)', 'rgba(79, 70, 229, 0.2)']);
+        } else if (tiers.includes('TRADE')) {
+          // Amber/Orange (Energy)
+          setHeroColors(['rgba(249, 115, 22, 0.2)', 'rgba(251, 146, 60, 0.15)', 'rgba(252, 211, 77, 0.2)']);
+        } else {
+          // Emerald/Teal (Growth)
+          setHeroColors(['rgba(34, 197, 94, 0.2)', 'rgba(20, 184, 166, 0.15)', 'rgba(16, 185, 129, 0.2)']);
+        }
+      }
+    };
+    determineHeroColors();
+  }, [currentUser]);
+
   return (
     <Box className={classPatterns.homepageContainer} role="main">
       <PerformanceMonitor pageName="ChallengesPage" />
@@ -381,7 +374,8 @@ export const ChallengesPage: React.FC = () => {
         {/* Hero Section */}
         <Box className={classPatterns.homepageHero}>
           <GradientMeshBackground
-            variant="secondary"
+            variant="custom"
+            customColors={heroColors.length ? heroColors : undefined}
             intensity="medium"
             className={classPatterns.homepageHeroContent}
           >
@@ -417,14 +411,6 @@ export const ChallengesPage: React.FC = () => {
                 <Trophy className="mr-2 h-4 w-4" />
                 Create Challenge
               </Button>
-              <Button
-                variant="outline"
-                size="md"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                <Filter className="mr-2 h-4 w-4" />
-                Filters
-              </Button>
               <Badge variant="secondary" className="text-sm" aria-live="polite">
                 {filteredChallenges.length} Challenges
               </Badge>
@@ -432,396 +418,78 @@ export const ChallengesPage: React.FC = () => {
           </GradientMeshBackground>
         </Box>
 
+        {/* Enhanced Search Section */}
+        <Card variant="glass" className="rounded-xl p-4 md:p-6">
+          <EnhancedSearchBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            onSearch={handleSearch}
+            onToggleFilters={() => setShowFilterPanel(true)}
+            hasActiveFilters={activeFiltersCount > 0}
+            activeFiltersCount={activeFiltersCount}
+            resultsCount={filteredChallenges.length}
+            isLoading={loading}
+            placeholder="Search challenges by title, description, or skills..."
+            topic="success"
+          />
+        </Card>
+
         {/* Tabs: All / Active / My Challenges */}
-        <Card
-          variant="glass"
-          className="rounded-lg shadow-sm border border-border"
-        >
-          <CardContent className="p-4">
-            <Cluster gap="sm" justify="center">
-              {[
-                { key: "all", label: "All" },
-                { key: "active", label: "Active" },
-                { key: "mine", label: "My Challenges" },
-              ].map((tab) => (
-                <Button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key as any)}
-                  variant={activeTab === tab.key ? "default" : "outline"}
-                  size="sm"
-                  aria-pressed={activeTab === tab.key}
-                >
-                  {tab.label}
-                </Button>
-              ))}
-            </Cluster>
-          </CardContent>
-        </Card>
-
-        {/* Daily Practice Quick Action */}
-        {currentUser?.uid && (
-          <Card variant="glass" className="rounded-xl p-4 md:p-6 mb-6 ">
-            <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-card/50">
-              <div className="flex items-center gap-3">
-                <Dumbbell className="h-5 w-5 text-primary" />
-                <div>
-                  <div className="text-sm font-medium text-foreground">
-                    Daily Practice
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {practicedToday ? (
-                      <span className="inline-flex items-center gap-1">
-                        <span
-                          className="inline-block h-2 w-2 rounded-full bg-success"
-                          aria-hidden
-                        />
-                        Practiced today
-                      </span>
-                    ) : (
-                      "Log a quick practice session to progress your skill streak."
-                    )}
-                  </div>
-                </div>
-              </div>
-              <Button
-                size="sm"
-                onClick={async () => {
-                  try {
-                    await markSkillPracticeDay(currentUser.uid);
-                    addToast("success", "Logged today's practice");
-                    setPracticedToday(true);
-                  } catch {
-                    addToast("error", "Failed to log practice");
-                  }
-                }}
-              >
-                Log practice
-              </Button>
-            </div>
-          </Card>
-        )}
-
-        {/* Featured Challenges */}
-        <Card variant="glass" className="rounded-xl p-4 md:p-6 mb-6 ">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-foreground mb-1">
-                Featured Challenges
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Special challenges with bonus rewards
-              </p>
-            </div>
-            <Badge variant="secondary" className="text-xs">
-              {featuredDaily ? 1 : 0} Featured
-            </Badge>
-          </div>
-          {featuredDaily || featuredWeekly ? (
-            <div className="flex items-center gap-3 text-xs text-muted-foreground mt-4">
-              {featuredDaily && (
-                <Tooltip
-                  content={
-                    <div>
-                      Today's featured monthly challenge. Base + bonus XP
-                      available.
-                    </div>
-                  }
-                >
-                  <Link
-                    to={`/challenges/${featuredDaily.id}`}
-                    className="inline-flex items-center gap-1 text-primary hover:underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <span
-                      className="inline-block h-1.5 w-1.5 rounded-full bg-primary"
-                      aria-hidden
-                    />
-                    Featured this month
-                  </Link>
-                </Tooltip>
+        <Cluster gap="sm" justify="start" className="border-b border-border pb-2">
+          {[
+            { key: "all", label: "All Challenges" },
+            { key: "active", label: "Active" },
+            { key: "mine", label: "My Challenges" },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as any)}
+              className={cn(
+                "px-4 py-2 text-sm font-medium transition-colors relative",
+                activeTab === tab.key ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
-              {featuredWeekly && (
-                <Tooltip
-                  content={
-                    <div>
-                      This week's featured challenge. Complete for base + bonus
-                      XP.
-                    </div>
-                  }
-                >
-                  <Link
-                    to={`/challenges/${featuredWeekly.id}`}
-                    className="inline-flex items-center gap-1 text-primary hover:underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <span
-                      className="inline-block h-1.5 w-1.5 rounded-full bg-primary"
-                      aria-hidden
-                    />
-                    Featured this week
-                  </Link>
-                </Tooltip>
+            >
+              {tab.label}
+              {activeTab === tab.key && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-[-9px] left-0 right-0 h-0.5 bg-primary"
+                />
               )}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <Award className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">
-                No featured challenges available
-              </p>
-            </div>
-          )}
-        </Card>
+            </button>
+          ))}
+        </Cluster>
 
-        {/* Challenge Calendar */}
-        <Card variant="glass" className="rounded-xl p-4 md:p-6 mb-6 ">
-          <ChallengeCalendar />
-        </Card>
-
-        {/* Enhanced Search Section with HomePage-style card */}
-        <Card variant="glass" className="rounded-xl p-4 md:p-6 mb-6 ">
-          <CardHeader className={classPatterns.homepageCardHeader}>
-            <CardTitle className="text-lg font-semibold flex items-center justify-between">
-              Find Your Perfect Challenge
-              <Badge variant="secondary" className="text-xs">
-                {filteredChallenges.length} Challenges
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className={classPatterns.homepageCardContent}>
-            <EnhancedSearchBar
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              onSearch={handleSearch}
-              onToggleFilters={() => setShowFilterPanel(true)}
-              hasActiveFilters={activeFiltersCount > 0}
-              activeFiltersCount={activeFiltersCount}
-              resultsCount={filteredChallenges.length}
-              isLoading={loading}
-              placeholder="Search challenges by title, description, or skills..."
-              topic="success"
-            />
-          </CardContent>
-        </Card>
-
-        {/* Recommended Challenges */}
-        <Card variant="glass" className="rounded-xl p-6 md:p-8 mb-8">
-          <CardHeader className="pb-6">
-            <div className="flex items-center justify-between">
+        {/* Daily Practice Quick Action (Simplified) */}
+        {currentUser?.uid && !practicedToday && (
+          <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-glass backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <Dumbbell className="h-5 w-5 text-primary" />
               <div>
-                <CardTitle className="text-2xl font-bold text-foreground mb-2">
-                  Recommended for you
-                </CardTitle>
-                <p className="text-muted-foreground text-sm">
-                  Personalized challenges based on your skills and interests
-                </p>
+                <div className="text-sm font-medium text-foreground">
+                  Daily Practice
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Log a quick practice session to keep your streak alive.
+                </div>
               </div>
-              <Badge
-                variant="secondary"
-                topic="success"
-                className={cn("text-xs", semanticClasses("success").badge)}
-              >
-                {recommended.length} Challenges
-              </Badge>
             </div>
-          </CardHeader>
-          <CardContent>
-            {recommended.length > 0 ? (
-              <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="lg">
-                {recommended.map((challenge, index) => {
-                  const successClasses = semanticClasses("success");
-                  return (
-                    <motion.div
-                      key={challenge.id}
-                      className="h-full"
-                      {...animations.homepageCardEntrance}
-                      transition={{
-                        ...animations.homepageCardEntrance.transition,
-                        delay: index * 0.1,
-                      }}
-                    >
-                      <ChallengeCard
-                        challenge={challenge}
-                        onSelect={() => navigate(`/challenges/${challenge.id}`)}
-                        footer={
-                          <div className="flex items-center justify-between">
-                            <Link
-                              to={`/challenges/${challenge.id}`}
-                              className={cn(
-                                "text-sm font-medium hover:underline",
-                                successClasses.link
-                              )}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              View Details
-                            </Link>
-                            <Badge
-                              variant="secondary"
-                              topic="success"
-                              className={cn("text-xs", successClasses.badge)}
-                            >
-                              <Trophy className="h-3 w-3 mr-1" />
-                              {challenge.rewards &&
-                              typeof challenge.rewards.xp === "number"
-                                ? challenge.rewards.xp
-                                : 0}{" "}
-                              XP
-                            </Badge>
-                          </div>
-                        }
-                      />
-                    </motion.div>
-                  );
-                })}
-              </Grid>
-            ) : (
-              <div className="text-center py-12">
-                <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  No recommendations yet
-                </h3>
-                <p className="text-muted-foreground text-sm mb-4">
-                  Complete some challenges to get personalized recommendations
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={() => setActiveTab("all")}
-                  className="text-sm"
-                >
-                  Browse All Challenges
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {showFilters && (
-          <Card
-            variant="glass"
-            className="rounded-lg shadow-sm border border-border transition-all"
-          >
-            <CardHeader className={classPatterns.homepageCardHeader}>
-              <CardTitle className="text-lg font-semibold flex items-center justify-between">
-                Filter Challenges
-                <Badge variant="secondary" className="text-xs">
-                  {categories.length +
-                    difficulties.length +
-                    statuses.length +
-                    types.length}{" "}
-                  Options
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className={classPatterns.homepageCardContent}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div>
-                  <label
-                    htmlFor="category"
-                    className="block text-sm font-medium text-text-primary mb-1"
-                  >
-                    Category
-                  </label>
-                  <Select
-                    value={selectedCategory}
-                    onValueChange={(value) => setSelectedCategory(value as ChallengeCategory | "")}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Categories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">All Categories</SelectItem>
-                      {categories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category.charAt(0).toUpperCase() +
-                            category.slice(1).replace("_", " ")}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="difficulty"
-                    className="block text-sm font-medium text-text-primary mb-1"
-                  >
-                    Difficulty
-                  </label>
-                  <select
-                    id="difficulty"
-                    value={selectedDifficulty}
-                    onChange={(e) =>
-                      setSelectedDifficulty(
-                        e.target.value as ChallengeDifficulty | ""
-                      )
-                    }
-                    className="w-full rounded-md border border-border-primary px-3 py-2 text-text-primary bg-background-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors duration-200"
-                  >
-                    <option value="">All Difficulties</option>
-                    {difficulties.map((difficulty) => (
-                      <option key={difficulty} value={difficulty}>
-                        {difficulty.charAt(0).toUpperCase() +
-                          difficulty.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="status"
-                    className="block text-sm font-medium text-text-primary mb-1"
-                  >
-                    Status
-                  </label>
-                  <select
-                    id="status"
-                    value={selectedStatus}
-                    onChange={(e) =>
-                      setSelectedStatus(e.target.value as ChallengeStatus | "")
-                    }
-                    className="w-full rounded-md border border-border-primary px-3 py-2 text-text-primary bg-background-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors duration-200"
-                  >
-                    <option value="">All Statuses</option>
-                    {statuses.map((status) => (
-                      <option key={status} value={status}>
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="type"
-                    className="block text-sm font-medium text-text-primary mb-1"
-                  >
-                    Type
-                  </label>
-                  <select
-                    id="type"
-                    value={selectedType}
-                    onChange={(e) =>
-                      setSelectedType(e.target.value as ChallengeType | "")
-                    }
-                    className="w-full rounded-md border border-border-primary px-3 py-2 text-text-primary bg-background-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors duration-200"
-                  >
-                    <option value="">All Types</option>
-                    {types.map((type) => (
-                      <option key={type} value={type}>
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="mt-4 flex justify-end">
-                <Button variant="ghost" size="sm" onClick={resetFilters}>
-                  Reset
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                try {
+                  await markSkillPracticeDay(currentUser.uid);
+                  addToast("success", "Logged today's practice");
+                  setPracticedToday(true);
+                } catch {
+                  addToast("error", "Failed to log practice");
+                }
+              }}
+            >
+              Log practice
+            </Button>
+          </div>
         )}
 
         {loading && (
@@ -859,8 +527,8 @@ export const ChallengesPage: React.FC = () => {
               {activeTab === "mine"
                 ? "You have not joined any challenges yet."
                 : activeTab === "active"
-                ? "No active challenges match your filters."
-                : "Try adjusting your filters."}
+                  ? "No active challenges match your filters."
+                  : "Try adjusting your filters."}
             </p>
             <div className="mt-4">
               <Button

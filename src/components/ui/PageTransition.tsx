@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../utils/cn';
 
-type AnimationType = 'fade' | 'slide' | 'scale' | 'none';
+type AnimationType = 'fade' | 'slide' | 'scale' | 'bounce' | 'none';
 
 interface PageTransitionProps {
   children: React.ReactNode;
@@ -63,22 +63,48 @@ const PageTransition: React.FC<PageTransitionProps> = ({
     return <div className={cn(className)}>{children}</div>;
   }
 
-  // Define animation variants
+  // Define animation variants with enhanced bounce effects
   const variants = {
     fade: {
       initial: { opacity: 0 },
       animate: { opacity: 1 },
-      exit: { opacity: 0 }
+      exit: { opacity: 0 },
+      transition: { duration: 0.3, ease: "easeInOut" }
     },
     slide: {
       initial: { opacity: 0, x: -20 },
       animate: { opacity: 1, x: 0 },
-      exit: { opacity: 0, x: 20 }
+      exit: { opacity: 0, x: 20 },
+      transition: { duration: 0.3, ease: "easeInOut" }
     },
     scale: {
       initial: { opacity: 0, scale: 0.95 },
       animate: { opacity: 1, scale: 1 },
-      exit: { opacity: 0, scale: 0.95 }
+      exit: { opacity: 0, scale: 0.95 },
+      transition: { duration: 0.3, ease: "easeInOut" }
+    },
+    bounce: {
+      initial: { opacity: 0, x: 20, scale: 0.98 },
+      animate: { 
+        opacity: 1, 
+        x: 0, 
+        scale: 1,
+        transition: {
+          type: "spring",
+          stiffness: 300,
+          damping: 30
+        }
+      },
+      exit: { 
+        opacity: 0, 
+        x: -20, 
+        scale: 0.98,
+        transition: {
+          type: "spring",
+          stiffness: 300,
+          damping: 30
+        }
+      }
     }
   };
 
@@ -93,7 +119,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({
         animate="animate"
         exit="exit"
         variants={selectedVariant}
-        transition={{ duration }}
+        transition={selectedVariant.transition || { duration }}
       >
         {children}
       </motion.div>

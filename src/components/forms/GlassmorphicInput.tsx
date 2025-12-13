@@ -8,7 +8,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../utils/cn";
-import { ExclamationCircleIcon, CheckCircleIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { AlertCircle, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { ValidationRule } from "./validation/FormValidationSystem";
 import { ValidationMessage } from "./validation/FormValidationSystem";
 import { useFieldValidation } from "./validation/useFormValidation";
@@ -92,10 +92,10 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
   // Determine actual validation state
   const actualValidationState = error ? 'error' :
     success ? 'success' :
-    validationHook?.fieldState.state === 'invalid' ? 'error' :
-    validationHook?.fieldState.state === 'valid' ? 'success' :
-    validationState;
-  
+      validationHook?.fieldState.state === 'invalid' ? 'error' :
+        validationHook?.fieldState.state === 'valid' ? 'success' :
+          validationState;
+
   // Determine input type for password toggle
   const inputType = type === 'password' && showPassword ? 'text' : type;
 
@@ -109,7 +109,7 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
   // Size classes
   const sizeClasses = {
     sm: 'px-3 py-2 text-sm rounded-lg',
-    md: 'px-4 py-3 text-base rounded-xl', 
+    md: 'px-4 py-3 text-base rounded-xl',
     lg: 'px-6 py-4 text-lg rounded-2xl'
   };
 
@@ -177,12 +177,12 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
     <div className="space-y-2">
       {/* Label */}
       {label && (
-        <label 
+        <label
           htmlFor={props.id}
           className={cn(
             "block text-sm font-medium transition-colors duration-200",
-            isFocused || hasValue 
-              ? "text-gray-900 dark:text-white" 
+            isFocused || hasValue
+              ? "text-gray-900 dark:text-white"
               : "text-gray-600 dark:text-gray-300"
           )}
         >
@@ -192,7 +192,7 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
           )}
         </label>
       )}
-      
+
       {/* Input Container */}
       <div className="relative">
         {/* Leading Icon */}
@@ -201,7 +201,7 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
             {icon}
           </div>
         )}
-        
+
         {/* Input Field */}
         <input
           ref={inputRef}
@@ -214,25 +214,25 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
             'text-gray-900 dark:text-white',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             'focus:outline-none',
-            
+
             // Variant styles
             inputVariants[variant],
-            
+
             // Size styles
             sizeClasses[size],
-            
+
             // Brand accent styles
             actualValidationState === 'default' && brandAccentClasses[brandAccent],
-            
+
             // Validation styles
             validationClasses[actualValidationState],
-            
+
             // Icon padding
             icon && 'pl-10',
-            
+
             // Password toggle padding
             (type === 'password' && showPasswordToggle) && 'pr-10',
-            
+
             // Custom className
             className
           )}
@@ -254,9 +254,9 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? (
-              <EyeSlashIcon className="h-5 w-5" data-testid="eye-slash-icon" />
+              <EyeOff className="h-5 w-5" data-testid="eye-slash-icon" />
             ) : (
-              <EyeIcon className="h-5 w-5" data-testid="eye-icon" />
+              <Eye className="h-5 w-5" data-testid="eye-icon" />
             )}
           </button>
         )}
@@ -270,9 +270,9 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
             {validationHook?.isValidating ? (
               <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
             ) : actualValidationState === 'error' ? (
-              <ExclamationCircleIcon className="h-5 w-5 text-red-500" data-testid="validation-icon-exclamation" />
+              <AlertCircle className="h-5 w-5 text-red-500" data-testid="validation-icon-exclamation" />
             ) : (
-              <CheckCircleIcon className="h-5 w-5 text-green-500" data-testid="validation-icon-check" />
+              <CheckCircle className="h-5 w-5 text-green-500" data-testid="validation-icon-check" />
             )}
           </div>
         )}
@@ -291,7 +291,7 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
             role="alert"
             aria-live="polite"
           >
-            <ExclamationCircleIcon className="h-4 w-4 flex-shrink-0" data-testid="error-message-icon" />
+            <AlertCircle className="h-4 w-4 flex-shrink-0" data-testid="error-message-icon" />
             {error}
           </motion.p>
         )}
@@ -305,7 +305,7 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
             role="alert"
             aria-live="polite"
           >
-            <ExclamationCircleIcon className="h-4 w-4 flex-shrink-0" data-testid="validation-error-message-icon" />
+            <AlertCircle className="h-4 w-4 flex-shrink-0" data-testid="validation-error-message-icon" />
             {validationHook.error}
           </motion.p>
         )}
@@ -319,7 +319,7 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
             role="status"
             aria-live="polite"
           >
-            <CheckCircleIcon className="h-4 w-4 flex-shrink-0" data-testid="success-message-icon" />
+            <CheckCircle className="h-4 w-4 flex-shrink-0" data-testid="success-message-icon" />
             {success}
           </motion.p>
         )}
@@ -333,7 +333,7 @@ export const GlassmorphicInput: React.FC<GlassmorphicInputProps> = ({
             role="status"
             aria-live="polite"
           >
-            <CheckCircleIcon className="h-4 w-4 flex-shrink-0" data-testid="validation-success-message-icon" />
+            <CheckCircle className="h-4 w-4 flex-shrink-0" data-testid="validation-success-message-icon" />
             Valid
           </motion.p>
         )}

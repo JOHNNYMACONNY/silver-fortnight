@@ -159,9 +159,8 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
               // Prevent text from wrapping
               "whitespace-nowrap"
             )}
-            aria-label={`Open user menu for ${
-              currentUser.displayName ?? "user"
-            }`}
+            aria-label={`Open user menu for ${currentUser.displayName ?? "user"
+              }`}
           >
             {loading ? (
               <div className="h-8 w-8 rounded-full bg-muted animate-pulse flex-shrink-0" />
@@ -176,7 +175,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
               />
             )}
             <span
-              className="hidden sm:inline-block text-sm font-medium max-w-24 truncate"
+              className="hidden"
               title={currentUser.displayName ?? undefined}
             >
               {currentUser.displayName}

@@ -24,19 +24,19 @@ export const LevelBadge: React.FC<LevelBadgeProps> = ({
   const sizeClasses = {
     small: {
       container: 'w-8 h-8',
-      icon: 'text-sm',
+      icon: 'w-4 h-4',
       text: 'text-xs',
       badge: 'text-xs px-1 py-0.5'
     },
     medium: {
       container: 'w-12 h-12',
-      icon: 'text-lg',
+      icon: 'w-6 h-6',
       text: 'text-sm',
       badge: 'text-sm px-2 py-1'
     },
     large: {
       container: 'w-16 h-16',
-      icon: 'text-2xl',
+      icon: 'w-8 h-8',
       text: 'text-base',
       badge: 'text-base px-3 py-1.5'
     }
@@ -69,7 +69,7 @@ export const LevelBadge: React.FC<LevelBadgeProps> = ({
           background: `linear-gradient(135deg, ${levelTier.color}, ${adjustBrightness(levelTier.color, -20)})`
         }}
       />
-      
+
       {/* Glow Effect */}
       <div
         className={`absolute inset-0 rounded-full opacity-30 blur-sm`}
@@ -77,12 +77,12 @@ export const LevelBadge: React.FC<LevelBadgeProps> = ({
           background: levelTier.color
         }}
       />
-      
+
       {/* Icon */}
-      <div className={`relative z-card-layer-1 ${sizes.icon}`}>
-        {levelTier.icon}
+      <div className={`relative z-card-layer-1 text-foreground`}>
+        <levelTier.icon className={sizes.icon} />
       </div>
-      
+
       {/* Level Number */}
       <div className={`absolute -bottom-1 -right-1 bg-background rounded-full border-2 border-background ${sizes.badge} font-bold text-foreground shadow-sm`}>
         {level}
@@ -110,14 +110,14 @@ export const LevelBadge: React.FC<LevelBadgeProps> = ({
     return (
       <div className="group relative inline-block">
         {BadgeComponent}
-        
+
         {/* Tooltip */}
         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-popover text-popover-foreground text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-tooltip">
           <div className="font-semibold">Level {level} - {levelTier.title}</div>
           <div className="text-xs text-muted-foreground">
             {levelTier.minXP === 0 ? '0' : levelTier.minXP.toLocaleString()} - {levelTier.maxXP === Infinity ? '∞' : levelTier.maxXP.toLocaleString()} XP
           </div>
-          
+
           {/* Tooltip Arrow */}
           <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-popover"></div>
         </div>

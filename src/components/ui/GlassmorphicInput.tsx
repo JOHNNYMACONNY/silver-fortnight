@@ -1,7 +1,7 @@
 import React, { useState, useCallback, forwardRef } from 'react';
 import { cn } from '../../utils/cn';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircleIcon, ExclamationCircleIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 interface GlassmorphicInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
@@ -27,13 +27,13 @@ interface GlassmorphicInputProps extends Omit<React.InputHTMLAttributes<HTMLInpu
 
 export const GlassmorphicInput = forwardRef<HTMLInputElement, GlassmorphicInputProps>(
   ({
-      label,
-      error,
-      success,
-      hint,
-      icon,
-      variant = 'glass',
-      size = 'md',
+    label,
+    error,
+    success,
+    hint,
+    icon,
+    variant = 'glass',
+    size = 'md',
     brandAccent = 'adaptive',
     validationState = 'default',
     glassmorphism = {
@@ -48,7 +48,7 @@ export const GlassmorphicInput = forwardRef<HTMLInputElement, GlassmorphicInputP
     onValidationChange,
     className = '',
     type = 'text',
-      ...props
+    ...props
   }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
     const [hasValue, setHasValue] = useState(!!props.value || !!props.defaultValue);
@@ -84,7 +84,7 @@ export const GlassmorphicInput = forwardRef<HTMLInputElement, GlassmorphicInputP
 
     const sizeClasses = {
       sm: 'px-3 py-2 text-sm rounded-lg',
-      md: 'px-4 py-3 text-base rounded-xl', 
+      md: 'px-4 py-3 text-base rounded-xl',
       lg: 'px-6 py-4 text-lg rounded-2xl'
     };
 
@@ -108,7 +108,7 @@ export const GlassmorphicInput = forwardRef<HTMLInputElement, GlassmorphicInputP
     const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setHasValue(!!value);
-      
+
       if (realTimeValidation && onValidationChange) {
         setIsValidating(true);
         // Simulate validation delay
@@ -118,7 +118,7 @@ export const GlassmorphicInput = forwardRef<HTMLInputElement, GlassmorphicInputP
           setIsValidating(false);
         }, 300);
       }
-      
+
       props.onChange?.(e);
     }, [realTimeValidation, onValidationChange, props]);
 
@@ -136,8 +136,8 @@ export const GlassmorphicInput = forwardRef<HTMLInputElement, GlassmorphicInputP
           <motion.label
             className={cn(
               "block text-sm font-medium transition-colors duration-200",
-              isFocused || hasValue 
-                ? "text-gray-900 dark:text-white" 
+              isFocused || hasValue
+                ? "text-gray-900 dark:text-white"
                 : "text-gray-600 dark:text-gray-300"
             )}
             initial={false}
@@ -150,14 +150,14 @@ export const GlassmorphicInput = forwardRef<HTMLInputElement, GlassmorphicInputP
             {label}
           </motion.label>
         )}
-        
+
         <div className="relative">
           {icon && (
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10">
               {icon}
             </div>
           )}
-          
+
           <input
             ref={ref}
             type={showPasswordToggle && showPassword ? 'text' : type}
@@ -194,9 +194,9 @@ export const GlassmorphicInput = forwardRef<HTMLInputElement, GlassmorphicInputP
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
               {showPassword ? (
-                <EyeSlashIcon className="h-5 w-5" />
+                <EyeOff className="h-5 w-5" />
               ) : (
-                <EyeIcon className="h-5 w-5" />
+                <Eye className="h-5 w-5" />
               )}
             </button>
           )}
@@ -212,9 +212,9 @@ export const GlassmorphicInput = forwardRef<HTMLInputElement, GlassmorphicInputP
                 transition={{ duration: 0.2 }}
               >
                 {validationState === 'success' ? (
-                  <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                  <CheckCircle className="h-5 w-5 text-green-500" />
                 ) : (
-                  <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+                  <AlertCircle className="h-5 w-5 text-red-500" />
                 )}
               </motion.div>
             )}
@@ -242,16 +242,16 @@ export const GlassmorphicInput = forwardRef<HTMLInputElement, GlassmorphicInputP
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-        {error && (
+              {error && (
                 <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
-                  <ExclamationCircleIcon className="h-4 w-4" />
-            {error}
+                  <AlertCircle className="h-4 w-4" />
+                  {error}
                 </p>
-        )}
+              )}
               {success && !error && (
                 <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
-                  <CheckCircleIcon className="h-4 w-4" />
-            {success}
+                  <CheckCircle className="h-4 w-4" />
+                  {success}
                 </p>
               )}
               {hint && !error && !success && (
@@ -260,7 +260,7 @@ export const GlassmorphicInput = forwardRef<HTMLInputElement, GlassmorphicInputP
                 </p>
               )}
             </motion.div>
-        )}
+          )}
         </AnimatePresence>
       </div>
     );

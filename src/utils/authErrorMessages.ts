@@ -22,7 +22,8 @@ export const getFriendlyAuthError = (error: any): FriendlyAuthError => {
   const errorMessage = error?.message || String(error);
 
   // Log technical error to console for developers
-  logger.error('🔐 Firebase Auth Error:', 'UTILITY', {}, {
+  logger.error('Firebase Auth Error:', 'UTILITY', {}, {
+    name: 'FirebaseAuthError',
     code: errorCode,
     message: errorMessage,
     fullError: error
@@ -35,17 +36,17 @@ export const getFriendlyAuthError = (error: any): FriendlyAuthError => {
     'auth/user-not-found': 'No account found with this email address.',
     'auth/wrong-password': 'Incorrect password. Please try again.',
     'auth/invalid-email': 'Please enter a valid email address.',
-    
+
     // Signup errors
     'auth/email-already-in-use': 'This email is already registered. Try logging in instead.',
     'auth/weak-password': 'Password is too weak. Please use a stronger password.',
-    
+
     // Rate limiting
     'auth/too-many-requests': 'Too many failed attempts. Please try again in a few minutes.',
-    
+
     // Network errors
     'auth/network-request-failed': 'Network error. Please check your internet connection and try again.',
-    
+
     // Other common errors
     'auth/operation-not-allowed': 'This sign-in method is not enabled. Please contact support.',
     'auth/requires-recent-login': 'Please log in again to complete this action.',
@@ -56,7 +57,7 @@ export const getFriendlyAuthError = (error: any): FriendlyAuthError => {
   };
 
   // Get friendly message or use default
-  const userMessage = friendlyMessages[errorCode] || 
+  const userMessage = friendlyMessages[errorCode] ||
     'An error occurred during authentication. Please try again.';
 
   return {

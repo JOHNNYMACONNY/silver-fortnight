@@ -1,7 +1,7 @@
 import React, { useState, forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../utils/cn';
-import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { CheckCircle, AlertCircle } from 'lucide-react';
 import { themeClasses } from "../../utils/themeUtils";
 
 interface EnhancedInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -166,9 +166,9 @@ export const EnhancedInput = forwardRef<HTMLInputElement, EnhancedInputProps>(({
                 transition={{ duration: 0.2 }}
               >
                 {error ? (
-                  <ExclamationCircleIcon className="h-5 w-5 text-destructive" />
+                  <AlertCircle className="h-5 w-5 text-destructive" />
                 ) : success ? (
-                  <CheckCircleIcon className="h-5 w-5 text-success" />
+                  <CheckCircle className="h-5 w-5 text-success" />
                 ) : null}
               </motion.div>
             )}

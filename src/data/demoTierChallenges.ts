@@ -11,10 +11,11 @@ export const demoSoloChallenges = [
     difficulty: 'beginner',
     duration: '1 week',
     estimatedHours: 8,
+    coverImage: "/images/challenges/solo-glass-vector.png", // Glass Vector Brand Image
     config: {
       deliverables: [
         'Day 1-2: Todo app with useState and event handling',
-        'Day 3-4: Weather app with useEffect and API calls', 
+        'Day 3-4: Weather app with useEffect and API calls',
         'Day 5-7: Form validation with custom useForm hook'
       ],
       aiMentor: {
@@ -44,13 +45,14 @@ export const demoSoloChallenges = [
 
   {
     id: 'solo-figma-design',
-    type: 'SOLO', 
+    type: 'SOLO',
     title: 'Design Your First Mobile App UI',
     description: 'Create a complete mobile app interface using Figma design principles',
     skills: ['UI/UX Design', 'Figma', 'Mobile Design'],
     difficulty: 'intermediate',
     duration: '2 weeks',
     estimatedHours: 12,
+    coverImage: "/images/challenges/solo-glass-vector.png", // Glass Vector Brand Image
     config: {
       deliverables: [
         'Week 1: User research and wireframes',
@@ -88,6 +90,7 @@ export const demoTradeChallenges = [
     difficulty: 'intermediate',
     duration: '3 weeks',
     estimatedHours: 16,
+    coverImage: "/images/challenges/trade-glass-vector.png", // Glass Vector Brand Image
     config: {
       tradeStructure: {
         participant1: {
@@ -139,6 +142,7 @@ export const demoTradeChallenges = [
     difficulty: 'intermediate',
     duration: '4 weeks',
     estimatedHours: 20,
+    coverImage: "/images/challenges/trade-glass-vector.png", // Glass Vector Brand Image
     config: {
       tradeStructure: {
         participant1: {
@@ -174,6 +178,7 @@ export const demoCollaborationChallenges = [
     difficulty: 'moderate',
     duration: '6 weeks',
     estimatedHours: 40,
+    coverImage: "/images/challenges/collab-glass-vector.png", // Glass Vector Brand Image
     config: {
       teamStructure: {
         minMembers: 3,
@@ -190,7 +195,7 @@ export const demoCollaborationChallenges = [
         deliverables: [
           'Week 1: Client discovery and project planning',
           'Week 2: Design mockups and user experience flow',
-          'Week 3-4: Frontend development and content creation', 
+          'Week 3-4: Frontend development and content creation',
           'Week 5: Testing, refinement, and client feedback',
           'Week 6: Final delivery and project handoff'
         ]
@@ -223,8 +228,9 @@ export const demoCollaborationChallenges = [
     description: 'Build and launch an open source tool that solves a real problem for developers worldwide',
     skills: ['Full Stack Development', 'Open Source', 'Documentation', 'Community Building'],
     difficulty: 'complex',
-    duration: '8 weeks', 
+    duration: '8 weeks',
     estimatedHours: 60,
+    coverImage: "/images/challenges/collab-glass-vector.png", // Glass Vector Brand Image
     config: {
       teamStructure: {
         minMembers: 4,
@@ -273,6 +279,7 @@ export const demoCollaborationChallenges = [
     difficulty: 'complex',
     duration: '10 weeks',
     estimatedHours: 80,
+    coverImage: "/images/challenges/collab-glass-vector.png", // Glass Vector Brand Image
     config: {
       teamStructure: {
         minMembers: 5,
@@ -313,19 +320,19 @@ export const challengeProgressionPaths = {
     trade: ['trade-react-figma', 'trade-frontend-backend'],
     collaboration: ['collab-local-business', 'collab-e-commerce-platform']
   },
-  
+
   design: {
     solo: ['solo-figma-design', 'solo-design-systems', 'solo-user-research'],
     trade: ['trade-react-figma', 'trade-design-development'],
     collaboration: ['collab-rebrand-project', 'collab-design-system']
   },
-  
+
   dataScience: {
     solo: ['solo-python-analysis', 'solo-machine-learning', 'solo-data-viz'],
     trade: ['trade-python-marketing', 'trade-data-business'],
     collaboration: ['collab-nonprofit-analytics', 'collab-predictive-modeling']
   },
-  
+
   entrepreneurship: {
     solo: ['solo-business-plan', 'solo-market-research', 'solo-mvp-design'],
     trade: ['trade-tech-business', 'trade-marketing-development'],
@@ -344,7 +351,7 @@ export const smartMatchingExamples = {
     timezone: 'PST',
     completedChallenges: ['solo-react-hooks']
   },
-  
+
   recommendations: [
     {
       challengeId: 'trade-react-figma',
@@ -378,7 +385,7 @@ export const uiComplexityExample = {
     progress: '60% complete',
     timeLeft: '2 weeks'
   },
-  
+
   complexView: {
     roleDetails: {
       title: 'Frontend Development Contributor',

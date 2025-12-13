@@ -34,41 +34,36 @@ export const AchievementUnlockModal: React.FC<AchievementUnlockModalProps> = ({
     }
   }, [isOpen, onClose]);
 
-  const animations = isReducedMotion 
+  const animations = isReducedMotion
     ? {
-        initial: { opacity: 0 },
-        animate: { opacity: 1 },
-        exit: { opacity: 0 },
-        transition: { duration: 0.3 }
-      }
+      initial: { opacity: 0 },
+      animate: { opacity: 1 },
+      exit: { opacity: 0 },
+      transition: { duration: 0.3 }
+    }
     : NOTIFICATION_ANIMATIONS.achievement;
 
   // Rarity-based styling
   const rarityConfig = {
     common: {
-      gradient: 'from-gray-400 to-gray-600',
-      glow: 'shadow-gray-500/50',
-      border: 'border-gray-400/30'
+      color: 'text-slate-400',
+      badge: 'bg-slate-500/10 text-slate-400 border-slate-500/20'
     },
     uncommon: {
-      gradient: 'from-green-400 to-green-600',
-      glow: 'shadow-green-500/50',
-      border: 'border-green-400/30'
+      color: 'text-emerald-400',
+      badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
     },
     rare: {
-      gradient: 'from-blue-400 to-blue-600',
-      glow: 'shadow-blue-500/50',
-      border: 'border-blue-400/30'
+      color: 'text-blue-400',
+      badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20'
     },
     epic: {
-      gradient: 'from-purple-400 to-purple-600',
-      glow: 'shadow-purple-500/50',
-      border: 'border-purple-400/30'
+      color: 'text-violet-400',
+      badge: 'bg-violet-500/10 text-violet-400 border-violet-500/20'
     },
     legendary: {
-      gradient: 'from-yellow-400 to-orange-600',
-      glow: 'shadow-yellow-500/50',
-      border: 'border-yellow-400/30'
+      color: 'text-amber-400',
+      badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20'
     }
   };
 
@@ -85,68 +80,19 @@ export const AchievementUnlockModal: React.FC<AchievementUnlockModalProps> = ({
           onClick={onClose}
         >
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-          
-          {/* Sparkle effects */}
-          {showGlow && !isReducedMotion && (
-            <div className="absolute inset-0 pointer-events-none">
-              {Array.from({ length: 20 }).map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-1 h-1 bg-yellow-400 rounded-full"
-                  style={{
-                    left: `${20 + Math.random() * 60}%`,
-                    top: `${20 + Math.random() * 60}%`,
-                  }}
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ 
-                    scale: [0, 1, 0],
-                    opacity: [0, 1, 0],
-                    rotate: 360
-                  }}
-                  transition={{
-                    duration: 2,
-                    delay: Math.random() * 1,
-                    repeat: Infinity,
-                    repeatDelay: Math.random() * 2
-                  }}
-                />
-              ))}
-            </div>
-          )}
-          
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+
           {/* Modal content */}
           <motion.div
             className={cn(
-              'relative w-full max-w-sm mx-auto',
-              'bg-card rounded-2xl shadow-2xl',
-              'border-2', rarity.border,
-              'backdrop-blur-md',
-              showGlow && !isReducedMotion && `shadow-2xl ${rarity.glow}`
+              'relative w-full max-w-sm mx-auto overflow-hidden',
+              'bg-neutral-900/90 backdrop-blur-xl rounded-2xl shadow-xl',
+              'border border-white/5'
             )}
             onClick={(e) => e.stopPropagation()}
             {...animations}
           >
-            {/* Animated border glow */}
-            {showGlow && !isReducedMotion && (
-              <motion.div
-                className={cn(
-                  'absolute inset-0 rounded-2xl',
-                  'bg-gradient-to-r', rarity.gradient,
-                  'opacity-20 blur-sm -z-10'
-                )}
-                animate={{
-                  scale: [1, 1.1, 1],
-                  opacity: [0.2, 0.4, 0.2]
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: 'easeInOut'
-                }}
-              />
-            )}
-            
+
             {/* Header */}
             <div className="text-center pt-8 pb-6 px-6">
               <motion.div
@@ -157,32 +103,18 @@ export const AchievementUnlockModal: React.FC<AchievementUnlockModalProps> = ({
               >
                 🏆
               </motion.div>
-              
+
               <motion.h2
-                className={cn(
-                  'text-2xl font-bold mb-2',
-                  'bg-gradient-to-r', rarity.gradient, 'bg-clip-text text-transparent'
-                )}
+                className="text-xl font-bold mb-3 text-white"
                 initial={isReducedMotion ? {} : { opacity: 0, y: 20 }}
                 animate={isReducedMotion ? {} : { opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                Achievement Unlocked!
+                Achievement Unlocked
               </motion.h2>
-              
-              <motion.div
-                className={cn(
-                  'inline-block px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wide',
-                  'bg-gradient-to-r', rarity.gradient, 'text-primary-foreground'
-                )}
-                initial={isReducedMotion ? {} : { opacity: 0, scale: 0.8 }}
-                animate={isReducedMotion ? {} : { opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4 }}
-              >
-                {notification.rarity}
-              </motion.div>
+
             </div>
-            
+
             {/* Achievement details */}
             <div className="px-6 pb-6">
               <motion.div
@@ -193,24 +125,24 @@ export const AchievementUnlockModal: React.FC<AchievementUnlockModalProps> = ({
               >
                 {/* Achievement icon */}
                 <div className={cn(
-                  'w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-4xl',
-                  'bg-gradient-to-br', rarity.gradient,
-                  'shadow-lg', showGlow && !isReducedMotion && rarity.glow
+                  'w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center text-3xl',
+                  'bg-white/5 border border-white/10',
+                  rarity.color
                 )}>
                   {notification.achievementIcon}
                 </div>
-                
+
                 {/* Achievement name */}
-                <h3 className="text-lg font-semibold text-foreground">
+                <h3 className="text-base font-semibold text-white">
                   {notification.achievementTitle}
                 </h3>
-                
+
                 {/* Description */}
-                <p className="text-sm mt-1 text-muted-foreground">
+                <p className="text-sm mt-1 text-white/50">
                   {notification.achievementDescription}
                 </p>
               </motion.div>
-              
+
               {/* XP Reward */}
               <motion.div
                 className="flex items-center justify-center space-x-2"
@@ -226,18 +158,17 @@ export const AchievementUnlockModal: React.FC<AchievementUnlockModalProps> = ({
                 </span>
               </motion.div>
             </div>
-            
+
             {/* Footer */}
             <div className="px-6 pb-6">
               <motion.button
                 onClick={onClose}
                 className={cn(
-                  'w-full py-2 px-4 rounded-lg text-sm font-medium',
-                  'bg-gradient-to-r', rarity.gradient,
-                  'text-primary-foreground shadow-lg',
-                  'hover:brightness-110',
+                  'w-full py-2.5 px-4 rounded-lg text-sm font-medium',
+                  'bg-white/10 hover:bg-white/20',
+                  'text-white',
                   'transition-all duration-200',
-                  'focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2'
+                  'focus:outline-none focus:ring-2 focus:ring-white/20'
                 )}
                 initial={isReducedMotion ? {} : { opacity: 0, y: 20 }}
                 animate={isReducedMotion ? {} : { opacity: 1, y: 0 }}
@@ -245,9 +176,9 @@ export const AchievementUnlockModal: React.FC<AchievementUnlockModalProps> = ({
                 whileHover={isReducedMotion ? {} : { scale: 1.02 }}
                 whileTap={isReducedMotion ? {} : { scale: 0.98 }}
               >
-                Awesome!
+                Awesome
               </motion.button>
-              
+
               <p className={cn('text-xs text-center mt-3 text-muted-foreground')}>
                 Tap anywhere to close
               </p>

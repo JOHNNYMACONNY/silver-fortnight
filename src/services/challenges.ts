@@ -273,9 +273,44 @@ export const getChallenges = async (
  */
 export const joinChallenge = async (
   challengeId: string,
-  userId: string
+  userId: string,
+  metadata?: Record<string, any>
 ): Promise<ChallengeResponse> => {
   try {
+    // 1. MATCHMAKING PRE-FLIGHT
+    // If this is a trade-like join (has specific side intent), look for a partner *before* the transaction
+    let candidateId: string | null = null;
+
+    if (metadata?.tradeSide) {
+      try {
+        const q = query(
+          collection(getSyncFirebaseDb(), "userChallenges"),
+          where("challengeId", "==", challengeId),
+          where("status", "==", "active"),
+          // Look for anyone who is NOT my side (e.g. if I am A, find B)
+          where("metadata.tradeSide", "!=", metadata.tradeSide),
+          // Limit to 1, we only need one match
+          limit(1)
+        );
+
+        const candidateSnap = await getDocs(q);
+        if (!candidateSnap.empty) {
+          // Check if this candidate is already paired (Firestore query limits on '!=' and '==' sometimes tricky with nulls)
+          // so we verify in code or assume the query should filter. 
+          // Ideally: where("metadata.partnerId", "==", null) 
+          // But mixing != and == on different fields requires composite index.
+          // Simpler: Just get a potential candidate and verify inside transaction.
+          const candidate = candidateSnap.docs[0].data() as UserChallenge;
+          if (!candidate.metadata?.partnerId) {
+            candidateId = candidateSnap.docs[0].id;
+          }
+        }
+      } catch (err) {
+        // Matchmaking search failed (missing index etc), proceed without match (User will wait)
+        console.warn("Matchmaking query failed", err);
+      }
+    }
+
     const result = await runTransaction(
       getSyncFirebaseDb(),
       async (transaction) => {
@@ -363,10 +398,41 @@ export const joinChallenge = async (
           challengeId,
           status: UserChallengeStatus.ACTIVE,
           progress: 0,
-          maxProgress: challenge.requirements.length || 1,
+          maxProgress: challenge.requirements?.length || 1,
           startedAt: Timestamp.now(),
           lastActivityAt: Timestamp.now(),
+          metadata: metadata || {}
         };
+
+        // MATCHMAKING TRANSACTIONAL LOCK
+        let partnerFound = false;
+        if (candidateId) {
+          const candidateRef = doc(getSyncFirebaseDb(), "userChallenges", candidateId);
+          const freshCandidateSnap = await transaction.get(candidateRef);
+
+          if (freshCandidateSnap.exists()) {
+            const freshCandidate = freshCandidateSnap.data() as UserChallenge;
+            // Double check they are still free
+            if (!freshCandidate.metadata?.partnerId) {
+              // PERFORM THE MATCH!
+              partnerFound = true;
+
+              // 1. Update Me
+              userChallenge.metadata = {
+                ...userChallenge.metadata,
+                partnerId: freshCandidate.userId,
+                matchedAt: Timestamp.now().toMillis()
+              };
+
+              // 2. Update Partner
+              transaction.update(candidateRef, {
+                "metadata.partnerId": userId,
+                "metadata.matchedAt": Timestamp.now().toMillis(),
+                // Optional: Send a notification to them? (Handled by listeners usually)
+              });
+            }
+          }
+        }
 
         transaction.set(userChallengeRef, userChallenge);
 
@@ -462,10 +528,10 @@ export const updateChallengeProgress = async (
           completionTimeMinutes:
             isCompleted && userChallenge.startedAt
               ? Math.round(
-                  (Timestamp.now().toMillis() -
-                    userChallenge.startedAt.toMillis()) /
-                    60000
-                )
+                (Timestamp.now().toMillis() -
+                  userChallenge.startedAt.toMillis()) /
+                60000
+              )
               : undefined,
         };
 
@@ -606,15 +672,14 @@ const handleChallengeCompletion = async (
       totalXP,
       XPSource.CHALLENGE_COMPLETION,
       challengeId,
-      `Completed challenge: ${challenge.title}${
-        bonusXP > 0 ? " (Early completion bonus!)" : ""
+      `Completed challenge: ${challenge.title}${bonusXP > 0 ? " (Early completion bonus!)" : ""
       }`
     );
 
     // Update challenge streak
     try {
       await markChallengeDay(userId, new Date());
-    } catch {}
+    } catch { }
 
     // Hook: Award skill-specific XP based on challenge category
     try {
@@ -886,17 +951,17 @@ export const getRecommendedChallenges = async (
     // Default band: beginner/intermediate; otherwise center around user’s most common difficulty
     const band =
       sortedDifficulties.length > 0 &&
-      difficultyTally[sortedDifficulties[0]] > 0
+        difficultyTally[sortedDifficulties[0]] > 0
         ? (() => {
-            const order = ["beginner", "intermediate", "advanced", "expert"];
-            const idx = order.indexOf(sortedDifficulties[0]);
-            const picks = new Set([order[idx]]);
-            if (idx - 1 >= 0) picks.add(order[idx - 1]);
-            if (idx + 1 < order.length) picks.add(order[idx + 1]);
-            return Array.from(picks).map((d) =>
-              d.toUpperCase()
-            ) as ChallengeDifficulty[];
-          })()
+          const order = ["beginner", "intermediate", "advanced", "expert"];
+          const idx = order.indexOf(sortedDifficulties[0]);
+          const picks = new Set([order[idx]]);
+          if (idx - 1 >= 0) picks.add(order[idx - 1]);
+          if (idx + 1 < order.length) picks.add(order[idx + 1]);
+          return Array.from(picks).map((d) =>
+            d.toUpperCase()
+          ) as ChallengeDifficulty[];
+        })()
         : [ChallengeDifficulty.BEGINNER, ChallengeDifficulty.INTERMEDIATE];
 
     // Try category-focused query first if we have preferences
@@ -1369,7 +1434,7 @@ export const getUserChallengeStats = async (
 
       const daysDiff = Math.floor(
         (currentDate.getTime() - challengeDate.getTime()) /
-          (1000 * 60 * 60 * 24)
+        (1000 * 60 * 60 * 24)
       );
 
       if (daysDiff === streakCount) {

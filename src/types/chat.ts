@@ -47,23 +47,24 @@ export interface ChatMessage {
   senderAvatar?: string | null;
   content: string;
   type: 'text' | 'image' | 'file' | 'system';
-  
+
   // Timestamps - support both Firestore types
   createdAt: Timestamp | FieldValue;
   updatedAt?: Timestamp | FieldValue;
   editedAt?: Timestamp | FieldValue;
-  
+
   // Read status
   readBy: string[];
-  
+
   // Message state
   edited?: boolean;
   status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
-  
+
   // Attachments
   attachments?: ChatAttachment[];
-  
+
   // Metadata
+  participantIds?: string[];
   schemaVersion?: string;
 }
 
@@ -86,30 +87,30 @@ export interface ChatConversation {
   id?: string;
   title?: string;
   type: 'direct' | 'group' | 'trade' | 'collaboration';
-  
+
   // Participant information (canonical format)
   participants: ChatParticipant[];
-  
+
   // Quick access to participant IDs for queries
   participantIds: string[];
-  
+
   // Conversation metadata
   lastMessage?: LastMessage;
   lastActivity?: Timestamp | FieldValue;
   messageCount?: number;
   unreadCount?: { [userId: string]: number };
-  
+
   // Context information
   relatedTradeId?: string;
   relatedCollaborationId?: string;
-  
+
   // Timestamps
   createdAt: Timestamp | FieldValue;
   updatedAt: Timestamp | FieldValue;
-  
+
   // Schema and migration metadata
   schemaVersion: string;
-  
+
   // Legacy support fields (deprecated, but maintained for backward compatibility)
   participants_legacy?: ChatParticipant[];
 }
@@ -142,7 +143,7 @@ export const isValidChatConversation = (obj: any): obj is ChatConversation => {
 export const migrateLegacyConversation = (legacyData: any): ChatConversation => {
   const participants: ChatParticipant[] = legacyData.participants || [];
   const participantIds = participants.map((p: ChatParticipant) => p.id);
-  
+
   return {
     ...legacyData,
     participants,

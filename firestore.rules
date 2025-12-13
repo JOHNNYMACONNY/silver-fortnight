@@ -221,9 +221,11 @@ service cloud.firestore {
       match /messages/{messageId} {
         // Allow participants to read messages - optimized for performance
         allow read: if isAuthenticated() && (
-          // Fast check: if user is message sender (avoids expensive get() call)
+          // 1. Ultra-fast check: if message has denormalized participantIds (0 extra reads)
+          (resource != null && resource.data.participantIds is list && resource.data.participantIds.hasAny([request.auth.uid])) ||
+          // 2. Fast check: if user is message sender
           (resource != null && resource.data.senderId == request.auth.uid) ||
-          // Fallback: check conversation participation (slower)
+          // 3. Fallback: check conversation participation (slower, 1 read)
           isConversationParticipant(conversationId) ||
           isAdmin()
         );

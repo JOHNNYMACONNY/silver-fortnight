@@ -85,7 +85,7 @@
   --color-glass-bg: rgba(255, 255, 255, 0.7);
   --color-glass-border: rgba(255, 255, 255, 0.18);
   --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  
+
   /* Enhanced Glass Variants */
   --color-glass-bg-light: rgba(255, 255, 255, 0.8);
   --color-glass-bg-medium: rgba(255, 255, 255, 0.6);
@@ -94,16 +94,46 @@
   /* Navigation Glassmorphism */
   --nav-background: rgba(255, 255, 255, 0.8);
   --nav-background-dark: rgba(17, 24, 39, 0.8);
-  --nav-border: rgba(229,231,235,0.5); /* gray-200/50 */
-  --nav-border-dark: rgba(55,65,81,0.5); /* gray-700/50 */
-  --navbar-glass-border: rgba(229,231,235,0.5); /* gray-200/50 */
-  --navbar-glass-border-dark: rgba(55,65,81,0.5); /* gray-700/50 */
+  --nav-border: rgba(229, 231, 235, 0.5);
+  /* gray-200/50 */
+  --nav-border-dark: rgba(55, 65, 81, 0.5);
+  /* gray-700/50 */
+  --navbar-glass-border: rgba(229, 231, 235, 0.5);
+  /* gray-200/50 */
+  --navbar-glass-border-dark: rgba(55, 65, 81, 0.5);
+  /* gray-700/50 */
+
+  /* Tier-Coded Colors (Square Harmony) */
+  --color-tier-solo: var(--color-success-500);
+  /* Emerald */
+  --color-tier-trade: #f97316;
+  /* Amber-500 equivalent */
+  --color-tier-collab: #8b5cf6;
+  /* Indigo-500 equivalent */
+
+  /* Tier Shadows */
+  --shadow-tier-solo: 0 0 20px -5px rgba(34, 197, 94, 0.3);
+  --shadow-tier-trade: 0 0 20px -5px rgba(249, 115, 22, 0.3);
+  --shadow-tier-collab: 0 0 20px -5px rgba(139, 92, 246, 0.3);
 }
 
 @theme dark {
   /* Dark mode semantic colors */
   --color-background: hsl(222.2 84% 4.9%);
   --color-foreground: hsl(210 40% 98%);
+
+  /* Tier Colors (Dark Mode Adjustments if needed, keeping vibrant for now) */
+  --color-tier-solo: var(--color-success-400);
+  --color-tier-trade: #fb923c;
+  /* Amber-400 */
+  --color-tier-collab: #a78bfa;
+  /* Indigo-400 */
+
+  /* Tier Shadows Dark */
+  --shadow-tier-solo: 0 0 25px -5px rgba(34, 197, 94, 0.25);
+  --shadow-tier-trade: 0 0 25px -5px rgba(249, 115, 22, 0.25);
+  --shadow-tier-collab: 0 0 25px -5px rgba(139, 92, 246, 0.25);
+
   --color-card: hsl(222.2 84% 4.9%);
   --color-card-foreground: hsl(210 40% 98%);
   --color-primary: hsl(210 40% 98%);
@@ -124,7 +154,7 @@
   --color-glass-bg: rgba(31, 41, 55, 0.6);
   --color-glass-border: rgba(255, 255, 255, 0.18);
   --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  
+
   /* Enhanced Glass Variants */
   --color-glass-bg-light: rgba(31, 41, 55, 0.4);
   --color-glass-bg-medium: rgba(31, 41, 55, 0.7);
@@ -133,10 +163,14 @@
   /* Navigation Glassmorphism */
   --nav-background: rgba(17, 24, 39, 0.8);
   --nav-background-dark: rgba(17, 24, 39, 0.8);
-  --nav-border: rgba(55,65,81,0.5); /* gray-700/50 */
-  --nav-border-dark: rgba(55,65,81,0.5); /* gray-700/50 */
-  --navbar-glass-border: rgba(55,65,81,0.5); /* gray-700/50 */
-  --navbar-glass-border-dark: rgba(55,65,81,0.5); /* gray-700/50 */
+  --nav-border: rgba(55, 65, 81, 0.5);
+  /* gray-700/50 */
+  --nav-border-dark: rgba(55, 65, 81, 0.5);
+  /* gray-700/50 */
+  --navbar-glass-border: rgba(55, 65, 81, 0.5);
+  /* gray-700/50 */
+  --navbar-glass-border-dark: rgba(55, 65, 81, 0.5);
+  /* gray-700/50 */
 }
 
 :root {
@@ -159,9 +193,12 @@
   --border-strong: rgba(0, 0, 0, 0.16);
   --border-divider: rgba(0, 0, 0, 0.06);
   /* Semantic border tokens */
-  --border-success: rgba(34, 197, 94, 0.5);   /* green-500/50 */
-  --border-warning: rgba(245, 158, 11, 0.5);  /* amber-500/50 */
-  --border-error: rgba(239, 68, 68, 0.5);     /* red-500/50 */
+  --border-success: rgba(34, 197, 94, 0.5);
+  /* green-500/50 */
+  --border-warning: rgba(245, 158, 11, 0.5);
+  /* amber-500/50 */
+  --border-error: rgba(239, 68, 68, 0.5);
+  /* red-500/50 */
 }
 
 @theme dark {
@@ -178,7 +215,7 @@
 :root {
   /* Keep in sync with `Navbar` heights: h-16 (4rem) desktop, h-14 (3.5rem) mobile */
   --navbar-height: 4rem;
-  
+
   /* Safe area insets for notched devices (iPhone X+) */
   --safe-area-inset-top: env(safe-area-inset-top, 0px);
   --safe-area-inset-right: env(safe-area-inset-right, 0px);
@@ -187,7 +224,9 @@
 }
 
 @media (max-width: 767px) {
-  :root { --navbar-height: 3.5rem; }
+  :root {
+    --navbar-height: 3.5rem;
+  }
 }
 
 /* Ensure in-page anchor navigation and programmatic scrolls account for sticky navbar */
@@ -245,6 +284,7 @@ body {
 
 /* Fallback for browsers that don't support backdrop-filter */
 @supports not (backdrop-filter: blur(1px)) {
+
   .backdrop-blur-sm,
   .backdrop-blur-md,
   .backdrop-blur-lg,
@@ -253,7 +293,7 @@ body {
   .backdrop-blur-3xl {
     background-color: rgba(255, 255, 255, 0.9);
   }
-  
+
   .dark .backdrop-blur-sm,
   .dark .backdrop-blur-md,
   .dark .backdrop-blur-lg,
@@ -275,21 +315,17 @@ body {
 
 /* Premium gradient backgrounds */
 .card-premium-bg {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(255, 255, 255, 0.8) 50%,
-    rgba(255, 255, 255, 0.9) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 255, 255, 0.8) 50%,
+      rgba(255, 255, 255, 0.9) 100%);
 }
 
 .dark .card-premium-bg {
-  background: linear-gradient(
-    135deg,
-    rgba(31, 41, 55, 0.9) 0%,
-    rgba(31, 41, 55, 0.8) 50%,
-    rgba(31, 41, 55, 0.9) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(31, 41, 55, 0.9) 0%,
+      rgba(31, 41, 55, 0.8) 50%,
+      rgba(31, 41, 55, 0.9) 100%);
 }
 
 /* Enhanced shadow system */
@@ -317,7 +353,7 @@ body {
   .card-3d {
     transform: none !important;
   }
-  
+
   .card-performance-optimized {
     will-change: auto;
   }
@@ -332,6 +368,7 @@ body {
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
+
   .backdrop-blur-sm,
   .backdrop-blur-md,
   .backdrop-blur-lg,
@@ -347,6 +384,12 @@ body {
 /* Navbar gradient border utility */
 .navbar-gradient-border {
   border-bottom: 2px solid;
+  border-image: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.2) 25%, rgba(14, 165, 233, 0.15) 75%, transparent) 1;
+}
+
+/* Navbar gradient border for top (used by bottom navigation) */
+.navbar-gradient-border-top {
+  border-top: 2px solid;
   border-image: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.2) 25%, rgba(14, 165, 233, 0.15) 75%, transparent) 1;
 }
 
@@ -395,32 +438,32 @@ select.glassmorphic {
 }
 
 /* Phase 3.1: Container Query Support */
-  .bento-grid {
-    container-type: inline-size;
-  }
-  
+.bento-grid {
+  container-type: inline-size;
+}
+
+.bento-item {
+  container-type: inline-size;
+}
+
+/* Container query responsive breakpoints */
+@container (min-width: 40rem) {
   .bento-item {
-    container-type: inline-size;
+    flex-direction: row;
   }
-  
-  /* Container query responsive breakpoints */
-  @container (min-width: 40rem) {
-    .bento-item {
-      flex-direction: row;
-    }
+}
+
+@container (min-width: 60rem) {
+  .bento-item {
+    font-size: 1.125rem;
   }
-  
-  @container (min-width: 60rem) {
-    .bento-item {
-      font-size: 1.125rem;
-    }
+}
+
+@container (min-width: 80rem) {
+  .bento-item {
+    padding: 1.5rem;
   }
-  
-  @container (min-width: 80rem) {
-    .bento-item {
-      padding: 1.5rem;
-    }
-  }
+}
 
 /* Phase 3.1: AutoFit Grid Support */
 .auto-fit-grid {
@@ -464,9 +507,11 @@ select.glassmorphic {
     transform: scale(0);
     opacity: 0.1;
   }
+
   50% {
     opacity: 0.05;
   }
+
   100% {
     transform: scale(4);
     opacity: 0;
@@ -477,9 +522,11 @@ select.glassmorphic {
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(0.95);
   }
+
   100% {
     transform: scale(1);
   }
@@ -489,6 +536,7 @@ select.glassmorphic {
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-100%);
   }
@@ -498,6 +546,7 @@ select.glassmorphic {
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -505,13 +554,18 @@ select.glassmorphic {
 
 /* Mobile-specific utility classes */
 @layer utilities {
+
   /* Scrollbar utilities */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
+
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari, Opera */
+    display: none;
+    /* Chrome, Safari, Opera */
   }
 
   /* Border utilities */
@@ -519,64 +573,76 @@ select.glassmorphic {
     border-width: 1px;
     border-color: var(--border-default);
   }
+
   .border-strong {
     border-width: 1px;
     border-color: var(--border-strong);
   }
+
   .border-glass {
     border-width: 1px;
     border-color: var(--color-glass-border);
   }
+
   .border-divider {
     border-top-width: 1px;
     border-color: var(--border-divider);
   }
 
   /* Semantic border utilities */
-  .border-success { border-color: var(--border-success); }
-  .border-warning { border-color: var(--border-warning); }
-  .border-error { border-color: var(--border-error); }
+  .border-success {
+    border-color: var(--border-success);
+  }
+
+  .border-warning {
+    border-color: var(--border-warning);
+  }
+
+  .border-error {
+    border-color: var(--border-error);
+  }
 
   /* Navbar glassmorphic border utilities */
   .border-navbar-glass-border {
     border-color: var(--navbar-glass-border);
   }
+
   .dark .border-navbar-glass-border-dark {
     border-color: var(--navbar-glass-border-dark);
   }
 
   /* Badge background utilities */
-  .bg-primary-transparent { 
-    background-color: rgba(249, 115, 22, 0.2); 
+  .bg-primary-transparent {
+    background-color: rgba(249, 115, 22, 0.2);
   }
-  
-  .bg-purple-transparent { 
-    background-color: rgba(139, 92, 246, 0.2); 
+
+  .bg-purple-transparent {
+    background-color: rgba(139, 92, 246, 0.2);
   }
-  
-  .bg-secondary-transparent { 
-    background-color: rgba(14, 165, 233, 0.2); 
+
+  .bg-secondary-transparent {
+    background-color: rgba(14, 165, 233, 0.2);
   }
-  
-  .bg-success-transparent { 
-    background-color: var(--color-success-500-20); 
+
+  .bg-success-transparent {
+    background-color: var(--color-success-500-20);
   }
-  
+
   /* Dark mode badge backgrounds */
-  .dark .bg-primary-transparent { 
-    background-color: rgba(249, 115, 22, 0.15); 
+  .dark .bg-primary-transparent {
+    background-color: rgba(249, 115, 22, 0.15);
   }
-  
-  .dark .bg-purple-transparent { 
-    background-color: rgba(139, 92, 246, 0.15); 
+
+  .dark .bg-purple-transparent {
+    background-color: rgba(139, 92, 246, 0.15);
   }
-  
-  .dark .bg-secondary-transparent { 
-    background-color: rgba(14, 165, 233, 0.15); 
+
+  .dark .bg-secondary-transparent {
+    background-color: rgba(14, 165, 233, 0.15);
   }
-  
-  .dark .bg-success-transparent { 
-    background-color: rgba(34, 197, 94, 0.15); 
+
+  .dark .bg-success-transparent {
+    background-color: rgba(34, 197, 94, 0.15);
   }
 
   .touch-manipulation {
@@ -707,8 +773,11 @@ select.glassmorphic {
   }
 
   /* Mobile-specific form optimizations */
-  input, textarea, select {
-    font-size: 16px; /* Prevent zoom on iOS */
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+    /* Prevent zoom on iOS */
   }
 }
 
@@ -724,7 +793,7 @@ select.glassmorphic {
 }
 
 /* Desktop optimizations */
-@media (min-width: 1025px) {
+@media (min-width: 1024px) {
   .desktop-hidden {
     display: none !important;
   }
@@ -738,20 +807,27 @@ select.glassmorphic {
   }
 }
 
-/* CRITICAL FIX: Tailwind responsive classes not loading in development */
-/* This ensures mobile menu buttons are hidden on desktop */
-@media (min-width: 768px) {
-  .md\:hidden {
+/* Force hide tablet hero cards on desktop - Tailwind v4 workaround */
+/* Moved outside media query to ensure it applies with higher specificity */
+@media (min-width: 1024px) {
+  .hero-tablet-cards {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 }
 
-/* Ensure desktop navigation shows on desktop */
-@media (min-width: 768px) {
-  .md\:flex {
-    display: flex !important;
-  }
-}
+/* NOTE: Tailwind responsive classes should work automatically */
+/* If responsive classes aren't working, check:
+   1. Tailwind safelist includes the classes
+   2. Build process is running correctly
+   3. Browser cache is cleared
+   
+   These overrides were removed as they were too broad and conflicted
+   with the responsive card implementation. If specific overrides are
+   needed for navbar elements, scope them more specifically.
+ */
 
 /* ========================================
    DESIGN SYSTEM FOUNDATIONS - PHASE 1
@@ -759,39 +835,47 @@ select.glassmorphic {
 
 /* Typography Scale - Design System Integration */
 @layer base {
+
   /* Base typography using design system scale */
-  h1, .text-display-large {
+  h1,
+  .text-display-large {
     @apply text-5xl font-extrabold tracking-tight leading-tight;
   }
-  
-  h2, .text-display-main {
+
+  h2,
+  .text-display-main {
     @apply text-4xl font-bold tracking-tight leading-tight;
   }
-  
-  h3, .text-section-heading {
+
+  h3,
+  .text-section-heading {
     @apply text-3xl font-bold tracking-tight leading-snug;
   }
-  
-  h4, .text-subsection-heading {
+
+  h4,
+  .text-subsection-heading {
     @apply text-2xl font-semibold tracking-normal leading-snug;
   }
-  
-  h5, .text-component-title {
+
+  h5,
+  .text-component-title {
     @apply text-xl font-semibold tracking-normal leading-normal;
   }
-  
-  h6, .text-body-large {
+
+  h6,
+  .text-body-large {
     @apply text-lg font-medium tracking-normal leading-normal;
   }
-  
-  p, .text-body {
+
+  p,
+  .text-body {
     @apply text-base font-normal tracking-normal leading-normal;
   }
-  
+
   .text-body-small {
     @apply text-sm font-normal tracking-normal leading-normal;
   }
-  
+
   .text-caption {
     @apply text-xs font-normal tracking-normal leading-normal;
   }
@@ -799,6 +883,7 @@ select.glassmorphic {
 
 /* Enhanced Focus System - Glassmorphic Design */
 @layer utilities {
+
   /* Global focus overrides for premium glassmorphic design */
   *:focus,
   *:focus-visible {
@@ -838,57 +923,61 @@ select.glassmorphic {
 
 /* Spacing Scale - Design System Integration */
 @layer utilities {
+
   /* Semantic spacing utilities */
   .space-section {
     @apply space-y-8;
   }
-  
+
   .space-component {
     @apply space-y-4;
   }
-  
+
   .space-element {
     @apply space-y-2;
   }
-  
+
   .space-tight {
     @apply space-y-1;
   }
-  
+
   /* Container spacing */
   .container-section {
     @apply py-12 px-4 sm:px-6 lg:px-8;
   }
-  
+
   .container-component {
     @apply py-6 px-4 sm:px-6;
   }
-  
+
   .container-element {
     @apply py-3 px-3;
   }
-  
+
   /* Animated gradient for name hover */
   @keyframes gradient {
-    0%, 100% {
+
+    0%,
+    100% {
       background-position: 0% 50%;
     }
+
     50% {
       background-position: 100% 50%;
     }
   }
-  
+
   .animate-gradient {
     background-size: 200% 200%;
     animation: gradient 3s ease infinite;
   }
-  
+
   /* Gradient animation for name hover - only plays on hover */
   .animate-gradient-hover {
     animation: gradient 3s ease infinite;
     animation-play-state: paused;
   }
-  
+
   .group:hover .animate-gradient-hover {
     animation-play-state: running;
   }

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Sparkles } from "lucide-react";
 import { getUserXPHistory } from "../../services/gamification";
 import { XPTransaction, XPSource } from "../../types/gamification";
 import { XP_SOURCE_DISPLAY_CONFIG } from "../../types/gamificationNotifications";
@@ -106,14 +107,14 @@ export const XPBreakdown: React.FC<XPBreakdownProps> = ({
             XP_SOURCE_DISPLAY_CONFIG[source] ||
             ({
               displayName: source.replace(/_/g, " "),
-              icon: "✨",
+              icon: Sparkles,
               color: "",
             } as any);
           return (
             <li key={source} className="py-2 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-base" aria-hidden>
-                  {cfg.icon}
+                  <cfg.icon className="w-4 h-4" />
                 </span>
                 <span className="text-muted-foreground">{cfg.displayName}</span>
               </div>

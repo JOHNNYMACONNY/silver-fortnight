@@ -9,15 +9,15 @@ import AnimatedList from '../components/ui/AnimatedList';
 import PageTransition from '../components/ui/PageTransition';
 import StateTransition, { UIState } from '../components/ui/StateTransition';
 import {
-  MagnifyingGlassIcon,
-  EnvelopeIcon,
-  LockClosedIcon,
-  UserIcon,
-  StarIcon,
-  ChatBubbleLeftIcon,
-  HeartIcon,
-  BriefcaseIcon
-} from '@heroicons/react/24/outline';
+  Search,
+  Mail,
+  Lock,
+  User,
+  Star,
+  MessageSquare,
+  Heart,
+  Briefcase
+} from 'lucide-react';
 
 const DesignPreviewPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('enhanced-inputs');
@@ -66,11 +66,10 @@ const DesignPreviewPage: React.FC = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                activeTab === tab
+              className={`px-4 py-2 rounded-lg transition-colors ${activeTab === tab
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-background hover:bg-primary/10'
-              }`}
+                }`}
             >
               {tab.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
             </button>
@@ -283,10 +282,10 @@ const DesignPreviewPage: React.FC = () => {
                   <CardBody>
                     {(() => {
                       const mockItems = [
-                        { id: 1, title: 'Web Development', icon: <BriefcaseIcon className="h-5 w-5" /> },
-                        { id: 2, title: 'UI/UX Design', icon: <StarIcon className="h-5 w-5" /> },
-                        { id: 3, title: 'Content Writing', icon: <ChatBubbleLeftIcon className="h-5 w-5" /> },
-                        { id: 4, title: 'Digital Marketing', icon: <HeartIcon className="h-5 w-5" /> },
+                        { id: 1, title: 'Web Development', icon: <Briefcase className="h-5 w-5" /> },
+                        { id: 2, title: 'UI/UX Design', icon: <Star className="h-5 w-5" /> },
+                        { id: 3, title: 'Content Writing', icon: <MessageSquare className="h-5 w-5" /> },
+                        { id: 4, title: 'Digital Marketing', icon: <Heart className="h-5 w-5" /> },
                       ];
 
                       return (
@@ -491,7 +490,7 @@ const DesignPreviewPage: React.FC = () => {
 
                     <div className="bg-background p-4 rounded-lg overflow-auto">
                       <pre className="text-sm">
-{`// In your App.tsx or layout component
+                        {`// In your App.tsx or layout component
 import { Routes, Route, useLocation } from 'react-router-dom';
 import PageTransition from './components/ui/PageTransition';
 
@@ -653,7 +652,7 @@ function App() {
 
                     <div className="bg-background p-4 rounded-lg overflow-auto">
                       <pre className="text-sm">
-{`// In a component that fetches data
+                        {`// In a component that fetches data
 import React, { useState, useEffect } from 'react';
 import StateTransition from '../components/ui/StateTransition';
 

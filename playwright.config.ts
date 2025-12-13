@@ -41,6 +41,13 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
 
+    /* Visual Regression Project */
+    {
+      name: 'visual',
+      testMatch: /visual.spec.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+
     /* Test against mobile viewports. */
     {
       name: 'Mobile Chrome',

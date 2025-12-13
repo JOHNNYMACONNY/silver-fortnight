@@ -1,4 +1,4 @@
- 
+
 
 import { getSyncFirebaseDb } from '../firebase-config';
 import {
@@ -89,7 +89,7 @@ export const updateProgressionOnChallengeCompletion = async (
   try {
     const db = getDb();
     const progressRef = doc(db, 'threeTierProgress', userId);
-    
+
     return await runTransaction(db, async (transaction) => {
       const progressDoc = await transaction.get(progressRef);
       let progress: ThreeTierProgress;
@@ -149,7 +149,7 @@ export const updateProgressionOnChallengeCompletion = async (
       const newUnlocks = await checkTierUnlocks(progress);
       if (newUnlocks.length > 0) {
         progress.unlockedTiers = [...new Set([...progress.unlockedTiers, ...newUnlocks])];
-        
+
         // Award tier unlock bonus
         for (const tier of newUnlocks) {
           await awardXP(
@@ -185,7 +185,7 @@ const checkTierUnlocks = async (progress: ThreeTierProgress): Promise<('TRADE' |
     const tradeReq = TIER_REQUIREMENTS.TRADE;
     const hasRequiredCompletions = progress.soloCompletions >= tradeReq.requiredCompletions;
     const hasRequiredSkillLevel = progress.skillProgression.some(s => s.currentLevel >= (tradeReq.requiredSkillLevel || 0));
-    
+
     if (hasRequiredCompletions && hasRequiredSkillLevel) {
       unlocks.push('TRADE');
     }
@@ -196,7 +196,7 @@ const checkTierUnlocks = async (progress: ThreeTierProgress): Promise<('TRADE' |
     const collabReq = TIER_REQUIREMENTS.COLLABORATION;
     const hasRequiredCompletions = progress.tradeCompletions >= collabReq.requiredCompletions;
     const hasRequiredSkillLevel = progress.skillProgression.some(s => s.currentLevel >= (collabReq.requiredSkillLevel || 0));
-    
+
     if (hasRequiredCompletions && hasRequiredSkillLevel) {
       unlocks.push('COLLABORATION');
     }
@@ -221,10 +221,88 @@ const getNextTierRequirement = (progress: ThreeTierProgress): TierRequirement | 
 /**
  * Check if user can access a specific challenge tier
  */
+/**
+ * Check if user can access a specific challenge tier
+ */
+// Helper to check prerequisites
+export const checkPrerequisites = async (userId: string, prerequisites?: string[]): Promise<boolean> => {
+  if (!prerequisites || prerequisites.length === 0) return true;
+
+  try {
+    const userChallengesQuery = query(
+      collection(getSyncFirebaseDb(), "userChallenges"),
+      where("userId", "==", userId),
+      where("status", "==", "COMPLETED")
+    );
+    const snapshot = await getDocs(userChallengesQuery);
+    const completedIds = snapshot.docs.map(doc => (doc.data() as any).challengeId);
+
+    return prerequisites.every(id => completedIds.includes(id));
+  } catch (error) {
+    logger.error('Error checking prerequisites', 'GAMIFICATION_SERVICE', { userId, prerequisites }, error as Error);
+    return false;
+  }
+};
+
 export const canAccessTier = async (userId: string, tier: 'SOLO' | 'TRADE' | 'COLLABORATION'): Promise<boolean> => {
-  // Reward-based model: all tiers are accessible at all times.
-  // Progression impacts rewards/recommendations, not access locks.
-  return true;
+  const progress = await getUserThreeTierProgress(userId);
+  if (!progress.success || !progress.data) return false;
+
+  // SOLO is always unlocked
+  if (tier === 'SOLO') return true;
+
+  return progress.data.unlockedTiers.includes(tier);
+};
+
+/**
+ * Comprehensive check for challenge access (Tier + Prerequisites)
+ */
+export const getChallengeAccessStatus = async (
+  userId: string,
+  challenge: { id: string; type: ChallengeType | string; prerequisites?: string[] }
+): Promise<{ accessible: boolean; reason: string }> => {
+  // 1. Check Tier Access
+  // Cast type to handle string vs enum issues if any
+  const tierAccess = await canAccessTier(userId, challenge.type as any);
+  if (!tierAccess) {
+    return {
+      accessible: false,
+      reason: getTierLockedReason(challenge.type as any) || "Tier locked"
+    };
+  }
+
+  // 2. Check Prerequisites
+  if (challenge.prerequisites && challenge.prerequisites.length > 0) {
+    // Lazy load to avoid circular dependency issues if they exist, 
+    // though ideally we restructure. For now assuming checkPrerequisites is importable.
+    // actually checkPrerequisites is in challenges.ts which imports THIS file.
+    // So we need to be careful.
+    // Best interaction: The UI calls checkPrerequisites directly? 
+    // OR we inject the checker. 
+    const prereqsMet = await checkPrerequisites(userId, challenge.prerequisites);
+    if (!prereqsMet) {
+      return {
+        accessible: false,
+        reason: "Prerequisites not met. Complete previous challenges first."
+      };
+    }
+  }
+
+  return { accessible: true, reason: "" };
+};
+
+/**
+ * Get the standardized lock reason message for a tier
+ */
+export const getTierLockedReason = (tier: 'SOLO' | 'TRADE' | 'COLLABORATION'): string => {
+  switch (tier) {
+    case 'TRADE':
+      return TIER_REQUIREMENTS.TRADE.description;
+    case 'COLLABORATION':
+      return TIER_REQUIREMENTS.COLLABORATION.description;
+    default:
+      return '';
+  }
 };
 
 /**
