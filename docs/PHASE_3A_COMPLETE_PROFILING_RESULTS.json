@@ -1,0 +1,170 @@
+{
+  "metadata": {
+    "date": "2025-12-14",
+    "phase": "3A - Complete Performance Profiling",
+    "status": "COMPLETED",
+    "automatedScenarios": "1, 2, 7",
+    "manualScenarios": "3, 4, 5, 6",
+    "browser": "Chrome/Chromium",
+    "device": "Desktop",
+    "network": "No Throttling",
+    "buildType": "Production",
+    "notes": "Combined automated (Playwright) and manual (Chrome DevTools) profiling data"
+  },
+  "summary": {
+    "totalScenarios": 7,
+    "completedScenarios": 7,
+    "automationRate": "43% (3/7 automated, 4/7 manual)",
+    "overallStatus": "COMPLETE",
+    "keyFindings": [
+      "Excellent baseline performance: FCP 208-216ms, LCP 300-304ms",
+      "Critical issue: CLS scores consistently above threshold (0.121-0.24)",
+      "Critical issue: Data refetch time too high (6649ms)",
+      "Excellent interaction performance: INP 88-157ms (all under 200ms)",
+      "Modal and menu interactions have zero layout shifts",
+      "Non-composited pulse animations causing layout shifts"
+    ]
+  },
+  "scenarios": {
+    "scenario1_coldCache": {
+      "name": "Initial Page Load (Cold Cache)",
+      "status": "COMPLETED",
+      "method": "Automated (Playwright)",
+      "metrics": {
+        "fcp": "208ms",
+        "lcp": "304ms",
+        "cls": "0.121",
+        "ttfb": "12ms",
+        "totalLoadTime": "4499ms",
+        "memoryUsage": "12.5MB",
+        "networkRequests": 12
+      },
+      "verdict": "✅ EXCELLENT - FCP/LCP well below thresholds",
+      "issues": ["⚠️ CLS above 0.1 threshold"]
+    },
+    "scenario2_warmCache": {
+      "name": "Initial Page Load (Warm Cache)",
+      "status": "COMPLETED",
+      "method": "Automated (Playwright)",
+      "metrics": {
+        "fcp": "216ms",
+        "lcp": "300ms",
+        "cls": "0.121",
+        "ttfb": "11ms",
+        "totalLoadTime": "4603ms",
+        "memoryUsage": "12.5MB",
+        "networkRequests": 12
+      },
+      "verdict": "✅ EXCELLENT - Similar to cold cache (good caching)",
+      "issues": ["⚠️ CLS above 0.1 threshold", "⚠️ Warm cache not faster than cold cache"]
+    },
+    "scenario3_tabSwitching": {
+      "name": "Tab Switching (About → Collaborations → Trades)",
+      "status": "COMPLETED",
+      "method": "Manual (Chrome DevTools)",
+      "metrics": {
+        "inp": "88ms",
+        "switchTime": "~50ms",
+        "scripting": "30-35ms",
+        "rendering": "~40ms",
+        "painting": "~50ms",
+        "cls": "0.24"
+      },
+      "verdict": "✅ FAST INTERACTIONS - INP well under 200ms",
+      "issues": ["🔴 CRITICAL: CLS 0.24 (140% above threshold)", "Non-composited pulse animations"]
+    },
+    "scenario4_infiniteScroll": {
+      "name": "Infinite Scroll (Collaborations Tab)",
+      "status": "COMPLETED",
+      "method": "Manual (Chrome DevTools)",
+      "metrics": {
+        "scrollFPS": "60 FPS",
+        "droppedFrames": "Minimal",
+        "loadTimePerBatch": "100-200ms",
+        "scripting": "50-100ms",
+        "rendering": "50-100ms",
+        "cls": "0.16"
+      },
+      "verdict": "✅ SMOOTH SCROLLING - 60 FPS maintained",
+      "issues": ["⚠️ CLS 0.16 (60% above threshold)", "Layout shifts during content loading"]
+    },
+    "scenario5_modalOperations": {
+      "name": "Modal Operations (Edit Profile)",
+      "status": "COMPLETED",
+      "method": "Manual (Chrome DevTools)",
+      "metrics": {
+        "inp": "157ms",
+        "modalOpenTime": "100-150ms",
+        "modalCloseTime": "50-100ms",
+        "scripting": "30-50ms",
+        "rendering": "50-80ms",
+        "cls": "0.00"
+      },
+      "verdict": "✅ EXCELLENT - Fast, smooth, zero layout shifts",
+      "issues": []
+    },
+    "scenario6_shareMenu": {
+      "name": "Share Menu Interaction",
+      "status": "COMPLETED",
+      "method": "Manual (Chrome DevTools)",
+      "metrics": {
+        "inp": "134ms",
+        "menuOpenTime": "~100ms",
+        "menuCloseTime": "~50ms",
+        "hoverResponseTime": "Instant",
+        "scripting": "~30ms",
+        "rendering": "~50ms",
+        "cls": "0.00"
+      },
+      "verdict": "✅ EXCELLENT - Fast, responsive, zero layout shifts",
+      "issues": []
+    },
+    "scenario7_dataRefetch": {
+      "name": "Data Refetch Operation",
+      "status": "COMPLETED",
+      "method": "Automated (Playwright)",
+      "metrics": {
+        "refetchTime": "6649ms",
+        "fcp": "176ms",
+        "lcp": "276ms",
+        "cls": "0.121",
+        "networkRequests": 13
+      },
+      "verdict": "🔴 CRITICAL - Refetch time too high (6.6s)",
+      "issues": ["🔴 CRITICAL: 6649ms refetch (target: <1000ms)", "⚠️ CLS above threshold"]
+    }
+  },
+  "performanceGrades": {
+    "fcp": {
+      "score": "208-216ms",
+      "target": "<1800ms",
+      "grade": "A+",
+      "percentBetter": "88%"
+    },
+    "lcp": {
+      "score": "300-304ms",
+      "target": "<2500ms",
+      "grade": "A+",
+      "percentBetter": "88%"
+    },
+    "cls": {
+      "score": "0.121-0.24",
+      "target": "<0.1",
+      "grade": "D",
+      "percentWorse": "21-140%"
+    },
+    "inp": {
+      "score": "88-157ms",
+      "target": "<200ms",
+      "grade": "A",
+      "percentBetter": "56-21%"
+    },
+    "refetchTime": {
+      "score": "6649ms",
+      "target": "<1000ms",
+      "grade": "F",
+      "percentWorse": "565%"
+    }
+  }
+}
+

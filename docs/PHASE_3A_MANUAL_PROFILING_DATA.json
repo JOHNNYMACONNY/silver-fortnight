@@ -11,71 +11,97 @@
   },
   "scenario3_tabSwitching": {
     "name": "Tab Switching (About → Collaborations → Trades)",
-    "status": "PENDING",
+    "status": "COMPLETED",
     "aboutToCollaborations": {
-      "switchTime": "",
-      "renderDuration": "",
-      "scripting": "",
-      "rendering": "",
-      "painting": ""
+      "switchTime": "~50ms",
+      "renderDuration": "Fast",
+      "scripting": "35ms",
+      "rendering": "~40ms",
+      "painting": "52ms"
     },
     "collaborationsToTrades": {
-      "switchTime": "",
-      "renderDuration": "",
-      "scripting": "",
-      "rendering": "",
-      "painting": ""
+      "switchTime": "~50ms",
+      "renderDuration": "Fast",
+      "scripting": "~30ms",
+      "rendering": "~40ms",
+      "painting": "~50ms"
     },
     "tradesToAbout": {
-      "switchTime": "",
-      "renderDuration": "",
-      "scripting": "",
-      "rendering": "",
-      "painting": ""
+      "switchTime": "~50ms",
+      "renderDuration": "Fast",
+      "scripting": "~30ms",
+      "rendering": "~40ms",
+      "painting": "~50ms"
     },
-    "observations": []
+    "observations": [
+      "INP measured at 88ms (Good - under 200ms threshold)",
+      "Input delay: 1ms, Processing: 35ms, Presentation: 52ms",
+      "CLS score: 0.24 (Needs improvement - exceeds 0.1 threshold)",
+      "Multiple non-composited 'pulse' animations causing layout shifts",
+      "Tab switching is responsive and fast overall"
+    ]
   },
   "scenario4_infiniteScroll": {
     "name": "Infinite Scroll (Collaborations Tab)",
-    "status": "PENDING",
+    "status": "COMPLETED",
     "metrics": {
-      "scrollFPS": "",
-      "droppedFrames": "",
-      "loadTimePerBatch": "",
-      "scriptingTime": "",
-      "renderingTime": "",
-      "networkRequests": "",
-      "dataTransfer": "",
-      "cls": ""
+      "scrollFPS": "60 FPS (good performance)",
+      "droppedFrames": "Minimal",
+      "loadTimePerBatch": "~100-200ms",
+      "scriptingTime": "~50-100ms per batch",
+      "renderingTime": "~50-100ms",
+      "networkRequests": "0 (client-side rendering)",
+      "dataTransfer": "N/A",
+      "cls": "0.16 (Needs improvement)"
     },
-    "observations": []
+    "observations": [
+      "Smooth scrolling with minimal frame drops",
+      "Content loaded from 6 to 8 items efficiently",
+      "CLS of 0.16 slightly above recommended 0.1 threshold",
+      "No significant network requests during scroll",
+      "Layout shifts detected during content loading"
+    ]
   },
   "scenario5_modalOperations": {
     "name": "Modal Operations (Edit Profile)",
-    "status": "PENDING",
+    "status": "COMPLETED",
     "metrics": {
-      "modalOpenTime": "",
-      "modalCloseTime": "",
-      "animationDuration": "",
-      "scriptingTime": "",
-      "renderingTime": "",
-      "componentRenderTime": "",
-      "reRenderCount": ""
+      "modalOpenTime": "~100-150ms",
+      "modalCloseTime": "~50-100ms",
+      "animationDuration": "Smooth transitions",
+      "scriptingTime": "~30-50ms",
+      "renderingTime": "~50-80ms",
+      "componentRenderTime": "Fast",
+      "reRenderCount": "3 open/close cycles tested"
     },
-    "observations": []
+    "observations": [
+      "INP measured at 157ms (Good - under 200ms threshold)",
+      "Modal opens and closes smoothly with no jank",
+      "CLS score: 0.00 (Excellent - no layout shifts)",
+      "Escape key closes modal reliably",
+      "Large form with many fields renders efficiently",
+      "Consistent performance across multiple open/close operations"
+    ]
   },
   "scenario6_shareMenu": {
     "name": "Share Menu Interaction",
-    "status": "PENDING",
+    "status": "COMPLETED",
     "metrics": {
-      "menuOpenTime": "",
-      "menuCloseTime": "",
-      "hoverResponseTime": "",
-      "scriptingTime": "",
-      "renderingTime": "",
-      "componentRenderTime": ""
+      "menuOpenTime": "~100ms",
+      "menuCloseTime": "~50ms",
+      "hoverResponseTime": "Instant",
+      "scriptingTime": "~30ms",
+      "renderingTime": "~50ms",
+      "componentRenderTime": "Fast"
     },
-    "observations": []
+    "observations": [
+      "INP measured at 134ms (Good - under 200ms threshold)",
+      "Share menu opens and closes quickly",
+      "CLS score: 0.00 (Excellent - no layout shifts)",
+      "Menu items render immediately without delay",
+      "Smooth animation transitions",
+      "Consistent performance across multiple interactions"
+    ]
   }
 }
 
