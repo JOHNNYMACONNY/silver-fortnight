@@ -277,6 +277,9 @@ const config = {
         'nav-fade': 'navFade 0.3s ease-in-out',
         'command-palette-in': 'commandPaletteIn 0.2s ease-out',
         'command-palette-out': 'commandPaletteOut 0.2s ease-in',
+        // Phase 3B: GPU-composited animations for CLS optimization
+        'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'pulse-scale': 'pulseScale 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         fadeIn: {
@@ -361,6 +364,15 @@ const config = {
         commandPaletteOut: {
           '0%': { opacity: '1', transform: 'scale(1) translateY(0)' },
           '100%': { opacity: '0', transform: 'scale(0.96) translateY(-8px)' },
+        },
+        // Phase 3B: GPU-composited pulse animations (opacity-only, no layout shifts)
+        pulseGlow: {
+          '0%, 100%': { opacity: '0.5' },
+          '50%': { opacity: '0.8' },
+        },
+        pulseScale: {
+          '0%, 100%': { opacity: '0.5', transform: 'scale(1)' },
+          '50%': { opacity: '0.8', transform: 'scale(1.05)' },
         },
       },
       backdropBlur: {

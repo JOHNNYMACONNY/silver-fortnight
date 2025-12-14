@@ -75,16 +75,19 @@ import { semanticClasses } from "../../utils/semanticColors";
 import { motion } from "framer-motion";
 import { ProfileHeader } from "./components/ProfileHeader";
 import { ProfileEditModal } from "./components/ProfileEditModal";
+import { ProfilePageSkeleton, TabContentSkeleton } from "./components/ProfilePageSkeleton";
 import { ProfileShareMenu } from "./components/ProfileShareMenu";
 import { ProfileTabs } from "./components/ProfileTabs";
 import { AboutTab } from "./components/AboutTab";
 import { CollaborationsTab } from "./components/CollaborationsTab";
 import { TradesTab } from "./components/TradesTab";
-import { useProfileData } from "./hooks/useProfileData";
-import { useCollaborationsData } from "./hooks/useCollaborationsData";
-import { useTradesData } from "./hooks/useTradesData";
+// Phase 3B: React Query hooks for data caching and optimization
+import { useProfileDataQuery } from "./hooks/useProfileDataQuery";
+import { useCollaborationsDataQuery } from "./hooks/useCollaborationsDataQuery";
+import { useTradesDataQuery } from "./hooks/useTradesDataQuery";
 import { useTabNavigation } from "./hooks/useTabNavigation";
 import { useModalState } from "./hooks/useModalState";
+import { useQueryClient } from "@tanstack/react-query";
 
 type TabType =
   | "about"
@@ -169,52 +172,82 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   const isOwnProfile = !userId || userId === currentUser?.uid;
   const targetUserId = userId || currentUser?.uid;
 
-  // Use custom hook for profile data fetching
-  const {
-    userProfile,
-    loading,
-    stats,
-    repScore,
-    reviewsPreview,
-    reviewsLoading,
-    reviewsMeta,
-    mutualFollows,
-    setUserProfile,
-    setMutualFollows,
-  } = useProfileData(targetUserId, currentUser, isOwnProfile);
+  // Phase 3B: React Query for data caching and optimization
+  const queryClient = useQueryClient();
 
-  // Use custom hook for collaborations data fetching
+  // Use React Query hook for profile data fetching
   const {
-    collaborations,
-    collaborationsLoading,
-    collabVisibleCount,
-    setCollabVisibleCount,
-    collabFilter,
-    setCollabFilter,
-    userRoleByCollabId,
-    setUserRoleByCollabId,
-    isLoadingMoreCollabs,
-    setIsLoadingMoreCollabs,
-    filteredCollaborations,
-  } = useCollaborationsData(
-    targetUserId,
-    activeTab,
-    roleEnrichmentEnabled,
-    showToast
+    data: profileData,
+    isLoading: loading,
+    error: profileError,
+  } = useProfileDataQuery(targetUserId, currentUser, isOwnProfile);
+
+  // Extract profile data from React Query response
+  const userProfile = profileData?.userProfile || null;
+  const stats = profileData?.stats || null;
+  const repScore = profileData?.repScore || null;
+  const reviewsPreview = profileData?.reviewsPreview || [];
+  const reviewsMeta = profileData?.reviewsMeta || null;
+  const reviewsLoading = loading;
+
+  // Mutual follows state (not cached, fetched on demand)
+  const [mutualFollows, setMutualFollows] = useState<{
+    count: number;
+    names: string[];
+  } | null>(null);
+
+  // Helper function to update user profile in cache
+  const setUserProfile = useCallback(
+    (updater: (prev: any) => any) => {
+      queryClient.setQueryData(['profile', targetUserId], (oldData: any) => {
+        if (!oldData) return oldData;
+        const newUserProfile = updater(oldData.userProfile);
+        return { ...oldData, userProfile: newUserProfile };
+      });
+    },
+    [queryClient, targetUserId]
   );
 
-  // Use custom hook for trades data fetching
+  // Use React Query hook for collaborations data fetching
   const {
-    trades,
-    tradesLoading,
-    tradesVisibleCount,
-    setTradesVisibleCount,
-    tradeFilter,
-    setTradeFilter,
-    isLoadingMoreTrades,
-    setIsLoadingMoreTrades,
-    filteredTrades,
-  } = useTradesData(targetUserId, activeTab, showToast);
+    data: collaborations = [],
+    isLoading: collaborationsLoading,
+  } = useCollaborationsDataQuery(targetUserId, activeTab === "collaborations");
+
+  // Collaborations state (for filtering and pagination)
+  const [collabVisibleCount, setCollabVisibleCount] = useState(6);
+  const [collabFilter, setCollabFilter] = useState<"all" | "yours">("all");
+  const [userRoleByCollabId, setUserRoleByCollabId] = useState<Record<string, string | null>>({});
+  const [isLoadingMoreCollabs, setIsLoadingMoreCollabs] = useState(false);
+
+  // Filter collaborations
+  const filteredCollaborations = React.useMemo(() => {
+    if (collabFilter === "yours" && currentUser) {
+      return collaborations.filter((c) => c.creatorId === currentUser.uid);
+    }
+    return collaborations;
+  }, [collaborations, collabFilter, currentUser]);
+
+  // Use React Query hook for trades data fetching
+  const {
+    data: trades = [],
+    isLoading: tradesLoading,
+  } = useTradesDataQuery(targetUserId, activeTab === "trades");
+
+  // Trades state (for filtering and pagination)
+  const [tradesVisibleCount, setTradesVisibleCount] = useState(6);
+  const [tradeFilter, setTradeFilter] = useState<"all" | "yours">("all");
+  const [isLoadingMoreTrades, setIsLoadingMoreTrades] = useState(false);
+
+  // Filter trades
+  const filteredTrades = React.useMemo(() => {
+    if (tradeFilter === "yours" && currentUser) {
+      return trades.filter(
+        (t) => t.creatorId === currentUser.uid || t.participantId === currentUser.uid
+      );
+    }
+    return trades;
+  }, [trades, tradeFilter, currentUser]);
 
   const completenessPercent = React.useMemo(() => {
     if (!userProfile) return 0;
@@ -524,21 +557,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
 
   if (loading) {
     return (
-      <Box className={classPatterns.homepageContainer}>
+      <>
         <PerformanceMonitor pageName="ProfilePage" />
-        <div className="animate-pulse">
-          <div className="glassmorphic border-glass backdrop-blur-xl bg-white/10 h-48 rounded-xl mb-6" />
-          <div className="glassmorphic border-glass backdrop-blur-xl bg-white/10 rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-24 h-24 rounded-full glassmorphic border-glass backdrop-blur-xl bg-white/10" />
-              <div className="flex-1">
-                <div className="h-6 w-56 glassmorphic border-glass backdrop-blur-xl bg-white/10 rounded mb-2" />
-                <div className="h-4 w-72 glassmorphic border-glass backdrop-blur-xl bg-white/10 rounded" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Box>
+        <ProfilePageSkeleton />
+      </>
     );
   }
 
@@ -683,32 +705,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 role="tabpanel"
                 aria-labelledby="portfolio"
               >
-                <React.Suspense
-                  fallback={
-                    <>
-                      <div
-                        id="profile-portfolio-list"
-                        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4"
-                      >
-                        {Array.from({ length: 6 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className="rounded-lg border border-border p-4"
-                          >
-                            <div className="h-32 bg-muted rounded animate-pulse mb-3" />
-                            <div className="h-4 w-3/4 bg-muted rounded animate-pulse mb-2" />
-                            <div className="h-4 w-1/2 bg-muted rounded animate-pulse" />
-                          </div>
-                        ))}
-                      </div>
-                      <div className="text-center py-6">
-                        <p className="text-sm text-muted-foreground">
-                          Loading portfolio…
-                        </p>
-                      </div>
-                    </>
-                  }
-                >
+                <React.Suspense fallback={<TabContentSkeleton type="grid" />}>
                   <PortfolioTabLazy
                     userId={targetUserId}
                     isOwnProfile={isOwnProfile}
@@ -724,14 +721,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 aria-labelledby="gamification"
                 className="w-full"
               >
-                <React.Suspense
-                  fallback={
-                    <div className="animate-pulse space-y-4">
-                      <div className="h-6 w-40 bg-muted rounded" />
-                      <div className="h-32 bg-muted rounded" />
-                    </div>
-                  }
-                >
+                <React.Suspense fallback={<TabContentSkeleton type="stats" />}>
                   <div className="w-full space-y-6">
                     <GamificationDashboardLazy userId={targetUserId} />
                     {isOwnProfile && (

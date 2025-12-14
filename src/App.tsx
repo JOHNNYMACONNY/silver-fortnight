@@ -24,6 +24,8 @@ import ConsistencyCheckerPage from "./pages/ConsistencyCheckerPage";
 import DevDashboard from "./components/development/DevDashboard";
 import { StyleGuide } from "./components/ui/StyleGuide";
 import ShadcnTestPage from "./pages/ShadcnTestPage";
+// Phase 3B: React Query provider for data caching and optimization
+import { QueryClientProvider } from "./providers/QueryClientProvider";
 const ResponsiveCardTestPage = lazy(() => import("./pages/ResponsiveCardTestPage"));
 import { logger } from "./utils/logging/logger";
 import Spinner from "./components/ui/Spinner";
@@ -194,11 +196,12 @@ function App() {
 
   return (
     <EnhancedErrorBoundary>
-      <MotionProvider>
-      <ToastProvider>
-        <NotificationsProvider>
-          <GamificationNotificationProvider>
-          <MainLayout containerized={false}>
+      <QueryClientProvider>
+        <MotionProvider>
+          <ToastProvider>
+            <NotificationsProvider>
+              <GamificationNotificationProvider>
+                <MainLayout containerized={false}>
             {/* Preload critical application resources */}
             <AppPreloader />
 
@@ -625,11 +628,12 @@ function App() {
 
             {/* Development Dashboard - only in development */}
             <DevDashboard />
-          </MainLayout>
-          </GamificationNotificationProvider>
-        </NotificationsProvider>
-      </ToastProvider>
-      </MotionProvider>
+                </MainLayout>
+              </GamificationNotificationProvider>
+            </NotificationsProvider>
+          </ToastProvider>
+        </MotionProvider>
+      </QueryClientProvider>
     </EnhancedErrorBoundary>
   );
 }
