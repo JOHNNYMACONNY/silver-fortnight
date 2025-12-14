@@ -10,6 +10,7 @@ import { initializeTheme } from "./utils/themeInitializer";
 import { advancedPerformanceOrchestrator } from "./services/performance/advancedPerformanceOrchestrator";
 import { initializeServices } from "./services/core/ServiceRegistry";
 import { logger } from "./utils/logging/logger";
+import { initWebVitals } from "./utils/webVitalsReporter";
 // CRITICAL: This line imports the master stylesheet and enables Tailwind CSS.
 import "./index.css";
 
@@ -52,6 +53,9 @@ async function initializeAdvancedFeatures() {
 
 // Start initialization (non-blocking)
 initializeAdvancedFeatures();
+
+// Initialize Web Vitals reporting
+initWebVitals();
 
 // Ensure DOM is ready before rendering
 function renderApp() {
