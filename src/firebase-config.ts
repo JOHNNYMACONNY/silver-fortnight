@@ -14,6 +14,8 @@ import {
 } from 'firebase/auth';
 import { Firestore, getFirestore, Timestamp, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage, FirebaseStorage, connectStorageEmulator } from 'firebase/storage';
+import { getAnalytics, Analytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
+import { getPerformance, Performance } from 'firebase/performance';
 import { logger } from '@utils/logging/logger';
 import {
   collection,
@@ -158,6 +160,8 @@ let firebaseApp: FirebaseApp | null = null;
 let firebaseAuth: Auth | null = null;
 let firebaseDb: Firestore | null = null;
 let firebaseStorage: FirebaseStorage | null = null;
+let firebaseAnalytics: Analytics | null = null;
+let firebasePerformance: Performance | null = null;
 
 // Initialization state tracking
 let initializationPromise: Promise<void> | null = null;
@@ -179,7 +183,7 @@ const initializeFirebase = async (): Promise<void> => {
   }
 
   // If already initialized, return immediately
-  if (firebaseApp && firebaseAuth && firebaseDb && firebaseStorage) {
+  if (firebaseApp && firebaseAuth && firebaseDb && firebaseStorage && firebaseAnalytics && firebasePerformance) {
     logger.debug('Firebase: Already initialized, skipping', 'APP');
     return;
   }
@@ -203,6 +207,31 @@ const initializeFirebase = async (): Promise<void> => {
       firebaseAuth = getAuth(firebaseApp);
       firebaseDb = getFirestore(firebaseApp);
       firebaseStorage = getStorage(firebaseApp);
+
+      // Initialize Analytics (only in browser, not in SSR/Node)
+      if (typeof window !== 'undefined') {
+        try {
+          const analyticsSupported = await isAnalyticsSupported();
+          if (analyticsSupported) {
+            firebaseAnalytics = getAnalytics(firebaseApp);
+            logger.debug('Firebase: Analytics initialized', 'APP');
+          } else {
+            logger.debug('Firebase: Analytics not supported in this environment', 'APP');
+          }
+        } catch (analyticsError) {
+          logger.warn('Firebase: Analytics initialization failed (non-critical):', 'APP', analyticsError);
+        }
+      }
+
+      // Initialize Performance Monitoring (only in browser, not in SSR/Node)
+      if (typeof window !== 'undefined') {
+        try {
+          firebasePerformance = getPerformance(firebaseApp);
+          logger.debug('Firebase: Performance Monitoring initialized', 'APP');
+        } catch (performanceError) {
+          logger.warn('Firebase: Performance Monitoring initialization failed (non-critical):', 'APP', performanceError);
+        }
+      }
 
       // Enable long polling to fix Listen channel 400 errors
       try {
@@ -334,17 +363,37 @@ const getSyncFirebaseStorage = (): FirebaseStorage => {
   return firebaseStorage;
 };
 
+const getSyncFirebaseAnalytics = (): Analytics | null => {
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+    return null;
+  }
+
+  // Analytics is optional - return null if not initialized (e.g., in SSR)
+  return firebaseAnalytics;
+};
+
+const getSyncFirebasePerformance = (): Performance | null => {
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+    return null;
+  }
+
+  // Performance is optional - return null if not initialized (e.g., in SSR)
+  return firebasePerformance;
+};
+
 export {
   getFirebaseConfig,
   initializeFirebase,
   getFirebaseInstances,
   getSyncFirebaseAuth,
   getSyncFirebaseDb,
-  getSyncFirebaseStorage
+  getSyncFirebaseStorage,
+  getSyncFirebaseAnalytics,
+  getSyncFirebasePerformance
 };
 
 // Export initialized Firebase instances for use in other modules
-export { firebaseAuth, firebaseDb };
+export { firebaseAuth, firebaseDb, firebaseAnalytics, firebasePerformance };
 
 // Export db alias for backward compatibility with existing imports (live binding)
 export { firebaseDb as db };
