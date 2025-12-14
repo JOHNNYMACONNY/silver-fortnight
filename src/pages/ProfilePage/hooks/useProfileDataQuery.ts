@@ -170,9 +170,9 @@ export const useProfileDataQuery = (
     queryKey: ['profile', targetUserId],
     queryFn: () => fetchProfileData(targetUserId!, currentUser, isOwnProfile),
     enabled: !!targetUserId,
-    // Data is fresh for 5 minutes (inherited from global config)
-    // Background refetch when stale
-    refetchOnMount: 'always', // Always check for updates on mount
+    // Phase 3B Fix: Use global config (refetchOnMount: false, staleTime: 5min)
+    // This prevents unnecessary refetches and layout shifts
+    // Data is fresh for 5 minutes, then background refetch when stale
   });
 };
 
