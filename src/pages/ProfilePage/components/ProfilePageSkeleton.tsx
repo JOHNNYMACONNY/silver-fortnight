@@ -1,7 +1,5 @@
 import React from 'react';
 import Box from '../../../components/layout/primitives/Box';
-import Stack from '../../../components/layout/primitives/Stack';
-import { Card, CardContent } from '../../../components/ui/card';
 import { Skeleton, SkeletonAvatar, SkeletonText, SkeletonButton } from '../../../components/ui/Skeleton';
 import { classPatterns } from '../../../utils/designSystem';
 
@@ -19,99 +17,63 @@ export const ProfilePageSkeleton: React.FC = () => {
       {/* Hero Banner Skeleton */}
       <div className="glassmorphic border-glass backdrop-blur-xl bg-white/10 h-48 rounded-xl mb-6 will-change-[opacity]" />
 
-      {/* Profile Header Card Skeleton - Match ProfileHeader structure exactly */}
-      <Card
-        variant="glass"
-        className="relative -mt-4 sm:-mt-6 md:-mt-8 mb-6 bg-gradient-to-r from-primary-500/5 via-accent-500/5 to-secondary-500/5"
-      >
-        <CardContent className="p-4 sm:p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
-            {/* Left Column: Avatar + Basic Info */}
-            <div className="lg:col-span-2 flex flex-col items-center gap-4">
-              {/* Avatar with glow effect */}
-              <div className="relative shrink-0">
-                <div className="relative p-1 rounded-full bg-border/50 shadow-xl">
-                  <SkeletonAvatar size="xl" variant="glass" />
-                </div>
+      {/* Profile Header Card Skeleton */}
+      <div className="glassmorphic border-glass backdrop-blur-xl bg-white/10 rounded-xl shadow-sm relative -mt-4 sm:-mt-6 md:-mt-8 p-4 sm:p-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+          {/* Left Column: Avatar + Basic Info */}
+          <div className="lg:col-span-2 flex flex-col items-center gap-4">
+            {/* Avatar with glow effect */}
+            <div className="relative shrink-0">
+              <div className="relative p-1 rounded-full bg-border/50 shadow-xl">
+                <SkeletonAvatar size="xl" variant="glass" />
               </div>
-
-              {/* Name, handle, and info - matching exact heights */}
-              <Stack gap="sm" className="min-w-0 w-full text-center lg:text-left">
-                {/* Name - text-3xl/4xl height (~48px) */}
-                <Skeleton height="3rem" width="12rem" className="mx-auto lg:mx-0" variant="glass" />
-
-                {/* Handle with copy button - min-height 44px */}
-                <Skeleton height="2.75rem" width="10rem" className="mx-auto lg:mx-0" variant="glass" />
-
-                {/* Reputation badge - ~28px */}
-                <Skeleton height="1.75rem" width="8rem" className="mx-auto lg:mx-0" variant="glass" />
-
-                {/* Email (conditional, but reserve space) - ~20px */}
-                <Skeleton height="1.25rem" width="14rem" className="mx-auto lg:mx-0" variant="glass" />
-              </Stack>
             </div>
 
-            {/* Right Column: Bio, Contact, Skills, Actions, Stats */}
-            <div className="lg:col-span-3">
-              <Stack gap="md">
-                {/* Tagline - text-sm (~20px) */}
-                <Skeleton height="1.25rem" width="90%" variant="glass" />
+            {/* Name and username */}
+            <div className="min-w-0 w-full text-center lg:text-left space-y-2">
+              <Skeleton height="2rem" width="12rem" className="mx-auto lg:mx-0" variant="glass" />
+              <Skeleton height="1.25rem" width="8rem" className="mx-auto lg:mx-0" variant="glass" />
+            </div>
 
-                {/* Bio section - text-sm with Read more (~60px for 3 lines) */}
-                <div className="space-y-2">
-                  <Skeleton height="1rem" width="100%" variant="glass" />
-                  <Skeleton height="1rem" width="95%" variant="glass" />
-                  <Skeleton height="1rem" width="85%" variant="glass" />
-                </div>
-
-                {/* Contact Info - website, location, joined (~24px) */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                  <Skeleton height="1.25rem" width="8rem" variant="glass" />
-                  <Skeleton height="1.25rem" width="7rem" variant="glass" />
-                  <Skeleton height="1.25rem" width="9rem" variant="glass" />
-                </div>
-
-                {/* Skills/Tags - flex-wrap (~32px) */}
-                <div className="flex flex-wrap gap-1.5">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <Skeleton
-                      key={i}
-                      height="1.75rem"
-                      width={`${Math.random() * 3 + 4}rem`}
-                      rounded="full"
-                      variant="glass"
-                    />
-                  ))}
-                </div>
-
-                {/* Social Stats - UserSocialStats compact (~50px) */}
-                <div className="flex gap-4">
-                  <Skeleton height="3rem" width="8rem" variant="glass" />
-                  <Skeleton height="3rem" width="10rem" variant="glass" />
-                </div>
-
-                {/* Streak Widgets - compact (~36px) */}
-                <Skeleton height="2.25rem" width="100%" rounded="lg" variant="glass" />
-
-                {/* Action Buttons - flex-col sm:flex-row (~40px) */}
-                <div className="flex flex-col sm:flex-row gap-2 relative">
-                  <SkeletonButton variant="glass" />
-                  <SkeletonButton variant="glass" />
-                </div>
-
-                {/* Divider - h-px (~1px) */}
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
-
-                {/* Trade Stats Grid - grid-cols-2 (~60px) */}
-                <div className="grid grid-cols-2 gap-3 text-sm w-full">
-                  <Skeleton height="3.5rem" rounded="lg" variant="glass" />
-                  <Skeleton height="3.5rem" rounded="lg" variant="glass" />
-                </div>
-              </Stack>
+            {/* Action buttons */}
+            <div className="flex gap-2 flex-wrap justify-center lg:justify-start">
+              <SkeletonButton variant="glass" />
+              <SkeletonButton variant="glass" />
             </div>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Right Column: Stats and Info */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="text-center space-y-1">
+                  <Skeleton height="1.5rem" width="3rem" className="mx-auto" variant="glass" />
+                  <Skeleton height="0.875rem" width="4rem" className="mx-auto" variant="glass" />
+                </div>
+              ))}
+            </div>
+
+            {/* Bio section */}
+            <div className="space-y-2">
+              <SkeletonText lines={3} variant="glass" />
+            </div>
+
+            {/* Skills/Tags */}
+            <div className="flex flex-wrap gap-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton
+                  key={i}
+                  height="1.75rem"
+                  width={`${Math.random() * 3 + 4}rem`}
+                  rounded="full"
+                  variant="glass"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Tab Navigation Skeleton */}
       <div className="glassmorphic border-glass backdrop-blur-xl bg-white/10 rounded-xl mb-6 p-2">
