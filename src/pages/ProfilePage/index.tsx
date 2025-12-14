@@ -81,11 +81,13 @@ import { ProfileTabs } from "./components/ProfileTabs";
 import { AboutTab } from "./components/AboutTab";
 import { CollaborationsTab } from "./components/CollaborationsTab";
 import { TradesTab } from "./components/TradesTab";
-import { useProfileData } from "./hooks/useProfileData";
-import { useCollaborationsData } from "./hooks/useCollaborationsData";
-import { useTradesData } from "./hooks/useTradesData";
+// Phase 3B: React Query hooks for data caching and optimization
+import { useProfileDataQuery } from "./hooks/useProfileDataQuery";
+import { useCollaborationsDataQuery } from "./hooks/useCollaborationsDataQuery";
+import { useTradesDataQuery } from "./hooks/useTradesDataQuery";
 import { useTabNavigation } from "./hooks/useTabNavigation";
 import { useModalState } from "./hooks/useModalState";
+import { useQueryClient } from "@tanstack/react-query";
 
 type TabType =
   | "about"
@@ -170,52 +172,82 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
   const isOwnProfile = !userId || userId === currentUser?.uid;
   const targetUserId = userId || currentUser?.uid;
 
-  // Use custom hook for profile data fetching
-  const {
-    userProfile,
-    loading,
-    stats,
-    repScore,
-    reviewsPreview,
-    reviewsLoading,
-    reviewsMeta,
-    mutualFollows,
-    setUserProfile,
-    setMutualFollows,
-  } = useProfileData(targetUserId, currentUser, isOwnProfile);
+  // Phase 3B: React Query for data caching and optimization
+  const queryClient = useQueryClient();
 
-  // Use custom hook for collaborations data fetching
+  // Use React Query hook for profile data fetching
   const {
-    collaborations,
-    collaborationsLoading,
-    collabVisibleCount,
-    setCollabVisibleCount,
-    collabFilter,
-    setCollabFilter,
-    userRoleByCollabId,
-    setUserRoleByCollabId,
-    isLoadingMoreCollabs,
-    setIsLoadingMoreCollabs,
-    filteredCollaborations,
-  } = useCollaborationsData(
-    targetUserId,
-    activeTab,
-    roleEnrichmentEnabled,
-    showToast
+    data: profileData,
+    isLoading: loading,
+    error: profileError,
+  } = useProfileDataQuery(targetUserId, currentUser, isOwnProfile);
+
+  // Extract profile data from React Query response
+  const userProfile = profileData?.userProfile || null;
+  const stats = profileData?.stats || null;
+  const repScore = profileData?.repScore || null;
+  const reviewsPreview = profileData?.reviewsPreview || [];
+  const reviewsMeta = profileData?.reviewsMeta || null;
+  const reviewsLoading = loading;
+
+  // Mutual follows state (not cached, fetched on demand)
+  const [mutualFollows, setMutualFollows] = useState<{
+    count: number;
+    names: string[];
+  } | null>(null);
+
+  // Helper function to update user profile in cache
+  const setUserProfile = useCallback(
+    (updater: (prev: any) => any) => {
+      queryClient.setQueryData(['profile', targetUserId], (oldData: any) => {
+        if (!oldData) return oldData;
+        const newUserProfile = updater(oldData.userProfile);
+        return { ...oldData, userProfile: newUserProfile };
+      });
+    },
+    [queryClient, targetUserId]
   );
 
-  // Use custom hook for trades data fetching
+  // Use React Query hook for collaborations data fetching
   const {
-    trades,
-    tradesLoading,
-    tradesVisibleCount,
-    setTradesVisibleCount,
-    tradeFilter,
-    setTradeFilter,
-    isLoadingMoreTrades,
-    setIsLoadingMoreTrades,
-    filteredTrades,
-  } = useTradesData(targetUserId, activeTab, showToast);
+    data: collaborations = [],
+    isLoading: collaborationsLoading,
+  } = useCollaborationsDataQuery(targetUserId, activeTab === "collaborations");
+
+  // Collaborations state (for filtering and pagination)
+  const [collabVisibleCount, setCollabVisibleCount] = useState(6);
+  const [collabFilter, setCollabFilter] = useState<"all" | "yours">("all");
+  const [userRoleByCollabId, setUserRoleByCollabId] = useState<Record<string, string | null>>({});
+  const [isLoadingMoreCollabs, setIsLoadingMoreCollabs] = useState(false);
+
+  // Filter collaborations
+  const filteredCollaborations = React.useMemo(() => {
+    if (collabFilter === "yours" && currentUser) {
+      return collaborations.filter((c) => c.creatorId === currentUser.uid);
+    }
+    return collaborations;
+  }, [collaborations, collabFilter, currentUser]);
+
+  // Use React Query hook for trades data fetching
+  const {
+    data: trades = [],
+    isLoading: tradesLoading,
+  } = useTradesDataQuery(targetUserId, activeTab === "trades");
+
+  // Trades state (for filtering and pagination)
+  const [tradesVisibleCount, setTradesVisibleCount] = useState(6);
+  const [tradeFilter, setTradeFilter] = useState<"all" | "yours">("all");
+  const [isLoadingMoreTrades, setIsLoadingMoreTrades] = useState(false);
+
+  // Filter trades
+  const filteredTrades = React.useMemo(() => {
+    if (tradeFilter === "yours" && currentUser) {
+      return trades.filter(
+        (t) => t.creatorId === currentUser.uid || t.participantId === currentUser.uid
+      );
+    }
+    return trades;
+  }, [trades, tradeFilter, currentUser]);
 
   const completenessPercent = React.useMemo(() => {
     if (!userProfile) return 0;
