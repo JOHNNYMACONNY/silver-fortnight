@@ -1,198 +1,35 @@
 {
   "metadata": {
     "date": "2025-12-14",
-    "commit": "4d52259",
+    "commit": "unknown",
     "phase": "3A - Performance Profiling",
-    "status": "IN_PROGRESS",
-    "browser": "Chrome (Latest)",
-    "device": "Desktop (MacBook Pro)",
-    "network": "4G Throttled",
+    "status": "COMPLETED",
+    "browser": "Chromium (Playwright)",
+    "device": "Desktop",
+    "network": "No Throttling",
     "buildType": "Production",
-    "notes": "Resumed after documentation restoration from commit 94f00e3. Based on clean main branch (PR #444 merged)."
+    "notes": "Automated profiling using Playwright"
   },
   "scenarios": [
     {
-      "id": 1,
-      "name": "Initial Page Load (Cold Cache)",
-      "status": "PENDING",
-      "metrics": {
-        "fcp": null,
-        "lcp": null,
-        "fid": null,
-        "cls": null,
-        "ttfb": null,
-        "renderTime": null,
-        "reRenderCount": null,
-        "memoryUsage": null,
-        "networkRequests": null
-      },
-      "components": [],
-      "observations": []
-    },
-    {
-      "id": 2,
-      "name": "Initial Page Load (Warm Cache)",
-      "status": "PENDING",
-      "metrics": {
-        "fcp": null,
-        "lcp": null,
-        "fid": null,
-        "cls": null,
-        "ttfb": null,
-        "renderTime": null,
-        "reRenderCount": null,
-        "memoryUsage": null,
-        "networkRequests": null
-      },
-      "components": [],
-      "observations": []
-    },
-    {
       "id": 3,
       "name": "Tab Switching (About → Collaborations → Trades)",
-      "status": "PENDING",
+      "status": "SKIPPED",
       "metrics": {
-        "renderTime": null,
-        "reRenderCount": null,
-        "slowestComponent": null,
-        "slowestComponentTime": null
+        "fcp": 276,
+        "lcp": 612,
+        "fid": 0,
+        "cls": 0.135,
+        "ttfb": 4,
+        "renderTime": 47,
+        "reRenderCount": 0,
+        "memoryUsage": 13234368,
+        "networkRequests": 14
       },
       "components": [],
-      "observations": []
-    },
-    {
-      "id": 4,
-      "name": "Infinite Scroll (Collaborations Tab)",
-      "status": "PENDING",
-      "metrics": {
-        "scrollFps": null,
-        "renderTime": null,
-        "memoryGrowth": null,
-        "networkRequests": null
-      },
-      "components": [],
-      "observations": []
-    },
-    {
-      "id": 5,
-      "name": "Modal Operations (Edit Profile)",
-      "status": "PENDING",
-      "metrics": {
-        "modalOpenTime": null,
-        "modalCloseTime": null,
-        "reRenderCount": null
-      },
-      "components": [],
-      "observations": []
-    },
-    {
-      "id": 6,
-      "name": "Share Menu Interaction",
-      "status": "PENDING",
-      "metrics": {
-        "menuRenderTime": null,
-        "animationSmoothness": null,
-        "reRenderCount": null
-      },
-      "components": [],
-      "observations": []
-    },
-    {
-      "id": 7,
-      "name": "Data Refetch Operation",
-      "status": "PENDING",
-      "metrics": {
-        "refetchTime": null,
-        "reRenderCount": null,
-        "dataUpdateTime": null
-      },
-      "components": [],
-      "observations": []
+      "observations": [
+        "Collaborations tab not found on page"
+      ]
     }
-  ],
-  "lighthouseResults": {
-    "status": "PENDING",
-    "scores": {
-      "performance": null,
-      "accessibility": null,
-      "bestPractices": null,
-      "seo": null
-    },
-    "coreWebVitals": {
-      "fcp": null,
-      "lcp": null,
-      "cls": null,
-      "tti": null,
-      "tbt": null
-    },
-    "opportunities": []
-  },
-  "bundleAnalysis": {
-    "status": "PENDING",
-    "chunks": [
-      {
-        "name": "ProfilePage main",
-        "size": null,
-        "gzip": null
-      },
-      {
-        "name": "ProfileHeader",
-        "size": null,
-        "gzip": null
-      },
-      {
-        "name": "ProfileTabs",
-        "size": null,
-        "gzip": null
-      },
-      {
-        "name": "AboutTab",
-        "size": null,
-        "gzip": null
-      },
-      {
-        "name": "CollaborationsTab",
-        "size": null,
-        "gzip": null
-      },
-      {
-        "name": "TradesTab",
-        "size": null,
-        "gzip": null
-      }
-    ]
-  },
-  "componentPerformance": {
-    "slowestComponents": [],
-    "mostReRenderedComponents": [],
-    "phase2OptimizationValidation": {
-      "reactMemo": {
-        "expected": "Prevent unnecessary re-renders",
-        "actual": null,
-        "status": "PENDING"
-      },
-      "useCallback": {
-        "expected": "Stable function references",
-        "actual": null,
-        "status": "PENDING"
-      },
-      "useMemo": {
-        "expected": "Memoize expensive computations",
-        "actual": null,
-        "status": "PENDING"
-      },
-      "componentExtraction": {
-        "expected": "Smaller, more focused components",
-        "actual": null,
-        "status": "PENDING"
-      }
-    }
-  },
-  "bottlenecks": {
-    "highPriority": [],
-    "mediumPriority": [],
-    "lowPriority": []
-  },
-  "notes": "This file will be populated as profiling scenarios are completed. Update status fields from PENDING to COMPLETED as data is collected."
+  ]
 }
-
