@@ -160,9 +160,17 @@ class ProfilePageProfiler {
 
 // Test suite setup
 const profiler = new ProfilePageProfiler();
-const LOGIN_EMAIL = 'johnfroberts11@gmail.com';
-const LOGIN_PASSWORD = 'Jasmine629!';
+
+// Check if we're using emulator mode
+const USE_EMULATOR = process.env.USE_EMULATOR === 'true';
+
+// Credentials based on environment
+const LOGIN_EMAIL = USE_EMULATOR ? 'test-profiling@example.com' : 'johnfroberts11@gmail.com';
+const LOGIN_PASSWORD = USE_EMULATOR ? 'TestPassword123!' : 'Jasmine629!';
 const BASE_URL = 'http://localhost:4173';
+
+console.log(`\n🔧 Profiling Mode: ${USE_EMULATOR ? 'EMULATOR' : 'PRODUCTION'}`);
+console.log(`📧 Using credentials: ${LOGIN_EMAIL}\n`);
 
 // Helper function to login
 async function login(page: Page) {
