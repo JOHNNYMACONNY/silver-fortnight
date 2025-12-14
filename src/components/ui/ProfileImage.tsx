@@ -23,19 +23,33 @@ const sizeClasses = {
   xl: 'h-24 w-24'
 };
 
+// Phase 3B: Explicit dimensions for CLS optimization
+const sizeDimensions = {
+  xs: { width: 32, height: 32 },
+  sm: { width: 40, height: 40 },
+  md: { width: 48, height: 48 },
+  lg: { width: 64, height: 64 },
+  xl: { width: 96, height: 96 }
+};
+
 /**
  * Image component with error handling
+ * Phase 3B: Added explicit width/height for CLS optimization
  */
 const ImageWithFallback = React.memo(({
   src,
   alt,
   className,
+  width,
+  height,
   onClick,
   onError
 }: {
   src: string;
   alt: string;
   className: string;
+  width?: number;
+  height?: number;
   onClick?: () => void;
   onError: () => void;
 }) => {
@@ -44,6 +58,8 @@ const ImageWithFallback = React.memo(({
       src={src}
       alt={alt}
       className={className}
+      width={width}
+      height={height}
       onClick={onClick}
       onError={onError}
       loading="lazy"
@@ -83,6 +99,9 @@ export const ProfileImage = React.memo<ProfileImageProps>(({
     const baseClasses = 'rounded-full object-cover aspect-square flex-shrink-0';
     return `${sizeClass} ${baseClasses} ${className}`.trim();
   }, [size, className]);
+
+  // Phase 3B: Get explicit dimensions for CLS optimization
+  const dimensions = useMemo(() => sizeDimensions[size] || sizeDimensions.md, [size]);
 
   // Special handling for direct URLs - memoized to prevent recalculation
   const primaryImageUrl = useMemo(() => {
@@ -138,11 +157,13 @@ export const ProfileImage = React.memo<ProfileImageProps>(({
       src={fallbackAvatarUrl}
       alt={displayName}
       className={imageClasses}
+      width={dimensions.width}
+      height={dimensions.height}
       onClick={onClick}
       loading="lazy"
       decoding="async"
     />
-  ), [fallbackAvatarUrl, displayName, imageClasses, onClick]);
+  ), [fallbackAvatarUrl, displayName, imageClasses, dimensions, onClick]);
 
   return (
     <ErrorBoundary fallback={fallbackUI}>
@@ -150,6 +171,8 @@ export const ProfileImage = React.memo<ProfileImageProps>(({
         src={useDefaultAvatar ? fallbackAvatarUrl : primaryImageUrl}
         alt={displayName}
         className={imageClasses}
+        width={dimensions.width}
+        height={dimensions.height}
         onClick={onClick}
         onError={handleImageError}
       />

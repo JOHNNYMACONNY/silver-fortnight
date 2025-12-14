@@ -75,6 +75,7 @@ import { semanticClasses } from "../../utils/semanticColors";
 import { motion } from "framer-motion";
 import { ProfileHeader } from "./components/ProfileHeader";
 import { ProfileEditModal } from "./components/ProfileEditModal";
+import { ProfilePageSkeleton, TabContentSkeleton } from "./components/ProfilePageSkeleton";
 import { ProfileShareMenu } from "./components/ProfileShareMenu";
 import { ProfileTabs } from "./components/ProfileTabs";
 import { AboutTab } from "./components/AboutTab";
@@ -524,21 +525,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
 
   if (loading) {
     return (
-      <Box className={classPatterns.homepageContainer}>
+      <>
         <PerformanceMonitor pageName="ProfilePage" />
-        <div className="animate-pulse">
-          <div className="glassmorphic border-glass backdrop-blur-xl bg-white/10 h-48 rounded-xl mb-6" />
-          <div className="glassmorphic border-glass backdrop-blur-xl bg-white/10 rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-24 h-24 rounded-full glassmorphic border-glass backdrop-blur-xl bg-white/10" />
-              <div className="flex-1">
-                <div className="h-6 w-56 glassmorphic border-glass backdrop-blur-xl bg-white/10 rounded mb-2" />
-                <div className="h-4 w-72 glassmorphic border-glass backdrop-blur-xl bg-white/10 rounded" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Box>
+        <ProfilePageSkeleton />
+      </>
     );
   }
 
@@ -683,32 +673,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 role="tabpanel"
                 aria-labelledby="portfolio"
               >
-                <React.Suspense
-                  fallback={
-                    <>
-                      <div
-                        id="profile-portfolio-list"
-                        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4"
-                      >
-                        {Array.from({ length: 6 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className="rounded-lg border border-border p-4"
-                          >
-                            <div className="h-32 bg-muted rounded animate-pulse mb-3" />
-                            <div className="h-4 w-3/4 bg-muted rounded animate-pulse mb-2" />
-                            <div className="h-4 w-1/2 bg-muted rounded animate-pulse" />
-                          </div>
-                        ))}
-                      </div>
-                      <div className="text-center py-6">
-                        <p className="text-sm text-muted-foreground">
-                          Loading portfolio…
-                        </p>
-                      </div>
-                    </>
-                  }
-                >
+                <React.Suspense fallback={<TabContentSkeleton type="grid" />}>
                   <PortfolioTabLazy
                     userId={targetUserId}
                     isOwnProfile={isOwnProfile}
@@ -724,14 +689,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propUserId }) => {
                 aria-labelledby="gamification"
                 className="w-full"
               >
-                <React.Suspense
-                  fallback={
-                    <div className="animate-pulse space-y-4">
-                      <div className="h-6 w-40 bg-muted rounded" />
-                      <div className="h-32 bg-muted rounded" />
-                    </div>
-                  }
-                >
+                <React.Suspense fallback={<TabContentSkeleton type="stats" />}>
                   <div className="w-full space-y-6">
                     <GamificationDashboardLazy userId={targetUserId} />
                     {isOwnProfile && (

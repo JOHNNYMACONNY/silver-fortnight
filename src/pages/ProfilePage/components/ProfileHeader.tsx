@@ -130,8 +130,8 @@ const ProfileHeaderComponent: React.FC<ProfileHeaderProps> = ({
           <div className="lg:col-span-2 flex flex-col items-center gap-4">
             {/* Premium Avatar with Glassmorphic Border */}
             <div className="relative shrink-0">
-              {/* Outer glow effect */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/30 via-accent/20 to-primary/30 blur-2xl opacity-50 animate-pulse" />
+              {/* Outer glow effect - GPU-composited animation (Phase 3B CLS optimization) */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/30 via-accent/20 to-primary/30 blur-2xl opacity-50 animate-pulse-glow will-change-[opacity]" />
 
               {/* Circular ring with glassmorphic border */}
               <div className="relative p-1 rounded-full bg-border/50 shadow-xl">
