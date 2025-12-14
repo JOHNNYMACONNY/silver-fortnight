@@ -1,13 +1,14 @@
 {
   "metadata": {
-    "date": "2025-11-02",
-    "commit": "bd42e12",
+    "date": "2025-12-14",
+    "commit": "4d52259",
     "phase": "3A - Performance Profiling",
     "status": "IN_PROGRESS",
-    "browser": "Chrome 131.0.6778.0",
+    "browser": "Chrome (Latest)",
     "device": "Desktop (MacBook Pro)",
     "network": "4G Throttled",
-    "buildType": "Production"
+    "buildType": "Production",
+    "notes": "Resumed after documentation restoration from commit 94f00e3. Based on clean main branch (PR #444 merged)."
   },
   "scenarios": [
     {
