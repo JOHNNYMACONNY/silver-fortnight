@@ -5,6 +5,9 @@
 
 set -e
 
+# Add Java to PATH for Firebase emulators
+export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"
+
 # Colors
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
